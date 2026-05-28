@@ -12,14 +12,12 @@
 - 🔐 **后台管理 (CMS)**：基于 Payload CMS，支持事件/旅游/媒体/联系信息管理
 
 ## 🛠️ 技术栈
-
-- **框架**: Next.js 14+ (App Router, TypeScript)
-- **样式**: Tailwind CSS + shadcn/ui
-- **CMS**: Payload CMS (自托管，集成 Next.js)
-- **数据库**: Vercel Postgres (Neon)
-- **存储**: Vercel Blob (图片/视频)
-- **动画**: Framer Motion
-- **国际化**: next-intl (zh-TW / en)
+- **前台與後台一體化**：Next.js 14+ (App Router) & Payload CMS v3 (Embedded)
+- **資料庫**：Supabase PostgreSQL (經由連接池穩定運行)
+- **多媒體儲存**：Cloudflare R2 (相片與圖片儲存，讀取流量完全免費)
+- **影片處置**：嵌入式 YouTube 播放系統（全站不存放原生影片，節省成本與串流頻寬）
+- **UI 與樣式**：Tailwind CSS + shadcn/ui + Framer Motion (流暢平滑動畫)
+- **國際化**：next-intl (支援繁體中文、英文)
 
 ## 🚀 快速开始
 
