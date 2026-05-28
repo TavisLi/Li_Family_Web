@@ -34,18 +34,18 @@
 ```bash
 git clone https://github.com/TavisLi/Li_Family_Web.git 
 cd Li_Family_Web
-
+```
 ### 2. 安装依赖
-
+```bash
 pnpm install
-
+```
 ### 3. 配置环境变量
 
 复制 .env.example 到 .env.local，并填入真实值：
 
-bash
+```bash
 cp .env.example .env.local
-
+```
 必需的环境变量：
 
 - PAYLOAD_SECRET – 随机字符串，用于会话加密
@@ -55,13 +55,14 @@ cp .env.example .env.local
 
 ### 4. 运行数据库迁移
 
-bash
+```bash
 pnpm payload migrate
-
+```
 ### 5. 启动开发服务器
 
-bash
+```bash
 pnpm dev
+```
 访问 http://localhost:3000 查看前台，http://localhost:3000/admin 进入后台（首次需创建管理员账号）。
 
 
@@ -93,4 +94,5 @@ pnpm dev
 - architecture.md – 技术架构与编码规范
 - CLAUDE.md – AI 行为准则
 - family-members.md – 家庭成员信息
+- travel-projects.md – 旅游项目信息
 - Web Li Prompt.txt – 原始功能需求
