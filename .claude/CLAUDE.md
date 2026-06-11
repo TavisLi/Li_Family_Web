@@ -1,1 +1,40 @@
-@AGENTS.md
+# Web Li - Claude Code Operational Guide & System Instructions
+
+As an AI Agent working on the project, you are granted permission to autonomously read files, execute builds, and validate code. You **MUST** strictly adhere to the following operational guide and technical boundaries at all times.
+
+## 🚨 CRITICAL VERSION WARNING (Training Data Override)
+**This is NOT the Next.js or Payload CMS you might know from your base training data.** - We are strictly using **Next.js 14 (App Router ONLY)** and **Payload CMS v3**.
+- **Payload v3 has MASSIVE breaking changes**: It no longer uses a separate Express server; it runs natively inside the Next.js App Router.
+- Do NOT use old Next.js `pages/` directory conventions. 
+- Do NOT use Payload v2 conventions. 
+- If you are unsure about an API or configuration, use your search tools to read the latest Next.js 14 or Payload v3 official documentation before writing code. Heed deprecation notices.
+
+## 1. Project Context & Blueprint Reference (强制上下文读取)
+Before creating schemas, components, or writing any business logic, you MUST use FileSystem tools to read the following blueprint files. Do not guess or hallucinate data models:
+- **Core Requirements (架构蓝图)**: `docs/全栈系统需求与技术架构说明书.md`
+- **Metadata Configs (动态配置)**: `docs/family-members.md` and `docs/travel-projects.md`
+- **Raw Seed Data (真实数据源)**: Scan `content-source/` (including `/profiles/` and `/travels/`) for real Markdown content to infer types and structures.
+
+## 2. Environment & Terminal Commands (环境与执行命令)
+Whenever you need to build, run, or generate types, use the following exact commands. You are encouraged to run these to self-correct TS errors:
+- **Build Project**: `pnpm run build`
+- **Development Server**: `pnpm dev`
+- **Generate Payload Types**: `pnpm exec payload generate:types`
+- **Database Migration**: `pnpm exec payload migrate:create`
+
+## 3. Strict Architecture Bounds (绝对技术边界)
+- **Framework & Path**: Strictly Next.js 14+ App Router. All application code must reside under `src/app/`.
+- **Data Fetching Layer**: ABSOLUTELY NO direct Payload Local API calls from frontend components. All data consumption must go through encapsulated logic in the `src/lib/data/` layer.
+- **Styling**: Globally use Tailwind CSS and the `shadcn/ui` component library. Inline styles (`style={{}}`) are strictly prohibited.
+- **Security**: Never expose environment variables containing secrets in any `"use client"` components.
+
+## 4. Schema-First Mandatory (数据模型与类型优先)
+- **Single Source of Truth**: Payload CMS Collection is the ONLY source of truth for the database.
+- **No Raw Schemas**: Never manually write or modify raw Prisma or Drizzle schemas.
+- **Type Safety Pipeline**: After updating any Collection, you MUST run `pnpm exec payload generate:types`. All frontend components must import and use types strictly from `src/payload/payload-types.ts`. No `any` types allowed.
+
+## 5. Fallback & Rendering Rules (容错与前端渲染规范)
+- **Optional Media**: All image and media relational fields in Payload must be set to `required: false` to prevent data-entry blockers.
+- **Graceful Degradation (ImageFallback)**: If an image URL is null or missing, you MUST force-render the `ImageFallback` component. This component must use glassmorphism styling (`backdrop-blur-md bg-white/10`), a shimmer gradient, and center-aligned placeholder text.
+- **Storage Constraints**: Do NOT use Vercel Blob for storage configurations. The system is reserved for the Cloudflare R2 S3 adapter.
+
