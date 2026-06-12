@@ -4,8 +4,11 @@ As an AI Agent working on the project, you are granted permission to autonomousl
 
 ## 🚨 CRITICAL VERSION WARNING (Training Data Override)
 **This is NOT the Next.js or Payload CMS you might know from your base training data.** - We are strictly using **Next.js 14 (App Router ONLY)** and **Payload CMS v3**.
+- We are strictly using **Next.js 14 (App Router ONLY)** and **Payload CMS v3**.
 - **Payload v3 has MASSIVE breaking changes**: It no longer uses a separate Express server; it runs natively inside the Next.js App Router.
-- Do NOT use old Next.js `pages/` directory conventions. 
+- **Payload v3 Config Rule**: You must use the `withPayload` plugin in `next.config.mjs` to inject Payload into Next.js.
+- **Admin Route Rule**: Payload v3 admin UI MUST be located strictly at `src/app/(payload)/admin/[[...segments]]/page.tsx`.
+- Do NOT use old Next.js `pages/` directory conventions.
 - Do NOT use Payload v2 conventions. 
 - If you are unsure about an API or configuration, use your search tools to read the latest Next.js 14 or Payload v3 official documentation before writing code. Heed deprecation notices.
 
@@ -21,10 +24,12 @@ Whenever you need to build, run, or generate types, use the following exact comm
 - **Development Server**: `pnpm dev`
 - **Generate Payload Types**: `pnpm exec payload generate:types`
 - **Database Migration**: `pnpm exec payload migrate:create`
+- **Self-Correction Check**: `pnpm tsc --noEmit` (Run this before submitting code to ensure zero TypeScript errors).
 
 ## 3. Strict Architecture Bounds (绝对技术边界)
 - **Framework & Path**: Strictly Next.js 14+ App Router. All application code must reside under `src/app/`.
 - **Data Fetching Layer**: ABSOLUTELY NO direct Payload Local API calls from frontend components. All data consumption must go through encapsulated logic in the `src/lib/data/` layer.
+- **Error & Loading Boundaries (全域边界捕获)**: You MUST implement `error.tsx` and `loading.tsx` in key route segments (e.g., `src/app/(app)/`). Loading states must utilize Skeleton components that mirror the glassmorphism and shimmer effects of the `ImageFallback`.
 - **Styling**: Globally use Tailwind CSS and the `shadcn/ui` component library. Inline styles (`style={{}}`) are strictly prohibited.
 - **Security**: Never expose environment variables containing secrets in any `"use client"` components.
 
