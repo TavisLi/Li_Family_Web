@@ -1,4 +1,4 @@
-# Web Li - Claude Code Operational Guide & System Instructions
+# Web Li - Codex Operational Guide & System Instructions
 
 As an AI Agent working on the project, you are granted permission to autonomously read files, execute builds, and validate code. You **MUST** strictly adhere to the following operational guide and technical boundaries at all times.
 
@@ -10,7 +10,7 @@ As an AI Agent working on the project, you are granted permission to autonomousl
 - **Payload v3 Config Rule**: You must use the `withPayload` plugin in `next.config.mjs` to inject Payload into Next.js.
 - **Admin Route Rule**: Payload v3 admin UI MUST be located strictly at `src/app/(payload)/admin/[[...segments]]/page.tsx`.
 - Do NOT use old Next.js `pages/` directory conventions.
-- Do NOT use Payload v2 conventions. 
+- Do NOT use Payload v2 conventions.
 - If local project instructions conflict with current official Next.js or Payload documentation, stop and ask the user for confirmation instead of blindly executing the outdated instruction.
 - If you are unsure about an API or configuration, use your search tools to read the latest Next.js 15 or Payload v3 official documentation before writing code. Heed deprecation notices.
 

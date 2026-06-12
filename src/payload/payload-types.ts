@@ -6,23 +6,111 @@
  * and re-run `payload generate:types` to regenerate this file.
  */
 
+/**
+ * Supported timezones in IANA format.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "supportedTimezones".
+ */
+export type SupportedTimezones =
+  | 'Pacific/Midway'
+  | 'Pacific/Niue'
+  | 'Pacific/Honolulu'
+  | 'Pacific/Rarotonga'
+  | 'America/Anchorage'
+  | 'Pacific/Gambier'
+  | 'America/Los_Angeles'
+  | 'America/Tijuana'
+  | 'America/Denver'
+  | 'America/Phoenix'
+  | 'America/Chicago'
+  | 'America/Guatemala'
+  | 'America/New_York'
+  | 'America/Bogota'
+  | 'America/Caracas'
+  | 'America/Santiago'
+  | 'America/Buenos_Aires'
+  | 'America/Sao_Paulo'
+  | 'Atlantic/South_Georgia'
+  | 'Atlantic/Azores'
+  | 'Atlantic/Cape_Verde'
+  | 'Europe/London'
+  | 'Europe/Berlin'
+  | 'Africa/Lagos'
+  | 'Europe/Athens'
+  | 'Africa/Cairo'
+  | 'Europe/Moscow'
+  | 'Asia/Riyadh'
+  | 'Asia/Dubai'
+  | 'Asia/Baku'
+  | 'Asia/Karachi'
+  | 'Asia/Tashkent'
+  | 'Asia/Calcutta'
+  | 'Asia/Dhaka'
+  | 'Asia/Almaty'
+  | 'Asia/Jakarta'
+  | 'Asia/Bangkok'
+  | 'Asia/Shanghai'
+  | 'Asia/Singapore'
+  | 'Asia/Tokyo'
+  | 'Asia/Seoul'
+  | 'Australia/Brisbane'
+  | 'Australia/Sydney'
+  | 'Pacific/Guam'
+  | 'Pacific/Noumea'
+  | 'Pacific/Auckland'
+  | 'Pacific/Fiji';
+
 export interface Config {
   auth: {
     users: UserAuthOperations;
   };
+  blocks: {};
   collections: {
     users: User;
+    categories: Category;
+    posts: Post;
+    'travel-projects': TravelProject;
+    comments: Comment;
     media: Media;
+    'payload-kv': PayloadKv;
+    'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  db: {
-    defaultIDType: string;
+  collectionsJoins: {};
+  collectionsSelect: {
+    users: UsersSelect<false> | UsersSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    'travel-projects': TravelProjectsSelect<false> | TravelProjectsSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
+    'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
+    'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
-  globals: {};
-  locale: null;
-  user: User & {
-    collection: 'users';
+  db: {
+    defaultIDType: number;
+  };
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('zh-TW' | 'en') | ('zh-TW' | 'en')[];
+  globals: {
+    'site-config': SiteConfig;
+    'home-config': HomeConfig;
+  };
+  globalsSelect: {
+    'site-config': SiteConfigSelect<false> | SiteConfigSelect<true>;
+    'home-config': HomeConfigSelect<false> | HomeConfigSelect<true>;
+  };
+  locale: 'zh-TW' | 'en';
+  widgets: {
+    collections: CollectionsWidget;
+  };
+  user: User;
+  jobs: {
+    tasks: unknown;
+    workflows: unknown;
   };
 }
 export interface UserAuthOperations {
@@ -48,7 +136,80 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: string;
+  id: number;
+  displayName: string;
+  slug: string;
+  familyRole: 'father' | 'mother' | 'daughter' | 'son' | 'grandmother' | 'family';
+  profileVisibility: 'public' | 'family';
+  avatar?: (number | null) | Media;
+  theme: {
+    persona: 'neutral' | 'tavis' | 'lynn' | 'leo' | 'academy' | 'heritage';
+    primaryColor?: string | null;
+    accentColor?: string | null;
+  };
+  status?: string | null;
+  typewriter?: {
+    prefix?: string | null;
+    rotatingWords?:
+      | {
+          word: string;
+          id?: string | null;
+        }[]
+      | null;
+    suffix?: string | null;
+  };
+  bio?: string | null;
+  beliefs?:
+    | {
+        text: string;
+        id?: string | null;
+      }[]
+    | null;
+  interests?:
+    | {
+        name: string;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  education?:
+    | {
+        school: string;
+        degree?: string | null;
+        major?: string | null;
+        year?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  careerTimeline?:
+    | {
+        organization: string;
+        role: string;
+        location?: string | null;
+        start?: string | null;
+        end?: string | null;
+        summary?: string | null;
+        highlights?:
+          | {
+              text: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  skillRadar?:
+    | {
+        skill: string;
+        score: number;
+        evidence?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Matches a file under content-source/profiles for future seed import.
+   */
+  sourceDocIdentifier?: string | null;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -58,15 +219,33 @@ export interface User {
   hash?: string | null;
   loginAttempts?: number | null;
   lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
   password?: string | null;
+  collection: 'users';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
-  id: string;
-  alt: string;
+  id: number;
+  type: 'photo' | 'video';
+  youtubeUrl?: string | null;
+  altText: string;
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  relatedMembers?: (number | User)[] | null;
+  relatedTravel?: (number | null) | TravelProject;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -78,16 +257,310 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+  sizes?: {
+    thumbnail?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    medium?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    large?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-projects".
+ */
+export interface TravelProject {
+  id: number;
+  title: string;
+  slug: string;
+  status: 'planning' | 'completed';
+  isPrivate?: boolean | null;
+  startDate: string;
+  endDate: string;
+  /**
+   * Matches a file under content-source/travels for future seed import.
+   */
+  externalDocIdentifier?: string | null;
+  coverImage?: (number | null) | Media;
+  members?: (number | User)[] | null;
+  summary?: string | null;
+  party?:
+    | {
+        name: string;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  flights?:
+    | {
+        date?: string | null;
+        airline?: string | null;
+        flightNumber: string;
+        route: string;
+        passengers?: string | null;
+        departureTime?: string | null;
+        arrivalTime?: string | null;
+        terminal?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  railSegments?:
+    | {
+        date?: string | null;
+        trainNumber: string;
+        route: string;
+        departureTime?: string | null;
+        arrivalTime?: string | null;
+        duration?: string | null;
+        fare?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  lodgings?:
+    | {
+        dateRange: string;
+        city?: string | null;
+        hotel: string;
+        address?: string | null;
+        roomType?: string | null;
+        bookingChannel?: string | null;
+        price?: string | null;
+        highlights?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  cabinAssignments?:
+    | {
+        cabin: string;
+        passengers: string;
+        id?: string | null;
+      }[]
+    | null;
+  dailyItinerary?:
+    | {
+        day: number;
+        date?: string | null;
+        title: string;
+        theme?: string | null;
+        segments?:
+          | {
+              time?: string | null;
+              activity: string;
+              transport?: string | null;
+              notes?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        meals?: {
+          breakfast?: string | null;
+          lunch?: string | null;
+          dinner?: string | null;
+        };
+        lodging?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  foodRecommendations?:
+    | {
+        category?: string | null;
+        name: string;
+        description?: string | null;
+        suitableFor?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  costItems?:
+    | {
+        category: string;
+        item: string;
+        unitPrice?: string | null;
+        quantity?: string | null;
+        subtotal?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  optionalActivities?:
+    | {
+        city?: string | null;
+        name: string;
+        description?: string | null;
+        price?: string | null;
+        riskLevel?: string | null;
+        notes?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  reminders?:
+    | {
+        category: string;
+        items?:
+          | {
+              text: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  externalVideos?:
+    | {
+        title: string;
+        youtubeUrl: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  title: string;
+  slug: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  slug: string;
+  author: number | User;
+  categories?: (number | Category)[] | null;
+  isPrivate?: boolean | null;
+  publishedDate: string;
+  coverImage?: (number | null) | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  user: number | User;
+  associatedType: 'travel' | 'timeline' | 'blog';
+  associatedId: string;
+  commentText?: string | null;
+  reaction?: ('none' | 'up' | 'down' | 'heart' | 'cool' | 'applause') | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv".
+ */
+export interface PayloadKv {
+  id: number;
+  key: string;
+  data:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents".
+ */
+export interface PayloadLockedDocument {
+  id: number;
+  document?:
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'posts';
+        value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'travel-projects';
+        value: number | TravelProject;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: number | Comment;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null);
+  globalSlug?: string | null;
+  user: {
+    relationTo: 'users';
+    value: number | User;
+  };
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
     relationTo: 'users';
-    value: string | User;
+    value: number | User;
   };
   key?: string | null;
   value?:
@@ -107,11 +580,482 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  displayName?: T;
+  slug?: T;
+  familyRole?: T;
+  profileVisibility?: T;
+  avatar?: T;
+  theme?:
+    | T
+    | {
+        persona?: T;
+        primaryColor?: T;
+        accentColor?: T;
+      };
+  status?: T;
+  typewriter?:
+    | T
+    | {
+        prefix?: T;
+        rotatingWords?:
+          | T
+          | {
+              word?: T;
+              id?: T;
+            };
+        suffix?: T;
+      };
+  bio?: T;
+  beliefs?:
+    | T
+    | {
+        text?: T;
+        id?: T;
+      };
+  interests?:
+    | T
+    | {
+        name?: T;
+        description?: T;
+        id?: T;
+      };
+  education?:
+    | T
+    | {
+        school?: T;
+        degree?: T;
+        major?: T;
+        year?: T;
+        id?: T;
+      };
+  careerTimeline?:
+    | T
+    | {
+        organization?: T;
+        role?: T;
+        location?: T;
+        start?: T;
+        end?: T;
+        summary?: T;
+        highlights?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  skillRadar?:
+    | T
+    | {
+        skill?: T;
+        score?: T;
+        evidence?: T;
+        id?: T;
+      };
+  sourceDocIdentifier?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts_select".
+ */
+export interface PostsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  author?: T;
+  categories?: T;
+  isPrivate?: T;
+  publishedDate?: T;
+  coverImage?: T;
+  content?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-projects_select".
+ */
+export interface TravelProjectsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  status?: T;
+  isPrivate?: T;
+  startDate?: T;
+  endDate?: T;
+  externalDocIdentifier?: T;
+  coverImage?: T;
+  members?: T;
+  summary?: T;
+  party?:
+    | T
+    | {
+        name?: T;
+        note?: T;
+        id?: T;
+      };
+  flights?:
+    | T
+    | {
+        date?: T;
+        airline?: T;
+        flightNumber?: T;
+        route?: T;
+        passengers?: T;
+        departureTime?: T;
+        arrivalTime?: T;
+        terminal?: T;
+        notes?: T;
+        id?: T;
+      };
+  railSegments?:
+    | T
+    | {
+        date?: T;
+        trainNumber?: T;
+        route?: T;
+        departureTime?: T;
+        arrivalTime?: T;
+        duration?: T;
+        fare?: T;
+        id?: T;
+      };
+  lodgings?:
+    | T
+    | {
+        dateRange?: T;
+        city?: T;
+        hotel?: T;
+        address?: T;
+        roomType?: T;
+        bookingChannel?: T;
+        price?: T;
+        highlights?: T;
+        id?: T;
+      };
+  cabinAssignments?:
+    | T
+    | {
+        cabin?: T;
+        passengers?: T;
+        id?: T;
+      };
+  dailyItinerary?:
+    | T
+    | {
+        day?: T;
+        date?: T;
+        title?: T;
+        theme?: T;
+        segments?:
+          | T
+          | {
+              time?: T;
+              activity?: T;
+              transport?: T;
+              notes?: T;
+              id?: T;
+            };
+        meals?:
+          | T
+          | {
+              breakfast?: T;
+              lunch?: T;
+              dinner?: T;
+            };
+        lodging?: T;
+        id?: T;
+      };
+  foodRecommendations?:
+    | T
+    | {
+        category?: T;
+        name?: T;
+        description?: T;
+        suitableFor?: T;
+        id?: T;
+      };
+  costItems?:
+    | T
+    | {
+        category?: T;
+        item?: T;
+        unitPrice?: T;
+        quantity?: T;
+        subtotal?: T;
+        notes?: T;
+        id?: T;
+      };
+  optionalActivities?:
+    | T
+    | {
+        city?: T;
+        name?: T;
+        description?: T;
+        price?: T;
+        riskLevel?: T;
+        notes?: T;
+        id?: T;
+      };
+  reminders?:
+    | T
+    | {
+        category?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  externalVideos?:
+    | T
+    | {
+        title?: T;
+        youtubeUrl?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  user?: T;
+  associatedType?: T;
+  associatedId?: T;
+  commentText?: T;
+  reaction?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  type?: T;
+  youtubeUrl?: T;
+  altText?: T;
+  tags?:
+    | T
+    | {
+        tag?: T;
+        id?: T;
+      };
+  relatedMembers?: T;
+  relatedTravel?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumbnail?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        medium?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        large?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-kv_select".
+ */
+export interface PayloadKvSelect<T extends boolean = true> {
+  key?: T;
+  data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-locked-documents_select".
+ */
+export interface PayloadLockedDocumentsSelect<T extends boolean = true> {
+  document?: T;
+  globalSlug?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-preferences_select".
+ */
+export interface PayloadPreferencesSelect<T extends boolean = true> {
+  user?: T;
+  key?: T;
+  value?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-migrations_select".
+ */
+export interface PayloadMigrationsSelect<T extends boolean = true> {
+  name?: T;
+  batch?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-config".
+ */
+export interface SiteConfig {
+  id: number;
+  siteName: string;
+  siteDescription?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  contactAddress?: string | null;
+  socialLinks?:
+    | {
+        platform: 'github' | 'linkedin' | 'youtube' | 'instagram' | 'other';
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-config".
+ */
+export interface HomeConfig {
+  id: number;
+  heroTitle: string;
+  heroSubtitle?: string | null;
+  heroBackground?: (number | null) | Media;
+  featuredTravel?: (number | null) | TravelProject;
+  announcement?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-config_select".
+ */
+export interface SiteConfigSelect<T extends boolean = true> {
+  siteName?: T;
+  siteDescription?: T;
+  contactPhone?: T;
+  contactEmail?: T;
+  contactAddress?: T;
+  socialLinks?:
+    | T
+    | {
+        platform?: T;
+        url?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-config_select".
+ */
+export interface HomeConfigSelect<T extends boolean = true> {
+  heroTitle?: T;
+  heroSubtitle?: T;
+  heroBackground?: T;
+  featuredTravel?: T;
+  announcement?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_widget".
+ */
+export interface CollectionsWidget {
+  data?: {
+    [k: string]: unknown;
+  };
+  width: 'full';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
