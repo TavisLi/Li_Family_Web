@@ -12,7 +12,7 @@
 - 🔐 **后台管理 (CMS)**：基于 Payload CMS，支持事件/旅游/媒体/联系信息管理
 
 ## 🛠️ 技术栈
-- **前台與後台一體化**：Next.js 14+ (App Router) & Payload CMS v3 (Embedded)
+- **前台與後台一體化**：Next.js 15 (App Router) & Payload CMS v3 stable (Embedded)
 - **資料庫**：Supabase PostgreSQL (經由連接池穩定運行)
 - **多媒體儲存**：Cloudflare R2 (相片與圖片儲存，讀取流量完全免費)
 - **影片處置**：嵌入式 YouTube 播放系統（全站不存放原生影片，節省成本與串流頻寬）
@@ -39,17 +39,17 @@ pnpm install
 ```
 ### 3. 配置环境变量
 
-复制 .env.example 到 .env.local，并填入真实值：
+复制 .env.example 到 .env，并填入真实值：
 
 ```bash
-cp .env.example .env.local
+cp .env.example .env
 ```
 必需的环境变量：
 
 - PAYLOAD_SECRET – 随机字符串，用于会话加密
-- DATABASE_URI – Vercel Postgres 连接字符串
-- BLOB_READ_WRITE_TOKEN – Vercel Blob 存储令牌
-获取方式：在 Vercel 项目控制台的 Storage 标签页创建 Postgres 和 Blob，然后运行 vercel env pull .env.local
+- DATABASE_URI – Supabase PostgreSQL 连接池字符串
+- R2_BUCKET_NAME / R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY – Cloudflare R2 存储配置
+- NEXT_PUBLIC_R2_PUBLIC_URL – R2/CDN 公开读取地址
 
 ### 4. 运行数据库迁移
 
