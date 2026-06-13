@@ -3,6 +3,13 @@
 目標：
 完成根路由首頁，以及 Tavis Li、Lynn Chien 的個人首頁。所有頁面必須從 src/lib/data/ 取得 Payload 資料，不可硬編 Markdown 內容。
 
+設計定位：
+- Phase-3 是 Web Li 第一個正式前台體驗，必須建立整個產品的高級感、敘事感與視覺標準。
+- 整體美學方向：高級家庭數位大廳，結合 editorial magazine、Apple-like restraint、溫潤玻璃質感與真實照片敘事。
+- 禁止做成 generic dashboard、普通 landing page、模板化 portfolio 或 AI 感 UI。
+- 首頁第一屏必須明確傳達「Li Family」或家庭大廳身份，不可只是功能入口集合。
+- 使用真實 Payload Media 作為主要視覺，不可用抽象漸層、裝飾 orb、無意義 SVG illustration 取代照片。
+
 必讀：
 - docs/全栈系统需求与技术架构说明书.md 的 3.1、3.2、9
 - docs/family-members.md
@@ -15,15 +22,30 @@
 - content-source/assets/members/
 - 所有預置照片只能作為 seed 初始資料，不可在前台 component 中硬編圖片路徑。每張預置照片需建立為 Payload Media 記錄，並透過 relationship 關聯到 Members、TravelProjects、Posts 或 HomeConfig。後台使用者日後可在 Payload Admin 中替換 media relationship 或上傳新照片；前台必須自動讀取最新 media URL。若 media 缺失，統一顯示 ImageFallback。
 
+視覺系統要求：
+1. 建立一致的 design tokens：色彩、背景、邊框、陰影、字級、間距。
+2. 首頁使用中性高級基調；Tavis 頁偏冷靜科技藍；Lynn 頁偏莫蘭迪暖色，但三者仍需屬於同一品牌系統。
+3. 避免全站單一色系，也避免過度依賴紫色、藍紫漸層、米色或深藍 slate 主題。
+4. 毛玻璃效果需克制，避免整頁卡片化；section 應以全寬布局、留白、層次與照片節奏建立高級感。
+5. Cards 只用於成員入口、feed item、preview item；禁止 card 裡再包 card。
+6. 不使用 viewport-width 動態縮放字體。
+7. letter-spacing 不使用負值。
+8. 所有 button、card、nav、image frame 在 mobile 與 desktop 都不得文字溢出或互相遮擋。
+9. 圖片需有穩定 aspect-ratio，避免載入後 layout shift。
+10. 按鈕與互動控制優先使用 lucide icons；不手寫可由 icon library 取代的 SVG。
+
 首頁需求：
 1. 全域家庭大廳 `/`
-2. Hero Section 使用中性毛玻璃基調。
+2. Hero Section 使用中性毛玻璃基調，第一屏即呈現家庭身份、主視覺、成員入口暗示，並讓下一區內容在 desktop 與 mobile 都露出一部分。
 3. 家族成員矩陣入口，展示 6 位家庭成員。
+   - 成員矩陣需能清楚區分 6 位家庭成員的身份與性格。
+   - 每張成員卡使用 Payload Media relationship，若缺圖則使用 ImageFallback。
 4. Dynamic Feed Hub：
    - 近期足跡
    - 家庭速報
    - Time Machine Widget placeholder
    - Bucket List Quick View placeholder
+   - 即使是 placeholder，也要像正式產品中的預留模組，不可像灰色空框。
 5. 使用 Promise.all() 並行讀取 members、travel、posts、homeConfig。
 6. 所有圖片缺失時使用 ImageFallback。
 
@@ -33,6 +55,8 @@ Tavis 頁：
 3. 打字機標題。
 4. 根據 resume 解析結果展示技能雷達圖與履歷時間軸。
 5. 顯示信念、教育、興趣。
+6. 頁面需呈現個人敘事，而不是履歷表排版；timeline、skills、education、beliefs/interests 都應有資訊設計。
+7. 視覺節奏需冷靜、精密、科技管理感，但不可變成普通 SaaS dashboard。
 
 Lynn 頁：
 1. `/member/lynn`
@@ -40,6 +64,8 @@ Lynn 頁：
 3. 打字機標題。
 4. 財務/稽核/系統導入履歷時間軸。
 5. 顯示教育、興趣、生活美學卡片。
+6. 頁面需呈現個人敘事，而不是履歷表排版；timeline、skills、education、interests/lifestyle 都應有資訊設計。
+7. 視覺節奏需溫潤、專業、細膩、有生活美學，但不可變成婚禮模板或普通 lifestyle blog。
 
 技術要求：
 - 使用 Tailwind + shadcn/ui
@@ -48,12 +74,26 @@ Lynn 頁：
 - 不可 inline style
 - 不可 any
 - 行動版與桌面版都要檢查文字不重疊
+- 所有頁面資料只能從 src/lib/data/ 取得。
+- 所有圖片來源必須來自 Payload Media relationship；若缺失，使用 ImageFallback。
+- 優先拆成清楚的 server component 與 presentational component，避免單一 page.tsx 過大。
+- 不可在 `"use client"` component 暴露 secrets 或直接呼叫 Payload Local API。
+- 不可 inline style。
 
 驗證：
 - pnpm tsc --noEmit
 - pnpm run build
 - 啟動 pnpm dev --port 3001，只需確認 Ready/Local 即可
-- 用 browser 檢查首頁、Tavis、Lynn 頁面
+- 用 browser 檢查首頁、Tavis、Lynn 頁面：
+  - `/`
+  - `/member/tavis`
+  - `/member/lynn`
+  - desktop viewport
+  - mobile viewport
+  - 文字不重疊
+  - 圖片不變形
+  - hero 第一屏有明確品牌/家庭信號
+  - placeholder 模組看起來像正式產品預留區，而不是未完成空框
 
 commit message:
 Implement phase 3 home and core member pages
