@@ -1,7 +1,7 @@
-// storage-adapter-import-placeholder
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { s3Storage } from '@payloadcms/storage-s3'
 import path from 'path'
 import { buildConfig } from 'payload'
 import { fileURLToPath } from 'url'
@@ -18,6 +18,11 @@ import { SiteConfig } from './globals/SiteConfig'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+const r2AccountId = process.env.R2_ACCOUNT_ID?.trim()
+const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID?.trim()
+const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY?.trim()
+const r2Bucket = process.env.R2_BUCKET_NAME?.trim()
+const r2Enabled = Boolean(r2AccountId && r2AccessKeyId && r2SecretAccessKey && r2Bucket)
 
 export default buildConfig({
   admin: {
@@ -42,13 +47,32 @@ export default buildConfig({
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
   db: postgresAdapter({
+    push: process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH === 'true',
     pool: {
       connectionString: process.env.DATABASE_URI || '',
+      connectionTimeoutMillis: 10000,
+      idleTimeoutMillis: 10000,
+      max: 3,
     },
   }),
   sharp,
   plugins: [
     payloadCloudPlugin(),
-    // storage-adapter-placeholder
+    s3Storage({
+      enabled: r2Enabled,
+      collections: {
+        media: true,
+      },
+      bucket: r2Bucket || 'missing-r2-bucket',
+      config: {
+        credentials: {
+          accessKeyId: r2AccessKeyId || '',
+          secretAccessKey: r2SecretAccessKey || '',
+        },
+        endpoint: r2AccountId ? `https://${r2AccountId}.r2.cloudflarestorage.com` : undefined,
+        forcePathStyle: true,
+        region: 'auto',
+      },
+    }),
   ],
 })

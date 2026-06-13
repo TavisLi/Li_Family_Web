@@ -1,5 +1,11 @@
 請執行 Web Li Phase-4：旅遊與規劃互動系統。
 
+## 前置條件：
+- Phase-4 必須從已合併 Phase-3 的最新 `main` 開新分支執行。
+- 必須沿用 Phase-3 已建立的前台 layout、視覺語言、`PayloadImage`、`ImageFallback`、`src/lib/media.ts` 與 feature-driven 架構。
+- 不可回退 Phase-3 的首頁與 member page 架構；若需共用旅遊 UI 元件，新增於 `src/features/travel/`。
+- 若本地 dev runtime 卡在 Payload/DB schema pulling，仍需先完成 `pnpm tsc --noEmit` 與 `pnpm run build`，並在 Phase Completion Report 中記錄 Browser 驗收限制。
+
 ## 目標：
 完成一個規劃中行程與兩個已完成行程的動態旅遊頁。所有旅遊頁必須由 Payload TravelProjects 與 seed 後資料驅動，不可手寫固定頁面。
 
@@ -18,6 +24,26 @@
 ## 預置照片：
 - content-source/assets/travels/
 - 所有預置照片只能作為 seed 初始資料，不可在前台 component 中硬編圖片路徑。每張預置照片需建立為 Payload Media 記錄，並透過 relationship 關聯到 Members、TravelProjects、Posts 或 HomeConfig。後台使用者日後可在 Payload Admin 中替換 media relationship 或上傳新照片；前台必須自動讀取最新 media URL。若 media 缺失，統一顯示 ImageFallback。
+
+## 設計定位：
+- Phase-4 是 Web Li 的第一個大型內容互動模組，不可做成普通旅遊列表、表格堆疊或相簿頁。
+- 規劃中行程頁應呈現「高級家庭旅行作戰室」：清楚、可比較、可討論、有決策感。
+- 已完成行程頁應呈現「editorial travel memory journal」：大圖敘事、里程碑節奏、照片與文字共同推進。
+- 202607 重慶長江三峽頁要突出規劃狀態、航班住宿、每日節點、提醒與互動決策。
+- 202308 東澳頁要突出回憶敘事、里程碑、大圖照片節奏與旅行亮點。
+- 201307 海南頁即使資料或照片較少，也要有正式產品感的回憶頁，而不是空白或灰框。
+- Placeholder 必須像正式產品中的預留模組，不可像未完成灰色空框。
+- 視覺上需延續 Phase-3 的高級家庭數位大廳語言，但旅遊頁可加入更強的地圖感、時間軸感與旅途節奏。
+
+## 視覺系統要求：
+1. `/travel` 列表頁要像旅遊索引廊道，不是卡片清單。
+2. `/travel/[slug]` Hero 必須使用 TravelProjects coverImage 或 ImageFallback，並清楚標示 status、日期、參與成員與摘要。
+3. 規劃中行程使用清爽高密度資訊設計；已完成行程使用更具 editorial memory journal 的排版。
+4. 照片區塊需使用穩定 aspect-ratio 與 Next.js Image `sizes`，避免 layout shift。
+5. Cards 只用於 itinerary item、decision item、comment item、gallery item；禁止 card 裡再包 card。
+6. 行動版與桌面版都不得出現文字溢出、互相遮擋或圖片比例失衡。
+7. 互動控制需使用 lucide icons，例如 thumbs-up、thumbs-down、message、lock、calendar、map-pin。
+8. 不使用 inline style，不使用 `any`。
 
 ### Seed Manifest
 
@@ -40,6 +66,16 @@ content-source/assets/manifest.json
 }
 ```
 
+Seed Manifest 最小範圍：
+- Phase-4 只需先支援 travel assets。
+- `sourcePath` 必須對應 `content-source/assets/travels/` 下的實際檔案。
+- `ownerType` Phase-4 固定為 `travel`。
+- `ownerSlug` 必須對應 TravelProjects.slug。
+- `usage` 支援 `cover`、`gallery`、`itinerary`。
+- `caption` 可先寫入 Media.altText 或作為未來 caption schema 的來源。
+- `sortOrder` 用於 seed 後 relationship 排序。
+- 若 manifest 不存在或某張圖片未列入 manifest，現有目錄/檔名推斷規則仍可作為 fallback。
+- 除非必要，不新增 Payload schema；若 schema 無法承載 caption/sortOrder 等必要資料，需先提出最小 schema 調整，修改後執行 `pnpm exec payload generate:types`。
 
 ## 需求：
 1. 建立 `/travel` 列表頁。
@@ -57,17 +93,44 @@ content-source/assets/manifest.json
 6. 使用 useOptimistic 做互動回饋。
 7. 未登入訪客只能看到公開內容，私密互動入口預留給 Phase-6。
 
+## 互動與權限邊界：
+- 目前 Comments collection 僅允許登入使用者 read/create/update/delete。
+- 未登入訪客只能看到公開旅行內容與 locked interaction preview，不可讀取私密 comments。
+- comment、thumb-up、thumb-down 僅登入家人可操作。
+- 不可為了測試或展示在前台硬編 fake user。
+- Server Actions 或 API route 必須檢查 session/user；無登入者需回傳明確 locked/unauthorized 狀態。
+- 若 Phase-4 尚未完成正式登入流程，互動 UI 必須以「家人模式限定」方式呈現預留狀態，不可假裝互動已完成。
+- Comments.associatedType 使用 `travel`。
+- Comments.associatedId 建議使用可穩定定位的 key，例如 `travel:${slug}:planning:${sectionId}` 或 `travel:${slug}:itinerary:day-${day}`。
+- thumb-up/thumb-down 可先以 Comments.reaction 的 `up` / `down` 表示，不另建 collection；若需要聚合統計，透過 data layer 聚合。
+
 技術要求：
 - 不可直接在 component 呼叫 Payload Local API
 - 所有資料走 src/lib/data/
 - 所有圖片使用 next/image + sizes
 - YouTube 只存 URL，不儲存影片檔
+- 新增或補強 `src/lib/data/travel.ts`，讓 travel list、travel detail、travel comments/reactions 都經由 data layer 或 server-only helper。
+- 前台互動 client component 不可直接引入 Payload Local API。
+- 若新增 Server Actions，放在 travel feature 或 app route 邊界內，並保持 server-only。
+- 使用 `src/features/travel/` 放置旅遊業務組件，避免把大型頁面邏輯堆在 `page.tsx`。
+- page.tsx 必須有 `generateMetadata`，Open Graph image 優先使用 coverImage。
 
 驗證：
 - pnpm tsc --noEmit
 - pnpm run build
-- browser 檢查 3 個旅遊頁
+- pnpm dev --port 3001，只需確認 Ready/Local 即可；不要等待長周期程序結束
+- browser 檢查：
+  - `/travel`
+  - `/travel/202607-chongqing-yangtze-river`
+  - `/travel/201307-hainan`
+  - `/travel/202308-east-australia`
+  - desktop viewport
+  - mobile viewport
+  - Hero 有明確 travel status 與主視覺
+  - 規劃中行程互動入口呈現 locked 或可操作狀態
+  - 已完成行程照片區不變形、不重疊
 - 測試 comment/up/down 基本流程
+- 若本地 DB/session 限制導致互動流程無法完整測試，需在報告中記錄已完成的靜態、型別、build 與 UI 驗收範圍
 
 commit message:
 Implement phase 4 travel interaction system
