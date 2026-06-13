@@ -52,9 +52,17 @@ const config: Config = {
           '0%': { transform: 'translateX(-120%)' },
           '100%': { transform: 'translateX(120%)' },
         },
+        wordRail: {
+          '0%, 20%': { transform: 'translateY(0)' },
+          '25%, 45%': { transform: 'translateY(-1.18em)' },
+          '50%, 70%': { transform: 'translateY(-2.36em)' },
+          '75%, 95%': { transform: 'translateY(-3.54em)' },
+          '100%': { transform: 'translateY(0)' },
+        },
       },
       animation: {
         shimmer: 'shimmer 2.2s ease-in-out infinite',
+        'word-rail': 'wordRail 8s cubic-bezier(0.76, 0, 0.24, 1) infinite',
       },
     },
   },
