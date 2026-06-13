@@ -47,6 +47,17 @@ export const Media: CollectionConfig = {
       localized: true,
     },
     {
+      name: 'sourcePath',
+      type: 'text',
+      required: false,
+      unique: true,
+      index: true,
+      admin: {
+        description:
+          'Relative content-source path used only for idempotent seed imports. Admin users can replace the uploaded file later.',
+      },
+    },
+    {
       name: 'tags',
       type: 'array',
       required: false,

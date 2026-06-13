@@ -64,6 +64,32 @@ export const Users: CollectionConfig = {
       required: false,
     },
     {
+      name: 'heroImage',
+      type: 'relationship',
+      relationTo: 'media',
+      required: false,
+    },
+    {
+      name: 'cardImage',
+      type: 'relationship',
+      relationTo: 'media',
+      required: false,
+    },
+    {
+      name: 'galleryImages',
+      type: 'relationship',
+      relationTo: 'media',
+      hasMany: true,
+      required: false,
+    },
+    {
+      name: 'resumeMilestoneImages',
+      type: 'relationship',
+      relationTo: 'media',
+      hasMany: true,
+      required: false,
+    },
+    {
       name: 'theme',
       type: 'group',
       fields: [

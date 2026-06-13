@@ -3,7 +3,7 @@ import { getPayloadClient } from './payload'
 
 const DEFAULT_LIMIT = 6
 
-export async function getFamilyMembers(limit = DEFAULT_LIMIT): Promise<User[]> {
+export async function getMembers(limit = DEFAULT_LIMIT): Promise<User[]> {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'users',
@@ -16,7 +16,11 @@ export async function getFamilyMembers(limit = DEFAULT_LIMIT): Promise<User[]> {
   return result.docs
 }
 
-export async function getTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelProject[]> {
+export async function getFamilyMembers(limit = DEFAULT_LIMIT): Promise<User[]> {
+  return getMembers(limit)
+}
+
+export async function getFeaturedTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelProject[]> {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'travel-projects',
@@ -29,7 +33,11 @@ export async function getTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelPr
   return result.docs
 }
 
-export async function getPosts(limit = DEFAULT_LIMIT): Promise<Post[]> {
+export async function getTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelProject[]> {
+  return getFeaturedTravelProjects(limit)
+}
+
+export async function getLatestPosts(limit = DEFAULT_LIMIT): Promise<Post[]> {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'posts',
@@ -42,6 +50,10 @@ export async function getPosts(limit = DEFAULT_LIMIT): Promise<Post[]> {
   return result.docs
 }
 
+export async function getPosts(limit = DEFAULT_LIMIT): Promise<Post[]> {
+  return getLatestPosts(limit)
+}
+
 export async function getHomeConfig(): Promise<HomeConfig> {
   const payload = await getPayloadClient()
 
@@ -51,11 +63,11 @@ export async function getHomeConfig(): Promise<HomeConfig> {
   })
 }
 
-export async function getHomePageData() {
+export async function getHomeData() {
   const [members, travelProjects, posts, homeConfig] = await Promise.all([
-    getFamilyMembers(),
-    getTravelProjects(),
-    getPosts(),
+    getMembers(),
+    getFeaturedTravelProjects(),
+    getLatestPosts(),
     getHomeConfig(),
   ])
 
@@ -65,4 +77,8 @@ export async function getHomePageData() {
     posts,
     travelProjects,
   }
+}
+
+export async function getHomePageData() {
+  return getHomeData()
 }
