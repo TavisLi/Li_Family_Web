@@ -142,6 +142,10 @@ export interface User {
   familyRole: 'father' | 'mother' | 'daughter' | 'son' | 'grandmother' | 'family';
   profileVisibility: 'public' | 'family';
   avatar?: (number | null) | Media;
+  heroImage?: (number | null) | Media;
+  cardImage?: (number | null) | Media;
+  galleryImages?: (number | Media)[] | null;
+  resumeMilestoneImages?: (number | Media)[] | null;
   theme: {
     persona: 'neutral' | 'tavis' | 'lynn' | 'leo' | 'academy' | 'heritage';
     primaryColor?: string | null;
@@ -238,6 +242,10 @@ export interface Media {
   type: 'photo' | 'video';
   youtubeUrl?: string | null;
   altText: string;
+  /**
+   * Relative content-source path used only for idempotent seed imports. Admin users can replace the uploaded file later.
+   */
+  sourcePath?: string | null;
   tags?:
     | {
         tag: string;
@@ -301,6 +309,11 @@ export interface TravelProject {
    */
   externalDocIdentifier?: string | null;
   coverImage?: (number | null) | Media;
+  galleryImages?: (number | Media)[] | null;
+  /**
+   * Seeded from content-source/assets/travels/[slug]/itinerary and replaceable in Payload Admin.
+   */
+  itineraryImages?: (number | Media)[] | null;
   members?: (number | User)[] | null;
   summary?: string | null;
   party?:
@@ -596,6 +609,10 @@ export interface UsersSelect<T extends boolean = true> {
   familyRole?: T;
   profileVisibility?: T;
   avatar?: T;
+  heroImage?: T;
+  cardImage?: T;
+  galleryImages?: T;
+  resumeMilestoneImages?: T;
   theme?:
     | T
     | {
@@ -728,6 +745,8 @@ export interface TravelProjectsSelect<T extends boolean = true> {
   endDate?: T;
   externalDocIdentifier?: T;
   coverImage?: T;
+  galleryImages?: T;
+  itineraryImages?: T;
   members?: T;
   summary?: T;
   party?:
@@ -883,6 +902,7 @@ export interface MediaSelect<T extends boolean = true> {
   type?: T;
   youtubeUrl?: T;
   altText?: T;
+  sourcePath?: T;
   tags?:
     | T
     | {

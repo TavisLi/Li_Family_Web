@@ -73,6 +73,24 @@ export const TravelProjects: CollectionConfig = {
       required: false,
     },
     {
+      name: 'galleryImages',
+      type: 'relationship',
+      relationTo: 'media',
+      hasMany: true,
+      required: false,
+    },
+    {
+      name: 'itineraryImages',
+      type: 'relationship',
+      relationTo: 'media',
+      hasMany: true,
+      required: false,
+      admin: {
+        description:
+          'Seeded from content-source/assets/travels/[slug]/itinerary and replaceable in Payload Admin.',
+      },
+    },
+    {
       name: 'members',
       type: 'relationship',
       relationTo: 'users',
