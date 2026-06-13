@@ -1,0 +1,15 @@
+Migration inventory:
+  active: instruction files - 2 found
+    - .claude/CLAUDE.md
+    - AGENTS.md
+  inactive: skills - none found
+  inactive: command sources - none found
+  inactive: subagents - none found
+Migration surfaces:
+  active: AGENTS.md - 1 instruction file(s) found.
+  inactive: skills - No skills found.
+  inactive: MCP config - No settings or MCP config found.
+  inactive: subagents - No subagents found.
+Migration report:
+  rewritten: AGENTS.md - Existing Codex instructions already present at AGENTS.md.
+  added: Plugin frontend-design@claude-plugins-official - Added to .codex/config.toml from .claude/settings.json enabledPlugins.

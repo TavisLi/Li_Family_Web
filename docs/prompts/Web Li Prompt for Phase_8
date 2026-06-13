@@ -1,0 +1,56 @@
+請執行 Web Li Phase-8：Production Hardening、Cloudflare R2 媒體管線、效能與正式部署收尾。
+
+目標：
+把 Web Li 從功能完成推進到可長期運營的 production-ready 狀態，包含 R2 媒體儲存、SEO、效能、安全、Vercel 部署與文件整理。
+
+必讀：
+- docs/全栈系统需求与技术架构说明书.md 的 2、5.4、8、9
+- Media collection
+- next.config.mjs
+- vercel.json
+- .env.example
+- Vercel / Cloudflare R2 相關設定
+
+任務：
+1. 導入 Cloudflare R2 S3 adapter，但不得使用 Vercel Blob。
+2. Media collection 支援 photo/video：
+   - photo 上傳至 R2
+   - video 僅存 YouTube URL
+3. 確認 imageSizes：
+   - thumbnail 400
+   - medium 800
+   - large 1600
+4. 全站圖片檢查：
+   - Next Image
+   - sizes
+   - ImageFallback
+5. SEO：
+   - 所有主要頁面 generateMetadata
+   - Blog JSON-LD
+   - Open Graph image fallback
+6. 效能：
+   - 檢查 Promise.all
+   - dynamic import 複雜動畫
+   - 避免 client bundle 過大
+7. 安全：
+   - env 不外洩
+   - private data 不進 public response
+8. Vercel：
+   - pnpm run build
+   - 確認 Preview deployment
+   - 合併 PR 後確認 Production deployment
+9. 文件：
+   - 更新 README / deployment notes
+   - 記錄 env vars 與部署流程
+
+驗證：
+- pnpm tsc --noEmit
+- pnpm run build
+- pnpm run seed，如環境可用
+- browser end-to-end smoke test
+- Vercel Preview 通過
+
+commit message:
+Finalize phase 8 production hardening and deployment
+
+执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。

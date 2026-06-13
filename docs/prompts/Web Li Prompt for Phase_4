@@ -1,0 +1,53 @@
+請執行 Web Li Phase-4：旅遊與規劃互動系統。
+
+目標：
+完成一個規劃中行程與兩個已完成行程的動態旅遊頁。所有旅遊頁必須由 Payload TravelProjects 與 seed 後資料驅動，不可手寫固定頁面。
+
+目標行程：
+- 規劃中：202607 重慶長江三峽 8 日
+- 已完成：201307 海南島 8 日
+- 已完成：202308 東澳全覽 9 日
+
+必讀：
+- docs/全栈系统需求与技术架构说明书.md 的 3.3、5.2、5.3
+- docs/travel-projects.md
+- content-source/travels/
+- src/lib/data/
+- src/payload/payload-types.ts
+
+預置照片：
+- content-source/assets/travels/
+- 所有預置照片只能作為 seed 初始資料，不可在前台 component 中硬編圖片路徑。每張預置照片需建立為 Payload Media 記錄，並透過 relationship 關聯到 Members、TravelProjects、Posts 或 HomeConfig。後台使用者日後可在 Payload Admin 中替換 media relationship 或上傳新照片；前台必須自動讀取最新 media URL。若 media 缺失，統一顯示 ImageFallback。
+
+需求：
+1. 建立 `/travel` 列表頁。
+2. 建立 `/travel/[slug]` 動態頁。
+3. 規劃中行程頁：
+   - 航班、住宿、交通、成員、提醒、每日行程
+   - 每個規劃區塊支援 comment、thumb-up、thumb-down
+   - 清楚顯示操作者名稱
+4. 已完成行程頁：
+   - 回憶敘事
+   - 里程碑
+   - 照片瀑布流 placeholder / ImageFallback
+   - YouTube 外部影片嵌入 placeholder
+5. 建立互動 API 或 Server Actions，操作 Comments collection。
+6. 使用 useOptimistic 做互動回饋。
+7. 未登入訪客只能看到公開內容，私密互動入口預留給 Phase-6。
+
+技術要求：
+- 不可直接在 component 呼叫 Payload Local API
+- 所有資料走 src/lib/data/
+- 所有圖片使用 next/image + sizes
+- YouTube 只存 URL，不儲存影片檔
+
+驗證：
+- pnpm tsc --noEmit
+- pnpm run build
+- browser 檢查 3 個旅遊頁
+- 測試 comment/up/down 基本流程
+
+commit message:
+Implement phase 4 travel interaction system
+
+执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。

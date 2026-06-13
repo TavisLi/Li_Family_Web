@@ -1,0 +1,51 @@
+請執行 Web Li Phase-2：自動化資料映射、灌注與資料層補強。
+
+目標：
+建立可重複執行、冪等的 seed pipeline，將 content-source/ 與 docs/*.md 的真實內容解析後寫入 Payload CMS v3。所有前台資料必須改由 src/lib/data/ 封裝函式取得，前端頁面不得直接讀取 Markdown 或直接呼叫 Payload Local API。
+
+必讀文件：
+- AGENTS.md
+- docs/全栈系统需求与技术架构说明书.md
+- docs/family-members.md
+- docs/travel-projects.md
+- content-source/profiles/
+- content-source/travels/
+- src/payload/collections/
+- src/payload/globals/
+- src/lib/data/
+
+預置照片：
+- content-source/assets/
+- 所有預置照片只能作為 seed 初始資料，不可在前台 component 中硬編圖片路徑。每張預置照片需建立為 Payload Media 記錄，並透過 relationship 關聯到 Members、TravelProjects、Posts 或 HomeConfig。後台使用者日後可在 Payload Admin 中替換 media relationship 或上傳新照片；前台必須自動讀取最新 media URL。若 media 缺失，統一顯示 ImageFallback。
+
+任務：
+1. 安裝並配置 gray-matter、zod、tsx。
+2. 建立 src/scripts/seed.ts。
+3. 使用 Payload v3 Local API：
+   import { getPayload } from 'payload'
+   import configPromise from '@payload-config'
+4. 解析 family members、Tavis resume、Lynn resume、travel projects 與 travel Markdown。
+5. 使用 zod 驗證資料，不可使用 any。
+6. 以 slug / externalDocIdentifier 實作 idempotent upsert。
+7. 建立或補強 src/lib/data/ 函式：
+   - getHomeData()
+   - getMembers()
+   - getMemberBySlug()
+   - getFeaturedTravelProjects()
+   - getTravelProjectBySlug()
+   - getLatestPosts()
+8. 若發現現有 Payload schema 無法承載必要資料，先提出最小 schema 調整，修改後執行 pnpm exec payload generate:types。
+9. 在 package.json 新增 seed script。
+
+驗證：
+- pnpm tsc --noEmit
+- pnpm run build
+- 若 env/database 可用，執行 pnpm run seed
+- 回報 created / updated / skipped / failed 統計
+
+Git：
+只提交 Phase-2 相關檔案，不提交 .DS_Store、.codex/。
+commit message:
+Implement phase 2 content seeding pipeline
+
+执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。
