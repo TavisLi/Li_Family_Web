@@ -1,0 +1,61 @@
+請執行 Web Li Phase-3：全域家庭大廳與 Tavis/Lynn 個人首頁交付。
+
+目標：
+完成根路由首頁，以及 Tavis Li、Lynn Chien 的個人首頁。所有頁面必須從 src/lib/data/ 取得 Payload 資料，不可硬編 Markdown 內容。
+
+必讀：
+- docs/全栈系统需求与技术架构说明书.md 的 3.1、3.2、9
+- docs/family-members.md
+- content-source/profiles/tavis_resume.md
+- content-source/profiles/lynn_resume.md
+- src/lib/data/
+- src/payload/payload-types.ts
+
+預置照片：
+- content-source/assets/members/
+- 所有預置照片只能作為 seed 初始資料，不可在前台 component 中硬編圖片路徑。每張預置照片需建立為 Payload Media 記錄，並透過 relationship 關聯到 Members、TravelProjects、Posts 或 HomeConfig。後台使用者日後可在 Payload Admin 中替換 media relationship 或上傳新照片；前台必須自動讀取最新 media URL。若 media 缺失，統一顯示 ImageFallback。
+
+首頁需求：
+1. 全域家庭大廳 `/`
+2. Hero Section 使用中性毛玻璃基調。
+3. 家族成員矩陣入口，展示 6 位家庭成員。
+4. Dynamic Feed Hub：
+   - 近期足跡
+   - 家庭速報
+   - Time Machine Widget placeholder
+   - Bucket List Quick View placeholder
+5. 使用 Promise.all() 並行讀取 members、travel、posts、homeConfig。
+6. 所有圖片缺失時使用 ImageFallback。
+
+Tavis 頁：
+1. `/member/tavis`
+2. 科技藍、Apple/Google 極簡風。
+3. 打字機標題。
+4. 根據 resume 解析結果展示技能雷達圖與履歷時間軸。
+5. 顯示信念、教育、興趣。
+
+Lynn 頁：
+1. `/member/lynn`
+2. 莫蘭迪暖色、優雅現代風。
+3. 打字機標題。
+4. 財務/稽核/系統導入履歷時間軸。
+5. 顯示教育、興趣、生活美學卡片。
+
+技術要求：
+- 使用 Tailwind + shadcn/ui
+- 複雜動畫用 next/dynamic
+- page.tsx 必須有 generateMetadata
+- 不可 inline style
+- 不可 any
+- 行動版與桌面版都要檢查文字不重疊
+
+驗證：
+- pnpm tsc --noEmit
+- pnpm run build
+- 啟動 pnpm dev --port 3001，只需確認 Ready/Local 即可
+- 用 browser 檢查首頁、Tavis、Lynn 頁面
+
+commit message:
+Implement phase 3 home and core member pages
+
+执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。

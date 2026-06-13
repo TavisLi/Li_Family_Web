@@ -1,0 +1,60 @@
+請執行 Web Li Phase-7：時空膠囊、共同願望清單與年度時光報告。
+
+目標：
+完成三個長期情感模組：
+- `/timeline` 時空膠囊大事記
+- `/bucket-list` 家庭共同願望看板
+- `/wrapped` 年度時光報告
+
+預置照片：
+- content-source/assets/
+- 所有預置照片只能作為 seed 初始資料，不可在前台 component 中硬編圖片路徑。每張預置照片需建立為 Payload Media 記錄，並透過 relationship 關聯到 Members、TravelProjects、Posts 或 HomeConfig。後台使用者日後可在 Payload Admin 中替換 media relationship 或上傳新照片；前台必須自動讀取最新 media URL。若 media 缺失，統一顯示 ImageFallback。
+
+必讀：
+- docs/全栈系统需求与技术架构说明书.md 的 3.6、3.7
+- Comments / TravelProjects / Posts / Media collections
+- 現有 Home Page widgets
+- src/lib/data/
+
+任務：
+1. 如現有 schema 不足，新增最小必要 Collections：
+   - TimelineEvents
+   - BucketItems
+   - WrappedSnapshots 或 WrappedStats
+2. 修改 collection 後執行：
+   - pnpm exec payload generate:types
+3. `/timeline`：
+   - 年份滑塊
+   - 年份事件列表
+   - 歷史照片 ImageFallback
+   - 預留 infinite loading 架構，不一次拉全量資料
+4. `/bucket-list`：
+   - 願望池 / 進行中 / 已實現
+   - 支援新增、移動、完成
+   - 完成時觸發 Canvas 煙火效果
+   - 完成事件寫入 TimelineEvents
+5. `/wrapped`：
+   - Spotify Wrapped 風格全屏故事頁
+   - 統計年度旅遊、照片、Blog、互動
+   - 非發布季時顯示預告頁
+6. 首頁接回：
+   - Time Machine Widget
+   - Bucket List Quick View
+   - Wrapped seasonal CTA
+
+技術要求：
+- 私密模組需依 Phase-6 家人模式保護
+- 複雜動畫 next/dynamic
+- 不可一次拉取大量資料
+- 不可 any
+
+驗證：
+- pnpm tsc --noEmit
+- pnpm run build
+- browser 檢查 /timeline、/bucket-list、/wrapped
+- 測試 Bucket Item 完成流程
+
+commit message:
+Implement phase 7 family timeline bucket list and wrapped
+
+执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。

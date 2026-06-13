@@ -1,0 +1,42 @@
+請執行 Web Li Phase-5：Premium Family Blog 系統。
+
+目標：
+完成家庭 Blog 的列表頁、文章頁、分類/標籤、作者關聯與留言反應系統。Blog 必須使用 Payload Posts collection 與 Lexical richText，不可用靜態 Markdown 假資料作為正式資料源。
+
+必讀：
+- docs/全栈系统需求与技术架构说明书.md 的 3.4、5.1、5.3
+- src/payload/collections/Posts.ts
+- src/payload/collections/Comments.ts
+- src/lib/data/
+- src/payload/payload-types.ts
+
+需求：
+1. 建立 `/blog` 列表頁。
+2. 建立 `/blog/[slug]` 文章頁。
+3. 支援公開/私密文章欄位。
+4. 顯示作者 Hover Card，連回個人首頁。
+5. 支援 categories 與 tags。
+6. 建立標籤雲 UI，先做可用且穩定的互動版本。
+7. 文章下方支援留言與暖心反應：
+   - heart
+   - cool
+   - applause
+8. 使用 useOptimistic 做即時互動。
+9. 加入 generateMetadata 與基本 JSON-LD。
+
+技術要求：
+- RichText 使用 Payload Lexical renderer 或專案既有安全方式
+- 不可 any
+- 不可在 client component 泄漏 server secrets
+- 圖片缺失一律 ImageFallback
+
+驗證：
+- pnpm tsc --noEmit
+- pnpm run build
+- browser 檢查 blog list/detail
+- 測試留言與 reaction
+
+commit message:
+Implement phase 5 premium family blog
+
+执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。

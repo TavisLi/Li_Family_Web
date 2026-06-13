@@ -1,0 +1,34 @@
+請執行 Web Li Phase-6：Family-Only Secure Gate 與 Public/Private 雙模渲染。
+
+目標：
+完成訪客模式與家人模式的基礎權限切換，讓首頁、旅遊、Blog、Bucket List/Timeline 入口能根據登入狀態顯示不同內容。
+
+必讀：
+- docs/全栈系统需求与技术架构说明书.md 的 3.5
+- Payload Users collection
+- Posts / TravelProjects / Comments access control
+- Next.js 15 App Router auth/session 相關現有實作
+
+需求：
+1. 實作 family session / auth gate。
+2. 未登入訪客：
+   - 只能看到公開 members、公開 travel、公開 blog、精簡 timeline。
+3. 家人模式：
+   - 解鎖私密文章、私密旅遊細節、留言互動、願望清單入口。
+4. 在首頁做無感局部刷新或清楚的登入狀態切換。
+5. 強化 Payload access control：
+   - isPrivate true 內容僅家人可讀
+   - Comments 寫入需登入
+6. 補 loading.tsx / error.tsx，如目前不足。
+7. 不把任何 secret 放入 client component。
+
+驗證：
+- pnpm tsc --noEmit
+- pnpm run build
+- 測試 visitor/family 兩種狀態
+- 確認 private 資料不會在未登入 HTML/JSON 中外洩
+
+commit message:
+Implement phase 6 family access gate
+
+执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。
