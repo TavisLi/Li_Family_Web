@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns='http://www.w3.org/2005/Atom' xmlns:blogger='http://schemas.google.com/blogger/2018'>
+  <id>tag:blogger.com,1999:blog-4031757872776273171</id>
+  <title>Web Li Blogger Sample</title>
+  <entry>
+    <id>tag:blogger.com,1999:blog-4031757872776273171.post-1001</id>
+    <blogger:type>POST</blogger:type>
+    <blogger:status>LIVE</blogger:status>
+    <author>
+      <name>Tavis Li</name>
+      <blogger:type>BLOGGER</blogger:type>
+    </author>
+    <title>Sample Blogger Family Note</title>
+    <content type='html'>&lt;p&gt;This is a sample imported Blogger post for Phase-5 tests.&lt;/p&gt;&lt;p&gt;&lt;a href=&quot;https://example.com&quot;&gt;Reference link&lt;/a&gt;&lt;/p&gt;</content>
+    <blogger:created>2026-06-14T00:00:00.000Z</blogger:created>
+    <published>2026-06-14T00:00:00.000Z</published>
+    <updated>2026-06-14T01:00:00.000Z</updated>
+    <category scheme='tag:blogger.com,1999:blog-4031757872776273171' term='Family'/>
+    <category scheme='tag:blogger.com,1999:blog-4031757872776273171' term='Reflection'/>
+    <blogger:filename>/2026/06/sample-family-note.html</blogger:filename>
+  </entry>
+  <entry>
+    <id>tag:blogger.com,1999:blog-4031757872776273171.post-1002</id>
+    <blogger:type>POST</blogger:type>
+    <blogger:status>LIVE</blogger:status>
+    <author>
+      <name>Tavis Li</name>
+      <blogger:type>BLOGGER</blogger:type>
+    </author>
+    <title>Sample Blogger Image Note</title>
+    <content type='html'>&lt;div&gt;&lt;img src=&quot;https://blogger.googleusercontent.com/sample.jpg&quot; /&gt;&lt;br /&gt;Image fallback candidate sample.&lt;/div&gt;</content>
+    <blogger:created>2026-06-13T00:00:00.000Z</blogger:created>
+    <published>2026-06-13T00:00:00.000Z</published>
+    <updated>2026-06-13T01:00:00.000Z</updated>
+    <category scheme='tag:blogger.com,1999:blog-4031757872776273171' term='Travel'/>
+    <blogger:filename>/2026/06/sample-image-note.html</blogger:filename>
+  </entry>
+  <entry>
+    <id>tag:blogger.com,1999:blog-4031757872776273171.comment-1003</id>
+    <blogger:type>COMMENT</blogger:type>
+    <blogger:status>LIVE</blogger:status>
+    <content type='html'>Comment entries must be ignored.</content>
+    <published>2026-06-12T00:00:00.000Z</published>
+    <updated>2026-06-12T00:00:00.000Z</updated>
+  </entry>
+</feed>
