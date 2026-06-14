@@ -28,6 +28,14 @@ Whenever you need to build, run, or generate types, use the following exact comm
 - **Database Migration**: `pnpm exec payload migrate:create`
 - **Self-Correction Check**: `pnpm tsc --noEmit` (Run this before submitting code to ensure zero TypeScript errors).
 
+## 2.1 Phase Completion Report & Handoff Rule
+- When a Phase is completed, write the full Phase Completion Report in `docs/phase-completion-reports/`.
+- Use kebab-case filenames, for example `phase-04-travel-interaction-system.md`.
+- Do not place completion reports in the project root or `docs/prompts/`.
+- The report must be written in Chinese unless the team explicitly asks otherwise.
+- The report must include: phase scope, branch/commit, GitHub sync or PR status, delivered features, key files, validation commands, browser QA scope, known limitations, and next-phase readiness.
+- Phase completion is not finished until local Git commit is created, the branch is pushed to GitHub, and a PR is created or an explicit PR blocker/link is recorded in the report.
+
 ## 3. Strict Architecture Bounds (绝对技术边界)
 - **Framework & Path**: Strictly Next.js 15 App Router. All application code must reside under `src/app/`.
 - **Data Fetching Layer**: ABSOLUTELY NO direct Payload Local API calls from frontend components. All data consumption must go through encapsulated logic in the `src/lib/data/` layer.

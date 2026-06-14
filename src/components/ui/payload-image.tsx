@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import Image from 'next/image'
 
 import type { Media } from '@/payload/payload-types'
@@ -31,9 +34,10 @@ export function PayloadImage({
   sizes,
   tone = 'neutral',
 }: PayloadImageProps) {
+  const [hasError, setHasError] = useState(false)
   const src = getMediaUrl(media)
 
-  if (!src || !media || typeof media === 'number') {
+  if (hasError || !src || !media || typeof media === 'number') {
     return <ImageFallback className={className} label={fallbackLabel} tone={tone} />
   }
 
@@ -46,6 +50,7 @@ export function PayloadImage({
         priority={priority}
         sizes={sizes}
         src={src}
+        onError={() => setHasError(true)}
       />
     </div>
   )

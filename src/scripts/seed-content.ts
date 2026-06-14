@@ -172,6 +172,14 @@ const travelSeedSchema = z.object({
       }),
     )
     .optional(),
+  cabinAssignments: z
+    .array(
+      z.object({
+        cabin: z.string().min(1),
+        passengers: z.string().min(1),
+      }),
+    )
+    .optional(),
   dailyItinerary: z
     .array(
       z.object({
@@ -201,6 +209,16 @@ const mediaSeedSchema = z.object({
   ownerType: z.enum(['home', 'member', 'travel']),
   ownerSlug: z.string().min(1),
   usage: z.enum(['avatar', 'hero', 'card', 'career', 'gallery', 'cover', 'itinerary']),
+  sortOrder: z.number().int().min(0).optional(),
+})
+
+const manifestEntrySchema = z.object({
+  sourcePath: z.string().min(1),
+  ownerType: z.literal('travel'),
+  ownerSlug: z.string().min(1),
+  usage: z.enum(['cover', 'gallery', 'itinerary']),
+  caption: z.string().optional(),
+  sortOrder: z.number().int().min(0).optional(),
 })
 
 export type FamilyMemberSeed = z.infer<typeof familyMemberSeedSchema>
@@ -293,6 +311,7 @@ export async function parseTravelMarkdown(filePath: string): Promise<TravelSeed>
     flights: parseFlights(parsed.content),
     railSegments: parseRailSegments(parsed.content),
     lodgings: parseLodgings(parsed.content),
+    cabinAssignments: parseCabinAssignments(parsed.content),
     dailyItinerary: parseDailyItinerary(parsed.content),
     reminders: parseReminders(parsed.content),
   })
@@ -327,6 +346,7 @@ async function parseTravelDirectory(directory: string): Promise<TravelSeed[]> {
 
 async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
   const assetRoot = path.join(projectRoot, 'content-source/assets')
+  const manifest = await readAssetManifest(projectRoot, assetRoot)
   const files = await walkFiles(assetRoot)
 
   return files
@@ -335,13 +355,15 @@ async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
       const sourcePath = path.relative(projectRoot, absolutePath)
       const segments = sourcePath.split(path.sep)
       const filename = path.basename(absolutePath)
-      const usage = mediaUsageFromPath(segments, filename)
-      const owner = mediaOwnerFromPath(segments)
+      const manifestEntry = manifest.get(toAssetRelativePath(assetRoot, absolutePath))
+      const usage = manifestEntry?.usage ?? mediaUsageFromPath(segments, filename)
+      const owner = manifestEntry ?? mediaOwnerFromPath(segments)
+      const sortOrder = manifestEntry?.sortOrder
 
       return mediaSeedSchema.parse({
         sourcePath,
         absolutePath,
-        altText: humanizeFilename(filename),
+        altText: manifestEntry?.caption?.trim() || humanizeFilename(filename),
         tags: [
           { tag: owner.ownerType },
           { tag: owner.ownerSlug },
@@ -350,8 +372,57 @@ async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
         ownerType: owner.ownerType,
         ownerSlug: owner.ownerSlug,
         usage,
+        sortOrder,
       })
     })
+    .sort(sortMediaSeeds)
+}
+
+async function readAssetManifest(
+  projectRoot: string,
+  assetRoot: string,
+): Promise<Map<string, z.infer<typeof manifestEntrySchema>>> {
+  const manifestPath = path.join(projectRoot, 'content-source/assets/manifest.json')
+
+  try {
+    const raw = await fs.readFile(manifestPath, 'utf8')
+    const entries = z.array(manifestEntrySchema).parse(JSON.parse(raw))
+    const manifest = new Map<string, z.infer<typeof manifestEntrySchema>>()
+
+    for (const entry of entries) {
+      const absolutePath = path.join(assetRoot, entry.sourcePath)
+
+      manifest.set(toAssetRelativePath(assetRoot, absolutePath), entry)
+    }
+
+    return manifest
+  } catch (error) {
+    if (isNodeError(error) && error.code === 'ENOENT') {
+      return new Map()
+    }
+
+    throw error
+  }
+}
+
+function toAssetRelativePath(assetRoot: string, absolutePath: string): string {
+  return path.relative(assetRoot, absolutePath).split(path.sep).join('/')
+}
+
+function sortMediaSeeds(left: MediaSeed, right: MediaSeed): number {
+  const owner = ownerKey(left.ownerType, left.ownerSlug).localeCompare(ownerKey(right.ownerType, right.ownerSlug))
+
+  if (owner !== 0) {
+    return owner
+  }
+
+  const usage = left.usage.localeCompare(right.usage)
+
+  if (usage !== 0) {
+    return usage
+  }
+
+  return (left.sortOrder ?? 0) - (right.sortOrder ?? 0) || left.sourcePath.localeCompare(right.sourcePath)
 }
 
 async function walkFiles(directory: string): Promise<string[]> {
@@ -576,17 +647,23 @@ function parseFlights(markdown: string): NonNullable<TravelSeed['flights']> {
   const section = sectionAfterHeading(markdown, '航班信息')
 
   return markdownTableRows(section)
-    .filter((cells) => cells.length >= 6 && /[A-Z0-9]{2,}/.test(cells[1] ?? ''))
-    .map((cells) => ({
-      date: cells[0],
-      flightNumber: cells[1] ?? '',
-      route: cells[2] ?? '',
-      passengers: cells[3],
-      departureTime: cells[4],
-      arrivalTime: cells[5],
-      terminal: cells[6],
-      notes: cells[7],
-    }))
+    .filter((cells) => cells.some((cell) => /[A-Z]{1,3}\d{2,4}/.test(cell)) || cells[1]?.includes('中華航空'))
+    .map((cells) => {
+      const flightNumber = cells.find((cell) => /[A-Z]{1,3}\d{2,4}/.test(cell)) ?? cells[1] ?? '航班'
+      const isLongFormat = cells.length >= 9
+
+      return {
+        date: cells[0],
+        airline: isLongFormat ? cells[2] : undefined,
+        flightNumber,
+        route: isLongFormat ? `${cells[4] ?? ''}→${cells[6] ?? ''}` : cells[2] ?? `${cells[2] ?? ''}→${cells[3] ?? ''}`,
+        passengers: isLongFormat ? undefined : cells[3],
+        departureTime: isLongFormat ? cells[5] : cells[4],
+        arrivalTime: isLongFormat ? cells[7] : cells[5],
+        terminal: isLongFormat ? undefined : cells[6],
+        notes: isLongFormat ? cells[8] : cells[7],
+      }
+    })
 }
 
 function parseRailSegments(markdown: string): TravelSeed['railSegments'] {
@@ -609,12 +686,23 @@ function parseLodgings(markdown: string): TravelSeed['lodgings'] {
   const section = sectionAfterHeading(markdown, '住宿安排')
 
   return markdownTableRows(section)
-    .filter((cells) => cells.length >= 3)
+    .filter((cells) => cells.length >= 3 && Boolean(cells[0]) && Boolean(cells[1]))
     .map((cells) => ({
       dateRange: cells[0] ?? '',
       hotel: cells[1] ?? '',
       address: cells[2],
       highlights: cells[3],
+    }))
+}
+
+function parseCabinAssignments(markdown: string): TravelSeed['cabinAssignments'] {
+  const section = sectionAfterHeading(markdown, '游輪艙房分配')
+
+  return markdownTableRows(section)
+    .filter((cells) => cells.length >= 2 && cells[0] !== '艙房')
+    .map((cells) => ({
+      cabin: cells[0] ?? '',
+      passengers: cells[1] ?? '',
     }))
 }
 
@@ -658,7 +746,7 @@ function sectionContent(markdown: string, heading: string): string {
 
 function sectionAfterHeading(markdown: string, heading: string): string {
   const escaped = escapeRegExp(heading)
-  const pattern = new RegExp(`#{2,3}\\s+\\**[^\\n]*${escaped}[^\\n]*\\**\\n([\\s\\S]*?)(?=\\n#{2,3}\\s+|$)`)
+  const pattern = new RegExp(`#{1,3}\\s+\\**[^\\n]*${escaped}[^\\n]*\\**\\n([\\s\\S]*?)(?=\\n#{1,3}\\s+|$)`)
 
   return markdown.match(pattern)?.[1]?.trim() ?? ''
 }
@@ -718,4 +806,12 @@ function stripBom(value: string): string {
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function ownerKey(ownerType: MediaSeed['ownerType'], ownerSlug: string): string {
+  return `${ownerType}:${ownerSlug}`
+}
+
+function isNodeError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && 'code' in error
 }
