@@ -2,15 +2,18 @@
 
 目標：
 完成訪客模式與家人模式的基礎權限切換，讓首頁、旅遊、Blog、Bucket List / Timeline / Wrapped 入口能根據登入狀態顯示不同內容，並為 Phase-7 的私密互動模組建立可重用的 family session 地基。
+Phase-6 只接好 Timeline / Bucket List / Wrapped 的入口與權限狀態，不實作 Phase-7 的完整 `/timeline`、`/bucket-list`、`/wrapped` 功能。
 
 開工前狀態：
-- Phase-5 PR #5：<https://github.com/TavisLi/Li_Family_Web/pull/5>
-- 建議等 Phase-5 merge 至 `main` 後，再從最新 `main` 建立 `codex/phase-6-family-access-gate`。
-- 如需在 Phase-5 PR 尚未 merge 前開始，請明確標記為 stacked branch，且不得重寫 Phase-5 已完成內容。
+- Phase-5 PR #5 已 merge：<https://github.com/TavisLi/Li_Family_Web/pull/5>
+- `main` 已包含 Phase-5 與 Phase-6 preflight 準備，merge commit 為 `035a8de`。
+- 請先確認本地位於最新 `main`，再建立 `codex/phase-6-family-access-gate`。
 - 不要提交 `.DS_Store` 或 `content-source/blogger/takeout-20260614T010941Z-3-001.zip`。
 
 必讀：
+- `docs/superpowers/plans/2026-06-14-family-access-gate.md`
 - `docs/phase-preparation/phase-06-family-access-gate.md`
+- `docs/phase-preparation/phase-06-preflight-readiness.md`
 - `docs/phase-completion-reports/phase-05-premium-family-blog.md`
 - `docs/全栈系统需求与技术架构说明书.md` 的 3.5
 - `docs/family-members.md`
@@ -42,7 +45,8 @@
    - `posts.ts` 與 `travel.ts` 目前各自有 `getCurrentUser()`，Phase-6 應收斂為共用 helper。
 2. 建立前台登入 / 登出入口。
    - 建議路由：`/family/login` 或與現有設計一致的家人入口。
-   - 登入可透過 server action 呼叫 Payload auth endpoint / API，成功後讓 Payload session cookie 生效。
+   - 登入優先採用 browser/client fetch `/api/users/login`，並使用 `credentials: 'include'` 讓 Payload session cookie 寫入瀏覽器。
+   - 若改用 route handler 或 server action 代理 login/logout，必須明確轉發 `Set-Cookie`，並以瀏覽器實測 cookie 持久化；不可只靠 TypeScript 通過。
    - 登出需清除 session，並讓使用者回到 public mode。
 3. 未登入訪客模式：
    - 只能看到公開 members。
@@ -70,7 +74,7 @@
 
 建議實作檔案：
 - `src/lib/data/auth.ts`
-- `src/features/auth/actions.ts`
+- `src/features/auth/actions.ts`（僅在採 server action 方案時新增）
 - `src/features/auth/family-login-form.tsx`
 - `src/features/auth/family-mode-indicator.tsx`
 - `src/app/(app)/family/login/page.tsx`
