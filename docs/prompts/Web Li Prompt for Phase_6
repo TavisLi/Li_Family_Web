@@ -1,34 +1,101 @@
 請執行 Web Li Phase-6：Family-Only Secure Gate 與 Public/Private 雙模渲染。
 
 目標：
-完成訪客模式與家人模式的基礎權限切換，讓首頁、旅遊、Blog、Bucket List/Timeline 入口能根據登入狀態顯示不同內容。
+完成訪客模式與家人模式的基礎權限切換，讓首頁、旅遊、Blog、Bucket List / Timeline / Wrapped 入口能根據登入狀態顯示不同內容，並為 Phase-7 的私密互動模組建立可重用的 family session 地基。
+
+開工前狀態：
+- Phase-5 PR #5：<https://github.com/TavisLi/Li_Family_Web/pull/5>
+- 建議等 Phase-5 merge 至 `main` 後，再從最新 `main` 建立 `codex/phase-6-family-access-gate`。
+- 如需在 Phase-5 PR 尚未 merge 前開始，請明確標記為 stacked branch，且不得重寫 Phase-5 已完成內容。
+- 不要提交 `.DS_Store` 或 `content-source/blogger/takeout-20260614T010941Z-3-001.zip`。
 
 必讀：
-- docs/全栈系统需求与技术架构说明书.md 的 3.5
-- Payload Users collection
-- Posts / TravelProjects / Comments access control
-- Next.js 15 App Router auth/session 相關現有實作
+- `docs/phase-preparation/phase-06-family-access-gate.md`
+- `docs/phase-completion-reports/phase-05-premium-family-blog.md`
+- `docs/全栈系统需求与技术架构说明书.md` 的 3.5
+- `docs/family-members.md`
+- `docs/travel-projects.md`
+- `content-source/`
+- `src/payload/collections/Users.ts`
+- `src/payload/collections/Posts.ts`
+- `src/payload/collections/TravelProjects.ts`
+- `src/payload/collections/Comments.ts`
+- `src/lib/data/home.ts`
+- `src/lib/data/posts.ts`
+- `src/lib/data/travel.ts`
+- `src/app/(app)/layout.tsx`
+- `src/app/(app)/loading.tsx`
+- `src/app/(app)/error.tsx`
+
+架構邊界：
+1. 嚴格使用 Next.js 15 App Router 與 Payload CMS v3 stable。
+2. 前台 component 不得直接呼叫 Payload Local API；所有資料讀寫必須經過 `src/lib/data/` 或 server action 的封裝。
+3. 使用 Payload `users` collection 的既有 auth 能力作為 Phase-6 預設方案；不要新增 Clerk / Auth0 / Supabase auth，除非使用者明確批准。
+4. Secret、token、Payload config、資料庫連線資訊不得出現在 `"use client"` component、client props、HTML、JSON-LD 或 public metadata。
+5. 不放寬 `Comments` 的權限；留言與 reaction 寫入必須維持登入家人限定。
+6. 如需修改 collection，先最小化 schema 變更，完成後執行 `pnpm exec payload generate:types`。
 
 需求：
-1. 實作 family session / auth gate。
-2. 未登入訪客：
-   - 只能看到公開 members、公開 travel、公開 blog、精簡 timeline。
-3. 家人模式：
-   - 解鎖私密文章、私密旅遊細節、留言互動、願望清單入口。
-4. 在首頁做無感局部刷新或清楚的登入狀態切換。
-5. 強化 Payload access control：
-   - isPrivate true 內容僅家人可讀
-   - Comments 寫入需登入
-6. 補 loading.tsx / error.tsx，如目前不足。
-7. 不把任何 secret 放入 client component。
+1. 實作可重用的 family session / auth gate。
+   - 建議新增 server-only helper，例如 `src/lib/data/auth.ts`。
+   - helper 應封裝 `headers()` + `payload.auth()`，並回傳 `currentUser`、`isFamilyMode` 等明確型別。
+   - `posts.ts` 與 `travel.ts` 目前各自有 `getCurrentUser()`，Phase-6 應收斂為共用 helper。
+2. 建立前台登入 / 登出入口。
+   - 建議路由：`/family/login` 或與現有設計一致的家人入口。
+   - 登入可透過 server action 呼叫 Payload auth endpoint / API，成功後讓 Payload session cookie 生效。
+   - 登出需清除 session，並讓使用者回到 public mode。
+3. 未登入訪客模式：
+   - 只能看到公開 members。
+   - 只能看到 `isPrivate=false` 的 travel。
+   - 只能看到 `isPrivate=false` 的 blog。
+   - Timeline / Bucket List / Wrapped 僅顯示精簡或 locked preview 入口。
+   - 未登入 HTML、RSC payload、metadata、JSON-LD 中不得洩漏私密標題、摘要、路線、留言或互動資料。
+4. 家人模式：
+   - 解鎖 private posts、private travel details、完整 family members。
+   - 解鎖 Blog / Travel comment 與 reaction 互動。
+   - 顯示 Bucket List / Timeline / Wrapped 的家人模式入口，為 Phase-7 接線。
+5. 首頁狀態切換：
+   - 在 layout 或首頁加入清楚的 family mode 狀態提示與登入 / 登出入口。
+   - 登入與登出後使用 `revalidatePath`、`router.refresh()` 或等效方式更新首頁、旅遊、Blog 資料。
+6. 強化 Payload access control 與 data layer：
+   - `Users.read`：未登入僅 public profile，登入可讀 family profile。
+   - `Posts.read` / `TravelProjects.read`：未登入僅 `isPrivate=false`，登入可讀 private。
+   - `Comments.read/create/update/delete`：維持 `Boolean(req.user)`。
+   - `src/lib/data/home.ts` 目前未傳入登入 user，Phase-6 需補上，讓家人模式首頁能看到 private 內容。
+   - `src/lib/data/travel.ts` 的列表與 detail 目前未傳入登入 user，Phase-6 需補上。
+   - `src/lib/data/posts.ts` 已有登入讀 private 的雛形，Phase-6 應改用共用 auth helper。
+7. 補齊 route loading / error boundaries。
+   - `src/app/(app)/loading.tsx` 與 `src/app/(app)/error.tsx` 已存在，需確認新 auth route、私密入口或 nested route 是否需要更貼近情境的 boundary。
+   - Loading state 應沿用 glassmorphism / shimmer 語彙，不要出現裸文字等待畫面。
+
+建議實作檔案：
+- `src/lib/data/auth.ts`
+- `src/features/auth/actions.ts`
+- `src/features/auth/family-login-form.tsx`
+- `src/features/auth/family-mode-indicator.tsx`
+- `src/app/(app)/family/login/page.tsx`
+- `src/app/(app)/family/login/loading.tsx`（如需要）
+- `src/app/(app)/family/login/error.tsx`（如需要）
+- `src/app/(app)/layout.tsx`
+- `src/lib/data/home.ts`
+- `src/lib/data/posts.ts`
+- `src/lib/data/travel.ts`
+- 既有 Blog / Travel interaction panel，如需要只做狀態接線。
 
 驗證：
-- pnpm tsc --noEmit
-- pnpm run build
-- 測試 visitor/family 兩種狀態
-- 確認 private 資料不會在未登入 HTML/JSON 中外洩
+- `pnpm tsc --noEmit`
+- `pnpm run build`
+- `git diff --check`
+- 使用未登入瀏覽器檢查 `/`、`/travel`、至少一篇 public travel、`/blog`、至少一篇 public blog。
+- 使用登入家人 session 檢查 `/`、`/travel`、一篇 private travel、`/blog`、一篇 private blog。
+- 測試 Blog comment create 與 heart / cool / applause reaction。
+- 測試 Travel comment create 與 up / down reaction。
+- 檢查未登入 HTML / RSC payload / metadata / JSON-LD 不包含 private post title、private travel title、private itinerary、private comments。
+- Browser QA 需覆蓋 desktop 與 mobile viewport。
 
-commit message:
-Implement phase 6 family access gate
-
-执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。
+完成規則：
+- commit message：`Implement phase 6 family access gate`
+- push branch 至 GitHub。
+- 建立 PR 或在完成報告記錄明確 PR blocker。
+- 完成後在 `docs/phase-completion-reports/` 新增中文 Phase Completion Report，例如 `phase-06-family-access-gate.md`。
+- Completion Report 必須包含：phase scope、branch / commit、GitHub sync 或 PR 狀態、delivered features、key files、validation commands、browser QA scope、known limitations、next-phase readiness。
