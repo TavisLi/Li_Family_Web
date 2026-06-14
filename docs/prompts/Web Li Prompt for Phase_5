@@ -33,9 +33,10 @@
   - original URL
   - published / updated date
   - labels -> categories / tags
-  - author -> 對應家庭成員或預設作者
+  - author -> 預設映射到 Tavis
   - HTML content -> Lexical richText
   - cover image / media thumbnail，圖片缺失時使用 ImageFallback
+- Blogspot 匯入必須先做 5-10 篇 sample 小批量匯入與 UI/seed 驗證；sample 通過後，才能進行全量匯入。
 - 若 Phase-5 尚未實作完整 importer，至少需建立可重複執行的正式 seed 路徑與測試資料，不得手寫頁面假資料。
 - 測試資料至少包含：
   - 一篇公開文章

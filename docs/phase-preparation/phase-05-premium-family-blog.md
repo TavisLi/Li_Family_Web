@@ -47,6 +47,8 @@ Phase-5 prompt 要求 Blog 必須使用 Payload `posts` collection 與 Lexical r
 建議在實作前先決定：
 
 - Phase-5 是否需要新增 Blogspot import / Blog seed 腳本與內容來源。
+- Blogspot 文章的預設作者固定映射到 Tavis。
+- Blogspot 匯入流程採「小批量 sample 先驗證，再全量匯入」。
 - 測試用公開文章與私密文章各至少一篇。
 - 每篇測試文章至少包含 author、category、tags、coverImage 可缺省案例、Lexical content。
 
@@ -71,13 +73,13 @@ https://skywalkertw.blogspot.com/feeds/posts/default?alt=json&max-results=100
 | `published.$t` | `publishedDate` |
 | `updated.$t` | 匯入 metadata |
 | `category[].term` | `categories` / `tags` |
-| `author[].name` | `author`，預設映射至 Tavis 或指定家庭成員 |
+| `author[].name` | `author`，固定預設映射至 Tavis |
 | `content.$t` / `summary.$t` | `content` Lexical richText |
 | `media$thumbnail.url` | `coverImage` 候選 |
 
 5. HTML 到 Lexical 的轉換需做節點白名單，至少支援 paragraph、heading、link、image、list、blockquote、code。不能直接將未知 HTML 用 `dangerouslySetInnerHTML` 放進前台。
 6. 圖片處理需另行確認：可先保留遠端圖片 URL 作為匯入 metadata，正式前台仍需符合 `PayloadImage` / `ImageFallback` 規則。若下載圖片進 Payload media，需記錄來源 URL 與授權狀態。
-7. 舊 Blog 內容年代久遠，建議先匯入小批量 sample，例如 5-10 篇，確認 slug、圖片、中文內容、labels、SEO metadata 和 Lexical renderer 都穩定後，再做全量匯入。
+7. 舊 Blog 內容年代久遠，必須先匯入小批量 sample，例如 5-10 篇，確認 slug、圖片、中文內容、labels、SEO metadata 和 Lexical renderer 都穩定後，再做全量匯入。
 
 ### 登入互動驗證
 
