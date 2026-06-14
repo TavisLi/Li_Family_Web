@@ -29,6 +29,9 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <Link className="transition-colors hover:text-slate-950" href="/">
                   大廳
                 </Link>
+                <Link className="transition-colors hover:text-slate-950" href="/travel">
+                  旅行
+                </Link>
                 <Link className="transition-colors hover:text-slate-950" href="/admin">
                   Admin
                 </Link>

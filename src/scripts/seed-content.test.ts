@@ -41,7 +41,15 @@ async function main() {
   assert.equal(chongqing.slug, '202607-chongqing-yangtze-river')
   assert.equal(chongqing.status, 'planning')
   assert.equal((chongqing.flights ?? []).length, 2)
+  assert.equal((chongqing.cabinAssignments ?? []).length, 3)
   assert.ok((chongqing.dailyItinerary ?? []).length >= 8)
+
+  const eastAustralia = await parseTravelMarkdown(
+    path.join(projectRoot, 'content-source/travels/202308东澳全览9日.md'),
+  )
+
+  assert.equal(eastAustralia.slug, '202308-east-australia')
+  assert.equal((eastAustralia.flights ?? []).length, 4)
 
   const seedContent = await buildSeedContent(projectRoot)
 
@@ -52,6 +60,15 @@ async function main() {
       (item) => item.ownerType === 'travel' && item.ownerSlug === '202308-east-australia',
     ),
   )
+  assert.ok(
+    seedContent.media.some(
+      (item) =>
+        item.ownerType === 'travel' &&
+        item.ownerSlug === '202607-chongqing-yangtze-river' &&
+        item.usage === 'cover',
+    ),
+  )
+  assert.ok(seedContent.media.every((item) => !item.sourcePath.includes('/.')))
 }
 
 main().catch((error) => {
