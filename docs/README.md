@@ -94,3 +94,13 @@ pnpm dev
 - family-members.md – 家庭成员信息
 - travel-projects.md – 旅游项目信息
 - Web Li Prompt.txt – 原始功能需求
+
+## Phase 交付报告
+
+每个 Phase 完成后的正式交接报告统一存放于：
+
+```text
+docs/phase-completion-reports/
+```
+
+报告需记录 Phase 范围、branch/commit、GitHub 同步或 PR 状态、验证命令、Browser QA、已知限制与下一 Phase 准备事项。
