@@ -1,60 +1,331 @@
 請執行 Web Li Phase-7：時空膠囊、共同願望清單與年度時光報告。
 
-目標：
-完成三個長期情感模組：
-- `/timeline` 時空膠囊大事記
-- `/bucket-list` 家庭共同願望看板
-- `/wrapped` 年度時光報告
+## 0. Phase 目標
 
-預置照片：
-- content-source/assets/
-- 所有預置照片只能作為 seed 初始資料，不可在前台 component 中硬編圖片路徑。每張預置照片需建立為 Payload Media 記錄，並透過 relationship 關聯到 Members、TravelProjects、Posts 或 HomeConfig。後台使用者日後可在 Payload Admin 中替換 media relationship 或上傳新照片；前台必須自動讀取最新 media URL。若 media 缺失，統一顯示 ImageFallback。
+完成三個長期情感模組，並接回首頁家人模式入口：
 
-必讀：
-- docs/全栈系统需求与技术架构说明书.md 的 3.6、3.7
-- Comments / TravelProjects / Posts / Media collections
-- 現有 Home Page widgets
-- src/lib/data/
+- `/timeline`：時空膠囊大事記
+- `/bucket-list`：家庭共同願望看板
+- `/wrapped`：年度時光報告
 
-任務：
-1. 如現有 schema 不足，新增最小必要 Collections：
-   - TimelineEvents
-   - BucketItems
-   - WrappedSnapshots 或 WrappedStats
-2. 修改 collection 後執行：
-   - pnpm exec payload generate:types
-3. `/timeline`：
-   - 年份滑塊
-   - 年份事件列表
-   - 歷史照片 ImageFallback
-   - 預留 infinite loading 架構，不一次拉全量資料
-4. `/bucket-list`：
-   - 願望池 / 進行中 / 已實現
-   - 支援新增、移動、完成
-   - 完成時觸發 Canvas 煙火效果
-   - 完成事件寫入 TimelineEvents
-5. `/wrapped`：
-   - Spotify Wrapped 風格全屏故事頁
-   - 統計年度旅遊、照片、Blog、互動
-   - 非發布季時顯示預告頁
-6. 首頁接回：
-   - Time Machine Widget
-   - Bucket List Quick View
-   - Wrapped seasonal CTA
+Phase-7 必須建立可長期維護的 Payload data model、server action 與 `src/lib/data/` 資料層，不可只做靜態 UI。
 
-技術要求：
-- 私密模組需依 Phase-6 家人模式保護
-- 複雜動畫 next/dynamic
-- 不可一次拉取大量資料
-- 不可 any
+## 1. 開工前必讀
 
-驗證：
-- pnpm tsc --noEmit
-- pnpm run build
-- browser 檢查 /timeline、/bucket-list、/wrapped
-- 測試 Bucket Item 完成流程
+開始寫 code 前必須讀取：
 
-commit message:
+- `docs/全栈系统需求与技术架构说明书.md` 的 3.6、3.7
+- `docs/phase-completion-reports/phase-06-family-access-gate.md`
+- `docs/family-members.md`
+- `docs/travel-projects.md`
+- `docs/travel-content-source-guidelines.md`
+- `content-source/`，尤其是 profiles、travels、assets
+- 現有 Payload collections：
+  - `src/payload/collections/Comments.ts`
+  - `src/payload/collections/TravelProjects.ts`
+  - `src/payload/collections/Posts.ts`
+  - `src/payload/collections/Media.ts`
+  - `src/payload/collections/Users.ts`
+- Phase-6 auth/data layer：
+  - `src/lib/data/auth.ts`
+  - `src/lib/data/home.ts`
+  - `src/lib/data/posts.ts`
+  - `src/lib/data/travel.ts`
+- 現有首頁 widgets：
+  - `src/features/home/home-page.tsx`
+
+## 2. MVP 邊界
+
+Phase-7 必須完成三個 route 的可用 MVP，而不是無限制擴張。
+
+必做：
+
+- `/timeline` 可依年份瀏覽事件，支援 public/private filtering。
+- `/bucket-list` 可新增、移動狀態、完成願望。
+- 完成 bucket item 時，由 server action 建立一筆 `TimelineEvents` 記錄。
+- `/wrapped` 可顯示年度統計故事頁；非發布季或無資料時顯示預告頁。
+- 首頁接回 Time Machine Widget、Bucket List Quick View、Wrapped seasonal CTA。
+- desktop 與 mobile 都必須可用。
+
+可做但不得阻塞 MVP：
+
+- 更華麗的 Wrapped 影音轉場。
+- 更完整的 infinite scroll pagination UI polish。
+- 更複雜的 confetti/fireworks 粒子效果。
+- 多年度 Wrapped 管理後台進階功能。
+
+不可做：
+
+- 不可直接寫 Supabase 或 raw database schema。
+- 不可新增外部 webhook 作為 bucket completion 的必要流程。
+- 不可在前台 component 中硬編 `content-source/assets` 圖片路徑。
+- 不可用 `any`。
+- 不可從 client component 直接呼叫 Payload Local API。
+
+## 3. Payload Schema 要求
+
+如現有 schema 不足，新增最小必要 Collections。Payload Collection 是 database single source of truth。
+
+### 3.1 TimelineEvents
+
+建議欄位：
+
+- `title`
+- `slug`
+- `eventDate`
+- `year`
+- `summary`
+- `description`
+- `images`：Media relationship，`required: false`
+- `relatedTravel`：TravelProjects relationship，`required: false`
+- `relatedPost`：Posts relationship，`required: false`
+- `relatedMembers`：Users relationship，`required: false`
+- `sourceType`：manual、bucket-item、travel、post
+- `isPrivate`
+- `sortOrder`
+
+Access：
+
+- public visitor 只能讀 `isPrivate: false`
+- family user 可讀 private
+- create/update/delete 需 family user 或 admin
+
+### 3.2 BucketItems
+
+建議欄位：
+
+- `title`
+- `description`
+- `status`：pool、in-progress、completed
+- `priority`
+- `createdBy`：Users relationship，`required: false`
+- `completedBy`：Users relationship，`required: false`
+- `completedAt`
+- `targetDate`
+- `coverImage`：Media relationship，`required: false`
+- `isPrivate`，預設 `true`
+- `timelineEvent`：TimelineEvents relationship，`required: false`
+
+Access：
+
+- `/bucket-list` 為家人模式限定。
+- bucket item create / move / complete 必須透過 server action 並呼叫 `requireFamilyUser()`。
+
+### 3.3 WrappedSnapshots 或 WrappedStats
+
+選擇最小可維護模型即可，建議欄位：
+
+- `year`
+- `status`：draft、published
+- `publishedAt`
+- `heroMedia`：Media relationship，`required: false`
+- `summary`
+- `stats` 或 `blocks`：以 Payload 支援的 structured field 表達年度統計與故事頁資料
+- `isPrivate`，預設 `true`
+
+Access：
+
+- `/wrapped` 內容為家人模式限定。
+- 未登入訪客不得收到 private wrapped title、stats、blocks 或 metadata。
+
+修改 collection 後必須執行：
+
+```bash
+pnpm exec payload generate:types
+```
+
+前台與 data layer 必須從 `src/payload/payload-types.ts` 匯入型別。
+
+## 4. Data Layer 與 Server Actions
+
+所有前台資料必須經過 `src/lib/data/` 封裝，不可在 frontend component 直接呼叫 Payload Local API。
+
+建議新增：
+
+- `src/lib/data/timeline.ts`
+- `src/lib/data/bucket-list.ts`
+- `src/lib/data/wrapped.ts`
+
+Server actions 建議放在對應 feature folder：
+
+- `src/features/timeline/actions.ts`，如需要互動再新增
+- `src/features/bucket-list/actions.ts`
+- `src/features/wrapped/actions.ts`，如需要發布或刷新再新增
+
+Bucket item 完成流程：
+
+1. client 呼叫 server action
+2. server action 呼叫 `requireFamilyUser()`
+3. 更新 `BucketItems.status = completed`
+4. 寫入 `completedBy`、`completedAt`
+5. 建立 `TimelineEvents`，`sourceType = bucket-item`
+6. 回寫 `BucketItems.timelineEvent`
+7. `revalidatePath('/bucket-list')`
+8. `revalidatePath('/timeline')`
+9. `revalidatePath('/')`
+
+## 5. Route 要求
+
+### 5.1 `/timeline`
+
+功能：
+
+- 年份滑塊或年份 segmented control
+- 年份事件列表
+- 歷史照片使用 Payload Media relationship
+- image 缺失時必須使用 `ImageFallback`
+- public visitor 只看到 public 精簡事件
+- family mode 顯示 private/full events
+- 預留 pagination / infinite loading 架構，不一次拉全量資料
+
+Metadata：
+
+- 未登入時不可洩漏 private event title、description、image。
+
+### 5.2 `/bucket-list`
+
+功能：
+
+- 願望池 / 進行中 / 已實現 三欄或三段式 view
+- 新增願望
+- 移動狀態
+- 完成願望
+- 完成時觸發 Canvas fireworks/confetti 效果
+- 完成時建立 TimelineEvents
+- empty / loading / error states
+
+權限：
+
+- route 必須依 Phase-6 家人模式保護。
+- 未登入可導向 `/family/login?next=/bucket-list` 或顯示不洩漏資料的 locked state。
+
+### 5.3 `/wrapped`
+
+功能：
+
+- Spotify Wrapped 風格全屏故事頁
+- 統計年度旅遊、照片、Blog、互動
+- 非發布季、無 snapshot 或未發布時顯示預告頁
+- 使用 `next/dynamic` 隔離複雜動畫
+- desktop/mobile 均需可讀、可操作
+
+權限：
+
+- route 必須依 Phase-6 家人模式保護。
+- 未登入不得收到 private wrapped stats 或 metadata。
+
+### 5.4 首頁接回
+
+更新現有首頁 hub：
+
+- Time Machine Widget：顯示最新或 on-this-day timeline event。
+- Bucket List Quick View：家人模式下顯示進行中優先級最高的前 3 項。
+- Wrapped seasonal CTA：發布季顯示進入 Wrapped；非發布季顯示預告。
+
+首頁 widgets 必須使用輕量 data query，不可拉取完整 timeline、bucket 或 wrapped payload。
+
+## 6. 預置照片與 Seed Data
+
+預置照片來源：
+
+- `content-source/assets/`
+
+規則：
+
+- 所有預置照片只能作為 seed 初始資料。
+- 每張預置照片需建立為 Payload Media 記錄。
+- 前台只讀 Media relationship 產生的 URL。
+- Media relationship 均需 `required: false`。
+- Media 缺失時統一顯示 `ImageFallback`。
+
+若新增 collection，必須補最小 demo/seed data，確保 browser QA 有資料可驗：
+
+- 至少 1 筆 public timeline event。
+- 至少 1 筆 private timeline event。
+- 至少 1 筆 pool bucket item。
+- 至少 1 筆 in-progress bucket item。
+- 至少 1 筆 completed bucket item。
+- 至少 1 筆 wrapped current/past year snapshot 或 stats。
+
+## 7. UI / Frontend 要求
+
+- 使用 Tailwind CSS 與既有 shadcn/ui component。
+- 不可使用 inline style。
+- 互動控制要完整：loading、disabled、error、empty、success。
+- 複雜動畫使用 `next/dynamic` 或 client island 隔離。
+- Canvas fireworks/confetti 不可造成 layout shift。
+- mobile 390px 寬度不可水平 overflow。
+- 文字不可互相覆蓋。
+- 不要做 marketing landing page；三個 route 都要是實際可用體驗。
+
+## 8. 驗證
+
+必跑：
+
+```bash
+pnpm exec payload generate:types
+pnpm tsc --noEmit
+pnpm run build
+git diff --check
+```
+
+Browser QA：
+
+- public visitor：
+  - `/`
+  - `/timeline`
+  - `/bucket-list`
+  - `/wrapped`
+- family mode：
+  - `/`
+  - `/timeline`
+  - `/bucket-list`
+  - `/wrapped`
+- desktop viewport
+- mobile 390px viewport
+- bucket item 新增、移動、完成
+- bucket complete 後確認 timeline event 被建立並顯示
+- wrapped published / preview state
+
+Leak checks：
+
+- 未登入 HTML/RSC snapshot 不得包含 private timeline title/body。
+- 未登入 HTML/RSC snapshot 不得包含 bucket item title/body。
+- 未登入 HTML/RSC snapshot 不得包含 wrapped private stats/blocks。
+- 不得洩漏 seed login email、`PAYLOAD_SECRET`、`DATABASE_URI` 或其他 secret 字串。
+
+## 9. Completion Report
+
+完成後必須新增繁體中文報告：
+
+```text
+docs/phase-completion-reports/phase-07-family-timeline-bucket-list-wrapped.md
+```
+
+報告需包含：
+
+- phase scope
+- branch / commit
+- GitHub sync 或 PR 狀態
+- delivered features
+- schema changes
+- key files
+- validation commands
+- browser QA scope
+- leak checks
+- known limitations
+- next-phase readiness
+
+Phase completion 不算完成，直到：
+
+- local commit 建立
+- branch push 到 GitHub
+- PR 建立，或在完成報告中明確記錄 PR blocker/link
+
+## 10. Commit Message
+
+使用 commit message：
+
+```text
 Implement phase 7 family timeline bucket list and wrapped
-
-执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。
+```
