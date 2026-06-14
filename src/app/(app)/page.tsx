@@ -22,10 +22,11 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function HomePage() {
-  const { homeConfig, members, posts, travelProjects } = await getHomePageData()
+  const { familySession, homeConfig, members, posts, travelProjects } = await getHomePageData()
 
   return (
     <HomePageView
+      familySession={familySession}
       homeConfig={homeConfig}
       members={members}
       posts={posts}

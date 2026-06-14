@@ -48,8 +48,8 @@ export function BlogReactionPanel({
 
   function submitReaction(reaction: BlogReaction) {
     setMessage(null)
-    addOptimistic({ type: 'reaction', reaction })
     startTransition(async () => {
+      addOptimistic({ type: 'reaction', reaction })
       const result = await submitBlogInteractionAction({ associatedId, postSlug, reaction })
 
       if (result.status === 'ok') {
@@ -69,8 +69,8 @@ export function BlogReactionPanel({
     }
 
     setMessage(null)
-    addOptimistic({ type: 'comment', text: commentText })
     startTransition(async () => {
+      addOptimistic({ type: 'comment', text: commentText })
       const result = await submitBlogInteractionAction({ associatedId, postSlug, commentText })
 
       if (result.status === 'ok') {

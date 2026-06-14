@@ -1,8 +1,7 @@
 import 'server-only'
 
-import { headers } from 'next/headers'
-
 import type { Category, Comment, Post, User } from '@/payload/payload-types'
+import { getCurrentUser, userReq } from './auth'
 import { getPayloadClient } from './payload'
 
 const DEFAULT_LIMIT = 6
@@ -59,7 +58,7 @@ export async function getLatestPosts(limit = DEFAULT_LIMIT): Promise<Post[]> {
     sort: '-publishedDate',
   })
 
-  return result.docs
+  return scrubPostUsers(result.docs)
 }
 
 export async function getBlogIndex(options: {
@@ -76,7 +75,7 @@ export async function getBlogIndex(options: {
       limit: options.limit ?? BLOG_INDEX_LIMIT,
       overrideAccess: false,
       sort: '-publishedDate',
-      ...(user ? { req: { user } } : {}),
+      ...userReq(user),
     }),
     payload.find({
       collection: 'categories',
@@ -86,17 +85,19 @@ export async function getBlogIndex(options: {
       sort: 'title',
     }),
   ])
-  const filteredPosts = postsResult.docs.filter((post) => {
+  const readablePosts = scrubPostUsers(postsResult.docs)
+  const filteredPosts = readablePosts.filter((post) => {
     const categoryMatched = options.category ? postHasCategory(post, options.category) : true
     const tagMatched = options.tag ? postHasTag(post, options.tag) : true
 
     return categoryMatched && tagMatched
   })
+  const visibleCategorySlugs = categorySlugs(readablePosts)
 
   return {
     posts: filteredPosts,
-    categories: categoriesResult.docs,
-    tags: tagCloud(postsResult.docs),
+    categories: categoriesResult.docs.filter((category) => visibleCategorySlugs.has(category.slug)),
+    tags: tagCloud(readablePosts),
     selectedCategory: options.category,
     selectedTag: options.tag,
   }
@@ -115,10 +116,10 @@ export async function getBlogPostBySlug(slug: string): Promise<Post | null> {
         equals: slug,
       },
     },
-    ...(user ? { req: { user } } : {}),
+    ...userReq(user),
   })
 
-  return result.docs[0] ?? null
+  return result.docs[0] ? scrubPostUsers([result.docs[0]])[0] : null
 }
 
 export async function getBlogTagCloud(): Promise<BlogTagSummary[]> {
@@ -215,20 +216,6 @@ export function blogInteractionId(post: Post): string {
   return `blog:${post.id}`
 }
 
-async function getCurrentUser(): Promise<User | null> {
-  const payload = await getPayloadClient()
-  const requestHeaders = await headers()
-  const result = await payload.auth({
-    headers: requestHeaders,
-  })
-
-  if (!result.user) {
-    return null
-  }
-
-  return result.user as User
-}
-
 function emptyThread(associatedId: string, locked: boolean): BlogInteractionThread {
   return {
     associatedId,
@@ -280,12 +267,46 @@ function authorName(user: Comment['user']): string {
   return user.displayName || user.email || '家人'
 }
 
+function scrubPostUsers(posts: Post[]): Post[] {
+  return posts.map((post) => {
+    if (typeof post.author === 'number') {
+      return post
+    }
+
+    return {
+      ...post,
+      author: scrubUserEmail(post.author),
+    }
+  })
+}
+
+function scrubUserEmail(user: User): User {
+  return {
+    ...user,
+    email: '',
+  }
+}
+
 function postHasCategory(post: Post, categorySlug: string): boolean {
   return Boolean(
     post.categories?.some((category) =>
       typeof category === 'number' ? false : category.slug === categorySlug,
     ),
   )
+}
+
+function categorySlugs(posts: Post[]): Set<string> {
+  const slugs = new Set<string>()
+
+  for (const post of posts) {
+    for (const category of post.categories ?? []) {
+      if (typeof category !== 'number') {
+        slugs.add(category.slug)
+      }
+    }
+  }
+
+  return slugs
 }
 
 function postHasTag(post: Post, tag: string): boolean {

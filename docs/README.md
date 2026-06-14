@@ -93,6 +93,8 @@ pnpm dev
 - CLAUDE.md – AI 行为准则
 - family-members.md – 家庭成员信息
 - travel-projects.md – 旅游项目信息
+- travel-content-source-guidelines.md – 新增旅游项目的 Markdown、照片与影片准备规范
+- content-source-asset-guidelines.md – content-source/assets 照片与媒体命名规范
 - Web Li Prompt.txt – 原始功能需求
 
 ## Phase 交付报告

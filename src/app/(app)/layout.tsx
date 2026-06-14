@@ -1,6 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
 
+import { FamilyModeIndicator } from '@/features/auth/family-mode-indicator'
+import { getFamilySession } from '@/lib/data/auth'
 import '../globals.css'
 
 export const metadata: Metadata = {
@@ -12,10 +15,12 @@ export const metadata: Metadata = {
 }
 
 type AppLayoutProps = {
-  children: React.ReactNode
+  children: ReactNode
 }
 
-export default function AppLayout({ children }: AppLayoutProps) {
+export default async function AppLayout({ children }: AppLayoutProps) {
+  const session = await getFamilySession()
+
   return (
     <html lang="zh-TW" suppressHydrationWarning>
       <body>
@@ -38,6 +43,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
                 <Link className="transition-colors hover:text-slate-950" href="/admin">
                   Admin
                 </Link>
+                <FamilyModeIndicator session={session} />
               </div>
             </nav>
           </header>
