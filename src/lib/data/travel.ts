@@ -1,8 +1,7 @@
 import 'server-only'
 
-import { headers } from 'next/headers'
-
-import type { Comment, TravelProject, User } from '@/payload/payload-types'
+import type { Comment, TravelProject } from '@/payload/payload-types'
+import { getCurrentUser, userReq } from './auth'
 import { getPayloadClient } from './payload'
 
 const DEFAULT_LIMIT = 6
@@ -41,12 +40,14 @@ export type TravelInteractionResult =
 
 export async function getFeaturedTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelProject[]> {
   const payload = await getPayloadClient()
+  const user = await getCurrentUser()
   const result = await payload.find({
     collection: 'travel-projects',
     depth: 1,
     limit,
     overrideAccess: false,
     sort: '-startDate',
+    ...userReq(user),
   })
 
   return result.docs
@@ -54,12 +55,14 @@ export async function getFeaturedTravelProjects(limit = DEFAULT_LIMIT): Promise<
 
 export async function getTravelProjects(limit = TRAVEL_LIMIT): Promise<TravelProject[]> {
   const payload = await getPayloadClient()
+  const user = await getCurrentUser()
   const result = await payload.find({
     collection: 'travel-projects',
     depth: 1,
     limit,
     overrideAccess: false,
     sort: '-startDate',
+    ...userReq(user),
   })
 
   return result.docs
@@ -67,6 +70,7 @@ export async function getTravelProjects(limit = TRAVEL_LIMIT): Promise<TravelPro
 
 export async function getTravelProjectBySlug(slug: string): Promise<TravelProject | null> {
   const payload = await getPayloadClient()
+  const user = await getCurrentUser()
   const result = await payload.find({
     collection: 'travel-projects',
     depth: 1,
@@ -77,6 +81,7 @@ export async function getTravelProjectBySlug(slug: string): Promise<TravelProjec
         equals: slug,
       },
     },
+    ...userReq(user),
   })
 
   return result.docs[0] ?? null
@@ -164,20 +169,6 @@ export async function submitTravelInteraction(input: {
     status: 'ok',
     thread: await getTravelInteractionThread(input.associatedId),
   }
-}
-
-async function getCurrentUser(): Promise<User | null> {
-  const payload = await getPayloadClient()
-  const requestHeaders = await headers()
-  const result = await payload.auth({
-    headers: requestHeaders,
-  })
-
-  if (!result.user) {
-    return null
-  }
-
-  return result.user as User
 }
 
 function emptyThread(associatedId: string, locked: boolean): TravelInteractionThread {

@@ -1,9 +1,22 @@
 import type { HomeConfig, Post, TravelProject, User } from '@/payload/payload-types'
+import type { FamilySession } from './auth'
+import { getFamilySession, userReq } from './auth'
 import { getPayloadClient } from './payload'
 
 const DEFAULT_LIMIT = 6
 
-export async function getMembers(limit = DEFAULT_LIMIT): Promise<User[]> {
+export type HomePageData = {
+  homeConfig: HomeConfig
+  members: User[]
+  posts: Post[]
+  travelProjects: TravelProject[]
+  familySession: FamilySession
+}
+
+export async function getMembers(
+  limit = DEFAULT_LIMIT,
+  session?: FamilySession,
+): Promise<User[]> {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'users',
@@ -11,6 +24,7 @@ export async function getMembers(limit = DEFAULT_LIMIT): Promise<User[]> {
     limit,
     overrideAccess: false,
     sort: 'createdAt',
+    ...userReq(session?.user ?? null),
   })
 
   return result.docs
@@ -20,7 +34,10 @@ export async function getFamilyMembers(limit = DEFAULT_LIMIT): Promise<User[]> {
   return getMembers(limit)
 }
 
-export async function getFeaturedTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelProject[]> {
+export async function getFeaturedTravelProjects(
+  limit = DEFAULT_LIMIT,
+  session?: FamilySession,
+): Promise<TravelProject[]> {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'travel-projects',
@@ -28,6 +45,7 @@ export async function getFeaturedTravelProjects(limit = DEFAULT_LIMIT): Promise<
     limit,
     overrideAccess: false,
     sort: '-startDate',
+    ...userReq(session?.user ?? null),
   })
 
   return result.docs
@@ -37,7 +55,10 @@ export async function getTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelPr
   return getFeaturedTravelProjects(limit)
 }
 
-export async function getLatestPosts(limit = DEFAULT_LIMIT): Promise<Post[]> {
+export async function getLatestPosts(
+  limit = DEFAULT_LIMIT,
+  session?: FamilySession,
+): Promise<Post[]> {
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'posts',
@@ -45,6 +66,7 @@ export async function getLatestPosts(limit = DEFAULT_LIMIT): Promise<Post[]> {
     limit,
     overrideAccess: false,
     sort: '-publishedDate',
+    ...userReq(session?.user ?? null),
   })
 
   return result.docs
@@ -63,15 +85,17 @@ export async function getHomeConfig(): Promise<HomeConfig> {
   })
 }
 
-export async function getHomeData() {
+export async function getHomeData(): Promise<HomePageData> {
+  const familySession = await getFamilySession()
   const [members, travelProjects, posts, homeConfig] = await Promise.all([
-    getMembers(),
-    getFeaturedTravelProjects(),
-    getLatestPosts(),
+    getMembers(DEFAULT_LIMIT, familySession),
+    getFeaturedTravelProjects(DEFAULT_LIMIT, familySession),
+    getLatestPosts(DEFAULT_LIMIT, familySession),
     getHomeConfig(),
   ])
 
   return {
+    familySession,
     homeConfig,
     members,
     posts,

@@ -13,10 +13,12 @@ import {
 import { Button } from '@/components/ui/button'
 import { ImageFallback } from '@/components/ui/image-fallback'
 import { PayloadImage } from '@/components/ui/payload-image'
+import type { FamilySession } from '@/lib/data/auth'
 import { getMediaUrl } from '@/lib/media'
 import type { HomeConfig, Post, TravelProject, User } from '@/payload/payload-types'
 
 type HomePageViewProps = {
+  familySession: FamilySession
   homeConfig: HomeConfig
   members: User[]
   posts: Post[]
@@ -57,6 +59,7 @@ function formatTravelDate(project: TravelProject) {
 }
 
 export function HomePageView({
+  familySession,
   homeConfig,
   members,
   posts,
@@ -65,6 +68,18 @@ export function HomePageView({
   const featuredTravel =
     typeof homeConfig.featuredTravel === 'object' ? homeConfig.featuredTravel : travelProjects[0]
   const heroHasImage = Boolean(getMediaUrl(homeConfig.heroBackground))
+  const modeLabel = familySession.isFamilyMode
+    ? `${familySession.displayName} 的家人模式`
+    : '訪客模式'
+  const timelineDescription = familySession.isFamilyMode
+    ? '時空膠囊入口已解鎖，Phase-7 將接上年份滑塊、歷史照片與家庭事件。'
+    : '訪客可看到精簡時間線；完整家庭足跡需要進入家人模式。'
+  const bucketDescription = familySession.isFamilyMode
+    ? '共同願望清單入口已解鎖，Phase-7 將接上進行中願望與完成煙火。'
+    : '共同願望清單為家人模式限定，訪客只看到入口提示。'
+  const wrappedDescription = familySession.isFamilyMode
+    ? '年度時光報告入口已解鎖，發布季可接上全屏故事翻頁體驗。'
+    : '年度時光報告會在家人模式中開放，訪客只看到季節性入口。'
 
   return (
     <main className="overflow-hidden">
@@ -110,7 +125,7 @@ export function HomePageView({
           <div className="relative">
             <div className="absolute -left-6 top-8 z-10 hidden w-44 rounded-lg border border-white/55 bg-white/55 p-4 text-sm leading-6 text-slate-700 shadow-xl backdrop-blur-xl md:block">
               <span className="block text-xs font-semibold uppercase text-slate-500">Family Signal</span>
-              6 位家人的入口已在這裡匯聚。
+              {modeLabel}
             </div>
             <PayloadImage
               className="aspect-[5/4] min-h-80 rounded-lg border border-white/50 shadow-2xl shadow-slate-900/10"
@@ -247,16 +262,22 @@ export function HomePageView({
               title="家庭速報"
             />
             <HubPanel
-              description="未來會拉取那年今日、隨機年份家庭快照與歷史照片，作為時空膠囊入口。"
+              description={timelineDescription}
               icon={<Clock3 className="size-5" aria-hidden="true" />}
               label="Time Machine"
               title="時空膠囊微縮窗"
             />
             <HubPanel
-              description="家人模式下顯示進行中願望，並可延伸到共同願望清單。"
+              description={bucketDescription}
               icon={<HeartHandshake className="size-5" aria-hidden="true" />}
               label="Bucket List"
               title="共同願望精簡看板"
+            />
+            <HubPanel
+              description={wrappedDescription}
+              icon={<Sparkles className="size-5" aria-hidden="true" />}
+              label="Wrapped"
+              title="年度時光報告"
             />
           </div>
         </div>

@@ -4,6 +4,8 @@
 
 目標是讓預置照片可以作為 Payload CMS 的初始資料來源，同時避免前台 component 硬編圖片路徑。所有預置照片都應透過 seed 建立為 Payload Media 記錄，再由 Members、TravelProjects、Posts 或 HomeConfig 的 media relationship 引用。
 
+若要新增完整旅遊項目，請同時參考 `docs/travel-content-source-guidelines.md`，其中包含旅行 Markdown、照片資料夾、YouTube 影片與 seed 驗證流程。
+
 ---
 
 ## 1. 核心原則

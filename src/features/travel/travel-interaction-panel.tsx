@@ -38,8 +38,8 @@ export function TravelInteractionPanel({
 
   function submitReaction(reaction: TravelReaction) {
     setMessage(null)
-    addOptimistic({ type: 'reaction', reaction })
     startTransition(async () => {
+      addOptimistic({ type: 'reaction', reaction })
       const result = await submitTravelInteractionAction({ associatedId, reaction })
 
       if (result.status === 'ok') {
@@ -59,8 +59,8 @@ export function TravelInteractionPanel({
     }
 
     setMessage(null)
-    addOptimistic({ type: 'comment', text: commentText })
     startTransition(async () => {
+      addOptimistic({ type: 'comment', text: commentText })
       const result = await submitTravelInteractionAction({ associatedId, commentText })
 
       if (result.status === 'ok') {

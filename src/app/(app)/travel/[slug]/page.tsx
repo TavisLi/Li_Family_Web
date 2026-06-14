@@ -26,6 +26,13 @@ export async function generateMetadata({ params }: TravelPageProps): Promise<Met
     }
   }
 
+  if (project.isPrivate) {
+    return {
+      title: 'Family-only Travel',
+      description: '這趟家庭旅行需要登入後才能閱讀。',
+    }
+  }
+
   const coverImage = getMediaUrl(project.coverImage)
 
   return {
