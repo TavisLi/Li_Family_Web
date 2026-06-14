@@ -5,7 +5,14 @@ import { copyFile, mkdtemp, rm } from 'node:fs/promises'
 
 import { getPayload, type Payload } from 'payload'
 
-import { buildSeedContent, type FamilyMemberSeed, type MediaSeed, type TravelSeed } from './seed-content'
+import {
+  buildSeedContent,
+  type BlogCategorySeed,
+  type BlogPostSeed,
+  type FamilyMemberSeed,
+  type MediaSeed,
+  type TravelSeed,
+} from './seed-content'
 
 interface SeedStats {
   created: number
@@ -17,6 +24,8 @@ interface SeedStats {
 interface SeedContext {
   mediaBySourcePath: Map<string, number>
   mediaByOwner: Map<string, MediaSeed[]>
+  categoryBySlug: Map<string, number>
+  userBySlug: Map<string, number>
 }
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -27,6 +36,7 @@ async function run() {
   const { default: configPromise } = await import('@payload-config')
   const payload = await getPayload({ config: configPromise })
   console.log('Payload Local API initialized')
+  const blogOnly = process.argv.includes('--blog-only')
 
   const seedContent = await buildSeedContent(projectRoot)
   const stats: SeedStats = {
@@ -39,10 +49,23 @@ async function run() {
   const context: SeedContext = {
     mediaBySourcePath: new Map(),
     mediaByOwner: new Map(),
+    categoryBySlug: new Map(),
+    userBySlug: new Map(),
+  }
+
+  if (blogOnly) {
+    await loadBlogAuthors(payload, context)
+    await seedBlogCategories(payload, seedContent.blogCategories, context, stats)
+    await seedBlogPosts(payload, seedContent.blogPosts, context, stats)
+    console.log('Blog seed completed')
+    console.table(stats)
+    process.exit(0)
   }
 
   await seedMedia(payload, seedContent.media, context, stats)
   await seedMembers(payload, seedContent.members, context, stats)
+  await seedBlogCategories(payload, seedContent.blogCategories, context, stats)
+  await seedBlogPosts(payload, seedContent.blogPosts, context, stats)
   await seedTravelProjects(payload, seedContent.travels, context, stats)
   await seedHomeConfig(payload, context, stats)
 
@@ -155,25 +178,155 @@ async function seedMembers(
       const existingDoc = existing.docs[0]
 
       if (existingDoc) {
-        await payload.update({
+        const updated = await payload.update({
           collection: 'users',
           id: existingDoc.id,
           data,
         })
+        context.userBySlug.set(member.slug, Number(updated.id))
         stats.updated += 1
       } else {
-        await payload.create({
+        const created = await payload.create({
           collection: 'users',
           data: {
             ...data,
             password: process.env.SEED_DEFAULT_PASSWORD ?? 'WebLi-Phase2-Seed-2026!',
           },
         })
+        context.userBySlug.set(member.slug, Number(created.id))
         stats.created += 1
       }
     } catch (error) {
       stats.failed += 1
       console.error(`Failed to seed member: ${member.slug}`, error)
+    }
+  }
+}
+
+async function loadBlogAuthors(payload: Payload, context: SeedContext) {
+  const result = await payload.find({
+    collection: 'users',
+    depth: 0,
+    limit: 1,
+    where: {
+      slug: {
+        equals: 'tavis',
+      },
+    },
+  })
+  const tavis = result.docs[0]
+
+  if (!tavis) {
+    throw new Error('Blog seed requires an existing Tavis user. Run pnpm run seed once first.')
+  }
+
+  context.userBySlug.set('tavis', Number(tavis.id))
+}
+
+async function seedBlogCategories(
+  payload: Payload,
+  categories: BlogCategorySeed[],
+  context: SeedContext,
+  stats: SeedStats,
+) {
+  console.log(`Seeding ${categories.length} blog categories...`)
+
+  for (const category of categories) {
+    try {
+      const existing = await payload.find({
+        collection: 'categories',
+        depth: 0,
+        limit: 1,
+        where: {
+          slug: {
+            equals: category.slug,
+          },
+        },
+      })
+      const existingDoc = existing.docs[0]
+
+      if (existingDoc) {
+        const updated = await payload.update({
+          collection: 'categories',
+          id: existingDoc.id,
+          data: category,
+        })
+        context.categoryBySlug.set(category.slug, Number(updated.id))
+        stats.updated += 1
+      } else {
+        const created = await payload.create({
+          collection: 'categories',
+          data: category,
+        })
+        context.categoryBySlug.set(category.slug, Number(created.id))
+        stats.created += 1
+      }
+    } catch (error) {
+      stats.failed += 1
+      console.error(`Failed to seed blog category: ${category.slug}`, error)
+    }
+  }
+}
+
+async function seedBlogPosts(
+  payload: Payload,
+  posts: BlogPostSeed[],
+  context: SeedContext,
+  stats: SeedStats,
+) {
+  console.log(`Seeding ${posts.length} blog posts...`)
+
+  for (const post of posts) {
+    try {
+      const author = context.userBySlug.get(post.authorSlug)
+
+      if (!author) {
+        throw new Error(`Author not found for blog post: ${post.authorSlug}`)
+      }
+
+      const categoryIds = post.categorySlugs
+        .map((slug) => context.categoryBySlug.get(slug))
+        .filter((id): id is number => typeof id === 'number')
+      const data = {
+        title: post.title,
+        slug: post.slug,
+        author,
+        categories: categoryIds,
+        isPrivate: post.isPrivate,
+        publishedDate: post.publishedDate,
+        coverImage: undefined,
+        content: post.content,
+        tags: post.tags.map((tag) => ({ tag })),
+      }
+      const existing = await payload.find({
+        collection: 'posts',
+        depth: 0,
+        limit: 1,
+        where: {
+          slug: {
+            equals: post.slug,
+          },
+        },
+      })
+      const existingDoc = existing.docs[0]
+
+      if (existingDoc) {
+        await payload.update({
+          collection: 'posts',
+          id: existingDoc.id,
+          data,
+        })
+        stats.updated += 1
+      } else {
+        await payload.create({
+          collection: 'posts',
+          data,
+        })
+        stats.created += 1
+      }
+    } catch (error) {
+      stats.failed += 1
+      console.error(`Failed to seed blog post: ${post.slug}`, error)
     }
   }
 }

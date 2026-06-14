@@ -1,10 +1,15 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import { promisify } from 'node:util'
+import { execFile } from 'node:child_process'
 
 import matter from 'gray-matter'
 import { z } from 'zod'
 
+const execFileAsync = promisify(execFile)
 const imageExtensions = new Set(['.avif', '.gif', '.jpeg', '.jpg', '.png', '.webp'])
+const bloggerTakeoutRelativePath = 'content-source/blogger/takeout-20260614T010941Z-3-001.zip'
+const bloggerSampleFeedRelativePath = 'content-source/blogger/sample-feed.atom'
 
 const memberSlugByName = new Map([
   ['Tavis Li', 'tavis'],
@@ -212,6 +217,71 @@ const mediaSeedSchema = z.object({
   sortOrder: z.number().int().min(0).optional(),
 })
 
+const blogCategorySeedSchema = z.object({
+  title: z.string().min(1),
+  slug: z.string().min(1),
+  description: z.string().optional(),
+})
+
+const lexicalTextNodeSchema = z.object({
+  type: z.literal('text'),
+  version: z.number(),
+  text: z.string(),
+  detail: z.number(),
+  format: z.number(),
+  mode: z.literal('normal'),
+  style: z.string(),
+})
+
+const lexicalLinkNodeSchema = z.object({
+  type: z.literal('link'),
+  version: z.number(),
+  fields: z.object({
+    linkType: z.literal('custom'),
+    newTab: z.boolean(),
+    url: z.string(),
+  }),
+  format: z.string(),
+  indent: z.number(),
+  direction: z.union([z.literal('ltr'), z.literal('rtl')]).nullable(),
+  children: z.array(lexicalTextNodeSchema),
+})
+
+const lexicalParagraphNodeSchema = z.object({
+  type: z.literal('paragraph'),
+  version: z.number(),
+  format: z.string(),
+  indent: z.number(),
+  direction: z.union([z.literal('ltr'), z.literal('rtl')]).nullable(),
+  children: z.array(z.union([lexicalTextNodeSchema, lexicalLinkNodeSchema])),
+})
+
+const lexicalContentSchema = z.object({
+  root: z.object({
+    type: z.literal('root'),
+    version: z.number(),
+    format: z.literal(''),
+    indent: z.number(),
+    direction: z.union([z.literal('ltr'), z.literal('rtl')]).nullable(),
+    children: z.array(lexicalParagraphNodeSchema),
+  }),
+})
+
+const blogPostSeedSchema = z.object({
+  title: z.string().min(1),
+  slug: z.string().min(1),
+  authorSlug: z.literal('tavis'),
+  categorySlugs: z.array(z.string().min(1)),
+  tags: z.array(z.string().min(1)),
+  isPrivate: z.boolean(),
+  publishedDate: z.string().min(1),
+  updatedDate: z.string().optional(),
+  coverImageSourceUrl: z.string().optional(),
+  originalUrl: z.string().optional(),
+  source: z.enum(['blogger-takeout', 'phase-5-seed']),
+  content: lexicalContentSchema,
+})
+
 const manifestEntrySchema = z.object({
   sourcePath: z.string().min(1),
   ownerType: z.literal('travel'),
@@ -224,11 +294,21 @@ const manifestEntrySchema = z.object({
 export type FamilyMemberSeed = z.infer<typeof familyMemberSeedSchema>
 export type TravelSeed = z.infer<typeof travelSeedSchema>
 export type MediaSeed = z.infer<typeof mediaSeedSchema>
+export type BlogCategorySeed = z.infer<typeof blogCategorySeedSchema>
+export type BlogPostSeed = z.infer<typeof blogPostSeedSchema>
+export type LexicalContentSeed = z.infer<typeof lexicalContentSchema>
 
 export interface SeedContent {
   members: FamilyMemberSeed[]
   travels: TravelSeed[]
   media: MediaSeed[]
+  blogCategories: BlogCategorySeed[]
+  blogPosts: BlogPostSeed[]
+}
+
+export interface BloggerTakeoutSeed {
+  categories: BlogCategorySeed[]
+  posts: BlogPostSeed[]
 }
 
 export async function parseFamilyMembersConfig(filePath: string): Promise<FamilyMemberSeed[]> {
@@ -318,12 +398,13 @@ export async function parseTravelMarkdown(filePath: string): Promise<TravelSeed>
 }
 
 export async function buildSeedContent(projectRoot: string): Promise<SeedContent> {
-  const [members, tavisResume, lynnResume, travels, media] = await Promise.all([
+  const [members, tavisResume, lynnResume, travels, media, bloggerSample] = await Promise.all([
     parseFamilyMembersConfig(path.join(projectRoot, 'docs/family-members.md')),
     parseResumeMarkdown(path.join(projectRoot, 'content-source/profiles/tavis_resume.md'), 'tavis'),
     parseResumeMarkdown(path.join(projectRoot, 'content-source/profiles/lynn_resume.md'), 'lynn'),
     parseTravelDirectory(path.join(projectRoot, 'content-source/travels')),
     scanMediaAssets(projectRoot),
+    parseBloggerSeedSource(projectRoot, { limit: 8 }),
   ])
 
   const memberMap = new Map(members.map((member) => [member.slug, member]))
@@ -331,9 +412,114 @@ export async function buildSeedContent(projectRoot: string): Promise<SeedContent
   memberMap.set('lynn', mergeMemberSeeds(memberMap.get('lynn'), lynnResume))
 
   return {
+    blogCategories: mergeBlogCategories(bloggerSample.categories, phase5BlogCategories()),
+    blogPosts: [...bloggerSample.posts, ...phase5BlogPosts()],
     members: [...memberMap.values()],
     travels,
     media,
+  }
+}
+
+export async function parseBloggerTakeoutArchive(
+  archivePath: string,
+  options: {
+    limit?: number
+  } = {},
+): Promise<BloggerTakeoutSeed> {
+  await assertBloggerFeedExists(archivePath)
+  const { stdout } = await execFileAsync('unzip', ['-p', archivePath, 'Takeout/Blogger/Blogs/*/feed.atom'], {
+    maxBuffer: 12 * 1024 * 1024,
+  })
+
+  return parseBloggerFeedXml(stdout, options)
+}
+
+export async function parseBloggerSeedSource(
+  projectRoot: string,
+  options: {
+    limit?: number
+  } = {},
+): Promise<BloggerTakeoutSeed> {
+  const archivePath = path.join(projectRoot, bloggerTakeoutRelativePath)
+
+  try {
+    await fs.access(archivePath)
+    return parseBloggerTakeoutArchive(archivePath, options)
+  } catch (error) {
+    if (!isNodeError(error) || error.code !== 'ENOENT') {
+      throw error
+    }
+  }
+
+  const sampleFeedPath = path.join(projectRoot, bloggerSampleFeedRelativePath)
+  const sampleFeed = await fs.readFile(sampleFeedPath, 'utf8')
+
+  return parseBloggerFeedXml(sampleFeed, options)
+}
+
+export function parseBloggerFeedXml(
+  xml: string,
+  options: {
+    limit?: number
+  } = {},
+): BloggerTakeoutSeed {
+  const entries = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map((match) => match[1] ?? '')
+  const posts: BlogPostSeed[] = []
+  const categoryMap = new Map<string, BlogCategorySeed>()
+  const usedSlugs = new Set<string>()
+
+  for (const entry of entries) {
+    if (tagValue(entry, 'blogger:type') !== 'POST' || tagValue(entry, 'blogger:status') !== 'LIVE') {
+      continue
+    }
+
+    const title = tagValue(entry, 'title') || 'Untitled Blog Post'
+    const filename = tagValue(entry, 'blogger:filename')
+    const originalUrl = filename ? `https://skywalkertw.blogspot.com${filename}` : undefined
+    const labels = categoryTerms(entry)
+    const categorySlugs = labels.map((label) => {
+      const category = blogCategorySeedSchema.parse({
+        title: label,
+        slug: slugify(label),
+        description: `Imported Blogger label: ${label}`,
+      })
+      categoryMap.set(category.slug, category)
+
+      return category.slug
+    })
+    const html = tagValue(entry, 'content')
+    const publishedDate = tagValue(entry, 'published') || tagValue(entry, 'blogger:created') || new Date().toISOString()
+    const updatedDate = tagValue(entry, 'updated')
+    const baseSlug = filename ? filename.replace(/^\//, '').replace(/\.html$/, '') : title
+    const slug = uniqueSlug(slugify(baseSlug), usedSlugs)
+    const coverImageSourceUrl = firstImageUrl(html)
+
+    posts.push(blogPostSeedSchema.parse({
+      title,
+      slug,
+      authorSlug: 'tavis',
+      categorySlugs,
+      tags: labels,
+      isPrivate: false,
+      publishedDate,
+      updatedDate,
+      coverImageSourceUrl,
+      originalUrl,
+      source: 'blogger-takeout',
+      content: htmlToLexicalContent(html, {
+        originalUrl,
+        updatedDate,
+      }),
+    }))
+
+    if (options.limit && posts.length >= options.limit) {
+      break
+    }
+  }
+
+  return {
+    categories: [...categoryMap.values()].sort((left, right) => left.slug.localeCompare(right.slug)),
+    posts,
   }
 }
 
@@ -792,12 +978,18 @@ function humanizeFilename(filename: string): string {
 }
 
 function slugify(value: string): string {
-  return value
+  const asciiSlug = value
     .normalize('NFKD')
     .replace(/[^\w\s-]/g, '')
     .trim()
     .toLowerCase()
     .replace(/[\s_]+/g, '-')
+
+  if (asciiSlug) {
+    return asciiSlug
+  }
+
+  return `item-${hashString(value)}`
 }
 
 function stripBom(value: string): string {
@@ -810,6 +1002,263 @@ function escapeRegExp(value: string): string {
 
 function ownerKey(ownerType: MediaSeed['ownerType'], ownerSlug: string): string {
   return `${ownerType}:${ownerSlug}`
+}
+
+async function assertBloggerFeedExists(archivePath: string): Promise<void> {
+  const { stdout } = await execFileAsync('unzip', ['-Z1', archivePath], {
+    maxBuffer: 4 * 1024 * 1024,
+  })
+  const feedPath = stdout
+    .split('\n')
+    .find((entry) => /^Takeout\/Blogger\/Blogs\/.+\/feed\.atom$/.test(entry))
+
+  if (!feedPath) {
+    throw new Error(`Blogger feed.atom not found in ${archivePath}`)
+  }
+}
+
+function phase5BlogCategories(): BlogCategorySeed[] {
+  return [
+    blogCategorySeedSchema.parse({
+      title: 'Family Note',
+      slug: 'family-note',
+      description: 'Phase-5 deterministic family Blog sample.',
+    }),
+    blogCategorySeedSchema.parse({
+      title: 'Private Memory',
+      slug: 'private-memory',
+      description: 'Private Blog sample for family-only access checks.',
+    }),
+  ]
+}
+
+function phase5BlogPosts(): BlogPostSeed[] {
+  return [
+    blogPostSeedSchema.parse({
+      title: 'Phase-5 公開家庭短箋',
+      slug: 'phase-5-public-family-note',
+      authorSlug: 'tavis',
+      categorySlugs: ['family-note'],
+      tags: ['Family', 'Phase 5'],
+      isPrivate: false,
+      publishedDate: '2026-06-14T00:00:00.000Z',
+      source: 'phase-5-seed',
+      content: textToLexicalContent([
+        '這是一篇公開的 Phase-5 Blog seed，用來驗證列表頁、文章頁與公開 SEO metadata。',
+        '內容透過 Payload posts collection 與 Lexical richText 輸出，不使用前台靜態假資料。',
+      ]),
+    }),
+    blogPostSeedSchema.parse({
+      title: 'Phase-5 家人限定筆記',
+      slug: 'phase-5-private-family-note',
+      authorSlug: 'tavis',
+      categorySlugs: ['private-memory', 'family-note'],
+      tags: ['Private', 'Family', 'Reflection'],
+      isPrivate: true,
+      publishedDate: '2026-06-14T00:10:00.000Z',
+      source: 'phase-5-seed',
+      content: textToLexicalContent([
+        '這是一篇私密文章 seed，用來驗證未登入訪客不可讀取私密文章。',
+        '登入態完整驗證會依照 Phase-6 Auth 狀態補做。',
+      ]),
+    }),
+    blogPostSeedSchema.parse({
+      title: 'Phase-5 無封面容錯文章',
+      slug: 'phase-5-missing-cover-fallback',
+      authorSlug: 'tavis',
+      categorySlugs: ['family-note'],
+      tags: ['Fallback', 'ImageFallback'],
+      isPrivate: false,
+      publishedDate: '2026-06-14T00:20:00.000Z',
+      source: 'phase-5-seed',
+      content: textToLexicalContent([
+        '這篇文章刻意不提供 coverImage，用來驗證 Blog UI 必須渲染 ImageFallback。',
+      ]),
+    }),
+  ]
+}
+
+function mergeBlogCategories(
+  left: BlogCategorySeed[],
+  right: BlogCategorySeed[],
+): BlogCategorySeed[] {
+  const categories = new Map<string, BlogCategorySeed>()
+
+  for (const category of [...left, ...right]) {
+    categories.set(category.slug, category)
+  }
+
+  return [...categories.values()].sort((a, b) => a.slug.localeCompare(b.slug))
+}
+
+function tagValue(entry: string, tagName: string): string | undefined {
+  const escaped = escapeRegExp(tagName)
+  const match =
+    entry.match(new RegExp(`<${escaped}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${escaped}>`)) ??
+    entry.match(new RegExp(`<${escaped}(?:\\s[^>]*)?\\/>`))
+
+  if (!match?.[1]) {
+    return undefined
+  }
+
+  return decodeXml(match[1]).trim()
+}
+
+function categoryTerms(entry: string): string[] {
+  return [...entry.matchAll(/<category\b[^>]*\bterm='([^']+)'[^>]*\/>/g)]
+    .map((match) => decodeXmlAttribute(match[1] ?? '').trim())
+    .filter(Boolean)
+}
+
+function firstImageUrl(html: string | undefined): string | undefined {
+  if (!html) {
+    return undefined
+  }
+
+  return decodeXml(html).match(/<img\b[^>]*\bsrc=["']([^"']+)["']/i)?.[1]
+}
+
+function htmlToLexicalContent(
+  html: string | undefined,
+  metadata: {
+    originalUrl?: string
+    updatedDate?: string
+  } = {},
+): LexicalContentSeed {
+  const decoded = decodeXml(html ?? '')
+  const text = decoded
+    .replace(/<!--more-->/g, '\n\n')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/(?:p|div|h[1-6]|li|blockquote)>/gi, '\n\n')
+    .replace(/<li\b[^>]*>/gi, '- ')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\u00a0/g, ' ')
+    .split(/\n{2,}/)
+    .map((paragraph) => decodeXml(paragraph).replace(/[ \t]+\n/g, '\n').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .slice(0, 24)
+
+  const paragraphs = text.length ? text : ['Blogger 匯入文章內容待整理。']
+
+  if (metadata.originalUrl || metadata.updatedDate) {
+    const metadataChildren = [
+      metadata.originalUrl ? linkNode(metadata.originalUrl, 'Skywalker TW Blogspot') : null,
+      metadata.updatedDate ? textNode(` 原更新時間：${metadata.updatedDate}`) : null,
+    ].filter((node): node is ReturnType<typeof textNode> | ReturnType<typeof linkNode> => Boolean(node))
+
+    return lexicalContentSchema.parse({
+      root: {
+        type: 'root',
+        version: 1,
+        format: '',
+        indent: 0,
+        direction: null,
+        children: [
+          ...paragraphs.map((paragraph) => paragraphNode([textNode(paragraph)])),
+          paragraphNode([
+            textNode('原文連結：'),
+            ...metadataChildren,
+          ]),
+        ],
+      },
+    })
+  }
+
+  return textToLexicalContent(paragraphs)
+}
+
+function textToLexicalContent(paragraphs: string[]): LexicalContentSeed {
+  return lexicalContentSchema.parse({
+    root: {
+      type: 'root',
+      version: 1,
+      format: '',
+      indent: 0,
+      direction: null,
+      children: paragraphs.map((paragraph) => paragraphNode([textNode(paragraph)])),
+    },
+  })
+}
+
+function paragraphNode(children: Array<ReturnType<typeof textNode> | ReturnType<typeof linkNode>>) {
+  return {
+    type: 'paragraph' as const,
+    version: 1,
+    format: '',
+    indent: 0,
+    direction: null,
+    children,
+  }
+}
+
+function textNode(text: string) {
+  return {
+    type: 'text' as const,
+    version: 1,
+    text,
+    detail: 0,
+    format: 0,
+    mode: 'normal' as const,
+    style: '',
+  }
+}
+
+function linkNode(url: string, text: string) {
+  return {
+    type: 'link' as const,
+    version: 3,
+    fields: {
+      linkType: 'custom' as const,
+      newTab: true,
+      url,
+    },
+    format: '',
+    indent: 0,
+    direction: null,
+    children: [textNode(text)],
+  }
+}
+
+function uniqueSlug(baseSlug: string, usedSlugs: Set<string>): string {
+  const safeBase = baseSlug || 'blog-post'
+  let slug = safeBase
+  let index = 2
+
+  while (usedSlugs.has(slug)) {
+    slug = `${safeBase}-${index}`
+    index += 1
+  }
+
+  usedSlugs.add(slug)
+
+  return slug
+}
+
+function decodeXml(value: string): string {
+  return decodeXmlAttribute(value)
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+}
+
+function decodeXmlAttribute(value: string): string {
+  return value
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&#(\d+);/g, (_, codepoint: string) => String.fromCodePoint(Number(codepoint)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, codepoint: string) =>
+      String.fromCodePoint(Number.parseInt(codepoint, 16)),
+    )
+}
+
+function hashString(value: string): string {
+  let hash = 0
+
+  for (const character of value) {
+    hash = (hash * 31 + character.codePointAt(0)!) >>> 0
+  }
+
+  return hash.toString(36)
 }
 
 function isNodeError(error: unknown): error is NodeJS.ErrnoException {

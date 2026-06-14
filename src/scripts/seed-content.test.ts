@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 import {
   buildSeedContent,
+  parseBloggerSeedSource,
   parseFamilyMembersConfig,
   parseResumeMarkdown,
   parseTravelMarkdown,
@@ -69,6 +70,29 @@ async function main() {
     ),
   )
   assert.ok(seedContent.media.every((item) => !item.sourcePath.includes('/.')))
+
+  const bloggerSample = await parseBloggerSeedSource(
+    projectRoot,
+    {
+      limit: 8,
+    },
+  )
+
+  assert.ok(bloggerSample.posts.length >= 2)
+  assert.ok(bloggerSample.posts.length <= 8)
+  assert.ok(bloggerSample.posts.every((post) => post.source === 'blogger-takeout'))
+  assert.ok(bloggerSample.posts.every((post) => post.authorSlug === 'tavis'))
+  assert.ok(bloggerSample.posts.some((post) => post.tags.length >= 2))
+  assert.ok(bloggerSample.categories.length >= 1)
+  assert.ok(
+    bloggerSample.posts.every((post) => post.content.root.children[0]?.type === 'paragraph'),
+  )
+
+  assert.ok(seedContent.blogCategories.some((category) => category.slug === 'family-note'))
+  assert.ok(seedContent.blogPosts.some((post) => !post.isPrivate))
+  assert.ok(seedContent.blogPosts.some((post) => post.isPrivate))
+  assert.ok(seedContent.blogPosts.some((post) => !post.coverImageSourceUrl))
+  assert.ok(seedContent.blogPosts.some((post) => post.tags.length >= 2))
 }
 
 main().catch((error) => {

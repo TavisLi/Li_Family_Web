@@ -50,6 +50,7 @@ export function PayloadImage({
         priority={priority}
         sizes={sizes}
         src={src}
+        unoptimized
         onError={() => setHasError(true)}
       />
     </div>
