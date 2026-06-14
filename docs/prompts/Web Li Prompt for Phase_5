@@ -1,42 +1,117 @@
 請執行 Web Li Phase-5：Premium Family Blog 系統。
 
+分支與前置：
+- 必須先從最新 `main` 建立新分支：`codex/phase-5-premium-family-blog`
+- 開工前先確認 `main` 已包含 Phase-4 merge 結果。
+- 先閱讀 `docs/phase-preparation/phase-05-premium-family-blog.md`。
+- 本 Phase 開始後才進行 Blog 功能實作；若只是討論或修改 prompt，不得提前改動 Blog 程式碼。
+
 目標：
-完成家庭 Blog 的列表頁、文章頁、分類/標籤、作者關聯與留言反應系統。Blog 必須使用 Payload Posts collection 與 Lexical richText，不可用靜態 Markdown 假資料作為正式資料源。
+完成家庭 Blog 的列表頁、文章頁、分類/標籤、作者關聯與留言反應系統。Blog 必須使用 Payload `posts` collection 與 Lexical richText，不可用靜態 Markdown 假資料作為正式資料源。
 
 必讀：
-- docs/全栈系统需求与技术架构说明书.md 的 3.4、5.1、5.3
-- src/payload/collections/Posts.ts
-- src/payload/collections/Comments.ts
-- src/lib/data/
-- src/payload/payload-types.ts
+- `docs/全栈系统需求与技术架构说明书.md` 的 3.4、5.1、5.3
+- `docs/family-members.md`
+- `docs/travel-projects.md`
+- `content-source/`
+- `docs/phase-preparation/phase-05-premium-family-blog.md`
+- `src/payload/collections/Posts.ts`
+- `src/payload/collections/Categories.ts`
+- `src/payload/collections/Comments.ts`
+- `src/lib/data/`
+- `src/payload/payload-types.ts`
+
+資料來源與 seed 策略：
+- 先確認是否採用既有 Blogger 內容作為 Phase-5 初始 Blog 內容來源。
+- 使用者既有 Blog：`https://skywalkertw.blogspot.com`
+- 首選匯入來源：由 Blogger / Google Takeout 匯出的 `feed.atom` 或 Blogger 歷史 `.xml` 備份檔。
+- 備援探勘來源：Blogger 公開 JSON feed，例如 `/feeds/posts/default?alt=json`。
+- 匯入資料必須進入 Payload `posts` collection，不可在前台直接讀 Blogspot feed。
+- 匯入流程需保留或映射：
+  - title
+  - slug
+  - original URL
+  - published / updated date
+  - labels -> categories / tags
+  - author -> 對應家庭成員或預設作者
+  - HTML content -> Lexical richText
+  - cover image / media thumbnail，圖片缺失時使用 ImageFallback
+- 若 Phase-5 尚未實作完整 importer，至少需建立可重複執行的正式 seed 路徑與測試資料，不得手寫頁面假資料。
+- 測試資料至少包含：
+  - 一篇公開文章
+  - 一篇私密文章
+  - 一篇 cover image 缺失或載入失敗的文章
+  - 一篇含多個 tags / categories 的文章
 
 需求：
 1. 建立 `/blog` 列表頁。
 2. 建立 `/blog/[slug]` 文章頁。
-3. 支援公開/私密文章欄位。
+3. 支援公開/私密文章欄位與存取邏輯。
 4. 顯示作者 Hover Card，連回個人首頁。
 5. 支援 categories 與 tags。
-6. 建立標籤雲 UI，先做可用且穩定的互動版本。
+6. 建立標籤雲 UI，先做可用且穩定的互動版本；物理碰撞效果可作為 progressive enhancement，不得犧牲穩定性。
 7. 文章下方支援留言與暖心反應：
    - heart
    - cool
    - applause
-8. 使用 useOptimistic 做即時互動。
-9. 加入 generateMetadata 與基本 JSON-LD。
+8. 使用 `useOptimistic` 做即時互動。
+9. 加入 `generateMetadata` 與基本 JSON-LD `BlogPosting`。
+10. 新增主導覽 Blog 入口。
 
 技術要求：
-- RichText 使用 Payload Lexical renderer 或專案既有安全方式
-- 不可 any
-- 不可在 client component 泄漏 server secrets
-- 圖片缺失一律 ImageFallback
+- 嚴格使用 Next.js 15 App Router。
+- 所有前台資料讀取必須透過 `src/lib/data/posts.ts` 或對應 data layer。
+- 前台 components 不得直接呼叫 Payload Local API。
+- Server actions 可放在 `src/features/blog/actions.ts`，但資料存取需委派到 data layer。
+- RichText 使用 Payload Lexical renderer 或專案既有安全方式。
+- 若自建 Lexical renderer，必須基於安全節點白名單，不得用 `dangerouslySetInnerHTML` 直接渲染未知內容。
+- 不可手寫 `any`。
+- 不可在 client component 泄漏 server secrets。
+- 圖片缺失或載入失敗一律使用 `ImageFallback`。
+- 不得為了 Phase-5 暫時打開 public comment write access。
+
+登入與互動限制：
+- `Comments` collection 目前需要登入使用者才能 read/create/update/delete。
+- 未登入訪客只能看到 locked interaction preview，不得假裝留言或 reaction 已成功。
+- 若 Phase-6 Auth 尚未完成，Phase-5 completion report 必須記錄「登入態 comment / reaction 待 Phase-6 補驗」。
+- 若有可用登入 session，需實測 comment 與 `heart` / `cool` / `applause` reaction。
+
+建議檔案範圍：
+- `src/app/(app)/blog/page.tsx`
+- `src/app/(app)/blog/[slug]/page.tsx`
+- `src/features/blog/blog-index-page.tsx`
+- `src/features/blog/blog-post-page.tsx`
+- `src/features/blog/blog-author-hover-card.tsx`
+- `src/features/blog/blog-tag-cloud.tsx`
+- `src/features/blog/blog-reaction-panel.tsx`
+- `src/features/blog/actions.ts`
+- `src/lib/data/posts.ts`
+- 視需要新增 Blogspot import / seed 腳本與測試。
 
 驗證：
-- pnpm tsc --noEmit
-- pnpm run build
-- browser 檢查 blog list/detail
-- 測試留言與 reaction
+- `pnpm tsc --noEmit`
+- `pnpm run build`
+- `git diff --check`
+- 若更新 seed：`pnpm run test:seed-content`
+- 若更新 Payload collection：`pnpm exec payload generate:types`
+- Browser 檢查：
+  - `/blog`
+  - 至少一篇公開 `/blog/[slug]`
+  - desktop viewport
+  - mobile viewport
+  - author hover card
+  - tag cloud 互動
+  - cover image fallback
+  - 未登入 locked interaction preview
+  - 登入態留言與 reaction，若 session 可用
 
 commit message:
-Implement phase 5 premium family blog
+`Implement phase 5 premium family blog`
 
-执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。
+執行完後必須：
+- 建立 commit。
+- push 到 GitHub。
+- 建立 PR。
+- 新增中文 Phase Completion Report：
+  - `docs/phase-completion-reports/phase-05-premium-family-blog.md`
+- Completion Report 需記錄 Phase 範圍、branch/commit、GitHub push/PR 狀態、主要檔案、驗證命令、Browser QA、已知限制、登入互動驗證狀態與 Phase-6 準備事項。

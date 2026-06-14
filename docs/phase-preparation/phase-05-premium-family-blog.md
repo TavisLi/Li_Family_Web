@@ -6,8 +6,9 @@
 **準備日期**：2026-06-14  
 **建議工作分支**：`codex/phase-5-premium-family-blog`  
 **建議基底**：Phase-4 merge 進 `main` 後，從最新 `main` 開新分支。  
-**目前所在分支**：`codex/phase-4-travel-interaction-system`  
-**Phase-4 狀態**：功能與文檔已完成並 push；Draft PR 尚未建立，原因是本機 GitHub CLI token 失效。
+**目前所在分支**：`main`
+
+**Phase-4 狀態**：PR #4 已建立、Vercel checks 已通過，並已 merge 至 `main`。本地 `main` 已 fast-forward 到最新主線。
 
 Phase-5 目標是交付家庭 Blog 的正式內容系統，包括列表頁、文章詳情頁、分類與標籤、作者關聯、RichText 渲染、SEO structured data，以及留言與暖心反應互動。
 
@@ -17,22 +18,17 @@ Phase-5 目標是交付家庭 Blog 的正式內容系統，包括列表頁、文
 
 ### GitHub 與分支
 
-- Phase-4 分支已推送：`origin/codex/phase-4-travel-interaction-system`
-- Phase-4 PR 建立連結：<https://github.com/TavisLi/Li_Family_Web/pull/new/codex/phase-4-travel-interaction-system>
-- 本機 `gh` token 已失效，需重新登入後才能自動建立 PR：
-
-```bash
-gh auth login -h github.com
-```
+- Phase-4 PR：<https://github.com/TavisLi/Li_Family_Web/pull/4>
+- Phase-4 merge commit 已進入 `main`。
+- 本機 GitHub CLI 已恢復登入，可建立後續 PR。
 
 建議流程：
 
-1. 先建立 Phase-4 PR。
-2. Review / merge Phase-4 到 `main`。
-3. `git fetch origin` 並切到最新 `main`。
-4. 從最新 `main` 建立 `codex/phase-5-premium-family-blog`。
+1. 確認本地在最新 `main`。
+2. 從最新 `main` 建立 `codex/phase-5-premium-family-blog`。
+3. 先確認 Phase-5 prompt 與 Blog seed 策略，再開始實作。
 
-若 Phase-5 必須在 Phase-4 尚未 merge 前開工，應明確標記為 stacked branch，並在 completion report 中記錄它依賴 Phase-4 分支。
+Phase-5 不需要再做 stacked branch。
 
 ### 內容資料
 
@@ -45,12 +41,43 @@ Phase-5 prompt 要求 Blog 必須使用 Payload `posts` collection 與 Lexical r
 - `src/payload/collections/Comments.ts` 已支援 `associatedType: "blog"`。
 - `src/lib/data/posts.ts` 目前只有 `getLatestPosts`，尚未支援 Blog list/detail/tag/comment/reaction。
 - `content-source/` 目前主要覆蓋 profiles、travels、timeline 類資料；開工前需確認是否要新增正式 Blog seed 來源，或先用 Payload CMS 後台建立文章資料。
+- 使用者既有 Blog `https://skywalkertw.blogspot.com` 可作為 Phase-5 初始文章來源。
+- 已確認該 Blogger 公開 JSON feed 可讀，約有 214 篇文章，並含 labels、published date、updated date、summary、thumbnail 與原文 URL。
 
 建議在實作前先決定：
 
-- Phase-5 是否需要新增 Blog seed 腳本與內容來源。
+- Phase-5 是否需要新增 Blogspot import / Blog seed 腳本與內容來源。
 - 測試用公開文章與私密文章各至少一篇。
 - 每篇測試文章至少包含 author、category、tags、coverImage 可缺省案例、Lexical content。
+
+### Blogspot 匯入策略
+
+可以匯入 `https://skywalkertw.blogspot.com` 的內容，但建議採用「正式匯出檔優先、公開 feed 備援」策略：
+
+1. 首選來源：Blogger / Google Takeout 匯出的 `feed.atom` 或 Blogger 歷史 `.xml` 備份檔。
+2. 備援來源：Blogger 公開 JSON feed，例如：
+
+```text
+https://skywalkertw.blogspot.com/feeds/posts/default?alt=json&max-results=100
+```
+
+3. 匯入後的正式資料必須寫入 Payload `posts` collection；前台不可直接讀 Blogspot feed。
+4. 匯入欄位映射建議：
+
+| Blogspot 欄位 | Payload 欄位 |
+| --- | --- |
+| `title.$t` | `title` |
+| `link[rel=alternate].href` | legacy original URL，可放入匯入 metadata 或保留於內容底部 |
+| `published.$t` | `publishedDate` |
+| `updated.$t` | 匯入 metadata |
+| `category[].term` | `categories` / `tags` |
+| `author[].name` | `author`，預設映射至 Tavis 或指定家庭成員 |
+| `content.$t` / `summary.$t` | `content` Lexical richText |
+| `media$thumbnail.url` | `coverImage` 候選 |
+
+5. HTML 到 Lexical 的轉換需做節點白名單，至少支援 paragraph、heading、link、image、list、blockquote、code。不能直接將未知 HTML 用 `dangerouslySetInnerHTML` 放進前台。
+6. 圖片處理需另行確認：可先保留遠端圖片 URL 作為匯入 metadata，正式前台仍需符合 `PayloadImage` / `ImageFallback` 規則。若下載圖片進 Payload media，需記錄來源 URL 與授權狀態。
+7. 舊 Blog 內容年代久遠，建議先匯入小批量 sample，例如 5-10 篇，確認 slug、圖片、中文內容、labels、SEO metadata 和 Lexical renderer 都穩定後，再做全量匯入。
 
 ### 登入互動驗證
 
@@ -75,6 +102,7 @@ Phase-5 開工前必讀：
 - `docs/travel-projects.md`
 - `content-source/`
 - `docs/prompts/Web Li Prompt for Phase_5`
+- `https://skywalkertw.blogspot.com` 或其 Blogger / Google Takeout 匯出檔
 - `src/payload/collections/Posts.ts`
 - `src/payload/collections/Categories.ts`
 - `src/payload/collections/Comments.ts`
