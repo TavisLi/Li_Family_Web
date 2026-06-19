@@ -14,13 +14,15 @@ Phase-7 目標是完成三個長期情感模組的 MVP，並接回首頁家人�
 - Branch：`codex/phase-7-time-capsule-bucket-wrapped`
 - Implementation commit：`7f4df94`（`Implement phase 7 time capsule modules`）
 - Report / QA commits：`1789d93`、`43f6442`
-- Final closeout commit：本報告提交後位於同一分支 HEAD。
+- Final closeout commit：`c807f77`（`Finalize phase 7 migration and QA`）
+- PR status update commit：本報告提交後位於同一分支 HEAD。
 
 ## GitHub Sync / PR 狀態
 
 - 本地 implementation、QA、migration closeout commits 已建立。
 - 遠端 Supabase schema 已套用 Phase-7 collections，seed 已完成。
-- 分支 push / PR 建立狀態：待本報告最終 commit 後執行。
+- 分支已推送：`origin/codex/phase-7-time-capsule-bucket-wrapped`。
+- PR：`https://github.com/TavisLi/Li_Family_Web/pull/7`。
 
 ## 已交付功能
 
