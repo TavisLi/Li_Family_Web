@@ -95,23 +95,13 @@ export async function getHomeConfig(): Promise<HomeConfig> {
 
 export async function getHomeData(): Promise<HomePageData> {
   const familySession = await getFamilySession()
-  const [
-    members,
-    travelProjects,
-    posts,
-    homeConfig,
-    timelineEvent,
-    bucketItems,
-    wrappedCta,
-  ] = await Promise.all([
-    getMembers(DEFAULT_LIMIT, familySession),
-    getFeaturedTravelProjects(DEFAULT_LIMIT, familySession),
-    getLatestPosts(DEFAULT_LIMIT, familySession),
-    getHomeConfig(),
-    getTimelineHomeWidget(familySession),
-    getBucketQuickView(familySession),
-    getWrappedHomeCta(familySession),
-  ])
+  const homeConfig = await getHomeConfig()
+  const members = await getMembers(DEFAULT_LIMIT, familySession)
+  const travelProjects = await getFeaturedTravelProjects(DEFAULT_LIMIT, familySession)
+  const posts = await getLatestPosts(DEFAULT_LIMIT, familySession)
+  const timelineEvent = await getTimelineHomeWidget(familySession)
+  const bucketItems = await getBucketQuickView(familySession)
+  const wrappedCta = await getWrappedHomeCta(familySession)
 
   return {
     familySession,

@@ -13,13 +13,14 @@ Phase-7 目標是完成三個長期情感模組的 MVP，並接回首頁家人�
 
 - Branch：`codex/phase-7-time-capsule-bucket-wrapped`
 - Implementation commit：`7f4df94`（`Implement phase 7 time capsule modules`）
-- Report commit：本報告提交後位於同一分支 HEAD。
+- Report / QA commits：`1789d93`、`43f6442`
+- Final closeout commit：本報告提交後位於同一分支 HEAD。
 
 ## GitHub Sync / PR 狀態
 
-- 本地 implementation commit 已建立。
-- 尚未推送 GitHub，尚未建立 PR。
-- PR blocker：Payload migration/遠端 Supabase schema 尚未成功套用 Phase-7 新 collections，因此 seed data 與 browser QA 無法完成。詳見「已知限制與阻塞」。
+- 本地 implementation、QA、migration closeout commits 已建立。
+- 遠端 Supabase schema 已套用 Phase-7 collections，seed 已完成。
+- 分支 push / PR 建立狀態：待本報告最終 commit 後執行。
 
 ## 已交付功能
 
@@ -86,57 +87,50 @@ Phase-7 目標是完成三個長期情感模組的 MVP，並接回首頁家人�
 - `src/app/(app)/bucket-list/page.tsx`
 - `src/app/(app)/wrapped/page.tsx`
 - `src/scripts/seed.ts`
+- `src/migrations/20260619_055511_phase_7_time_capsule.ts`
+- `src/migrations/20260619_055511_phase_7_time_capsule.json`
+- `src/migrations/index.ts`
 
 ## 驗證命令
 
-- `pnpm exec payload generate:types`：通過，已更新 `src/payload/payload-types.ts`。
-- `pnpm exec tsx src/lib/data/phase-7-domain.test.ts`：通過。
-- `pnpm run test:seed-content`：通過。
-- `pnpm tsc --noEmit`：通過。
-- `pnpm run build`：通過，Next.js 15.4.11 production build 成功列出 `/timeline`、`/bucket-list`、`/wrapped`。
-- `git diff --check`：通過。
+- `source ~/.nvm/nvm.sh; nvm use 20; pnpm exec payload generate:types`：通過，已更新 `src/payload/payload-types.ts`。
+- `source ~/.nvm/nvm.sh; nvm use 20; pnpm exec tsx src/lib/data/phase-7-domain.test.ts`：通過。
+- `source ~/.nvm/nvm.sh; nvm use 20; pnpm run test:seed-content`：通過。
+- `source ~/.nvm/nvm.sh; nvm use 20; pnpm tsc --noEmit`：通過。
+- `source ~/.nvm/nvm.sh; nvm use 20; pnpm run build`：通過，Next.js 15.4.11 production build 成功列出 `/timeline`、`/bucket-list`、`/wrapped`。
 
 ## Migration / Seed 狀態
 
-- `pnpm exec payload migrate:create`：失敗。
-  - 錯誤：`ENOENT: no such file or directory, open 'node:crypto?tsx-namespace=...'`
-  - 觀察：本機目前只有 Node 24；Payload/tsx 在此環境下誤把 `node:crypto?tsx-namespace=...` 當作檔案路徑讀取。
-- `pnpm exec payload migrate:create phase-7-time-capsule --skip-empty --force-accept-warning`：同樣失敗。
-- `pnpm run seed`：提權後可連 Supabase，但因遠端 schema 尚未套用新 collections，失敗於缺少 `payload_locked_documents_rels.timeline_events_id`。
-- `PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=true pnpm run seed`：已經使用核准的提權嘗試，但 Drizzle schema pull 最後因 Supabase 連線 timeout 失敗。
+- Node 24 下的 `pnpm exec payload migrate:create` 會失敗於 `node:crypto?tsx-namespace=...`；根因為 Payload/tsx CLI 與目前 Node 24 runtime 不相容。
+- 已安裝並切換到專案 engines 支援的 Node 20.20.2，並將 Node 20 的 pnpm 固定為 10.23.0。
+- `pnpm exec payload migrate:create phase-7-time-capsule --skip-empty --force-accept-warning`：Node 20 下通過，產生 migration snapshot。
+- 自動產生的 TS migration 原本是全量 baseline；已改寫為 Phase-7 增量、idempotent migration，保留 JSON snapshot 作為後續 migration diff baseline。
+- `PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=true pnpm run seed`：通過。
+  - Media assets：416/416。
+  - Seed 統計：created 246、updated 218、skipped 0、failed 0。
+- `pnpm exec payload migrate`：通過，`20260619_055511_phase_7_time_capsule` 已記錄為 batch 1。
+- Payload collection count 驗證：`timeline-events=2`、`bucket-items=3`、`wrapped-snapshots=1`；browser QA 互動完成後另新增 1 筆 QA bucket item 與對應 timeline event。
 
 ## Browser QA 範圍
 
-已啟動本機 dev server 並使用 in-app browser 嘗試 QA：
+已啟動本機 dev server 並使用 in-app browser 完成 QA：
 
-- `/timeline`：可載入路由 metadata，但頁面內容被 DB query 錯誤阻擋；錯誤指向 `timeline_events` / `timeline_events_rels` / `timeline_events_locales` 查詢所需資料表尚未存在。
-- `/bucket-list`：未登入訪客正確導向 `/family/login?next=/bucket-list`。
-- `/wrapped`：未登入訪客正確導向 `/family/login?next=/wrapped`。
-- `/`：首頁 metadata 可載入，但 Phase-7 最新 timeline quick view 被相同 `timeline_events` query 錯誤阻擋。
-
-阻塞原因：遠端 Supabase schema 尚未成功加入 Phase-7 collections 與 relationship 欄位，實際打開 `/timeline` 與首頁會在 server data query 階段撞到 DB schema 缺欄位；`/bucket-list`、`/wrapped` 的登入後完整互動 QA 也需等 schema 與 seed 完成後才能驗證。
-
-已完成替代驗證：
-
-- Production build 可編譯三個新 route。
-- Server/action/data-layer TypeScript 全綠。
-- Domain 行為測試全綠。
-- 未登入保護路由 redirect 行為已在 browser 中確認。
-
-待 schema migration 成功後，建議補跑：
-
-- Desktop public：`/`、`/timeline`、`/wrapped` login redirect / locked behavior。
-- Desktop family mode：`/bucket-list` 新增、移動、完成願望，確認 timeline event 建立。
-- Mobile 390px：`/timeline`、`/bucket-list`、`/wrapped` 無水平 overflow。
-- Public leak check：未登入 HTML 不包含 private timeline title、private wrapped stats、bucket item title。
+- Public `/timeline`：顯示公開事件「海南三灣的夏日海風」，不顯示 private event，無 DB error。
+- Public `/`：首頁顯示 Time Machine、Bucket List、Wrapped CTA，無 DB error。
+- Public `/bucket-list`：未登入導向 `/family/login?next=/bucket-list`。
+- Public `/wrapped`：未登入導向 `/family/login?next=/wrapped`。
+- Family login：使用 seeded family account 登入成功，header 顯示 `Tavis Li` 與登出按鈕。
+- Family `/bucket-list`：三欄看板顯示 pool / in-progress / completed；新增 QA 願望、移到進行中、完成願望均通過，完成後顯示「願望完成，已同步寫入時空膠囊」。
+- Family `/wrapped`：非發布季顯示年度報告預告與私密統計，不導回登入頁。
+- Family `/timeline`：顯示 private event 與 bucket 完成後產生的 timeline event。
+- Runtime observation：首頁原本在遠端 Supabase pool `max: 3` 下，因首頁資料層同時發出多筆 Payload query 可能造成 connection timeout；已將 `getHomeData()` 改為順序查詢後，browser QA 與 build 均通過。
 
 ## 已知限制與阻塞
 
-- Migration CLI 在目前 Node 24 環境不可用；需切到專案 engines 支援的 Node 20/18 或修正 Payload/tsx CLI 問題後重跑 migration。
-- 遠端 Supabase schema 尚未套用 Phase-7 collections，因此 seed 與 browser QA 尚未完成。
-- 未建立 GitHub push / PR；原因是 Phase completion 依規則需先完成 migration、seed 與 browser QA，或在 PR 中明確標記此 blocker。
+- 本機 Node 24 不適合執行 Payload migration CLI；Phase-7 收尾驗證使用 Node 20.20.2。
+- Browser QA 新增了一筆 `QA Phase 7 ...` bucket item，並完成後寫入 timeline，用於驗證 server action 與關聯寫入。
 - 工作樹中另有未納入本次提交的既有/外部變更：`.DS_Store`、blogger zip、泰國/普吉旅遊內容與 `docs/travel-projects.md` 變更。
 
 ## Next Phase Readiness
 
-程式碼層已可交接。下一步需要先解決 Payload migration 執行環境或使用正式 schema migration 流程套用 Supabase schema，然後重跑 seed 與 browser QA。完成後即可推送分支並建立 PR。
+Phase-7 已具備交接條件。後續可進入 PR review；下一階段若延伸 Wrapped 發布季故事、Bucket item 刪除/歸檔或 Timeline 更細的篩選，需要在既有 `src/lib/data/` 封裝層上延伸，不需改動 Payload v3 架構。
