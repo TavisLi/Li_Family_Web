@@ -169,7 +169,7 @@ Phase-4 先支援 travel assets。Manifest 會優先於目錄推斷；若 manife
 `src/scripts/seed-content.ts` 已補強：
 
 - Manifest-aware travel media parsing。
-- 將 `content-source/assets/travels/202607-chongqing/...` 正確映射到 TravelProject slug `202607-chongqing-yangtze-river`。
+- 將 `content-source/assets/travels/202607-chongqing-yangtze-river/...` 正確映射到 TravelProject slug `202607-chongqing-yangtze-river`。
 - 支援東澳 H1 航班表解析。
 - 支援重慶游輪艙房分配解析。
 - 過濾住宿表中的空白/彙總列，避免 seed validation 被污染。
@@ -370,4 +370,3 @@ docs/phase-completion-reports/
 - GitHub push
 - Draft PR 或 PR blocker 記錄
 - 下一 Phase handoff notes
-

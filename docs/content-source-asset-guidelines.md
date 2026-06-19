@@ -57,7 +57,7 @@ tavis
 ```text
 201307-hainan
 202308-east-australia
-202607-chongqing
+202607-chongqing-yangtze-river
 ```
 
 ---
@@ -268,9 +268,9 @@ content-source/assets/...
 
 ## 9. 何時需要 Seed Manifest
 
-目前階段可以先依賴目錄與檔名語義，不需要立即建立 manifest。
+一般照片可以先依賴目錄與檔名語義，不需要立即建立 manifest。
 
-當出現以下需求時，再導入 `content-source/assets/manifest.json`：
+當出現以下需求時，再建立 manifest：
 
 - 同一張照片需要掛到多個資料欄位。
 - Gallery 需要自訂排序，且排序不能只靠檔名。
@@ -278,7 +278,29 @@ content-source/assets/...
 - Itinerary 圖片需要精準對應到某一天、某個景點、某個時間段。
 - 不希望再從檔名推斷用途。
 
-Manifest 範例：
+### 9.1 Manifest 放置位置
+
+複雜旅遊項目優先使用專案 local manifest：
+
+```text
+content-source/assets/travels/[travel-asset-folder]/manifest.json
+```
+
+主 manifest 保留在：
+
+```text
+content-source/assets/manifest.json
+```
+
+使用原則：
+
+- Travel 專屬圖片映射放在該 travel 資產資料夾下的 local manifest。
+- 主 manifest 只保留全域、跨專案、舊資料相容或非 travel 的例外映射。
+- Seed parser 會先讀主 manifest，再讀所有 travel local manifest。
+- 同一張圖片如果在主 manifest 和 local manifest 都有設定，local manifest 覆蓋主 manifest。
+- `sourcePath` 一律使用相對於 `content-source/assets/` 的路徑，保持主 manifest 與 local manifest 同一格式。
+
+範例：
 
 ```json
 {
@@ -290,6 +312,41 @@ Manifest 範例：
   "sortOrder": 1
 }
 ```
+
+目前全域主 manifest 可以是空陣列：
+
+```json
+[]
+```
+
+### 9.2 Itinerary 精細對應
+
+當旅遊 Markdown 的每日行程很詳細，且 gallery 中照片很多時，可以用 manifest 將 gallery 裡的精選照片指定為 `usage: "itinerary"`，並補上日程 metadata：
+
+```json
+{
+  "sourcePath": "travels/202602-thailand-phuket/gallery/gallery-022.jpeg",
+  "ownerType": "travel",
+  "ownerSlug": "202602-thailand-phuket",
+  "usage": "itinerary",
+  "day": 2,
+  "sectionId": "mai-khao-flight-viewing",
+  "time": "14:30",
+  "location": "Mai Khao Beach Flight Viewing Point",
+  "caption": "餐後回到邁考海灘，看飛機低空掠過海灘上方。",
+  "sortOrder": 2030
+}
+```
+
+Seed parser 會保留這些欄位，並為 Media tags 自動加入：
+
+```text
+day-02
+section:mai-khao-flight-viewing
+location:mai-khao-beach-flight-viewing-point
+```
+
+這樣同一個 travel project 的 `itineraryImages` 可以保留多張照片，且後續前台可依 day / sectionId 對應到每日行程與景點。
 
 ---
 
