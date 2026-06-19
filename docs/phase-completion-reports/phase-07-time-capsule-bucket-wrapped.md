@@ -107,15 +107,21 @@ Phase-7 目標是完成三個長期情感模組的 MVP，並接回首頁家人�
 
 ## Browser QA 範圍
 
-尚未完成真瀏覽器 QA。
+已啟動本機 dev server 並使用 in-app browser 嘗試 QA：
 
-阻塞原因：遠端 Supabase schema 尚未成功加入 Phase-7 collections 與 relationship 欄位，實際打開 `/timeline`、`/bucket-list`、`/wrapped` 會在 server data query 階段撞到 DB schema 缺欄位。
+- `/timeline`：可載入路由 metadata，但頁面內容被 DB query 錯誤阻擋；錯誤指向 `timeline_events` / `timeline_events_rels` / `timeline_events_locales` 查詢所需資料表尚未存在。
+- `/bucket-list`：未登入訪客正確導向 `/family/login?next=/bucket-list`。
+- `/wrapped`：未登入訪客正確導向 `/family/login?next=/wrapped`。
+- `/`：首頁 metadata 可載入，但 Phase-7 最新 timeline quick view 被相同 `timeline_events` query 錯誤阻擋。
+
+阻塞原因：遠端 Supabase schema 尚未成功加入 Phase-7 collections 與 relationship 欄位，實際打開 `/timeline` 與首頁會在 server data query 階段撞到 DB schema 缺欄位；`/bucket-list`、`/wrapped` 的登入後完整互動 QA 也需等 schema 與 seed 完成後才能驗證。
 
 已完成替代驗證：
 
 - Production build 可編譯三個新 route。
 - Server/action/data-layer TypeScript 全綠。
 - Domain 行為測試全綠。
+- 未登入保護路由 redirect 行為已在 browser 中確認。
 
 待 schema migration 成功後，建議補跑：
 
