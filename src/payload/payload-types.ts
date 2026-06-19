@@ -71,6 +71,9 @@ export interface Config {
     categories: Category;
     posts: Post;
     'travel-projects': TravelProject;
+    'timeline-events': TimelineEvent;
+    'bucket-items': BucketItem;
+    'wrapped-snapshots': WrappedSnapshot;
     comments: Comment;
     media: Media;
     'payload-kv': PayloadKv;
@@ -84,6 +87,9 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     'travel-projects': TravelProjectsSelect<false> | TravelProjectsSelect<true>;
+    'timeline-events': TimelineEventsSelect<false> | TimelineEventsSelect<true>;
+    'bucket-items': BucketItemsSelect<false> | BucketItemsSelect<true>;
+    'wrapped-snapshots': WrappedSnapshotsSelect<false> | WrappedSnapshotsSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -497,6 +503,80 @@ export interface Post {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "timeline-events".
+ */
+export interface TimelineEvent {
+  id: number;
+  title: string;
+  slug: string;
+  eventDate: string;
+  year: number;
+  summary?: string | null;
+  description?: string | null;
+  images?: (number | Media)[] | null;
+  relatedTravel?: (number | null) | TravelProject;
+  relatedPost?: (number | null) | Post;
+  relatedMembers?: (number | User)[] | null;
+  sourceType: 'manual' | 'bucket-item' | 'travel' | 'post';
+  isPrivate?: boolean | null;
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bucket-items".
+ */
+export interface BucketItem {
+  id: number;
+  title: string;
+  description?: string | null;
+  status: 'pool' | 'in-progress' | 'completed';
+  priority?: number | null;
+  createdBy?: (number | null) | User;
+  completedBy?: (number | null) | User;
+  completedAt?: string | null;
+  targetDate?: string | null;
+  coverImage?: (number | null) | Media;
+  isPrivate?: boolean | null;
+  timelineEvent?: (number | null) | TimelineEvent;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wrapped-snapshots".
+ */
+export interface WrappedSnapshot {
+  id: number;
+  year: number;
+  status: 'draft' | 'published';
+  publishedAt?: string | null;
+  heroMedia?: (number | null) | Media;
+  summary?: string | null;
+  stats?:
+    | {
+        label: string;
+        value: string;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  blocks?:
+    | {
+        kind: 'memory' | 'travel' | 'blog' | 'wish';
+        title: string;
+        body?: string | null;
+        accent?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  isPrivate?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "comments".
  */
 export interface Comment {
@@ -548,6 +628,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'travel-projects';
         value: number | TravelProject;
+      } | null)
+    | ({
+        relationTo: 'timeline-events';
+        value: number | TimelineEvent;
+      } | null)
+    | ({
+        relationTo: 'bucket-items';
+        value: number | BucketItem;
+      } | null)
+    | ({
+        relationTo: 'wrapped-snapshots';
+        value: number | WrappedSnapshot;
       } | null)
     | ({
         relationTo: 'comments';
@@ -878,6 +970,77 @@ export interface TravelProjectsSelect<T extends boolean = true> {
         youtubeUrl?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "timeline-events_select".
+ */
+export interface TimelineEventsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  eventDate?: T;
+  year?: T;
+  summary?: T;
+  description?: T;
+  images?: T;
+  relatedTravel?: T;
+  relatedPost?: T;
+  relatedMembers?: T;
+  sourceType?: T;
+  isPrivate?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "bucket-items_select".
+ */
+export interface BucketItemsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  status?: T;
+  priority?: T;
+  createdBy?: T;
+  completedBy?: T;
+  completedAt?: T;
+  targetDate?: T;
+  coverImage?: T;
+  isPrivate?: T;
+  timelineEvent?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "wrapped-snapshots_select".
+ */
+export interface WrappedSnapshotsSelect<T extends boolean = true> {
+  year?: T;
+  status?: T;
+  publishedAt?: T;
+  heroMedia?: T;
+  summary?: T;
+  stats?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        note?: T;
+        id?: T;
+      };
+  blocks?:
+    | T
+    | {
+        kind?: T;
+        title?: T;
+        body?: T;
+        accent?: T;
+        id?: T;
+      };
+  isPrivate?: T;
   updatedAt?: T;
   createdAt?: T;
 }

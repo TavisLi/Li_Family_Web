@@ -4,7 +4,9 @@ import {
   ArrowRight,
   CalendarDays,
   Clock3,
+  CheckCircle2,
   HeartHandshake,
+  LockKeyhole,
   Newspaper,
   Plane,
   Sparkles,
@@ -14,15 +16,28 @@ import { Button } from '@/components/ui/button'
 import { ImageFallback } from '@/components/ui/image-fallback'
 import { PayloadImage } from '@/components/ui/payload-image'
 import type { FamilySession } from '@/lib/data/auth'
+import type { WrappedHomeCta } from '@/lib/data/wrapped'
 import { getMediaUrl } from '@/lib/media'
-import type { HomeConfig, Post, TravelProject, User } from '@/payload/payload-types'
+import type {
+  BucketItem,
+  HomeConfig,
+  Media,
+  Post,
+  TimelineEvent,
+  TravelProject,
+  User,
+} from '@/payload/payload-types'
+import { HomeBucketQuickView } from './home-bucket-quick-view'
 
 type HomePageViewProps = {
+  bucketItems: BucketItem[]
   familySession: FamilySession
   homeConfig: HomeConfig
   members: User[]
   posts: Post[]
+  timelineEvent: TimelineEvent | null
   travelProjects: TravelProject[]
+  wrappedCta: WrappedHomeCta
 }
 
 type MemberTone = 'neutral' | 'tavis' | 'lynn' | 'leo' | 'travel'
@@ -59,11 +74,14 @@ function formatTravelDate(project: TravelProject) {
 }
 
 export function HomePageView({
+  bucketItems,
   familySession,
   homeConfig,
   members,
   posts,
+  timelineEvent,
   travelProjects,
+  wrappedCta,
 }: HomePageViewProps) {
   const featuredTravel =
     typeof homeConfig.featuredTravel === 'object' ? homeConfig.featuredTravel : travelProjects[0]
@@ -71,15 +89,16 @@ export function HomePageView({
   const modeLabel = familySession.isFamilyMode
     ? `${familySession.displayName} 的家人模式`
     : '訪客模式'
-  const timelineDescription = familySession.isFamilyMode
-    ? '時空膠囊入口已解鎖，Phase-7 將接上年份滑塊、歷史照片與家庭事件。'
-    : '訪客可看到精簡時間線；完整家庭足跡需要進入家人模式。'
-  const bucketDescription = familySession.isFamilyMode
-    ? '共同願望清單入口已解鎖，Phase-7 將接上進行中願望與完成煙火。'
-    : '共同願望清單為家人模式限定，訪客只看到入口提示。'
-  const wrappedDescription = familySession.isFamilyMode
-    ? '年度時光報告入口已解鎖，發布季可接上全屏故事翻頁體驗。'
-    : '年度時光報告會在家人模式中開放，訪客只看到季節性入口。'
+  const timelineDescription = timelineEvent
+    ? `${timelineEvent.year}｜${timelineEvent.summary || timelineEvent.title}`
+    : familySession.isFamilyMode
+      ? '時空膠囊等待第一筆家庭事件。'
+      : '訪客可看到公開時間線；完整家庭足跡需要進入家人模式。'
+  const wrappedDescription = wrappedCta.locked
+    ? '年度時光報告為家人模式限定。'
+    : wrappedCta.available
+      ? `開啟 ${wrappedCta.year} 年度時光報告。`
+      : `${wrappedCta.year ?? new Date().getFullYear()} 年度報告正在醞釀，發布季會自動開啟。`
 
   return (
     <main className="overflow-hidden">
@@ -263,22 +282,57 @@ export function HomePageView({
             />
             <HubPanel
               description={timelineDescription}
+              href="/timeline"
               icon={<Clock3 className="size-5" aria-hidden="true" />}
               label="Time Machine"
               title="時空膠囊微縮窗"
-            />
+            >
+              {timelineEvent ? (
+                <PayloadImage
+                  className="mt-4 aspect-[16/9] rounded-md"
+                  fallbackLabel={timelineEvent.title}
+                  media={firstTimelineImage(timelineEvent)}
+                  sizes="(min-width: 1024px) 28rem, 100vw"
+                  tone="lynn"
+                />
+              ) : null}
+            </HubPanel>
             <HubPanel
-              description={bucketDescription}
+              description={
+                familySession.isFamilyMode
+                  ? '家人可在首頁直接完成進行中的共同願望。'
+                  : '共同願望清單為家人模式限定，登入後才會顯示內容。'
+              }
+              href={familySession.isFamilyMode ? '/bucket-list' : '/family/login?next=/bucket-list'}
               icon={<HeartHandshake className="size-5" aria-hidden="true" />}
               label="Bucket List"
               title="共同願望精簡看板"
-            />
+            >
+              {familySession.isFamilyMode ? (
+                <HomeBucketQuickView items={bucketItems} />
+              ) : (
+                <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-slate-300">
+                  <LockKeyhole className="size-4" aria-hidden="true" />
+                  家人模式解鎖
+                </p>
+              )}
+            </HubPanel>
             <HubPanel
               description={wrappedDescription}
+              href={familySession.isFamilyMode ? '/wrapped' : '/family/login?next=/wrapped'}
               icon={<Sparkles className="size-5" aria-hidden="true" />}
               label="Wrapped"
               title="年度時光報告"
-            />
+            >
+              <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cyan-100">
+                {wrappedCta.available ? (
+                  <CheckCircle2 className="size-4" aria-hidden="true" />
+                ) : (
+                  <Sparkles className="size-4" aria-hidden="true" />
+                )}
+                {wrappedCta.available ? '已發布' : '季節性預告'}
+              </p>
+            </HubPanel>
           </div>
         </div>
       </section>
@@ -287,24 +341,41 @@ export function HomePageView({
 }
 
 function HubPanel({
+  children,
   description,
+  href,
   icon,
   label,
   title,
 }: {
+  children?: ReactNode
   description: string
+  href?: string
   icon: ReactNode
   label: string
   title: string
 }) {
   return (
-    <article className="rounded-lg border border-white/10 bg-white/[0.06] p-6 backdrop-blur-md">
+    <article className="h-full rounded-lg border border-white/10 bg-white/[0.06] p-6 backdrop-blur-md transition hover:border-cyan-100/35 hover:bg-white/[0.09]">
       <div className="mb-5 flex items-center justify-between gap-4 text-cyan-100">
         {icon}
         <span className="text-xs font-semibold uppercase text-cyan-100/60">{label}</span>
       </div>
       <h3 className="text-2xl font-semibold tracking-normal">{title}</h3>
       <p className="mt-3 text-sm leading-7 text-slate-300">{description}</p>
+      {children}
+      {href ? (
+        <Button asChild className="mt-5 rounded-md bg-white/10 text-white" size="sm" variant="outline">
+          <Link href={href}>
+            進入
+            <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+        </Button>
+      ) : null}
     </article>
   )
+}
+
+function firstTimelineImage(event: TimelineEvent): Media | number | null {
+  return event.images?.[0] ?? null
 }

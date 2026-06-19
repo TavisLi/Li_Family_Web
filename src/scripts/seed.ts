@@ -25,6 +25,7 @@ interface SeedContext {
   mediaBySourcePath: Map<string, number>
   mediaByOwner: Map<string, MediaSeed[]>
   categoryBySlug: Map<string, number>
+  travelBySlug: Map<string, number>
   userBySlug: Map<string, number>
 }
 
@@ -50,6 +51,7 @@ async function run() {
     mediaBySourcePath: new Map(),
     mediaByOwner: new Map(),
     categoryBySlug: new Map(),
+    travelBySlug: new Map(),
     userBySlug: new Map(),
   }
 
@@ -67,6 +69,7 @@ async function run() {
   await seedBlogCategories(payload, seedContent.blogCategories, context, stats)
   await seedBlogPosts(payload, seedContent.blogPosts, context, stats)
   await seedTravelProjects(payload, seedContent.travels, context, stats)
+  await seedPhase7DemoData(payload, context, stats)
   await seedHomeConfig(payload, context, stats)
 
   console.log('Seed completed')
@@ -366,23 +369,233 @@ async function seedTravelProjects(
       const existingDoc = existing.docs[0]
 
       if (existingDoc) {
-        await payload.update({
+        const updated = await payload.update({
           collection: 'travel-projects',
           id: existingDoc.id,
           data,
         })
+        context.travelBySlug.set(travel.slug, Number(updated.id))
         stats.updated += 1
       } else {
-        await payload.create({
+        const created = await payload.create({
           collection: 'travel-projects',
           data,
         })
+        context.travelBySlug.set(travel.slug, Number(created.id))
         stats.created += 1
       }
     } catch (error) {
       stats.failed += 1
       console.error(`Failed to seed travel project: ${travel.slug}`, error)
     }
+  }
+}
+
+async function seedPhase7DemoData(payload: Payload, context: SeedContext, stats: SeedStats) {
+  console.log('Seeding Phase 7 demo data...')
+
+  const homeAssets = ownerMedia(context, 'home', 'home')
+  const tavisId = context.userBySlug.get('tavis')
+  const lynnId = context.userBySlug.get('lynn')
+  const hainanTravelId = context.travelBySlug.get('201307-hainan')
+  const eastAustraliaTravelId = context.travelBySlug.get('202308-east-australia')
+  const heroImage = firstMediaId(context, homeAssets, 'gallery')
+  const galleryImages = mediaIds(context, homeAssets, ['gallery']).slice(0, 3)
+
+  const timelineSeeds = [
+    {
+      title: '海南三灣的夏日海風',
+      slug: '2013-hainan-family-summer',
+      eventDate: '2013-07-03T00:00:00.000Z',
+      year: 2013,
+      summary: '亞龍灣、海棠灣與石梅灣把一家人的度假記憶串成第一段公開時空膠囊。',
+      description: '這筆公開事件用來讓訪客也能看見 Web Li 的家庭時間線質感。',
+      images: galleryImages.slice(0, 1),
+      relatedTravel: hainanTravelId,
+      relatedMembers: [tavisId, lynnId].filter((id): id is number => typeof id === 'number'),
+      sourceType: 'travel' as const,
+      isPrivate: false,
+      sortOrder: 10,
+    },
+    {
+      title: '東澳旅行裡只有家人知道的小片段',
+      slug: '2023-east-australia-private-memory',
+      eventDate: '2023-08-06T00:00:00.000Z',
+      year: 2023,
+      summary: '墨爾本、企鵝歸巢與藍山之外，還有只留給家人的旅途細節。',
+      description: '這筆私密事件驗證家人模式下的完整時間線與訪客模式隔離。',
+      images: galleryImages.slice(1, 2),
+      relatedTravel: eastAustraliaTravelId,
+      relatedMembers: [tavisId, lynnId].filter((id): id is number => typeof id === 'number'),
+      sourceType: 'travel' as const,
+      isPrivate: true,
+      sortOrder: 20,
+    },
+  ]
+
+  const timelineBySlug = new Map<string, number>()
+
+  for (const event of timelineSeeds) {
+    try {
+      const existing = await payload.find({
+        collection: 'timeline-events',
+        depth: 0,
+        limit: 1,
+        where: {
+          slug: {
+            equals: event.slug,
+          },
+        },
+      })
+      const existingDoc = existing.docs[0]
+
+      if (existingDoc) {
+        const updated = await payload.update({
+          collection: 'timeline-events',
+          id: existingDoc.id,
+          data: event,
+        })
+        timelineBySlug.set(event.slug, Number(updated.id))
+        stats.updated += 1
+      } else {
+        const created = await payload.create({
+          collection: 'timeline-events',
+          data: event,
+        })
+        timelineBySlug.set(event.slug, Number(created.id))
+        stats.created += 1
+      }
+    } catch (error) {
+      stats.failed += 1
+      console.error(`Failed to seed timeline event: ${event.slug}`, error)
+    }
+  }
+
+  const completedTimelineId = timelineBySlug.get('2023-east-australia-private-memory')
+  const bucketSeeds = [
+    {
+      title: '整理一套家庭年度相簿',
+      description: '先把散落照片收攏，再挑出能放進首頁與時間線的版本。',
+      status: 'pool' as const,
+      priority: 2,
+      createdBy: tavisId,
+      coverImage: heroImage,
+      isPrivate: true,
+    },
+    {
+      title: '完成重慶三峽行前願望清單',
+      description: '把防暑、航班、長輩小孩照顧事項整理成全家都看得懂的版本。',
+      status: 'in-progress' as const,
+      priority: 1,
+      createdBy: tavisId,
+      coverImage: heroImage,
+      isPrivate: true,
+    },
+    {
+      title: '把東澳旅行影片放回家庭記憶裡',
+      description: '已完成的願望，示範 bucket item 與 timeline event 的長期關聯。',
+      status: 'completed' as const,
+      priority: 3,
+      createdBy: lynnId,
+      completedBy: lynnId,
+      completedAt: '2026-06-12T12:00:00.000Z',
+      coverImage: heroImage,
+      isPrivate: true,
+      timelineEvent: completedTimelineId,
+    },
+  ]
+
+  for (const bucket of bucketSeeds) {
+    try {
+      const existing = await payload.find({
+        collection: 'bucket-items',
+        depth: 0,
+        limit: 1,
+        where: {
+          title: {
+            equals: bucket.title,
+          },
+        },
+      })
+      const existingDoc = existing.docs[0]
+
+      if (existingDoc) {
+        await payload.update({
+          collection: 'bucket-items',
+          id: existingDoc.id,
+          data: bucket,
+        })
+        stats.updated += 1
+      } else {
+        await payload.create({
+          collection: 'bucket-items',
+          data: bucket,
+        })
+        stats.created += 1
+      }
+    } catch (error) {
+      stats.failed += 1
+      console.error(`Failed to seed bucket item: ${bucket.title}`, error)
+    }
+  }
+
+  try {
+    const wrapped = {
+      year: 2026,
+      status: 'published' as const,
+      publishedAt: '2026-12-15T00:00:00.000Z',
+      heroMedia: heroImage,
+      summary: '這一年，家人把旅行、文字、照片與共同願望慢慢接回同一條時間線。',
+      stats: [
+        { label: '旅行企劃', value: '3', note: '從海南、東澳到重慶三峽，路線逐步進入 Payload。' },
+        { label: '家庭願望', value: '3', note: '願望池、進行中與已實現都有可驗證資料。' },
+        { label: '時空事件', value: '2+', note: '公開與私密事件分別驗證雙模隱私。' },
+      ],
+      blocks: [
+        {
+          kind: 'travel' as const,
+          title: '把遠方放回家裡',
+          body: '每一次旅行都不只是頁面，也會成為未來年度報告的故事素材。',
+          accent: 'Travel',
+        },
+        {
+          kind: 'wish' as const,
+          title: '願望完成時，時間線會亮起來',
+          body: '共同願望完成後會自動建立 TimelineEvents，讓小事也能長期保存。',
+          accent: 'Wish',
+        },
+      ],
+      isPrivate: true,
+    }
+    const existing = await payload.find({
+      collection: 'wrapped-snapshots',
+      depth: 0,
+      limit: 1,
+      where: {
+        year: {
+          equals: wrapped.year,
+        },
+      },
+    })
+    const existingDoc = existing.docs[0]
+
+    if (existingDoc) {
+      await payload.update({
+        collection: 'wrapped-snapshots',
+        id: existingDoc.id,
+        data: wrapped,
+      })
+      stats.updated += 1
+    } else {
+      await payload.create({
+        collection: 'wrapped-snapshots',
+        data: wrapped,
+      })
+      stats.created += 1
+    }
+  } catch (error) {
+    stats.failed += 1
+    console.error('Failed to seed wrapped snapshot', error)
   }
 }
 
