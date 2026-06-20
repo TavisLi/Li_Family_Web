@@ -20,13 +20,15 @@ Phase 8 將既有功能收斂為正式部署前的 production hardening，範圍
 - Canonical / Open Graph fallback：`330112e`
 - R2 media delivery audit：`7ab2964`
 - Deployment documentation：`d056448`
-- 本報告會隨 finalization commit 一併提交。
+- Production smoke evidence：`1fa111f`
+- PR #8 merge commit：`1443d39c2378b24c1ee6047ce1aee3f8340ae6ed`
+- 本報告已隨 Phase branch 合併至 `main`；後續內容來源更新在 `9a5095f`。
 
 ## GitHub Sync / PR 狀態
 
 - branch 已成功推送至 `origin/codex/phase-8-production-hardening`。
-- Draft PR：`https://github.com/TavisLi/Li_Family_Web/pull/8`。
-- GitHub branch 與 PR 建立已完成；Vercel Preview / Production 驗證狀態見本報告後續章節。
+- PR #8：`https://github.com/TavisLi/Li_Family_Web/pull/8` 已合併至 `main`。
+- `main` 已推送至 GitHub；Vercel Preview / Production 驗證狀態見本報告後續章節。
 
 ## 已交付項目
 
@@ -43,7 +45,7 @@ Phase 8 將既有功能收斂為正式部署前的 production hardening，範圍
 - 新增 `src/lib/site-metadata.ts`，集中 canonical base URL、absolute URL 與 OG fallback URL。
 - App layout 設定 `metadataBase`、網站預設 OG image 與 robots。
 - `/`、`/member/[slug]`、`/travel`、`/travel/[slug]`、`/blog`、`/blog/[slug]`、`/timeline`、`/bucket-list`、`/wrapped` 都有 canonical 與非空 Open Graph image fallback。
-- 新增 Next `opengraph-image` metadata route，輸出 PNG fallback，不依賴空的 Payload media URL。
+- 新增 `/api/og-default` Edge route，輸出固定 PNG fallback，不依賴空的 Payload media URL。
 - Blog JSON-LD 改用 absolute canonical URL 與 fallback image；private Blog/Travel 的泛用 metadata guard 保持不變。
 
 ### 效能 / 安全審計
@@ -93,7 +95,7 @@ Phase 8 將既有功能收斂為正式部署前的 production hardening，範圍
 listen EPERM: operation not permitted 127.0.0.1:3000
 ```
 
-local server 提權請求未完成，因此無法在本機執行 `/`、`/travel`、`/blog`、`/timeline`、`/bucket-list`、`/wrapped` 與 `/opengraph-image` 的 browser QA。完成 localhost permission 後，需依 `docs/production-deployment-checklist.md` 重跑公開與 family mode smoke test。
+local server 提權請求未完成，因此無法在本機執行 `/`、`/travel`、`/blog`、`/timeline`、`/bucket-list`、`/wrapped` 與 `/api/og-default` 的 browser QA。Production route-level smoke test 已完成；完成 localhost permission 後，仍應依 `docs/production-deployment-checklist.md` 重跑公開與 family mode 的互動 browser QA。
 
 ## Vercel Preview / Production 狀態
 
@@ -103,15 +105,17 @@ local server 提權請求未完成，因此無法在本機執行 `/`、`/travel`
 - Production：已於設定 `PAYLOAD_SECRET` 後重新部署，deployment URL：`https://li-family-gqu7onu9o-tavis-li-s-projects.vercel.app`，Vercel state 為 `Ready`，並已綁回 `https://li-family-web.vercel.app` aliases。
 - Production runtime：`vercel curl /` 與 `vercel curl /travel` 均回傳完整 HTML。原先 `/` 500 的 Vercel error log 為 `missing secret key`；重新部署後首頁資料、metadata 與 travel index 均可取得。
 - Production logs：確認 `/`、`/travel`、`/blog`、`/family/login`、成員頁與 `/travel/202607-chongqing-yangtze-river` 均為 HTTP `200`。
+- 合併後 Production：`https://li-family-7p1z3reqb-tavis-li-s-projects.vercel.app` 為 `Ready`，且已綁定 `https://li-family-web.vercel.app` aliases。
+- 合併後 route-level smoke test：`/`、`/travel`、`/api/og-default`、`/blog`、`/timeline`、`/bucket-list`、`/wrapped` 與 `/family/login` 皆以 `vercel curl -- -I` 確認為 HTTP `200`；OG fallback 回應為 `image/png`。
 
 ## 已知限制
 
 - `pnpm run seed` 需要本機或 CI 注入有效的 `PAYLOAD_SECRET`、`DATABASE_URI` 與必要 R2 env。
 - 本機 sandbox 阻止 localhost port binding，因此 browser QA 尚待有權限環境執行。
 - Preview deployment 雖然 `READY`，但此執行環境的 browser automation request 未完成；已由人工 screenshot 驗證 `/api/og-default` PNG fallback 渲染。
-- Production `/` 與 `/travel` 已以 Vercel curl 驗證；其餘 `/blog`、`/timeline` 與家人路由仍應於 PR review 時以瀏覽器完成最終互動 smoke test。
+- Production public routes、登入頁與 OG fallback 已完成 route-level HTTP smoke test；仍需在可使用瀏覽器的環境完成登入、互動按鈕與家人權限流程的視覺／互動 smoke test。
 - Production logs 顯示既有 `tavis-avatar-800x800.jpg` 與 `lynn-avatar-800x800.jpg` media request 為 `404`。前台會以 `ImageFallback` 降級，未造成 broken image；後續應於 Payload Admin / R2 補齊這兩個檔案。
 
 ## 下一階段準備度
 
-程式、型別、seed-content、metadata/R2 regression tests、Production build 與 Production `/`、`/travel` runtime 均有驗證證據。PR review 與其餘 public/family route 的瀏覽器 smoke test 完成後，可作為正式發布候選版本。
+程式、型別、seed-content、metadata/R2 regression tests、Production build、PR merge 與所有公開主要 routes 的 Production HTTP smoke test 均有驗證證據。完成瀏覽器互動 QA、補齊兩張既有 R2 頭像，並依正式網域策略設定後，可視為正式發布候選版本。
