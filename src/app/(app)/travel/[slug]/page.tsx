@@ -7,6 +7,7 @@ import {
   getTravelProjectBySlug,
 } from '@/lib/data/travel'
 import { getMediaUrl } from '@/lib/media'
+import { metadataImageUrl } from '@/lib/site-metadata'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,12 +37,15 @@ export async function generateMetadata({ params }: TravelPageProps): Promise<Met
   const coverImage = getMediaUrl(project.coverImage)
 
   return {
+    alternates: {
+      canonical: `/travel/${slug}`,
+    },
     title: project.title,
     description: project.summary || project.externalDocIdentifier || project.status,
     openGraph: {
       title: project.title,
       description: project.summary || project.externalDocIdentifier || project.status,
-      images: coverImage ? [{ url: coverImage }] : undefined,
+      images: [{ url: metadataImageUrl(coverImage) }],
     },
   }
 }

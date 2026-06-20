@@ -18,6 +18,7 @@ import { Users } from './collections/Users'
 import { WrappedSnapshots } from './collections/WrappedSnapshots'
 import { HomeConfig } from './globals/HomeConfig'
 import { SiteConfig } from './globals/SiteConfig'
+import { r2PublicFileUrl } from './r2'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -25,7 +26,15 @@ const r2AccountId = process.env.R2_ACCOUNT_ID?.trim()
 const r2AccessKeyId = process.env.R2_ACCESS_KEY_ID?.trim()
 const r2SecretAccessKey = process.env.R2_SECRET_ACCESS_KEY?.trim()
 const r2Bucket = process.env.R2_BUCKET_NAME?.trim()
+const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL?.trim()
 const r2Enabled = Boolean(r2AccountId && r2AccessKeyId && r2SecretAccessKey && r2Bucket)
+const r2MediaStorage = r2PublicUrl
+  ? {
+      disablePayloadAccessControl: true as const,
+      generateFileURL: ({ filename, prefix }: { filename: string; prefix?: string | null }) =>
+        r2PublicFileUrl(r2PublicUrl, filename, prefix),
+    }
+  : true
 
 export default buildConfig({
   admin: {
@@ -74,7 +83,7 @@ export default buildConfig({
     s3Storage({
       enabled: r2Enabled,
       collections: {
-        media: true,
+        media: r2MediaStorage,
       },
       bucket: r2Bucket || 'missing-r2-bucket',
       config: {

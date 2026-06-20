@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { BlogPostPage } from '@/features/blog/blog-post-page'
 import { blogInteractionId, getBlogInteractionThread, getBlogPostBySlug } from '@/lib/data/posts'
 import { getMediaUrl } from '@/lib/media'
+import { absoluteSiteUrl, metadataImageUrl } from '@/lib/site-metadata'
 
 export const dynamic = 'force-dynamic'
 
@@ -36,12 +37,15 @@ export async function generateMetadata({ params }: BlogPostRouteProps): Promise<
     : 'Web Li 家庭 Blog 文章。'
 
   return {
+    alternates: {
+      canonical: `/blog/${slug}`,
+    },
     title: post.title,
     description,
     openGraph: {
       title: post.title,
       description,
-      images: image ? [{ url: image }] : undefined,
+      images: [{ url: metadataImageUrl(image) }],
       publishedTime: post.publishedDate,
       type: 'article',
     },
@@ -87,7 +91,7 @@ function blogPostingJsonLd(post: NonNullable<Awaited<ReturnType<typeof getBlogPo
       '@type': 'Person',
       name: authorName,
     },
-    image: image ? [image] : undefined,
-    mainEntityOfPage: `/blog/${post.slug}`,
+    image: [metadataImageUrl(image)],
+    mainEntityOfPage: absoluteSiteUrl(`/blog/${post.slug}`),
   }
 }

@@ -25,7 +25,8 @@
 
 - Node.js 18+
 - pnpm (推荐) 或 npm
-- Vercel 账号 (用于数据库和存储)
+- Vercel 帐号（用于部署）
+- Supabase PostgreSQL 与 Cloudflare R2 帐号（用于数据库与媒体储存）
 
 ### 1. 克隆仓库
 
@@ -49,7 +50,10 @@ cp .env.example .env
 - PAYLOAD_SECRET – 随机字符串，用于会话加密
 - DATABASE_URI – Supabase PostgreSQL 连接池字符串
 - R2_BUCKET_NAME / R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY – Cloudflare R2 存储配置
-- NEXT_PUBLIC_R2_PUBLIC_URL – R2/CDN 公开读取地址
+- NEXT_PUBLIC_SERVER_URL – 当前部署的公开站点 URL；Production 使用正式网域，Preview 使用对应的 Vercel Preview URL
+- NEXT_PUBLIC_R2_PUBLIC_URL – R2/CDN 公开读取地址。媒体会由 Payload S3 adapter 生成直连 URL，不应填写 R2 S3 API endpoint
+
+`PAYLOAD_SECRET`、`DATABASE_URI`、`R2_ACCESS_KEY_ID` 与 `R2_SECRET_ACCESS_KEY` 只能设为 Vercel 的 server-side 环境变量，绝不可使用 `NEXT_PUBLIC_` 前缀或传给 client component。
 
 ### 4. 运行数据库迁移
 
@@ -72,12 +76,13 @@ pnpm dev
 
 ## 📦 部署
 
-本项目专为 Vercel 优化：
+本项目以 Vercel 部署 Next.js 与 Payload，以 Supabase 提供 PostgreSQL、Cloudflare R2 提供媒体储存：
 
-1. 将代码推送到 GitHub 仓库
-2. 在 Vercel 中导入该项目
-3. 添加上述环境变量
-4. 部署自动完成（每次推送到 main 分支都会触发）
+1. 将代码推送到 GitHub 仓库，并在 Vercel 导入项目。
+2. 在 Preview 与 Production 分别设定 `.env.example` 中列出的变量。Production 的 `NEXT_PUBLIC_SERVER_URL` 必须是正式网域；Preview 必须是该 Preview deployment URL，避免 canonical 与 Open Graph 指向错误环境。
+3. 在 Cloudflare R2 连接 public domain 或 `r2.dev` domain，并将其填入 `NEXT_PUBLIC_R2_PUBLIC_URL`。R2 S3 endpoint 只供 Payload 上传使用。
+4. 每次 branch push 检查 Preview；合并到 `main` 后检查 Production。验证清单见 `docs/production-deployment-checklist.md`。
+5. 发生回归时在 Vercel 恢复到最近一次可用 Production deployment，并重新执行公开/家人模式 smoke test。
 
 ## 🤝 贡献
 
