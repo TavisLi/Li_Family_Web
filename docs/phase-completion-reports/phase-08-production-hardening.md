@@ -24,13 +24,12 @@ Phase 8 將既有功能收斂為正式部署前的 production hardening，範圍
 
 ## GitHub Sync / PR 狀態
 
-- 本機 branch 已包含上述 commits，且完成最終本機驗證。
-- GitHub CLI 認證 blocker：`gh auth status` 回報 `TavisLi` 的 default token invalid；因此本機無法建立 draft PR。
-- 需要維護者重新認證後執行：
+- branch 已成功推送至 `origin/codex/phase-8-production-hardening`。
+- GitHub CLI 認證 blocker：`gh auth status` 仍回報 `TavisLi` 的 default token invalid；因此本機無法建立 draft PR。
+- 需要在此執行環境重新認證後執行：
 
 ```bash
 gh auth login -h github.com
-git push -u origin codex/phase-8-production-hardening
 gh pr create --draft --base main --head codex/phase-8-production-hardening --title "Finalize phase 8 production hardening and deployment"
 ```
 
