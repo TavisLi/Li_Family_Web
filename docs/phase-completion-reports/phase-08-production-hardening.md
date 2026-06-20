@@ -102,6 +102,7 @@ local server 提權請求未完成，因此無法在本機執行 `/`、`/travel`
 - 本機已可使用 Vercel CLI；專案仍無 `.vercel/project.json` link，Preview 狀態透過 `vercel list li-family-web --scope tavis-li-s-projects --format json` 驗證。
 - Production：已於設定 `PAYLOAD_SECRET` 後重新部署，deployment URL：`https://li-family-gqu7onu9o-tavis-li-s-projects.vercel.app`，Vercel state 為 `Ready`，並已綁回 `https://li-family-web.vercel.app` aliases。
 - Production runtime：`vercel curl /` 與 `vercel curl /travel` 均回傳完整 HTML。原先 `/` 500 的 Vercel error log 為 `missing secret key`；重新部署後首頁資料、metadata 與 travel index 均可取得。
+- Production logs：確認 `/`、`/travel`、`/blog`、`/family/login`、成員頁與 `/travel/202607-chongqing-yangtze-river` 均為 HTTP `200`。
 
 ## 已知限制
 
@@ -109,6 +110,7 @@ local server 提權請求未完成，因此無法在本機執行 `/`、`/travel`
 - 本機 sandbox 阻止 localhost port binding，因此 browser QA 尚待有權限環境執行。
 - Preview deployment 雖然 `READY`，但此執行環境的 browser automation request 未完成；已由人工 screenshot 驗證 `/api/og-default` PNG fallback 渲染。
 - Production `/` 與 `/travel` 已以 Vercel curl 驗證；其餘 `/blog`、`/timeline` 與家人路由仍應於 PR review 時以瀏覽器完成最終互動 smoke test。
+- Production logs 顯示既有 `tavis-avatar-800x800.jpg` 與 `lynn-avatar-800x800.jpg` media request 為 `404`。前台會以 `ImageFallback` 降級，未造成 broken image；後續應於 Payload Admin / R2 補齊這兩個檔案。
 
 ## 下一階段準備度
 
