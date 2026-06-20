@@ -97,16 +97,18 @@ local server 提權請求未完成，因此無法在本機執行 `/`、`/travel`
 
 ## Vercel Preview / Production 狀態
 
-- Vercel Preview：成功。PR #8 的 `Vercel` status check 為 `SUCCESS`，deployment URL：`https://vercel.com/tavis-li-s-projects/li-family-web/8CX4oB6yJrSkE62yh6wPQAXm3PE3`。
-- 本機未安裝 Vercel CLI，且沒有 `.vercel/project.json` project link；Preview 狀態透過 GitHub PR check 驗證。
+- Vercel Preview：最新 deployment `https://li-family-q9w46v8ln-tavis-li-s-projects.vercel.app` 的 Vercel state 為 `READY`，對應 commit `800d027`。
+- Runtime observation：Preview `/` 的 Vercel curl 與 browser navigation 均未在合理時間內回應；Vercel log query 也未於合理時間返回。這需要在 PR review 前調查 Payload/Supabase runtime response，不可僅以 build `READY` 視為完整 runtime QA。
+- 本機已可使用 Vercel CLI；專案仍無 `.vercel/project.json` link，Preview 狀態透過 `vercel list li-family-web --scope tavis-li-s-projects --format json` 驗證。
 - Production：待 PR merge 後確認。合併後需確認 Production 使用正式 `NEXT_PUBLIC_SERVER_URL`，並記錄 deployment URL 與 smoke test 結果。
 
 ## 已知限制
 
 - `pnpm run seed` 需要本機或 CI 注入有效的 `PAYLOAD_SECRET`、`DATABASE_URI` 與必要 R2 env。
 - 本機 sandbox 阻止 localhost port binding，因此 browser QA 尚待有權限環境執行。
+- Preview deployment 雖然 `READY`，但首頁 runtime response 未完成驗證；需調查後重跑 Preview browser smoke test。
 - Production deployment 與其 post-merge smoke test 尚待 PR merge 後完成。
 
 ## 下一階段準備度
 
-程式、型別、seed-content、metadata/R2 regression tests 與 production build 均有本機驗證證據。完成 GitHub 認證、Preview browser QA、PR merge 與 Production smoke test 後，可作為正式發布候選版本。
+程式、型別、seed-content、metadata/R2 regression tests 與 production build 均有本機驗證證據。Preview runtime response、PR review、Production deployment 與 Production smoke test 完成後，才可作為正式發布候選版本。
