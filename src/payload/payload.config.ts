@@ -8,11 +8,14 @@ import { fileURLToPath } from 'url'
 import sharp from 'sharp'
 
 import { Categories } from './collections/Categories'
+import { BucketItems } from './collections/BucketItems'
 import { Comments } from './collections/Comments'
 import { Media } from './collections/Media'
 import { Posts } from './collections/Posts'
+import { TimelineEvents } from './collections/TimelineEvents'
 import { TravelProjects } from './collections/TravelProjects'
 import { Users } from './collections/Users'
+import { WrappedSnapshots } from './collections/WrappedSnapshots'
 import { HomeConfig } from './globals/HomeConfig'
 import { SiteConfig } from './globals/SiteConfig'
 
@@ -31,7 +34,17 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Categories, Posts, TravelProjects, Comments, Media],
+  collections: [
+    Users,
+    Categories,
+    Posts,
+    TravelProjects,
+    TimelineEvents,
+    BucketItems,
+    WrappedSnapshots,
+    Comments,
+    Media,
+  ],
   globals: [SiteConfig, HomeConfig],
   editor: lexicalEditor(),
   localization: {

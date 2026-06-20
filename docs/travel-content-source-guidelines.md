@@ -271,10 +271,10 @@ docs/travel-projects.md
 
 一般照片只靠資料夾與檔名就可以。
 
-以下情況才建議更新：
+以下情況才建議建立或更新 manifest：
 
 ```text
-content-source/assets/manifest.json
+content-source/assets/travels/[travel-slug-or-asset-folder]/manifest.json
 ```
 
 - 同一張照片要掛到多個欄位。
@@ -282,6 +282,24 @@ content-source/assets/manifest.json
 - 圖片需要 caption、拍攝地點、人物標註或故事描述。
 - Itinerary 圖片需要精準對應到某一天、某個景點或某個時間段。
 - 不希望再從檔名推斷用途。
+
+### Manifest 放置規則
+
+複雜旅遊項目優先使用 local manifest：
+
+```text
+content-source/assets/travels/[travel-asset-folder]/manifest.json
+```
+
+全域主 manifest 保留在：
+
+```text
+content-source/assets/manifest.json
+```
+
+主 manifest 的用途是全域、跨專案、舊資料相容或非 travel 的例外映射；多數 travel 專屬照片不應再集中塞進主 manifest。Seed parser 會先讀主 manifest，再讀 travel local manifest。若同一張圖片兩邊都有設定，local manifest 覆蓋主 manifest。
+
+`sourcePath` 一律使用相對於 `content-source/assets/` 的路徑，這樣主 manifest 和 local manifest 可以共用同一個 schema。
 
 Manifest 範例：
 
@@ -296,9 +314,69 @@ Manifest 範例：
 }
 ```
 
+### Itinerary 精細 Manifest
+
+如果某個旅行項目的 Markdown 已經寫到每天多個時間點、景點或餐廳，建議不要把大量照片複製到 `itinerary/`。更好的方式是保留完整 `gallery/`，再用該 travel 的 local manifest 指定哪些 gallery 照片屬於哪一天、哪個行程節點。
+
+範例：
+
+```json
+{
+  "sourcePath": "travels/202602-thailand-phuket/gallery/gallery-022.jpeg",
+  "ownerType": "travel",
+  "ownerSlug": "202602-thailand-phuket",
+  "usage": "itinerary",
+  "day": 2,
+  "sectionId": "mai-khao-flight-viewing",
+  "time": "14:30",
+  "location": "Mai Khao Beach Flight Viewing Point",
+  "caption": "餐後回到邁考海灘，看飛機低空掠過海灘上方。",
+  "sortOrder": 2030
+}
+```
+
+建議欄位：
+
+| 欄位 | 說明 |
+| --- | --- |
+| `sourcePath` | 相對於 `content-source/assets/` 的圖片路徑 |
+| `ownerType` | 旅遊項目固定為 `travel` |
+| `ownerSlug` | 對應 travel slug |
+| `usage` | 精細行程照片使用 `itinerary` |
+| `day` | 第幾天，數字 |
+| `sectionId` | 穩定英文節點 ID，例如 `patong-beach-sunset` |
+| `time` | Markdown 行程中的時間，若有 |
+| `location` | 景點、酒店、餐廳或機場名稱 |
+| `caption` | 前台可用的照片說明與 alt text |
+| `sortOrder` | 建議用 `day * 1000 + sequence * 10`，方便同日排序 |
+
+Seed parser 會保留這些 metadata，並寫入 Media tags，例如 `day-02` 與 `section:mai-khao-flight-viewing`，供後續前台依日程節點分組。
+
+## 10. Travel Design Docs
+
+若某個旅遊項目需要專屬頁面風格，設計文檔放在：
+
+```text
+docs/design/travel/[travel-slug].design.md
+```
+
+範例：
+
+```text
+docs/design/travel/202702-thailand-phuket.design.md
+```
+
+設計文檔用途：
+
+- 記錄色彩、字體、版面、影像語彙與互動語氣。
+- 作為 Phase 實作時的設計依據。
+- 不作為前台 runtime 直接讀取的資料來源。
+
+實作頁面時，應將設計文檔轉為結構化欄位，例如 `designProfile`、`presentation.template` 或 Payload TravelProjects 的對應欄位。`/travel/[slug]` 路由仍保持一致，由資料中的 template/profile 決定渲染方式。
+
 ---
 
-## 10. 驗證流程
+## 11. 驗證流程
 
 素材整理完成後，建議執行：
 
@@ -327,7 +405,7 @@ pnpm run build
 
 ---
 
-## 11. Git 注意事項
+## 12. Git 注意事項
 
 請提交：
 

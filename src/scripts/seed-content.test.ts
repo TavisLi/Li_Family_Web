@@ -52,6 +52,20 @@ async function main() {
   assert.equal(eastAustralia.slug, '202308-east-australia')
   assert.equal((eastAustralia.flights ?? []).length, 4)
 
+  const phuket2026 = await parseTravelMarkdown(
+    path.join(projectRoot, 'content-source/travels/202602泰国普吉岛8日.md'),
+  )
+
+  assert.equal(phuket2026.slug, '202602-thailand-phuket')
+  assert.equal(phuket2026.status, 'completed')
+
+  const phuket2027 = await parseTravelMarkdown(
+    path.join(projectRoot, 'content-source/travels/202702泰国普吉岛7日.md'),
+  )
+
+  assert.equal(phuket2027.slug, '202702-thailand-phuket')
+  assert.equal(phuket2027.status, 'planning')
+
   const seedContent = await buildSeedContent(projectRoot)
 
   assert.ok(seedContent.media.length >= 10)
@@ -66,10 +80,31 @@ async function main() {
       (item) =>
         item.ownerType === 'travel' &&
         item.ownerSlug === '202607-chongqing-yangtze-river' &&
+        item.sourcePath.endsWith(
+          'content-source/assets/travels/202607-chongqing-yangtze-river/cover/cover-001.jpg',
+        ) &&
         item.usage === 'cover',
     ),
   )
   assert.ok(seedContent.media.every((item) => !item.sourcePath.includes('/.')))
+
+  const phuketDay2FlightPhoto = seedContent.media.find(
+    (item) =>
+      item.sourcePath.endsWith(
+        'content-source/assets/travels/202602-thailand-phuket/gallery/gallery-022.jpeg',
+      ),
+  )
+
+  assert.ok(phuketDay2FlightPhoto)
+  assert.equal(phuketDay2FlightPhoto.ownerSlug, '202602-thailand-phuket')
+  assert.equal(phuketDay2FlightPhoto.usage, 'itinerary')
+  assert.equal(phuketDay2FlightPhoto.day, 2)
+  assert.equal(phuketDay2FlightPhoto.sectionId, 'mai-khao-flight-viewing')
+  assert.equal(phuketDay2FlightPhoto.time, '14:30')
+  assert.equal(phuketDay2FlightPhoto.location, 'Mai Khao Beach Flight Viewing Point')
+  assert.equal(phuketDay2FlightPhoto.caption, '餐後回到邁考海灘，看飛機低空掠過海灘上方。')
+  assert.ok(phuketDay2FlightPhoto.tags.some((item) => item.tag === 'day-02'))
+  assert.ok(phuketDay2FlightPhoto.tags.some((item) => item.tag === 'section:mai-khao-flight-viewing'))
 
   const bloggerSample = await parseBloggerSeedSource(
     projectRoot,

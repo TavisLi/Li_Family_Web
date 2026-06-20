@@ -1,0 +1,98 @@
+[
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/cover/cover-001.jpg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "cover",
+    "caption": "Cover 001",
+    "sortOrder": 1
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-01-chongqing-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 01 Chongqing 001",
+    "sortOrder": 1
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-02-chongqing-001.jpg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 02 Chongqing 001",
+    "sortOrder": 2
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-03-chongqing-001.jpg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 03 Chongqing 001",
+    "sortOrder": 3
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-04-chongqing-001.jpg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 04 Chongqing 001",
+    "sortOrder": 4
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-05-Yangtze-cruise-001.jpg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 05 Yangtze Cruise 001",
+    "sortOrder": 5
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-05-Yangtze-cruise-002.jpg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 05 Yangtze Cruise 002",
+    "sortOrder": 6
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-06-Yangtze-cruise-001.jpg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 06 Yangtze Cruise 001",
+    "sortOrder": 7
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-07-Yangtze-cruise-001.gif",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 07 Yangtze Cruise 001",
+    "sortOrder": 8
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-07-Yangtze-cruise-002.webp",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 07 Yangtze Cruise 002",
+    "sortOrder": 9
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-08-tribe-of-three-gorges-001.jpg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 08 Tribe Of Three Gorges 001",
+    "sortOrder": 10
+  },
+  {
+    "sourcePath": "travels/202607-chongqing-yangtze-river/itinerary/day-08-tribe-of-three-gorges-002.jpg",
+    "ownerType": "travel",
+    "ownerSlug": "202607-chongqing-yangtze-river",
+    "usage": "itinerary",
+    "caption": "Day 08 Tribe Of Three Gorges 002",
+    "sortOrder": 11
+  }
+]

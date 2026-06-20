@@ -1,7 +1,12 @@
 import type { HomeConfig, Post, TravelProject, User } from '@/payload/payload-types'
+import type { BucketItem } from '@/payload/payload-types'
 import type { FamilySession } from './auth'
 import { getFamilySession, userReq } from './auth'
+import { getBucketQuickView } from './bucket-list'
 import { getPayloadClient } from './payload'
+import { getTimelineHomeWidget } from './timeline'
+import { getWrappedHomeCta, type WrappedHomeCta } from './wrapped'
+import type { TimelineEvent } from '@/payload/payload-types'
 
 const DEFAULT_LIMIT = 6
 
@@ -11,6 +16,9 @@ export type HomePageData = {
   posts: Post[]
   travelProjects: TravelProject[]
   familySession: FamilySession
+  timelineEvent: TimelineEvent | null
+  bucketItems: BucketItem[]
+  wrappedCta: WrappedHomeCta
 }
 
 export async function getMembers(
@@ -87,12 +95,13 @@ export async function getHomeConfig(): Promise<HomeConfig> {
 
 export async function getHomeData(): Promise<HomePageData> {
   const familySession = await getFamilySession()
-  const [members, travelProjects, posts, homeConfig] = await Promise.all([
-    getMembers(DEFAULT_LIMIT, familySession),
-    getFeaturedTravelProjects(DEFAULT_LIMIT, familySession),
-    getLatestPosts(DEFAULT_LIMIT, familySession),
-    getHomeConfig(),
-  ])
+  const homeConfig = await getHomeConfig()
+  const members = await getMembers(DEFAULT_LIMIT, familySession)
+  const travelProjects = await getFeaturedTravelProjects(DEFAULT_LIMIT, familySession)
+  const posts = await getLatestPosts(DEFAULT_LIMIT, familySession)
+  const timelineEvent = await getTimelineHomeWidget(familySession)
+  const bucketItems = await getBucketQuickView(familySession)
+  const wrappedCta = await getWrappedHomeCta(familySession)
 
   return {
     familySession,
@@ -100,6 +109,9 @@ export async function getHomeData(): Promise<HomePageData> {
     members,
     posts,
     travelProjects,
+    timelineEvent,
+    bucketItems,
+    wrappedCta,
   }
 }
 

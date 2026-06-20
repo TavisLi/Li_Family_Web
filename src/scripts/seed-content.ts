@@ -50,13 +50,17 @@ const memberAssetSlugByDir = new Map([
 const travelSlugByFilename = new Map([
   ['201307海南岛8日.md', '201307-hainan'],
   ['202308东澳全览9日.md', '202308-east-australia'],
+  ['202602泰国普吉岛8日.md', '202602-thailand-phuket'],
   ['202607重庆长江三峡8日.md', '202607-chongqing-yangtze-river'],
+  ['202702泰国普吉岛7日.md', '202702-thailand-phuket'],
 ])
 
 const travelStatusBySlug = {
   '201307-hainan': 'completed',
   '202308-east-australia': 'completed',
+  '202602-thailand-phuket': 'completed',
   '202607-chongqing-yangtze-river': 'planning',
+  '202702-thailand-phuket': 'planning',
 } as const
 
 const travelDatesBySlug = {
@@ -68,9 +72,17 @@ const travelDatesBySlug = {
     startDate: '2023-08-01',
     endDate: '2023-08-09',
   },
+  '202602-thailand-phuket': {
+    startDate: '2026-02-10',
+    endDate: '2026-02-17',
+  },
   '202607-chongqing-yangtze-river': {
     startDate: '2026-07-01',
     endDate: '2026-07-08',
+  },
+  '202702-thailand-phuket': {
+    startDate: '2027-02-02',
+    endDate: '2027-02-08',
   },
 } as const
 
@@ -210,11 +222,16 @@ const mediaSeedSchema = z.object({
   sourcePath: z.string().min(1),
   absolutePath: z.string().min(1),
   altText: z.string().min(1),
+  caption: z.string().optional(),
   tags: z.array(z.object({ tag: z.string().min(1) })),
   ownerType: z.enum(['home', 'member', 'travel']),
   ownerSlug: z.string().min(1),
   usage: z.enum(['avatar', 'hero', 'card', 'career', 'gallery', 'cover', 'itinerary']),
   sortOrder: z.number().int().min(0).optional(),
+  day: z.number().int().min(1).optional(),
+  sectionId: z.string().min(1).optional(),
+  time: z.string().min(1).optional(),
+  location: z.string().min(1).optional(),
 })
 
 const blogCategorySeedSchema = z.object({
@@ -289,6 +306,10 @@ const manifestEntrySchema = z.object({
   usage: z.enum(['cover', 'gallery', 'itinerary']),
   caption: z.string().optional(),
   sortOrder: z.number().int().min(0).optional(),
+  day: z.number().int().min(1).optional(),
+  sectionId: z.string().min(1).optional(),
+  time: z.string().min(1).optional(),
+  location: z.string().min(1).optional(),
 })
 
 export type FamilyMemberSeed = z.infer<typeof familyMemberSeedSchema>
@@ -550,15 +571,21 @@ async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
         sourcePath,
         absolutePath,
         altText: manifestEntry?.caption?.trim() || humanizeFilename(filename),
+        caption: manifestEntry?.caption,
         tags: [
           { tag: owner.ownerType },
           { tag: owner.ownerSlug },
           { tag: usage },
+          ...manifestMetadataTags(manifestEntry),
         ],
         ownerType: owner.ownerType,
         ownerSlug: owner.ownerSlug,
         usage,
         sortOrder,
+        day: manifestEntry?.day,
+        sectionId: manifestEntry?.sectionId,
+        time: manifestEntry?.time,
+        location: manifestEntry?.location,
       })
     })
     .sort(sortMediaSeeds)
@@ -568,23 +595,48 @@ async function readAssetManifest(
   projectRoot: string,
   assetRoot: string,
 ): Promise<Map<string, z.infer<typeof manifestEntrySchema>>> {
-  const manifestPath = path.join(projectRoot, 'content-source/assets/manifest.json')
-
-  try {
-    const raw = await fs.readFile(manifestPath, 'utf8')
-    const entries = z.array(manifestEntrySchema).parse(JSON.parse(raw))
-    const manifest = new Map<string, z.infer<typeof manifestEntrySchema>>()
-
+  const globalManifestPath = path.join(projectRoot, 'content-source/assets/manifest.json')
+  const manifests = new Map<string, z.infer<typeof manifestEntrySchema>>()
+  const addEntries = (entries: z.infer<typeof manifestEntrySchema>[]) => {
     for (const entry of entries) {
       const absolutePath = path.join(assetRoot, entry.sourcePath)
 
-      manifest.set(toAssetRelativePath(assetRoot, absolutePath), entry)
+      manifests.set(toAssetRelativePath(assetRoot, absolutePath), entry)
     }
+  }
 
-    return manifest
+  addEntries(await readManifestEntries(globalManifestPath))
+
+  const travelAssetRoot = path.join(assetRoot, 'travels')
+  try {
+    const travelDirs = await fs.readdir(travelAssetRoot, { withFileTypes: true })
+    const localManifestPaths = travelDirs
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => path.join(travelAssetRoot, entry.name, 'manifest.json'))
+      .sort((left, right) => left.localeCompare(right))
+
+    for (const manifestPath of localManifestPaths) {
+      addEntries(await readManifestEntries(manifestPath))
+    }
+  } catch (error) {
+    if (!isNodeError(error) || error.code !== 'ENOENT') {
+      throw error
+    }
+  }
+
+  return manifests
+}
+
+async function readManifestEntries(
+  manifestPath: string,
+): Promise<z.infer<typeof manifestEntrySchema>[]> {
+  try {
+    const raw = await fs.readFile(manifestPath, 'utf8')
+
+    return z.array(manifestEntrySchema).parse(JSON.parse(raw))
   } catch (error) {
     if (isNodeError(error) && error.code === 'ENOENT') {
-      return new Map()
+      return []
     }
 
     throw error
@@ -609,6 +661,22 @@ function sortMediaSeeds(left: MediaSeed, right: MediaSeed): number {
   }
 
   return (left.sortOrder ?? 0) - (right.sortOrder ?? 0) || left.sourcePath.localeCompare(right.sourcePath)
+}
+
+function manifestMetadataTags(
+  manifestEntry: z.infer<typeof manifestEntrySchema> | undefined,
+): { tag: string }[] {
+  if (!manifestEntry) {
+    return []
+  }
+
+  return [
+    manifestEntry.day ? `day-${String(manifestEntry.day).padStart(2, '0')}` : undefined,
+    manifestEntry.sectionId ? `section:${manifestEntry.sectionId}` : undefined,
+    manifestEntry.location ? `location:${slugify(manifestEntry.location)}` : undefined,
+  ]
+    .filter((tag): tag is string => Boolean(tag))
+    .map((tag) => ({ tag }))
 }
 
 async function walkFiles(directory: string): Promise<string[]> {
