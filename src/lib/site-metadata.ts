@@ -1,5 +1,5 @@
 const DEFAULT_SITE_URL = 'http://localhost:3000'
-const DEFAULT_OG_IMAGE_PATH = '/opengraph-image'
+const DEFAULT_OG_IMAGE_PATH = '/api/og-default'
 
 export function siteMetadataBase(value = process.env.NEXT_PUBLIC_SERVER_URL): URL {
   return new URL(value?.trim() || DEFAULT_SITE_URL)

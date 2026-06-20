@@ -66,7 +66,7 @@ Phase 8 將既有功能收斂為正式部署前的 production hardening，範圍
 - `src/payload/r2.test.ts`
 - `src/lib/site-metadata.ts`
 - `src/lib/site-metadata.test.ts`
-- `src/app/(app)/opengraph-image.tsx`
+- `src/app/api/og-default/route.tsx`
 - `src/app/(app)/layout.tsx`
 - `src/app/(app)/blog/[slug]/page.tsx`
 - `docs/production-deployment-checklist.md`
