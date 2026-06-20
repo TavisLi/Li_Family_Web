@@ -1,6 +1,6 @@
 # Web Li Phase 9: Content Alignment, Complete Travel Coverage, and v1 Launch
 
-請執行 Web Li Phase 9。目標是將已提交的 `docs/` 與 `content-source/` 內容正確轉換成 Payload / R2 / 前台資料，完成每一個旅遊項目頁面，並以可追溯的驗收流程交付第一個正式可用版本。
+請執行 Web Li Phase 9。目標是將已提交的 `docs/` 與 `content-source/` 內容正確轉換成 Payload / R2 / 前台資料，更新已有頁面並完成新增的旅遊項目頁面，並以可追溯的驗收流程交付第一個正式可用版本。
 
 這不是另一輪純部署 hardening。Phase 8 已完成 Vercel、R2 URL、metadata 與 Production route-level HTTP 驗證；Phase 9 必須完成內容正確性、資料匯入與正式上線驗收。
 
