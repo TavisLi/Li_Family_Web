@@ -17,20 +17,19 @@ Phase 4-1 是 Phase 4 Travel Interaction System 完成後的延伸整理工作�
 ## 2. Branch / Commit
 
 - 當前分支：`codex/phase-7-time-capsule-bucket-wrapped`
-- 當前 HEAD：`ef0bc84 Document phase 7 PR status`
-- Phase 4-1 相關變更狀態：尚未 commit
-- 說明：本批工作是在 Phase 7 分支上的後續整理變更，工作樹同時包含未追蹤素材與既有 dirty 狀態，因此尚未建立乾淨的 Phase 4-1 commit。
+- Phase 4-1 commit：`f863dbb Prepare phase 4-1 travel content sources`
+- 說明：依照 2026-06-19 使用者確認，本批 Phase 4-1 延伸整理工作合入目前 Phase 7 分支，作為後續 Phase 可重複使用的旅遊內容源、素材治理、manifest 對應與設計文檔基礎。
 
 ## 3. GitHub Sync / PR 狀態
 
-- GitHub push：尚未執行
-- Pull Request：尚未建立
-- PR 阻塞原因：
-  - 目前分支不是 Phase 4-1 專用分支。
-  - 工作樹包含多項未追蹤內容，例如 `202602-thailand-phuket` 資產、`202702-thailand-phuket` 資產、Blogger takeout zip 與 `.DS_Store`。
-  - 需要先確認哪些素材應納入本次提交，哪些應留給 Phase 5/後續 Phase 或排除。
+- GitHub push：完成，推送至 `origin/codex/phase-7-time-capsule-bucket-wrapped`
+- Pull Request：沿用既有 Phase 7 PR [#7](https://github.com/TavisLi/Li_Family_Web/pull/7)
+- PR 說明：本次未另建 Phase 4-1 專用 PR；依使用者指示，若未發現問題即將 Phase 4-1 延伸整理變更合入目前 Phase 7 分支與 PR。
+- 明確排除：
+  - `.DS_Store`
+  - `content-source/blogger/takeout-20260614T010941Z-3-001.zip`
 
-Phase completion 規則提醒：本報告已輸出並完成技術驗證，但 Phase 4-1 的 GitHub 同步尚未完成；正式交付仍需後續建立 commit、push branch 並建立 PR，或明確記錄 PR blocker。
+排除原因：`.DS_Store` 屬系統檔；Blogger takeout zip 約 483MB，超過一般 GitHub 單檔限制且不適合作為本次內容源治理 commit 的版本化素材。
 
 ## 4. Delivered Features / Changes
 
@@ -213,11 +212,11 @@ pnpm run build
 
 ## 8. Known Limitations
 
-- Phase 4-1 變更尚未 commit、push 或建立 PR。
-- 工作樹仍包含未追蹤素材與非本次核心內容，例如 Blogger takeout zip、`.DS_Store`、202602/202702 大量素材。
+- Phase 4-1 變更已 commit 並合入目前 Phase 7 分支；本次沒有建立獨立 Phase 4-1 PR。
+- 工作樹仍保留未合入內容：Blogger takeout zip 與 `.DS_Store`。這兩項已確認排除，不屬於本次可安全版本化的 Phase 4-1 交付範圍。
 - `content-source/assets/manifest.json` 目前為空陣列，這是預期狀態；後續只有跨專案或全域例外映射才應放回主 manifest。
 - Travel design docs 目前只建立文件治理規則，尚未轉為 Payload schema 或前台 runtime template。
-- 202602/202702 新旅行資料已可被 seed parser 穩定識別 slug，但後續是否納入正式 seed/PR 仍需按 Phase 範圍決定。
+- 202602/202702 新旅行資料已可被 seed parser 穩定識別 slug；本次已納入內容源與素材治理基礎，但尚未新增前台互動功能。
 
 ## 9. Next-Phase Readiness
 
@@ -233,11 +232,6 @@ Phase 4-1 已為後續 Phase 建立以下準備：
 
 建議下一步：
 
-1. 建立乾淨的 Phase 4-1 或 content-source 專用分支，或確認是否繼續沿用目前 Phase 7 分支。
-2. 明確決定本次提交要包含哪些素材：
-   - 必含：manifest、parser、guidelines、design docs。
-   - 待確認：Blogger zip、202602/202702 全量照片與 Markdown。
-   - 排除：`.DS_Store`。
-3. 重新執行 `pnpm run test:seed-content`、`pnpm tsc --noEmit`、`pnpm run build`。
-4. stage、commit、push，建立 PR。
-5. PR 建立後回填本報告的 commit hash、PR URL 與 GitHub sync 狀態。
+1. PR review 時確認 Phase 7 前台功能與 Phase 4-1 內容源治理可在同一 PR 接受；若團隊希望拆 PR，可由目前 commit 拆出 content-source 專用分支。
+2. 後續 Phase 若要使用 Blogger takeout，應先拆解為可審查的 Markdown/JSON/媒體清單，不應直接提交原始大型 zip。
+3. 若將 `designProfile` 或 itinerary metadata 接入前台渲染，需再新增 Payload schema / seed 欄位與 desktop / mobile browser QA。
