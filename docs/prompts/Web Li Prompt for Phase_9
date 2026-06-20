@@ -1,0 +1,187 @@
+# Web Li Phase 9: Content Alignment, Complete Travel Coverage, and v1 Launch
+
+請執行 Web Li Phase 9。目標是將已提交的 `docs/` 與 `content-source/` 內容正確轉換成 Payload / R2 / 前台資料，完成每一個旅遊項目頁面，並以可追溯的驗收流程交付第一個正式可用版本。
+
+這不是另一輪純部署 hardening。Phase 8 已完成 Vercel、R2 URL、metadata 與 Production route-level HTTP 驗證；Phase 9 必須完成內容正確性、資料匯入與正式上線驗收。
+
+## 0. 起手式
+
+1. 先確認本地在最新 `main`：
+
+   ```bash
+   git status --short --branch
+   git fetch origin main
+   git switch main
+   git pull --ff-only
+   ```
+
+2. 從 `main` 建立隔離工作分支，例如：
+
+   ```bash
+   git switch -c codex/phase-9-content-alignment-v1-launch
+   ```
+
+3. 先閱讀並遵守根目錄 `AGENTS.md`。特別注意：
+
+   - Next.js 15 App Router 與 Payload CMS v3 stable。
+   - 前台不得直接呼叫 Payload Local API；資料必須經 `src/lib/data/`。
+   - Payload collection 是資料庫唯一真相；schema 變更後必須 generate types，必要時建立 migration。
+   - 不可使用 Vercel Blob；媒體仍使用 Cloudflare R2。
+   - 所有 secret 僅限 server / Vercel environment variables，禁止寫入 repo、report 或 client code。
+
+## 1. 必讀文件與現況
+
+開始設計或修改前，逐一閱讀：
+
+- `docs/全栈系统需求与技术架构说明书.md`
+- `docs/family-members.md`
+- `docs/travel-projects.md`
+- `content-source/profiles/`
+- `content-source/travels/`
+- `content-source/assets/`，包括每個 travel-local `manifest.json`
+- `docs/content-source-asset-guidelines.md`
+- `docs/travel-content-source-guidelines.md`
+- `docs/production-deployment-checklist.md`
+- `docs/phase-completion-reports/phase-08-production-hardening.md`
+- `src/scripts/seed-content.ts`
+- `src/scripts/seed.ts`
+- `src/payload/collections/Users.ts`
+- `src/payload/collections/TravelProjects.ts`
+- `src/payload/collections/Media.ts`
+- `src/lib/data/travel.ts`
+- `src/app/(app)/travel/page.tsx`
+- `src/app/(app)/travel/[slug]/page.tsx`
+- `src/features/travel/`
+
+開始前必須輸出一份「來源覆蓋盤點」：列出 `docs/travel-projects.md` 的每一個項目、對應的 Markdown、canonical slug、status、cover / gallery / itinerary media 數量，以及目前 parser 可產出的欄位。不可依記憶硬編碼清單。
+
+現況提醒：
+
+- 現在已有通用 `/travel/[slug]` route。不得為每一個旅程建立彼此分叉的 route 檔案；應維持資料驅動的共用頁面架構。
+- 現有來源至少包含海南、東澳、2026 普吉、2026 重慶三峽、2027 普吉。實際 scope 必須以本次盤點結果為準。
+- `Users.displayName` 與 interests 子欄位已是 localized。先利用既有 schema；只有現有欄位確實無法承載需求時才調整 collection。
+- Phase 8 Production logs 曾出現 `tavis-avatar-800x800.jpg` 與 `lynn-avatar-800x800.jpg` 404。第一版正式上線前必須補齊檔案或以經產品確認的替代媒體取代，不能只依賴 fallback 當最終解法。
+
+## 2. Phase 目標與不可妥協的完成條件
+
+Phase 9 完成時，必須同時滿足：
+
+1. `docs/family-members.md`、`docs/travel-projects.md`、旅遊 Markdown 與 asset manifests 的有效內容，能可預期地進入 seed model。
+2. 每個旅遊項目都有一筆 Payload `travel-projects` record，且 `/travel/<slug>` 可成功渲染正確資料。
+3. 所有旅遊頁使用相同資料驅動頁面系統，但每個頁面都有其真實 title、summary、行程、航班、住宿、媒體與可用的 YouTube 連結。
+4. Production Payload、R2 與 Vercel 正在使用的資料實際完成同步；不可只驗證本機 `buildSeedContent()`。
+5. 正式網域或 Vercel Production alias 的桌機、手機、公開與 family 流程 browser QA 都有明確證據。
+
+## 3. 工作範圍
+
+### 3.1 家庭資料：雙語與興趣解析
+
+- 將 `docs/family-members.md` 的 `呈現名稱(中文網頁/英文網頁)` 視為正式來源格式。
+- parser 必須將中文名稱寫入 `zh-TW`，英文名稱寫入 `en`；slug 必須穩定且不可因名稱顯示方式改變。
+- `愛好/組件` 必須解析出括號前的興趣清單；括號內的頁面設計說明不可被誤存為唯一興趣。
+- 如設計說明需要保留，只有在既有 schema 有恰當欄位時才寫入；否則留在 source docs，不要為了備註而膨脹資料模型。
+- 為雙語名稱、所有成員的興趣、locale fallback 與舊版簡繁相容性新增 focused regression tests。
+
+### 3.2 旅遊目錄與 Markdown 解析
+
+- 建立明確、可測試的 travel catalog parser，將 `docs/travel-projects.md` 的項目、呈現名稱、來源文件與 status 對應到 canonical slug。
+- `docs/travel-projects.md` 的呈現名稱必須能覆蓋或補強旅遊頁 display title；frontmatter / 原始 Markdown 仍保存行程原始標題與內容。明確定義 title precedence，並以測試鎖定。
+- 不可只依 filename map 猜測。繁簡檔名、文件 rename 與 canonical slug 必須有單一對照邏輯，並驗證每個 catalog 項目恰好對應一份 Markdown。
+- 解析每份旅遊 Markdown 中可用的：
+  - title、summary、旅伴、日期與 status
+  - 航班與必要的 rail segment
+  - 住宿
+  - 每日行程與提醒
+  - YouTube / youtu.be / shorts 外部影片連結
+- 以實際來源內容為準。若表格格式不同，使用結構化 Markdown table parser / 明確 section parser，不可用脆弱的大型 regex 或人工硬塞資料。
+- 目前來源有航班表格但 seed output 曾出現 0 筆 flights。先以 regression test 重現，再修正 parser。
+- 若 TravelProjects 現有 schema 缺少外部影片資料，依 Payload v3 schema-first 流程新增最小必要欄位；影片僅保存 YouTube URL / metadata，不上傳原生影片檔。完成後執行 `pnpm exec payload generate:types`，如 schema 有變更再建立並驗證 migration。
+
+### 3.3 完整旅遊頁面交付
+
+- 保持 `/travel` 與 `/travel/[slug]` 的共用資料驅動架構，透過 `src/lib/data/travel.ts` 取得資料。
+- `/travel` 必須列出 catalog 中所有可公開項目，連結到正確 slug，不得遺漏來源中的任一項。
+- 每個 `/travel/<slug>` 必須有：
+  - 正確的 canonical / localized title 與 metadata。
+  - 行程摘要、日期、旅伴、航班、住宿、每日行程。
+  - cover、gallery、itinerary media 的明確呈現；關係不存在或 R2 URL 失敗時使用 `ImageFallback`。
+  - 可存取且安全的 YouTube embed / link；不渲染任意第三方 iframe。
+  - planning / completed 狀態的適當呈現，且不洩漏 family-only 資訊。
+- 遵循現有 UI patterns；不要為個別旅程複製整份 detail component。只有確實可重用、消除複雜度的子元件才抽取。
+- 新增 coverage test，保證 catalog 中每個 slug 都能被 parser、seed model、資料層和 page route 覆蓋；至少對每個 slug 做 route-level smoke check。
+
+### 3.4 Media、R2 與 Production 資料同步
+
+- 驗證所有 asset manifest 的 `sourcePath`、owner type、owner slug 與檔案存在性；travel-local manifest 優先規則不得被破壞。
+- 驗證 `the_grand_family_lobby` 的所有圖片都會以 home gallery media 被辨識；新增圖片需真正進入 R2 / Payload，而不是只存在 Git。
+- 補齊或替換 Tavis、Lynn 缺失的 R2 avatar，確認 Production 不再產生該兩筆 404。
+- 在 seed 對 Production 前，提供並執行受控流程：
+  1. source coverage / dry-run report，列出 create、update、skip 與可能刪除風險。
+  2. 備份或可回復方案，至少記錄變更前的 document IDs、sourcePath 與 deployment URL。
+  3. 使用 Vercel / Payload 的受保護 environment variables 執行 idempotent upsert。
+  4. 讀回 Production Payload，驗證 record、locale、media URLs 與 relation IDs。
+- 不可將 Production secret 寫入 `.env.example`、repo、console report 或 client bundle。
+- 未取得執行 Production data mutation 的明確使用者同意時，只完成 dry-run 與證據整理，並在 completion report 逐條記錄 blocker；不可假裝已同步。
+
+### 3.5 正式上線驗收
+
+- 依 `docs/production-deployment-checklist.md` 補齊 Vercel Preview 與 Production 驗證。
+- 在真實瀏覽器進行桌機與手機 QA，至少涵蓋：
+  - `/`、`/travel`、每一個 `/travel/<slug>`、`/blog`、`/timeline`。
+  - 未登入 `/bucket-list`、`/wrapped` 的 redirect。
+  - 有授權測試帳號時的 family login、登入後 bucket list / wrapped、private data boundary。
+  - family profile 的 `zh-TW` / `en` 顯示與興趣內容。
+  - travel cover、gallery、itinerary media、YouTube、缺圖 fallback。
+- 確認 Production `NEXT_PUBLIC_SERVER_URL` 對應正式網域策略。若尚未有 custom domain，可用 Vercel alias 做首次發布，但必須在報告寫明使用的公開網址與 custom domain 待辦。
+- 以 Vercel logs 或 equivalent evidence 確認無新的 5xx、Media 404、secret initialization error；既知 avatar 404 必須歸零或有明確批准的替代方案。
+
+## 4. 驗證命令
+
+每次 schema、parser、seed 或前台變更後，依風險重跑並記錄：
+
+```bash
+pnpm exec payload generate:types
+pnpm run test:seed-content
+pnpm tsc --noEmit
+pnpm run build
+```
+
+另須新增或執行：
+
+- family bilingual / interests parser tests。
+- travel catalog completeness tests。
+- travel Markdown parser tests，至少覆蓋五個來源項目與航班、住宿、daily itinerary、影片連結。
+- asset manifest / sourcePath integrity tests。
+- Production seed dry-run 或可重現的 data audit。
+- Preview / Production browser 與 route-level smoke test evidence。
+
+不可在缺少 `PAYLOAD_SECRET`、`DATABASE_URI`、R2 credential 或 Production mutation 授權時偽造 `pnpm run seed` 成功。必須明確標示沒有做的步驟與原因。
+
+## 5. 文件、Git 與完成條件
+
+新增或更新必要文件：
+
+- 必要時更新 `docs/travel-content-source-guidelines.md`，明確記錄 catalog、雙語 family source 與 Markdown section contract。
+- 如新增 seed / release 操作，更新 `docs/production-deployment-checklist.md`。
+- 建立中文 completion report：
+
+  ```text
+  docs/phase-completion-reports/phase-09-content-alignment-v1-launch.md
+  ```
+
+報告至少包含：scope、branch / commit、GitHub / PR 狀態、catalog coverage 表、source-to-Payload mapping、R2 / Production seed 結果、每個旅遊頁 QA、驗證命令、已知限制、正式上線網址與 rollback 指引。
+
+建議 commit message：
+
+```text
+Complete phase 9 content alignment and v1 launch readiness
+```
+
+Phase 9 不算完成，直到：
+
+1. 所有 catalog 項目都有對應 Markdown、stable slug、Payload record 與可訪問旅遊頁。
+2. family bilingual names、interests、travel title、航班、住宿、每日行程與影片資料都有 regression evidence。
+3. 媒體已完成 R2 / Payload 同步，兩筆既知 avatar 404 已修復或有使用者批准的替代方案。
+4. Preview、Production、桌機、手機、公開與 family 流程 QA 完成，或每個外部 blocker 均有明確證據與後續責任。
+5. completion report 已建立，本地 commit 已建立，branch 已推送，PR 已建立。
+6. PR merge 後 Production deployment 與資料同步結果已再次確認。

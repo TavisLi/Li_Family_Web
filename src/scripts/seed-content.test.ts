@@ -88,6 +88,24 @@ async function main() {
   )
   assert.ok(seedContent.media.every((item) => !item.sourcePath.includes('/.')))
 
+  const hainanDay3GuanyinPhoto = seedContent.media.find(
+    (item) =>
+      item.sourcePath.endsWith(
+        'content-source/assets/travels/201307-hainan/itinerary/day-03-nanshan-sea-guanyin-001.jpeg',
+      ),
+  )
+
+  assert.ok(hainanDay3GuanyinPhoto)
+  assert.equal(hainanDay3GuanyinPhoto.ownerSlug, '201307-hainan')
+  assert.equal(hainanDay3GuanyinPhoto.usage, 'itinerary')
+  assert.equal(hainanDay3GuanyinPhoto.day, 3)
+  assert.equal(hainanDay3GuanyinPhoto.sectionId, 'nanshan-sea-guanyin')
+  assert.equal(hainanDay3GuanyinPhoto.time, '11:00')
+  assert.equal(hainanDay3GuanyinPhoto.location, 'Nanshan Cultural Tourism Zone')
+  assert.equal(hainanDay3GuanyinPhoto.caption, '南山文化旅遊區的海上觀音。')
+  assert.ok(hainanDay3GuanyinPhoto.tags.some((item) => item.tag === 'day-03'))
+  assert.ok(hainanDay3GuanyinPhoto.tags.some((item) => item.tag === 'section:nanshan-sea-guanyin'))
+
   const phuketDay2FlightPhoto = seedContent.media.find(
     (item) =>
       item.sourcePath.endsWith(

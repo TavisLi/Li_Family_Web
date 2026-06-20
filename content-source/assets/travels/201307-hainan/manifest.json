@@ -1,0 +1,150 @@
+[
+  {
+    "sourcePath": "travels/201307-hainan/cover/cover-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "cover",
+    "caption": "亞龍灣鳥巢度假村的山海景觀與峭壁天池。",
+    "sortOrder": 1
+  },
+  {
+    "sourcePath": "travels/201307-hainan/cover/cover-002.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "cover",
+    "caption": "石梅灣艾美度假酒店通往海灘的景觀。",
+    "sortOrder": 2
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-01-sanya-mgm-arrival-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 1,
+    "sectionId": "sanya-mgm-arrival",
+    "time": "19:00",
+    "location": "Sanya MGM Resort",
+    "caption": "傍晚抵達三亞後，入住亞龍灣美高梅度假酒店。",
+    "sortOrder": 1010
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-02-yalong-bay-mgm-beach-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 2,
+    "sectionId": "yalong-bay-mgm-beach",
+    "time": "12:00",
+    "location": "Yalong Bay MGM Resort",
+    "caption": "雨天仍到亞龍灣海灘與泳池散步，留下第一段海灣記憶。",
+    "sortOrder": 2010
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-03-nanshan-sea-guanyin-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 3,
+    "sectionId": "nanshan-sea-guanyin",
+    "time": "11:00",
+    "location": "Nanshan Cultural Tourism Zone",
+    "caption": "南山文化旅遊區的海上觀音。",
+    "sortOrder": 3010
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-03-luhuitou-overlook-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 3,
+    "sectionId": "luhuitou-overlook",
+    "time": "17:00",
+    "location": "Luhuitou Scenic Area",
+    "caption": "登上鹿回頭公園，俯瞰三亞灣與市區海岸線。",
+    "sortOrder": 3020
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-04-yalong-bay-birds-nest-suspension-bridge-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 4,
+    "sectionId": "yalong-bay-birds-nest-suspension-bridge",
+    "time": "15:30",
+    "location": "Yalong Bay Tropical Paradise Forest Park",
+    "caption": "走過鳥巢度假村的過江龍索橋，重訪《非誠勿擾2》取景地。",
+    "sortOrder": 4010
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-04-cliffside-sky-pool-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 4,
+    "sectionId": "cliffside-sky-pool",
+    "time": "16:00",
+    "location": "Birds Nest Resort Cliffside Sky Pool",
+    "caption": "鳥巢西區的峭壁天池，把山林與亞龍灣盡收眼底。",
+    "sortOrder": 4020
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-05-yalong-bay-birds-nest-panorama-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 5,
+    "sectionId": "yalong-bay-birds-nest-panorama",
+    "time": "11:00",
+    "location": "Yalong Bay Tropical Paradise Forest Park",
+    "caption": "在鳥巢度假村山頂遠望亞龍灣與海岸線。",
+    "sortOrder": 5010
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-06-haitang-bay-hilton-water-park-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 6,
+    "sectionId": "haitang-bay-hilton-water-park",
+    "time": "17:00",
+    "location": "Haitang Bay Hilton DoubleTree Resort",
+    "caption": "海棠灣希爾頓逸林的兒童泳池與滑水道。",
+    "sortOrder": 6010
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-07-binglang-valley-li-village-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 7,
+    "sectionId": "binglang-valley-li-village",
+    "time": "11:30",
+    "location": "Binglang Valley",
+    "caption": "走進檳榔谷黎寨，認識海南黎族生活與手作文化。",
+    "sortOrder": 7010
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-08-shimei-bay-le-meridien-lagoon-pool-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 8,
+    "sectionId": "shimei-bay-le-meridien-lagoon-pool",
+    "time": "10:30",
+    "location": "Le Meridien Shimei Bay",
+    "caption": "石梅灣艾美的礁湖泳池，是旅程最後一天的度假亮點。",
+    "sortOrder": 8010
+  },
+  {
+    "sourcePath": "travels/201307-hainan/itinerary/day-08-shimei-bay-le-meridien-beach-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "201307-hainan",
+    "usage": "itinerary",
+    "day": 8,
+    "sectionId": "shimei-bay-le-meridien-beach",
+    "time": "12:30",
+    "location": "Le Meridien Shimei Bay",
+    "caption": "石梅灣艾美幾乎無人的海灘，為八日旅程留下安靜的尾聲。",
+    "sortOrder": 8020
+  }
+]
