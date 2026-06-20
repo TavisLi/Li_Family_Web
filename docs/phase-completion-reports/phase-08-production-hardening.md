@@ -25,13 +25,8 @@ Phase 8 將既有功能收斂為正式部署前的 production hardening，範圍
 ## GitHub Sync / PR 狀態
 
 - branch 已成功推送至 `origin/codex/phase-8-production-hardening`。
-- GitHub CLI 認證 blocker：`gh auth status` 仍回報 `TavisLi` 的 default token invalid；因此本機無法建立 draft PR。
-- 需要在此執行環境重新認證後執行：
-
-```bash
-gh auth login -h github.com
-gh pr create --draft --base main --head codex/phase-8-production-hardening --title "Finalize phase 8 production hardening and deployment"
-```
+- Draft PR：`https://github.com/TavisLi/Li_Family_Web/pull/8`。
+- GitHub branch 與 PR 建立已完成；Vercel Preview / Production 驗證狀態見本報告後續章節。
 
 ## 已交付項目
 
@@ -102,16 +97,15 @@ local server 提權請求未完成，因此無法在本機執行 `/`、`/travel`
 
 ## Vercel Preview / Production 狀態
 
-- 本機未安裝 Vercel CLI，且沒有 `.vercel/project.json` project link。
-- 無法從本機取得 Preview 或 Production deployment 狀態。
-- 推送 branch 與建立 PR 後，需在 Vercel dashboard 確認 Preview；PR merge 後確認 Production 使用正式 `NEXT_PUBLIC_SERVER_URL`，並記錄 deployment URL 與 smoke test 結果。
+- Vercel Preview：成功。PR #8 的 `Vercel` status check 為 `SUCCESS`，deployment URL：`https://vercel.com/tavis-li-s-projects/li-family-web/8CX4oB6yJrSkE62yh6wPQAXm3PE3`。
+- 本機未安裝 Vercel CLI，且沒有 `.vercel/project.json` project link；Preview 狀態透過 GitHub PR check 驗證。
+- Production：待 PR merge 後確認。合併後需確認 Production 使用正式 `NEXT_PUBLIC_SERVER_URL`，並記錄 deployment URL 與 smoke test 結果。
 
 ## 已知限制
 
 - `pnpm run seed` 需要本機或 CI 注入有效的 `PAYLOAD_SECRET`、`DATABASE_URI` 與必要 R2 env。
 - 本機 sandbox 阻止 localhost port binding，因此 browser QA 尚待有權限環境執行。
-- GitHub CLI token 無效，push/PR 尚待重新認證後完成。
-- Vercel link/CLI 不存在，Preview/Production 驗證需由已連結 Vercel 專案的環境或 dashboard 執行。
+- Production deployment 與其 post-merge smoke test 尚待 PR merge 後完成。
 
 ## 下一階段準備度
 
