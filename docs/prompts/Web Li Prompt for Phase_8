@@ -1,56 +1,206 @@
-請執行 Web Li Phase-8：Production Hardening、Cloudflare R2 媒體管線、效能與正式部署收尾。
+請執行 Web Li Phase-8：Production Hardening、Cloudflare R2 媒體管線審計、效能與正式部署收尾。
 
-目標：
-把 Web Li 從功能完成推進到可長期運營的 production-ready 狀態，包含 R2 媒體儲存、SEO、效能、安全、Vercel 部署與文件整理。
+## 0. 起手式
 
-必讀：
-- docs/全栈系统需求与技术架构说明书.md 的 2、5.4、8、9
-- Media collection
-- next.config.mjs
-- vercel.json
-- .env.example
-- Vercel / Cloudflare R2 相關設定
+1. 先確認本地在最新 `main`：
+   - `git status --short --branch`
+   - `git fetch origin main`
+   - `git switch main`
+   - `git pull --ff-only`
+2. 從 `main` 建立 Phase 8 工作分支，例如：
+   - `git switch -c codex/phase-8-production-hardening`
+3. 先閱讀並遵守專案 `AGENTS.md`，尤其是 Next.js 15 App Router、Payload CMS v3、資料層隔離、schema-first、ImageFallback 與 Phase completion report 規則。
 
-任務：
-1. 導入 Cloudflare R2 S3 adapter，但不得使用 Vercel Blob。
-2. Media collection 支援 photo/video：
-   - photo 上傳至 R2
-   - video 僅存 YouTube URL
-3. 確認 imageSizes：
-   - thumbnail 400
-   - medium 800
-   - large 1600
-4. 全站圖片檢查：
-   - Next Image
-   - sizes
-   - ImageFallback
-5. SEO：
-   - 所有主要頁面 generateMetadata
-   - Blog JSON-LD
-   - Open Graph image fallback
-6. 效能：
-   - 檢查 Promise.all
-   - dynamic import 複雜動畫
-   - 避免 client bundle 過大
-7. 安全：
-   - env 不外洩
-   - private data 不進 public response
-8. Vercel：
-   - pnpm run build
-   - 確認 Preview deployment
-   - 合併 PR 後確認 Production deployment
-9. 文件：
-   - 更新 README / deployment notes
-   - 記錄 env vars 與部署流程
+## 1. Phase 目標
 
-驗證：
-- pnpm tsc --noEmit
-- pnpm run build
-- pnpm run seed，如環境可用
-- browser end-to-end smoke test
-- Vercel Preview 通過
+把 Web Li 從「功能已完成」推進到可長期運營的 production-ready 狀態。Phase 8 不應大幅新增前台互動功能，而是聚焦於：
 
-commit message:
+- Cloudflare R2 / Payload S3 storage 管線審計與補齊。
+- Media photo / YouTube video 邊界確認。
+- SEO、Open Graph、JSON-LD 與 metadata 完整性。
+- 圖片、資料抓取、client bundle 與動態動畫的效能整理。
+- 環境變數、安全、Vercel Preview / Production 部署與文件交接。
+
+## 2. 必讀文件與現況檢查
+
+開始寫 code 前必讀：
+
+- `docs/全栈系统需求与技术架构说明书.md`
+  - 第 2 節：Tech Stack 與核心架構約束。
+  - 第 5.4 節：Media 媒體流水線模型。
+  - 第 8 節：Environment Variables。
+  - 第 9 節：Rules for AI。
+- `docs/phase-completion-reports/phase-07-time-capsule-bucket-wrapped.md`
+- `docs/phase-completion-reports/phase-04-1-travel-content-source-readiness.md`
+- `docs/content-source-asset-guidelines.md`
+- `docs/travel-content-source-guidelines.md`
+- `.env.example`
+- `next.config.mjs`
+- `vercel.json`
+- `src/payload/payload.config.ts`
+- `src/payload/collections/Media.ts`
+- `src/components/ui/payload-image.tsx`
+- `src/lib/media.ts`
+- `src/lib/data/`
+
+現況提醒：
+
+- 專案已使用 Next.js `15.4.11` 與 Payload `3.85.1`。
+- 專案已安裝 `@payloadcms/storage-s3`，`src/payload/payload.config.ts` 已有 R2 S3 plugin 基礎設定。Phase 8 應先審計現況，再補缺口，不要盲目重做。
+- `.env.example` 已有 R2 變數範本，需確認名稱與 runtime 使用一致。
+- 嚴禁引入 Vercel Blob。
+
+## 3. 任務範圍
+
+### 3.1 Cloudflare R2 / Payload S3 Storage
+
+- 確認 `@payloadcms/storage-s3` 設定符合 Payload v3 stable 與 Cloudflare R2：
+  - `enabled` 條件正確。
+  - `endpoint`、`region: 'auto'`、`forcePathStyle` 正確。
+  - secret 只在 server side 使用，不進入 `"use client"` component。
+  - 本地缺少 R2 env 時仍可啟動，不阻塞開發。
+- 確認 `NEXT_PUBLIC_R2_PUBLIC_URL` 的用途：
+  - 若需要公開媒體 URL，應集中封裝於 server-safe helper 或 Payload storage config，不要散落在 component。
+  - 若目前未使用，需在 deployment notes 中說明。
+- 確認 Vercel environment variable 文件列出 Preview / Production 所需變數。
+
+### 3.2 Media Collection Photo / Video 邊界
+
+- `Media` collection 必須支援：
+  - `type: 'photo' | 'video'`
+  - photo 可上傳圖片，經 Payload upload / R2 管線處理。
+  - video 只保存 YouTube URL，不儲存 `.mp4`、`.mov` 或其他原生影片檔。
+- 檢查並保留：
+  - `filesRequiredOnCreate: false`
+  - image / media relation fields 的 `required: false`
+  - YouTube URL validation。
+- 確認 `upload.mimeTypes` 不允許原生影片。
+- 確認 `imageSizes`：
+  - `thumbnail` width 400
+  - `medium` width 800
+  - `large` width 1600
+- 若修改 Payload collection，必須執行：
+  - `pnpm exec payload generate:types`
+  - 視 schema 是否變更決定是否需要 `pnpm exec payload migrate:create`
+
+### 3.3 圖片與 Fallback 全站審計
+
+- 搜尋所有圖片渲染點，確認：
+  - 優先使用 `PayloadImage` 或集中 helper。
+  - 使用 Next Image 時有合理 `sizes`。
+  - 缺圖、空 URL、relationship number、載入失敗時統一落到 `ImageFallback`。
+  - 不渲染 broken image。
+- 重點頁面：
+  - `/`
+  - `/member/[slug]`
+  - `/travel`
+  - `/travel/[slug]`
+  - `/blog`
+  - `/blog/[slug]`
+  - `/timeline`
+  - `/bucket-list`
+  - `/wrapped`
+
+### 3.4 SEO / Metadata / JSON-LD
+
+- 確認主要 route 都有適當 `generateMetadata` 或靜態 metadata。
+- Blog detail 必須輸出 JSON-LD。
+- Open Graph image 必須有 fallback，不得依賴可能為空的 Payload media URL。
+- Metadata 不可暴露 family-only private data。
+- `NEXT_PUBLIC_SERVER_URL` 或 canonical URL 使用需有文件說明，避免 preview / production 混淆。
+
+### 3.5 效能與 Bundle Hardening
+
+- 檢查資料層是否有可安全並行的 `Promise.all`，但不要犧牲 Supabase pool 穩定性。
+- 延續 Phase 7 經驗：若 Payload / Supabase pool 會 timeout，應保守處理並在報告記錄原因。
+- 複雜動畫、canvas、story viewer、heavy client components 應使用 dynamic import 或局部 client boundary。
+- 檢查 `"use client"` 檔案，避免把 server-only helper、secret env、Payload config 或大型資料帶入 client bundle。
+- 不新增無必要大型依賴。
+
+### 3.6 Security / Privacy
+
+- 搜尋 env 使用點，確認以下值不進 client：
+  - `PAYLOAD_SECRET`
+  - `DATABASE_URI`
+  - `R2_ACCESS_KEY_ID`
+  - `R2_SECRET_ACCESS_KEY`
+- family-only 資料不得進 public response。
+- public routes 只能讀 public content 或經封裝後的安全摘要。
+- Vercel / deployment docs 不得填入真實 secret。
+
+### 3.7 Vercel / Deployment
+
+- 確認 Preview deployment 通過。
+- PR merge 後，確認 Production deployment 完成。
+- 如無法由本機取得 Vercel 狀態，需在 completion report 記錄 blocker、檢查方式與已完成的替代驗證。
+
+### 3.8 文件
+
+更新必要文件：
+
+- `README.md` 或部署相關文件。
+- `.env.example`，僅放 placeholder，不放真實 secret。
+- 如新增部署說明，放在 `docs/` 下，檔名使用 kebab-case。
+- Phase completion report 必須輸出至：
+  - `docs/phase-completion-reports/phase-08-production-hardening.md`
+
+Phase 8 completion report 必須使用中文，至少包含：
+
+- phase scope
+- branch / commit
+- GitHub sync 或 PR 狀態
+- delivered features
+- key files
+- validation commands
+- browser QA scope
+- Vercel Preview / Production 狀態
+- known limitations
+- next-phase readiness
+
+## 4. 驗證命令
+
+依序執行並記錄結果：
+
+```bash
+pnpm exec payload generate:types
+pnpm run test:seed-content
+pnpm tsc --noEmit
+pnpm run build
+```
+
+若環境可用，再執行：
+
+```bash
+pnpm run seed
+```
+
+若 `pnpm run seed` 因本地缺少 `DATABASE_URI`、R2 env 或遠端 DB 權限而無法執行，不可硬塞假結果；需在 completion report 明確記錄 blocker 與已完成的替代驗證。
+
+Browser smoke test 至少覆蓋：
+
+- public `/`
+- public `/travel`
+- public `/blog`
+- public `/timeline`
+- family-only redirect：`/bucket-list`
+- family-only redirect：`/wrapped`
+- 如有可用 family login，再測 family mode `/bucket-list`、`/wrapped`。
+
+## 5. Git / PR / 完成條件
+
+建議 commit message：
+
+```text
 Finalize phase 8 production hardening and deployment
+```
 
-执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。
+Phase 8 不算完成，直到：
+
+1. 本地驗證命令完成並記錄。
+2. Browser smoke test 完成或明確記錄 blocker。
+3. Completion report 已寫入 `docs/phase-completion-reports/`。
+4. 本地 commit 已建立。
+5. branch 已 push 到 GitHub。
+6. PR 已建立，或 report 內明確記錄 PR blocker。
+7. Preview deployment 通過。
+8. PR merge 後，Production deployment 已確認，或 report 內明確記錄需要人工確認的原因。
