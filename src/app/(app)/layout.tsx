@@ -4,14 +4,25 @@ import type { ReactNode } from 'react'
 
 import { FamilyModeIndicator } from '@/features/auth/family-mode-indicator'
 import { getFamilySession } from '@/lib/data/auth'
+import { metadataImageUrl, siteMetadataBase } from '@/lib/site-metadata'
 import '../globals.css'
 
 export const metadata: Metadata = {
+  metadataBase: siteMetadataBase(),
   title: {
     default: 'Web Li',
     template: '%s | Web Li',
   },
   description: 'A bilingual family portal powered by Next.js and Payload CMS.',
+  openGraph: {
+    images: [{ url: metadataImageUrl(null) }],
+    siteName: 'Web Li',
+    type: 'website',
+  },
+  robots: {
+    follow: true,
+    index: true,
+  },
 }
 
 type AppLayoutProps = {

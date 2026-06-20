@@ -2,12 +2,19 @@ import type { Metadata } from 'next'
 
 import { TimelinePageView } from '@/features/timeline/timeline-page'
 import { getTimelineIndex } from '@/lib/data/timeline'
+import { metadataImageUrl } from '@/lib/site-metadata'
 
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
+  alternates: {
+    canonical: '/timeline',
+  },
   title: 'Time Machine Timeline',
   description: 'Web Li 公開時空膠囊大事記，家人模式可解鎖完整家庭事件。',
+  openGraph: {
+    images: [{ url: metadataImageUrl(null) }],
+  },
 }
 
 type TimelinePageProps = {

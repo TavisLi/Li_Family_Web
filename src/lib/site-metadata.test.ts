@@ -20,7 +20,7 @@ test('creates an absolute canonical URL from a route path', () => {
 test('uses a shared Open Graph fallback for missing media', () => {
   assert.equal(
     metadataImageUrl(null, 'https://family.example.com'),
-    'https://family.example.com/og-default.png',
+    'https://family.example.com/opengraph-image',
   )
 })
 

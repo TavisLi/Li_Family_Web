@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { HomePageView } from '@/features/home/home-page'
 import { getHomeConfig, getHomePageData } from '@/lib/data/home'
 import { getMediaUrl } from '@/lib/media'
+import { metadataImageUrl } from '@/lib/site-metadata'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,12 +12,15 @@ export async function generateMetadata(): Promise<Metadata> {
   const heroImage = getMediaUrl(homeConfig.heroBackground)
 
   return {
+    alternates: {
+      canonical: '/',
+    },
     title: homeConfig.heroTitle || 'Web Li',
     description: homeConfig.heroSubtitle || 'A bilingual family portal.',
     openGraph: {
       title: homeConfig.heroTitle || 'Web Li',
       description: homeConfig.heroSubtitle || 'A bilingual family portal.',
-      images: heroImage ? [{ url: heroImage }] : undefined,
+      images: [{ url: metadataImageUrl(heroImage) }],
     },
   }
 }
