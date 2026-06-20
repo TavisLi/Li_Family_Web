@@ -36,7 +36,7 @@ async function main() {
   assert.ok((tavisResume.skillRadar ?? []).length >= 4)
 
   const chongqing = await parseTravelMarkdown(
-    path.join(projectRoot, 'content-source/travels/202607重庆长江三峡8日.md'),
+    path.join(projectRoot, 'content-source/travels/202607重慶長江三峽8日.md'),
   )
 
   assert.equal(chongqing.slug, '202607-chongqing-yangtze-river')
@@ -46,21 +46,21 @@ async function main() {
   assert.ok((chongqing.dailyItinerary ?? []).length >= 8)
 
   const eastAustralia = await parseTravelMarkdown(
-    path.join(projectRoot, 'content-source/travels/202308东澳全览9日.md'),
+    path.join(projectRoot, 'content-source/travels/202308東澳全覽9日.md'),
   )
 
   assert.equal(eastAustralia.slug, '202308-east-australia')
   assert.equal((eastAustralia.flights ?? []).length, 4)
 
   const phuket2026 = await parseTravelMarkdown(
-    path.join(projectRoot, 'content-source/travels/202602泰国普吉岛8日.md'),
+    path.join(projectRoot, 'content-source/travels/202602泰國普吉島8日.md'),
   )
 
   assert.equal(phuket2026.slug, '202602-thailand-phuket')
   assert.equal(phuket2026.status, 'completed')
 
   const phuket2027 = await parseTravelMarkdown(
-    path.join(projectRoot, 'content-source/travels/202702泰国普吉岛7日.md'),
+    path.join(projectRoot, 'content-source/travels/202702泰國普吉島7日.md'),
   )
 
   assert.equal(phuket2027.slug, '202702-thailand-phuket')

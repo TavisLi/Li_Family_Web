@@ -15,6 +15,7 @@ const memberSlugByName = new Map([
   ['Tavis Li', 'tavis'],
   ['Lynn Chien', 'lynn'],
   ['允生(中文网页)，Nini（英文网页）', 'nini'],
+  ['允生(中文網頁)，Nini（英文網頁）', 'nini'],
   ['Leo', 'leo'],
   ['Sophie', 'sophie'],
   ['Grandma', 'grandma'],
@@ -49,10 +50,15 @@ const memberAssetSlugByDir = new Map([
 
 const travelSlugByFilename = new Map([
   ['201307海南岛8日.md', '201307-hainan'],
+  ['201307海南島8日.md', '201307-hainan'],
   ['202308东澳全览9日.md', '202308-east-australia'],
+  ['202308東澳全覽9日.md', '202308-east-australia'],
   ['202602泰国普吉岛8日.md', '202602-thailand-phuket'],
+  ['202602泰國普吉島8日.md', '202602-thailand-phuket'],
   ['202607重庆长江三峡8日.md', '202607-chongqing-yangtze-river'],
+  ['202607重慶長江三峽8日.md', '202607-chongqing-yangtze-river'],
   ['202702泰国普吉岛7日.md', '202702-thailand-phuket'],
+  ['202702泰國普吉島7日.md', '202702-thailand-phuket'],
 ])
 
 const travelStatusBySlug = {
@@ -337,7 +343,10 @@ export async function parseFamilyMembersConfig(filePath: string): Promise<Family
   const blocks = markdown.match(/\n\d+\.\s+\*\*[\s\S]*?(?=\n\d+\.\s+\*\*|$)/g) ?? []
 
   return blocks.map((block) => {
-    const displayName = getFieldValue(block, '呈现名称') ?? 'Family Member'
+    const configuredDisplayName =
+      getFieldValue(block, ['呈现名称', '呈現名稱', '呈現名稱(中文網頁/英文網頁)']) ??
+      'Family Member'
+    const displayName = configuredDisplayName.split('/').at(-1)?.trim() || configuredDisplayName
     const slug = memberSlugByName.get(displayName) ?? slugify(displayName)
     const typewriter = parseTypewriter(block)
     const interests = parseInterests(block)
@@ -345,13 +354,15 @@ export async function parseFamilyMembersConfig(filePath: string): Promise<Family
 
     return familyMemberSeedSchema.parse({
       slug,
-      displayName: displayName.replace(/\（英文网页\）|\(中文网页\)/g, ''),
+      displayName: displayName.replace(/\（英文网页\）|\(中文网页\)|\（英文網頁\）|\(中文網頁\)/g, ''),
       familyRole: memberRoleBySlug[slug as keyof typeof memberRoleBySlug] ?? 'family',
       profileVisibility: 'public',
       theme: {
         persona: memberPersonaBySlug[slug as keyof typeof memberPersonaBySlug] ?? 'neutral',
       },
-      status: getFieldValue(block, '出生与经历') ?? getFieldValue(block, '页面风格'),
+      status:
+        getFieldValue(block, ['出生与经历', '出生與經歷']) ??
+        getFieldValue(block, ['页面风格', '頁面風格']),
       typewriter,
       beliefs: belief ? [{ text: belief }] : undefined,
       interests,
@@ -802,7 +813,9 @@ function parseTypewriter(block: string): FamilyMemberSeed['typewriter'] {
 }
 
 function parseInterests(block: string): FamilyMemberSeed['interests'] {
-  const line = block.split('\n').find((item) => item.includes('兴趣') || item.includes('爱好'))
+  const line = block
+    .split('\n')
+    .find((item) => ['兴趣', '興趣', '爱好', '愛好'].some((label) => item.includes(label)))
   const raw = line?.match(/[（(]([^）)]+)[）)]/)?.[1]
 
   if (!raw) {
@@ -816,8 +829,14 @@ function parseInterests(block: string): FamilyMemberSeed['interests'] {
     .map((name) => ({ name }))
 }
 
-function getFieldValue(block: string, field: string): string | undefined {
-  return block.match(new RegExp(`\\*\\*${field}\\*\\*：([^\\n]+)`))?.[1]?.trim()
+function getFieldValue(block: string, fields: string | string[]): string | undefined {
+  const candidates = Array.isArray(fields) ? fields : [fields]
+
+  return candidates
+    .map((field) =>
+      block.match(new RegExp(`\\*\\*${escapeRegExp(field)}\\*\\*：([^\\n]+)`))?.[1]?.trim(),
+    )
+    .find((value): value is string => Boolean(value))
 }
 
 function parseSkillRadar(section: string): FamilyMemberSeed['skillRadar'] {
