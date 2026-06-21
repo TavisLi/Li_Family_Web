@@ -52,12 +52,9 @@ dry-run 的 798 筆「update」代表此工具以來源路徑比對到既有資�
 
 瀏覽器互動式 QA 尚未完成。此環境的 in-app browser 初始化失敗，無法在此回合完成桌面／手機尺寸的實際視覺巡覽；也未使用家庭帳號登入測試私密頁面。
 
-更重要的是，Tavis 與 Lynn 的頭像資料關聯均正確，但目前 Payload 產生的 R2 URL 指向 R2 API endpoint：
+R2 公開網址問題已於本報告初版後修復：Production 的 `NEXT_PUBLIC_R2_PUBLIC_URL` 已設定為 Cloudflare R2 的公開 `r2.dev` 網域，並已重新部署。已確認一筆新旅程媒體與 Tavis、Lynn 頭像皆為 HTTP 200。
 
-- `...r2.cloudflarestorage.com/li-family-media/lynn-avatar.jpeg`
-- `...r2.cloudflarestorage.com/li-family-media/tavis-avatar.jpeg`
-
-直接 HTTP 檢查回傳 `400 InvalidArgument: Authorization`，不是 404。原因是 `NEXT_PUBLIC_R2_PUBLIC_URL` 目前不是可公開讀取的 R2 custom domain／CDN URL。前端因而可能顯示 ImageFallback。
+Tavis 與 Lynn 原本缺少對應的 R2 object；已只重傳這兩個既有 Media 記錄，Payload 為避免既有檔名衝突而產生 `tavis-avatar-1.jpeg` 與 `lynn-avatar-1.jpeg`。未建立新的 Media record，且未刪除資料。
 
 此外，最初一次中斷的媒體同步曾以舊檔名建立部分媒體記錄；本階段沒有執行刪除，避免誤刪 Production 資產。這些可能的舊路徑媒體可在 R2 公開網址修正後，另行盤點並在明確授權下清理。
 
@@ -66,11 +63,10 @@ dry-run 的 798 筆「update」代表此工具以來源路徑比對到既有資�
 - 分支已推送至 GitHub。
 - Draft PR #9 已建立，尚未合併。
 - 因 PR 尚未合併，Production 網站程式碼尚未包含本分支的前端與同步工具變更；Production Payload 內容則已依本報告同步。
-- v1 尚不可宣告正式上線，主要阻塞為 R2 公開媒體網域設定與其後的實機圖片／響應式 QA。
+- v1 尚不可宣告正式上線，剩餘主要工作為實機圖片／響應式 QA、家庭登入流程 QA 與 Draft PR review／合併。
 
 ## 下一步
 
-1. 在 Cloudflare R2 建立或確認可公開讀取的 custom domain／CDN URL，並將 Vercel 的 `NEXT_PUBLIC_R2_PUBLIC_URL` 指向該網址。
-2. 重新部署 Preview，檢查 Tavis、Lynn、首頁與五個旅程頁的所有圖片皆為 HTTP 200 且無 ImageFallback。
-3. 完成桌面與手機瀏覽器 QA、家庭登入流程 QA，並處理 PR review 後再合併。
-4. 如需保持儲存空間整潔，另開一次已授權的舊路徑媒體盤點／清理；不要以一般 Phase 9 seed 自動刪除。
+1. 在桌面與手機上完成首頁、五個旅程頁、Tavis、Lynn 的實機圖片與版面 QA，確認無 ImageFallback。
+2. 完成家庭登入流程 QA，並處理 Draft PR review 後再合併。
+3. 如需保持儲存空間整潔，另開一次已授權的舊路徑媒體盤點／清理；不要以一般 Phase 9 seed 自動刪除。
