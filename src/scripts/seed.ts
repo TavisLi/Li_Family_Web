@@ -14,6 +14,8 @@ import {
   type TravelSeed,
 } from './seed-content'
 import { buildPayloadDryRun } from './seed-dry-run'
+import { memberEnglishLocalizedData, memberLocalizedWriteOptions } from './seed-member-locale'
+import { mediaIdsBySourcePath } from './seed-media-context'
 import { uploadFilenameForSourcePath } from './seed-upload-name'
 
 interface SeedStats {
@@ -42,6 +44,7 @@ async function run() {
   const blogOnly = process.argv.includes('--blog-only')
   const dryRun = process.argv.includes('--dry-run')
   const phase9Only = process.argv.includes('--phase-9')
+  const phase9ReadBack = process.argv.includes('--phase-9-read-back')
 
   const seedContent = await buildSeedContent(projectRoot)
 
@@ -86,6 +89,17 @@ async function run() {
     process.exit(0)
   }
 
+  if (phase9ReadBack) {
+    await hydrateExistingMedia(payload, seedContent.media, context, stats)
+    await seedMembers(payload, seedContent.members, context, stats)
+    await seedTravelProjects(payload, seedContent.travels, context, stats)
+    await seedHomeConfig(payload, context, stats)
+
+    console.log('Phase 9 read-back content sync completed')
+    console.table(stats)
+    return
+  }
+
   await seedMedia(payload, seedContent.media, context, stats)
   await seedMembers(payload, seedContent.members, context, stats)
 
@@ -107,6 +121,36 @@ async function run() {
   console.log('Seed completed')
   console.table(stats)
   process.exit(0)
+}
+
+async function hydrateExistingMedia(
+  payload: Payload,
+  mediaItems: MediaSeed[],
+  context: SeedContext,
+  stats: SeedStats,
+) {
+  console.log(`Reading ${mediaItems.length} existing media assets...`)
+
+  const result = await payload.find({
+    collection: 'media',
+    depth: 0,
+    limit: 2000,
+    pagination: false,
+  })
+  const existingMediaIds = mediaIdsBySourcePath(result.docs)
+
+  for (const item of mediaItems) {
+    const id = existingMediaIds.get(item.sourcePath)
+
+    if (!id) {
+      stats.failed += 1
+      console.error(`Missing media required for Phase 9 read-back sync: ${item.sourcePath}`)
+      continue
+    }
+
+    context.mediaBySourcePath.set(item.sourcePath, id)
+    addOwnerMedia(context, item)
+  }
 }
 
 async function seedMedia(
@@ -217,6 +261,7 @@ async function seedMembers(
         const updated = await payload.update({
           collection: 'users',
           id: existingDoc.id,
+          ...memberLocalizedWriteOptions(),
           data,
         })
         context.userBySlug.set(member.slug, Number(updated.id))
@@ -225,15 +270,14 @@ async function seedMembers(
             collection: 'users',
             id: updated.id,
             locale: 'en',
-            data: {
-              displayName: displayNameLocales.en,
-            },
+            data: memberEnglishLocalizedData(data, displayNameLocales.en),
           })
         }
         stats.updated += 1
       } else {
         const created = await payload.create({
           collection: 'users',
+          ...memberLocalizedWriteOptions(),
           data: {
             ...data,
             password: process.env.SEED_DEFAULT_PASSWORD ?? 'WebLi-Phase2-Seed-2026!',
@@ -245,9 +289,7 @@ async function seedMembers(
             collection: 'users',
             id: created.id,
             locale: 'en',
-            data: {
-              displayName: displayNameLocales.en,
-            },
+            data: memberEnglishLocalizedData(data, displayNameLocales.en),
           })
         }
         stats.created += 1
