@@ -14,6 +14,7 @@ import {
   type TravelSeed,
 } from './seed-content'
 import { buildPayloadDryRun } from './seed-dry-run'
+import { uploadFilenameForSourcePath } from './seed-upload-name'
 
 interface SeedStats {
   created: number
@@ -714,7 +715,7 @@ function ownerKey(ownerType: MediaSeed['ownerType'], ownerSlug: string): string 
 
 async function stageUploadFile(sourcePath: string): Promise<string> {
   const directory = await mkdtemp(path.join(tmpdir(), 'web-li-seed-'))
-  const stagedFilePath = path.join(directory, path.basename(sourcePath))
+  const stagedFilePath = path.join(directory, uploadFilenameForSourcePath(sourcePath))
   await copyFile(sourcePath, stagedFilePath)
 
   return stagedFilePath
