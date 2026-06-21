@@ -14,7 +14,9 @@ import { ImageFallback } from '@/components/ui/image-fallback'
 import { PayloadImage } from '@/components/ui/payload-image'
 import type { TravelInteractionThread } from '@/lib/data/travel'
 import type { Media, TravelProject } from '@/payload/payload-types'
+import { CompletedTravelLedger } from './completed-travel-ledger'
 import { TravelInteractionPanel } from './travel-interaction-panel'
+import { toYouTubeEmbedUrl } from './youtube'
 
 type TravelDetailPageProps = {
   project: TravelProject
@@ -324,6 +326,8 @@ function CompletedTravelView({ project }: { project: TravelProject }) {
         </div>
       </section>
 
+      <CompletedTravelLedger project={project} />
+
       <section className="mx-auto w-full max-w-7xl px-5 py-14 md:py-20">
         <SectionHeading
           eyebrow="Photo Rhythm"
@@ -363,17 +367,23 @@ function CompletedTravelView({ project }: { project: TravelProject }) {
           />
           <div className="mt-8 grid gap-4 md:grid-cols-2">
             {project.externalVideos?.length ? (
-              project.externalVideos.map((video) => (
-                <Suspense fallback={<VideoPlaceholder title={video.title} />} key={video.id}>
-                  <iframe
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    className="aspect-video w-full rounded-lg border border-white/15 bg-white/10"
-                    src={youtubeEmbedUrl(video.youtubeUrl)}
-                    title={video.title}
-                  />
-                </Suspense>
-              ))
+              project.externalVideos.map((video) => {
+                const embedUrl = toYouTubeEmbedUrl(video.youtubeUrl)
+
+                return embedUrl ? (
+                  <Suspense fallback={<VideoPlaceholder title={video.title} />} key={video.id}>
+                    <iframe
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      className="aspect-video w-full rounded-lg border border-white/15 bg-white/10"
+                      src={embedUrl}
+                      title={video.title}
+                    />
+                  </Suspense>
+                ) : (
+                  <VideoPlaceholder key={video.id} title={`${video.title} 無法安全嵌入`} />
+                )
+              })
             ) : (
               <VideoPlaceholder title={`${project.title} YouTube placeholder`} />
             )}
@@ -508,11 +518,6 @@ function mediaObjects(media: TravelProject['galleryImages']): Media[] {
   return (media ?? []).filter((item): item is Media => typeof item === 'object')
 }
 
-function youtubeEmbedUrl(url: string) {
-  const directId = url.match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{6,})/)?.[1]
-
-  return directId ? `https://www.youtube.com/embed/${directId}` : url
-}
 
 function statusLabel(status: TravelProject['status']) {
   return status === 'planning' ? '規劃中' : '已完成'

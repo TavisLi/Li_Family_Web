@@ -263,7 +263,18 @@ docs/travel-projects.md
 - Markdown 資料源
 - 頁面重點
 
-若 seed 尚未自動識別新中文檔名，需要在 seed mapping 中加入檔名與 `travel-slug` 對應。這部分可交給 Codex 處理。
+### Phase 9 Catalog Contract
+
+`docs/travel-projects.md` 是所有可公開旅遊項目的 catalog。每一個項目都必須明確提供：
+
+- `呈現名稱`：Payload `TravelProjects.title` 的優先來源。
+- `Canonical slug`：穩定、唯一，並和 Payload record 與 `/travel/[slug]` 完全一致。
+- `數據源`：`content-source/travels/` 下恰好一份 Markdown 檔案。
+- 所屬章節：`規劃中的旅遊項目` 或 `已完成的旅遊項目信息`，對應 Payload status。
+
+Catalog parser 會驗證每個 source file 與 canonical slug 都只出現一次，也會拒絕未登錄的旅遊 Markdown。Markdown frontmatter 與標題保留做為行程原始內容；顯示 title 以 catalog 的 `呈現名稱` 優先。
+
+旅遊 Markdown 的 section contract 為：`航班信息`、`住宿安排`、`每日行程詳解`，以及可選的 `返程高鐵`、`游輪艙房分配`、`外部影片`。表格欄位可依行程而不同，但每個資料列必須維持可辨識的欄位順序；外部影片只接受 `youtube.com`、`youtu.be` 的 watch、shorts 或短網址。
 
 ---
 
@@ -402,6 +413,15 @@ pnpm run build
 - cover image fallback
 - gallery rendering
 - YouTube embed / placeholder
+
+Phase 9 另需執行：
+
+```bash
+pnpm run seed:audit
+pnpm run seed:phase-9:dry-run
+```
+
+第一個指令不需要 secret，驗證 source/catalog/media 覆蓋。第二個指令需要受保護的 Payload / database environment，但只會讀取既有 record，輸出 create/update/delete 計畫與 document ID 樣本；它不會寫入任何資料。取得明確同意後才執行 `pnpm run seed:phase-9`。
 
 ---
 

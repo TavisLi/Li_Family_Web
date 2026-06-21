@@ -13,6 +13,7 @@ import {
   type MediaSeed,
   type TravelSeed,
 } from './seed-content'
+import { buildPayloadDryRun } from './seed-dry-run'
 
 interface SeedStats {
   created: number
@@ -38,8 +39,28 @@ async function run() {
   const payload = await getPayload({ config: configPromise })
   console.log('Payload Local API initialized')
   const blogOnly = process.argv.includes('--blog-only')
+  const dryRun = process.argv.includes('--dry-run')
+  const phase9Only = process.argv.includes('--phase-9')
 
   const seedContent = await buildSeedContent(projectRoot)
+
+  if (dryRun) {
+    const report = await buildPayloadDryRun(payload, seedContent)
+
+    console.log(
+      JSON.stringify(
+        {
+          summary: report.summary,
+          deletionRisk: report.deletionRisk,
+          sampledActions: report.actions.slice(0, 20),
+          totalActions: report.actions.length,
+        },
+        null,
+        2,
+      ),
+    )
+    return
+  }
   const stats: SeedStats = {
     created: 0,
     updated: 0,
@@ -66,6 +87,16 @@ async function run() {
 
   await seedMedia(payload, seedContent.media, context, stats)
   await seedMembers(payload, seedContent.members, context, stats)
+
+  if (phase9Only) {
+    await seedTravelProjects(payload, seedContent.travels, context, stats)
+    await seedHomeConfig(payload, context, stats)
+
+    console.log('Phase 9 content seed completed')
+    console.table(stats)
+    return
+  }
+
   await seedBlogCategories(payload, seedContent.blogCategories, context, stats)
   await seedBlogPosts(payload, seedContent.blogPosts, context, stats)
   await seedTravelProjects(payload, seedContent.travels, context, stats)
@@ -151,6 +182,7 @@ async function seedMembers(
 
   for (const member of members) {
     try {
+      const { displayNameLocales, ...memberData } = member
       const assets = ownerMedia(context, 'member', member.slug)
       const avatar = firstMediaId(context, assets, 'avatar')
       const heroImage = firstMediaId(context, assets, 'hero')
@@ -158,7 +190,7 @@ async function seedMembers(
       const galleryImages = mediaIds(context, assets, ['gallery', 'hero', 'avatar'])
       const resumeMilestoneImages = mediaIds(context, assets, ['career'])
       const data = {
-        ...member,
+        ...memberData,
         email: `family+${member.slug}@web-li.local`,
         avatar,
         heroImage,
@@ -187,6 +219,16 @@ async function seedMembers(
           data,
         })
         context.userBySlug.set(member.slug, Number(updated.id))
+        if (displayNameLocales?.en) {
+          await payload.update({
+            collection: 'users',
+            id: updated.id,
+            locale: 'en',
+            data: {
+              displayName: displayNameLocales.en,
+            },
+          })
+        }
         stats.updated += 1
       } else {
         const created = await payload.create({
@@ -197,6 +239,16 @@ async function seedMembers(
           },
         })
         context.userBySlug.set(member.slug, Number(created.id))
+        if (displayNameLocales?.en) {
+          await payload.update({
+            collection: 'users',
+            id: created.id,
+            locale: 'en',
+            data: {
+              displayName: displayNameLocales.en,
+            },
+          })
+        }
         stats.created += 1
       }
     } catch (error) {
