@@ -144,12 +144,17 @@ async function main() {
         item.ownerType === 'travel' &&
         item.ownerSlug === '202607-chongqing-yangtze-river' &&
         item.sourcePath.endsWith(
-          'content-source/assets/travels/202607-chongqing-yangtze-river/cover/cover-001.jpg',
+          'content-source/assets/travels/202607-chongqing-yangtze-river/cover/202607-chongqing-yangtze-river-cover-001.jpg',
         ) &&
         item.usage === 'cover',
     ),
   )
   assert.ok(seedContent.media.every((item) => !item.sourcePath.includes('/.')))
+  assert.equal(
+    new Set(seedContent.media.map((item) => path.basename(item.sourcePath))).size,
+    seedContent.media.length,
+    'every seeded media filename must be globally unique for Payload uploads',
+  )
 
   const hainanDay3GuanyinPhoto = seedContent.media.find(
     (item) =>
@@ -171,8 +176,8 @@ async function main() {
 
   const phuketDay2FlightPhoto = seedContent.media.find(
     (item) =>
-      item.sourcePath.endsWith(
-        'content-source/assets/travels/202602-thailand-phuket/gallery/gallery-022.jpeg',
+        item.sourcePath.endsWith(
+          'content-source/assets/travels/202602-thailand-phuket/gallery/202602-thailand-phuket-gallery-022.jpeg',
       ),
   )
 

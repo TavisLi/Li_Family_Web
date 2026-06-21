@@ -1,6 +1,6 @@
 [
   {
-    "sourcePath": "travels/202308-east-australia/cover/cover-001.jpeg",
+    "sourcePath": "travels/202308-east-australia/cover/202308-east-australia-cover-001.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "cover",
@@ -8,7 +8,7 @@
     "sortOrder": 1
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-001.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-001.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -16,7 +16,7 @@
     "sortOrder": 1
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-002.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-002.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -24,7 +24,7 @@
     "sortOrder": 2
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-003.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-003.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -32,7 +32,7 @@
     "sortOrder": 3
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-004.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-004.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -40,7 +40,7 @@
     "sortOrder": 4
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-005.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-005.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -48,7 +48,7 @@
     "sortOrder": 5
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-006.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-006.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -56,7 +56,7 @@
     "sortOrder": 6
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-007.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-007.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -64,7 +64,7 @@
     "sortOrder": 7
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-008.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-008.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -72,7 +72,7 @@
     "sortOrder": 8
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-009.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-009.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -80,7 +80,7 @@
     "sortOrder": 9
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-010.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-010.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -88,7 +88,7 @@
     "sortOrder": 10
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-011.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-011.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -96,7 +96,7 @@
     "sortOrder": 11
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-012.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-012.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -104,7 +104,7 @@
     "sortOrder": 12
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-013.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-013.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -112,7 +112,7 @@
     "sortOrder": 13
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-014.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-014.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -120,7 +120,7 @@
     "sortOrder": 14
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-015.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-015.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -128,7 +128,7 @@
     "sortOrder": 15
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-016.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-016.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -136,7 +136,7 @@
     "sortOrder": 16
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-017.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-017.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -144,7 +144,7 @@
     "sortOrder": 17
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-018.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-018.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -152,7 +152,7 @@
     "sortOrder": 18
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-019.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-019.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -160,7 +160,7 @@
     "sortOrder": 19
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-020.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-020.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -168,7 +168,7 @@
     "sortOrder": 20
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-021.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-021.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -176,7 +176,7 @@
     "sortOrder": 21
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-022.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-022.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -184,7 +184,7 @@
     "sortOrder": 22
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-023.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-023.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -192,7 +192,7 @@
     "sortOrder": 23
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-024.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-024.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -200,7 +200,7 @@
     "sortOrder": 24
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-025.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-025.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -208,7 +208,7 @@
     "sortOrder": 25
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-026.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-026.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -216,7 +216,7 @@
     "sortOrder": 26
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-027.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-027.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -224,7 +224,7 @@
     "sortOrder": 27
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-028.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-028.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -232,7 +232,7 @@
     "sortOrder": 28
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-029.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-029.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -240,7 +240,7 @@
     "sortOrder": 29
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-030.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-030.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -248,7 +248,7 @@
     "sortOrder": 30
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-031.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-031.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -256,7 +256,7 @@
     "sortOrder": 31
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-032.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-032.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -264,7 +264,7 @@
     "sortOrder": 32
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-033.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-033.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -272,7 +272,7 @@
     "sortOrder": 33
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-034.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-034.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -280,7 +280,7 @@
     "sortOrder": 34
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-035.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-035.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -288,7 +288,7 @@
     "sortOrder": 35
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-036.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-036.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -296,7 +296,7 @@
     "sortOrder": 36
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-037.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-037.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -304,7 +304,7 @@
     "sortOrder": 37
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-038.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-038.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -312,7 +312,7 @@
     "sortOrder": 38
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-039.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-039.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -320,7 +320,7 @@
     "sortOrder": 39
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-040.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-040.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -328,7 +328,7 @@
     "sortOrder": 40
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-041.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-041.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -336,7 +336,7 @@
     "sortOrder": 41
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-042.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-042.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -344,7 +344,7 @@
     "sortOrder": 42
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-043.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-043.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -352,7 +352,7 @@
     "sortOrder": 43
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-044.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-044.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -360,7 +360,7 @@
     "sortOrder": 44
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-045.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-045.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -368,7 +368,7 @@
     "sortOrder": 45
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-046.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-046.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -376,7 +376,7 @@
     "sortOrder": 46
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-047.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-047.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -384,7 +384,7 @@
     "sortOrder": 47
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-048.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-048.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -392,7 +392,7 @@
     "sortOrder": 48
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-049.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-049.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -400,7 +400,7 @@
     "sortOrder": 49
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-050.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-050.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -408,7 +408,7 @@
     "sortOrder": 50
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-051.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-051.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -416,7 +416,7 @@
     "sortOrder": 51
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-052.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-052.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -424,7 +424,7 @@
     "sortOrder": 52
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-053.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-053.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -432,7 +432,7 @@
     "sortOrder": 53
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-054.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-054.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -440,7 +440,7 @@
     "sortOrder": 54
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-055.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-055.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -448,7 +448,7 @@
     "sortOrder": 55
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-056.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-056.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -456,7 +456,7 @@
     "sortOrder": 56
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-057.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-057.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -464,7 +464,7 @@
     "sortOrder": 57
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-058.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-058.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -472,7 +472,7 @@
     "sortOrder": 58
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-059.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-059.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -480,7 +480,7 @@
     "sortOrder": 59
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-060.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-060.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -488,7 +488,7 @@
     "sortOrder": 60
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-061.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-061.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -496,7 +496,7 @@
     "sortOrder": 61
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-062.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-062.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -504,7 +504,7 @@
     "sortOrder": 62
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-063.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-063.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -512,7 +512,7 @@
     "sortOrder": 63
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-064.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-064.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -520,7 +520,7 @@
     "sortOrder": 64
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-065.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-065.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -528,7 +528,7 @@
     "sortOrder": 65
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-066.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-066.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -536,7 +536,7 @@
     "sortOrder": 66
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-067.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-067.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -544,7 +544,7 @@
     "sortOrder": 67
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-068.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-068.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -552,7 +552,7 @@
     "sortOrder": 68
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-069.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-069.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -560,7 +560,7 @@
     "sortOrder": 69
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-070.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-070.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -568,7 +568,7 @@
     "sortOrder": 70
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-071.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-071.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -576,7 +576,7 @@
     "sortOrder": 71
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-072.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-072.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -584,7 +584,7 @@
     "sortOrder": 72
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-073.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-073.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -592,7 +592,7 @@
     "sortOrder": 73
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-074.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-074.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -600,7 +600,7 @@
     "sortOrder": 74
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-075.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-075.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -608,7 +608,7 @@
     "sortOrder": 75
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-076.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-076.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -616,7 +616,7 @@
     "sortOrder": 76
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-077.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-077.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -624,7 +624,7 @@
     "sortOrder": 77
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-078.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-078.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -632,7 +632,7 @@
     "sortOrder": 78
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-079.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-079.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -640,7 +640,7 @@
     "sortOrder": 79
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-080.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-080.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -648,7 +648,7 @@
     "sortOrder": 80
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-081.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-081.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",
@@ -656,7 +656,7 @@
     "sortOrder": 81
   },
   {
-    "sourcePath": "travels/202308-east-australia/gallery/gallery-082.jpeg",
+    "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-082.jpeg",
     "ownerType": "travel",
     "ownerSlug": "202308-east-australia",
     "usage": "gallery",

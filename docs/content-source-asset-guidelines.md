@@ -135,8 +135,8 @@ content-source/assets/travels/[travel-slug]/cover/
 建議檔名：
 
 ```text
-cover-001.jpeg
-cover-002.jpeg
+[travel-slug]-cover-001.jpeg
+[travel-slug]-cover-002.jpeg
 ```
 
 第一張封面通常會作為 TravelProjects 的主要 `coverImage`。
@@ -152,9 +152,9 @@ content-source/assets/travels/[travel-slug]/gallery/
 建議檔名：
 
 ```text
-gallery-001.jpeg
-gallery-002.jpeg
-gallery-003.jpeg
+[travel-slug]-gallery-001.jpeg
+[travel-slug]-gallery-002.jpeg
+[travel-slug]-gallery-003.jpeg
 ```
 
 Gallery 適合放整體回憶、精選照片、非特定日程節點的照片。
@@ -218,6 +218,7 @@ lobby-003.jpeg
 - 使用小寫英文、數字與 hyphen。
 - 使用三位數序號：`001`、`002`、`003`。
 - 保留清楚語義：`cover`、`gallery`、`avatar`、`hero`、`career`、`day-03`。
+- Cover 與 gallery 檔名必須含所屬的 `[travel-slug]`；Payload 的 upload filename 全域唯一，不能只使用 `gallery-001.jpeg`。
 - 副檔名保持原始格式即可，例如 `.jpeg`、`.jpg`、`.png`、`.webp`、`.gif`。
 
 避免：
