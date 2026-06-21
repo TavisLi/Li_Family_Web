@@ -32,6 +32,15 @@ R2 S3 endpoint 格式為 `https://<account-id>.r2.cloudflarestorage.com`，只�
 4. 有授權測試帳號時，登入後檢查 `/bucket-list` 和 `/wrapped`；不可把私密資料顯示在未登入 metadata、JSON-LD 或回應內容。
 5. 合併 PR 後，確認 Production deployment 使用正式 `NEXT_PUBLIC_SERVER_URL`，並重複第 2 至 4 項。
 
+## 3.1 Phase 9 Content Sync Gate
+
+1. 先執行 `pnpm run seed:audit`。此指令不需要 secret，必須確認 catalog 沒有缺少 travel record、cover media 或結構化內容。
+2. 在受保護的 Preview / Production environment 執行 `pnpm run seed:phase-9:dry-run`。保留 create/update/skip/delete 彙總，以及既有 document ID 樣本與 deployment URL 作為回復前紀錄；不可把任何 credential 寫入 report 或 Git。
+3. 明確取得資料擁有者對 Production mutation 的同意後，才可執行 `pnpm run seed:phase-9`。這個 Phase 範圍 seed 僅做 idempotent create/update，不包含 delete，也不重播 Blogger 或 Phase 7 demo 資料。
+4. 立即重跑 `pnpm run seed:phase-9:dry-run` 做 read-back，確認所有預期 travel、family 與 media sourcePath 都已被辨識為 update；使用 Payload Admin 或受保護 API 抽查 locale、relation ID 與公開 R2 URL。
+5. 確認 Tavis 與 Lynn 的 avatar 已由 `content-source/assets/members/*/*-avatar.jpeg` 建立／更新 relation，並檢查 Vercel logs 不再出現舊 avatar URL 的 404。
+6. 再完成 Preview 與 Production 的 desktop/mobile 公開流程；登入流程僅能由授權測試帳號執行，且不得把帳密、cookie 或 private response 寫入文件。
+
 ## 4. 回復與交接
 
 1. 若 Preview 或 Production 發生回歸，先在 Vercel 將最近一次健康 deployment 提升為 Production。

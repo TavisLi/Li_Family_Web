@@ -7,6 +7,7 @@ import {
   parseBloggerSeedSource,
   parseFamilyMembersConfig,
   parseResumeMarkdown,
+  parseTravelCatalog,
   parseTravelMarkdown,
 } from './seed-content'
 
@@ -24,6 +25,39 @@ async function main() {
     ['tavis', 'lynn', 'nini', 'leo', 'sophie', 'grandma'],
   )
   assert.equal(familyMembers[0]?.typewriter?.rotatingWords.length, 3)
+  assert.deepEqual(familyMembers[0]?.displayNameLocales, {
+    'zh-TW': '李天行',
+    en: 'Tavis Li',
+  })
+  assert.deepEqual(
+    familyMembers.find((member) => member.slug === 'nini')?.interests?.map((interest) => interest.name),
+    ['寫小說', '旅遊', '拍照'],
+  )
+  assert.deepEqual(
+    familyMembers.find((member) => member.slug === 'leo')?.interests?.map((interest) => interest.name),
+    ['旅遊', '編程', '籃球', '電腦遊戲', '動手能力強'],
+  )
+
+  const catalog = await parseTravelCatalog(
+    path.join(projectRoot, 'docs/travel-projects.md'),
+    path.join(projectRoot, 'content-source/travels'),
+  )
+
+  assert.equal(catalog.length, 5)
+  assert.deepEqual(
+    catalog.map((entry) => entry.slug),
+    [
+      '202607-chongqing-yangtze-river',
+      '202702-thailand-phuket',
+      '201307-hainan',
+      '202308-east-australia',
+      '202602-thailand-phuket',
+    ],
+  )
+  assert.equal(
+    catalog.find((entry) => entry.slug === '202602-thailand-phuket')?.title,
+    '初探泰國普吉島 - 萬豪度假會·躍浪渡假村·芭東海灘',
+  )
 
   const tavisResume = await parseResumeMarkdown(
     path.join(projectRoot, 'content-source/profiles/tavis_resume.md'),
@@ -58,6 +92,12 @@ async function main() {
 
   assert.equal(phuket2026.slug, '202602-thailand-phuket')
   assert.equal(phuket2026.status, 'completed')
+  assert.equal((phuket2026.flights ?? []).length, 8)
+  assert.equal((phuket2026.lodgings ?? []).length, 4)
+  assert.equal((phuket2026.externalVideos ?? []).length, 10)
+  assert.equal(phuket2026.dailyItinerary?.[0]?.segments?.[0]?.time, '上午')
+  assert.equal(phuket2026.dailyItinerary?.[0]?.segments?.[0]?.transport, 'BR211')
+  assert.ok((phuket2026.dailyItinerary?.[0]?.segments?.[0]?.notes ?? '').includes('行李直掛'))
 
   const phuket2027 = await parseTravelMarkdown(
     path.join(projectRoot, 'content-source/travels/202702泰國普吉島7日.md'),
@@ -65,8 +105,31 @@ async function main() {
 
   assert.equal(phuket2027.slug, '202702-thailand-phuket')
   assert.equal(phuket2027.status, 'planning')
+  assert.equal((phuket2027.flights ?? []).length, 2)
+  assert.equal((phuket2027.lodgings ?? []).length, 2)
 
   const seedContent = await buildSeedContent(projectRoot)
+
+  assert.deepEqual(
+    seedContent.travels.map((travel) => travel.slug).sort(),
+    catalog.map((entry) => entry.slug).sort(),
+  )
+  assert.equal(
+    seedContent.travels.find((travel) => travel.slug === '201307-hainan')?.title,
+    '非誠勿擾之海南三亞度假 - 亞龍灣·海棠灣·石梅灣',
+  )
+  for (const entry of catalog) {
+    const travel = seedContent.travels.find((candidate) => candidate.slug === entry.slug)
+    const media = seedContent.media.filter(
+      (item) => item.ownerType === 'travel' && item.ownerSlug === entry.slug,
+    )
+
+    assert.ok(travel, `${entry.slug} must be represented in the seed model`)
+    assert.ok((travel.flights ?? []).length > 0, `${entry.slug} must retain flight information`)
+    assert.ok((travel.lodgings ?? []).length > 0, `${entry.slug} must retain lodging information`)
+    assert.ok((travel.dailyItinerary ?? []).length > 0, `${entry.slug} must retain daily itinerary`)
+    assert.ok(media.some((item) => item.usage === 'cover'), `${entry.slug} must have cover media`)
+  }
 
   assert.ok(seedContent.media.length >= 10)
   assert.ok(seedContent.media.some((item) => item.ownerType === 'member' && item.ownerSlug === 'tavis'))
@@ -81,12 +144,17 @@ async function main() {
         item.ownerType === 'travel' &&
         item.ownerSlug === '202607-chongqing-yangtze-river' &&
         item.sourcePath.endsWith(
-          'content-source/assets/travels/202607-chongqing-yangtze-river/cover/cover-001.jpg',
+          'content-source/assets/travels/202607-chongqing-yangtze-river/cover/202607-chongqing-yangtze-river-cover-001.jpg',
         ) &&
         item.usage === 'cover',
     ),
   )
   assert.ok(seedContent.media.every((item) => !item.sourcePath.includes('/.')))
+  assert.equal(
+    new Set(seedContent.media.map((item) => path.basename(item.sourcePath))).size,
+    seedContent.media.length,
+    'every seeded media filename must be globally unique for Payload uploads',
+  )
 
   const hainanDay3GuanyinPhoto = seedContent.media.find(
     (item) =>
@@ -108,8 +176,8 @@ async function main() {
 
   const phuketDay2FlightPhoto = seedContent.media.find(
     (item) =>
-      item.sourcePath.endsWith(
-        'content-source/assets/travels/202602-thailand-phuket/gallery/gallery-022.jpeg',
+        item.sourcePath.endsWith(
+          'content-source/assets/travels/202602-thailand-phuket/gallery/202602-thailand-phuket-gallery-022.jpeg',
       ),
   )
 

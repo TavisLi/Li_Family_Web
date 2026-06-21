@@ -92,9 +92,15 @@ const travelDatesBySlug = {
   },
 } as const
 
+const localizedDisplayNameSchema = z.object({
+  'zh-TW': z.string().min(1),
+  en: z.string().min(1),
+})
+
 const familyMemberSeedSchema = z.object({
   slug: z.string().min(1),
   displayName: z.string().min(1),
+  displayNameLocales: localizedDisplayNameSchema.optional(),
   familyRole: z.enum(['father', 'mother', 'daughter', 'son', 'grandmother', 'family']),
   profileVisibility: z.enum(['public', 'family']),
   theme: z.object({
@@ -191,6 +197,9 @@ const travelSeedSchema = z.object({
         hotel: z.string().min(1),
         city: z.string().optional(),
         address: z.string().optional(),
+        roomType: z.string().optional(),
+        bookingChannel: z.string().optional(),
+        price: z.string().optional(),
         highlights: z.string().optional(),
       }),
     )
@@ -210,7 +219,24 @@ const travelSeedSchema = z.object({
         date: z.string().optional(),
         title: z.string().min(1),
         theme: z.string().optional(),
-        segments: z.array(z.object({ activity: z.string().min(1), time: z.string().optional() })).optional(),
+        segments: z
+          .array(
+            z.object({
+              activity: z.string().min(1),
+              time: z.string().optional(),
+              transport: z.string().optional(),
+              notes: z.string().optional(),
+            }),
+          )
+          .optional(),
+        meals: z
+          .object({
+            breakfast: z.string().optional(),
+            lunch: z.string().optional(),
+            dinner: z.string().optional(),
+          })
+          .optional(),
+        lodging: z.string().optional(),
       }),
     )
     .optional(),
@@ -219,6 +245,14 @@ const travelSeedSchema = z.object({
       z.object({
         category: z.string().min(1),
         items: z.array(z.object({ text: z.string().min(1) })).optional(),
+      }),
+    )
+    .optional(),
+  externalVideos: z
+    .array(
+      z.object({
+        title: z.string().min(1),
+        youtubeUrl: z.string().url(),
       }),
     )
     .optional(),
@@ -325,6 +359,13 @@ export type BlogCategorySeed = z.infer<typeof blogCategorySeedSchema>
 export type BlogPostSeed = z.infer<typeof blogPostSeedSchema>
 export type LexicalContentSeed = z.infer<typeof lexicalContentSchema>
 
+export type TravelCatalogEntry = {
+  slug: string
+  title: string
+  status: 'planning' | 'completed'
+  sourceFile: string
+}
+
 export interface SeedContent {
   members: FamilyMemberSeed[]
   travels: TravelSeed[]
@@ -346,7 +387,10 @@ export async function parseFamilyMembersConfig(filePath: string): Promise<Family
     const configuredDisplayName =
       getFieldValue(block, ['呈现名称', '呈現名稱', '呈現名稱(中文網頁/英文網頁)']) ??
       'Family Member'
-    const displayName = configuredDisplayName.split('/').at(-1)?.trim() || configuredDisplayName
+    const [chineseDisplayName, englishDisplayName] = configuredDisplayName
+      .split('/')
+      .map((value) => value.trim())
+    const displayName = englishDisplayName || chineseDisplayName || configuredDisplayName
     const slug = memberSlugByName.get(displayName) ?? slugify(displayName)
     const typewriter = parseTypewriter(block)
     const interests = parseInterests(block)
@@ -354,7 +398,14 @@ export async function parseFamilyMembersConfig(filePath: string): Promise<Family
 
     return familyMemberSeedSchema.parse({
       slug,
-      displayName: displayName.replace(/\（英文网页\）|\(中文网页\)|\（英文網頁\）|\(中文網頁\)/g, ''),
+      displayName: chineseDisplayName || displayName,
+      displayNameLocales:
+        chineseDisplayName && englishDisplayName
+          ? {
+              'zh-TW': chineseDisplayName,
+              en: englishDisplayName,
+            }
+          : undefined,
       familyRole: memberRoleBySlug[slug as keyof typeof memberRoleBySlug] ?? 'family',
       profileVisibility: 'public',
       theme: {
@@ -370,6 +421,89 @@ export async function parseFamilyMembersConfig(filePath: string): Promise<Family
         slug === 'tavis' || slug === 'lynn' ? `${slug}_resume.md` : undefined,
     })
   })
+}
+
+export async function parseTravelCatalog(
+  filePath: string,
+  travelDirectory: string,
+): Promise<TravelCatalogEntry[]> {
+  const markdown = stripBom(await fs.readFile(filePath, 'utf8'))
+  const entries: TravelCatalogEntry[] = []
+  let status: TravelCatalogEntry['status'] | undefined
+  let current: Partial<TravelCatalogEntry> | undefined
+
+  const finishCurrent = () => {
+    if (!current) {
+      return
+    }
+
+    if (!status || !current.slug || !current.title || !current.sourceFile) {
+      throw new Error(`Incomplete travel catalog entry: ${JSON.stringify(current)}`)
+    }
+
+    entries.push({
+      slug: current.slug,
+      title: current.title,
+      status,
+      sourceFile: current.sourceFile,
+    })
+    current = undefined
+  }
+
+  for (const line of markdown.split('\n')) {
+    if (line.includes('規劃中的旅遊項目')) {
+      finishCurrent()
+      status = 'planning'
+      continue
+    }
+
+    if (line.includes('已完成的旅遊項目信息')) {
+      finishCurrent()
+      status = 'completed'
+      continue
+    }
+
+    if (/^\d+\.\s+\*\*.+\*\*/.test(line)) {
+      finishCurrent()
+      current = {}
+      continue
+    }
+
+    if (!current) {
+      continue
+    }
+
+    const title = getFieldValue(line, ['呈現名稱'])
+    const slug = getFieldValue(line, ['Canonical slug'])
+    const sourceFile = line.includes('數據源') ? line.match(/`([^`]+\.md)`/)?.[1] : undefined
+
+    if (title) {
+      current.title = title
+    }
+    if (slug) {
+      current.slug = slug
+    }
+    if (sourceFile) {
+      current.sourceFile = sourceFile
+    }
+  }
+
+  finishCurrent()
+
+  const sourceFiles = new Set<string>()
+  const slugs = new Set<string>()
+
+  for (const entry of entries) {
+    if (sourceFiles.has(entry.sourceFile) || slugs.has(entry.slug)) {
+      throw new Error(`Duplicate travel catalog mapping: ${entry.slug} / ${entry.sourceFile}`)
+    }
+
+    await fs.access(path.join(travelDirectory, entry.sourceFile))
+    sourceFiles.add(entry.sourceFile)
+    slugs.add(entry.slug)
+  }
+
+  return entries
 }
 
 export async function parseResumeMarkdown(filePath: string, slug: string): Promise<FamilyMemberSeed> {
@@ -396,24 +530,27 @@ export async function parseResumeMarkdown(filePath: string, slug: string): Promi
   })
 }
 
-export async function parseTravelMarkdown(filePath: string): Promise<TravelSeed> {
+export async function parseTravelMarkdown(
+  filePath: string,
+  catalogEntry?: TravelCatalogEntry,
+): Promise<TravelSeed> {
   const raw = stripBom(await fs.readFile(filePath, 'utf8'))
   const parsed = matter(raw)
   const filename = path.basename(filePath)
-  const slug = travelSlugByFilename.get(filename) ?? slugify(filename.replace(/\.md$/, ''))
+  const slug = catalogEntry?.slug ?? travelSlugByFilename.get(filename) ?? slugify(filename.replace(/\.md$/, ''))
   const dates = travelDatesBySlug[slug as keyof typeof travelDatesBySlug] ?? {
     startDate: '2026-01-01',
     endDate: '2026-01-01',
   }
-  const title =
+  const markdownTitle =
     typeof parsed.data.title === 'string' && parsed.data.title.trim()
       ? parsed.data.title.trim()
       : firstHeading(parsed.content) ?? filename.replace(/\.md$/, '')
 
   return travelSeedSchema.parse({
     slug,
-    title,
-    status: travelStatusBySlug[slug as keyof typeof travelStatusBySlug] ?? 'completed',
+    title: catalogEntry?.title ?? markdownTitle,
+    status: catalogEntry?.status ?? travelStatusBySlug[slug as keyof typeof travelStatusBySlug] ?? 'completed',
     isPrivate: false,
     startDate: dates.startDate,
     endDate: dates.endDate,
@@ -426,18 +563,23 @@ export async function parseTravelMarkdown(filePath: string): Promise<TravelSeed>
     cabinAssignments: parseCabinAssignments(parsed.content),
     dailyItinerary: parseDailyItinerary(parsed.content),
     reminders: parseReminders(parsed.content),
+    externalVideos: parseExternalVideos(parsed.content),
   })
 }
 
 export async function buildSeedContent(projectRoot: string): Promise<SeedContent> {
-  const [members, tavisResume, lynnResume, travels, media, bloggerSample] = await Promise.all([
+  const [members, tavisResume, lynnResume, catalog, media, bloggerSample] = await Promise.all([
     parseFamilyMembersConfig(path.join(projectRoot, 'docs/family-members.md')),
     parseResumeMarkdown(path.join(projectRoot, 'content-source/profiles/tavis_resume.md'), 'tavis'),
     parseResumeMarkdown(path.join(projectRoot, 'content-source/profiles/lynn_resume.md'), 'lynn'),
-    parseTravelDirectory(path.join(projectRoot, 'content-source/travels')),
+    parseTravelCatalog(
+      path.join(projectRoot, 'docs/travel-projects.md'),
+      path.join(projectRoot, 'content-source/travels'),
+    ),
     scanMediaAssets(projectRoot),
     parseBloggerSeedSource(projectRoot, { limit: 8 }),
   ])
+  const travels = await parseTravelDirectory(path.join(projectRoot, 'content-source/travels'), catalog)
 
   const memberMap = new Map(members.map((member) => [member.slug, member]))
   memberMap.set('tavis', mergeMemberSeeds(memberMap.get('tavis'), tavisResume))
@@ -555,11 +697,29 @@ export function parseBloggerFeedXml(
   }
 }
 
-async function parseTravelDirectory(directory: string): Promise<TravelSeed[]> {
+async function parseTravelDirectory(
+  directory: string,
+  catalog: TravelCatalogEntry[],
+): Promise<TravelSeed[]> {
   const files = await fs.readdir(directory)
   const markdownFiles = files.filter((file) => file.endsWith('.md')).sort()
+  const catalogBySourceFile = new Map(catalog.map((entry) => [entry.sourceFile, entry]))
 
-  return Promise.all(markdownFiles.map((file) => parseTravelMarkdown(path.join(directory, file))))
+  if (markdownFiles.length !== catalogBySourceFile.size) {
+    throw new Error('Travel catalog and Markdown source count do not match')
+  }
+
+  return Promise.all(
+    markdownFiles.map((file) => {
+      const catalogEntry = catalogBySourceFile.get(file)
+
+      if (!catalogEntry) {
+        throw new Error(`Travel Markdown is missing from catalog: ${file}`)
+      }
+
+      return parseTravelMarkdown(path.join(directory, file), catalogEntry)
+    }),
+  )
 }
 
 async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
@@ -813,10 +973,18 @@ function parseTypewriter(block: string): FamilyMemberSeed['typewriter'] {
 }
 
 function parseInterests(block: string): FamilyMemberSeed['interests'] {
-  const line = block
+  const explicitLine = block
     .split('\n')
-    .find((item) => ['兴趣', '興趣', '爱好', '愛好'].some((label) => item.includes(label)))
-  const raw = line?.match(/[（(]([^）)]+)[）)]/)?.[1]
+    .find((item) => item.includes('愛好/組件') || item.includes('爱好/组件'))
+  const fallbackLine = block
+    .split('\n')
+    .find((item) => ['兴趣嗜好', '興趣嗜好'].some((label) => item.includes(label)))
+  const raw = explicitLine
+    ? explicitLine
+        .replace(/^.*?：/, '')
+        .split(/[（(]/)[0]
+        ?.trim()
+    : fallbackLine?.match(/[（(]([^）)]+)[）)]/)?.[1]
 
   if (!raw) {
     return undefined
@@ -920,21 +1088,24 @@ function parseFlights(markdown: string): NonNullable<TravelSeed['flights']> {
   const section = sectionAfterHeading(markdown, '航班信息')
 
   return markdownTableRows(section)
-    .filter((cells) => cells.some((cell) => /[A-Z]{1,3}\d{2,4}/.test(cell)) || cells[1]?.includes('中華航空'))
+    .filter((cells) => isFlightRow(cells))
     .map((cells) => {
-      const flightNumber = cells.find((cell) => /[A-Z]{1,3}\d{2,4}/.test(cell)) ?? cells[1] ?? '航班'
-      const isLongFormat = cells.length >= 9
+      const flightIndex = cells.findIndex((cell) => /[A-Z]{1,3}\d{2,4}/.test(cell) || cell === 'TBD')
+      const flightNumber = flightIndex >= 0 ? cells[flightIndex] ?? '航班' : cells[1] ?? '航班'
+      const route = cells.find((cell) => cell.includes('→'))
+      const timeRange = cells.find((cell) => /\d{1,2}:\d{2}\s*[–-]\s*\d{1,2}:\d{2}/.test(cell))
+      const [departureTime, arrivalTime] = timeRange?.split(/\s*[–-]\s*/).map((time) => time.trim()) ?? []
+      const isHainanFormat = flightIndex < 0 && cells[1]?.includes('中華航空')
 
       return {
         date: cells[0],
-        airline: isLongFormat ? cells[2] : undefined,
+        airline: isHainanFormat ? cells[1] : flightNumber.match(/\(([^)]+)\)/)?.[1],
         flightNumber,
-        route: isLongFormat ? `${cells[4] ?? ''}→${cells[6] ?? ''}` : cells[2] ?? `${cells[2] ?? ''}→${cells[3] ?? ''}`,
-        passengers: isLongFormat ? undefined : cells[3],
-        departureTime: isLongFormat ? cells[5] : cells[4],
-        arrivalTime: isLongFormat ? cells[7] : cells[5],
-        terminal: isLongFormat ? undefined : cells[6],
-        notes: isLongFormat ? cells[8] : cells[7],
+        route: route ?? (isHainanFormat ? `${cells[2] ?? ''}→${cells[3] ?? ''}` : cells[2] ?? ''),
+        passengers: flightIndex === 2 ? cells[0] : undefined,
+        departureTime,
+        arrivalTime,
+        notes: cells.at(-1),
       }
     })
 }
@@ -957,14 +1128,21 @@ function parseRailSegments(markdown: string): TravelSeed['railSegments'] {
 
 function parseLodgings(markdown: string): TravelSeed['lodgings'] {
   const section = sectionAfterHeading(markdown, '住宿安排')
+  const rows = markdownTableRows(section)
+  const headers = rows[0] ?? []
 
-  return markdownTableRows(section)
+  return rows
+    .slice(1)
     .filter((cells) => cells.length >= 3 && Boolean(cells[0]) && Boolean(cells[1]))
     .map((cells) => ({
       dateRange: cells[0] ?? '',
-      hotel: cells[1] ?? '',
-      address: cells[2],
-      highlights: cells[3],
+      city: cellByHeader(headers, cells, ['城市']),
+      hotel: cellByHeader(headers, cells, ['酒店']) ?? cells[1] ?? '',
+      address: cellByHeader(headers, cells, ['地址']),
+      roomType: cellByHeader(headers, cells, ['房型']),
+      bookingChannel: cellByHeader(headers, cells, ['預訂管道']),
+      price: cellByHeader(headers, cells, ['價格']),
+      highlights: cellByHeader(headers, cells, ['核心亮點', '備注', '確認號']) ?? cells.at(-1),
     }))
 }
 
@@ -979,20 +1157,92 @@ function parseCabinAssignments(markdown: string): TravelSeed['cabinAssignments']
     }))
 }
 
+function parseExternalVideos(markdown: string): TravelSeed['externalVideos'] {
+  const section = sectionAfterHeading(markdown, '外部影片')
+
+  return section
+    .split('\n')
+    .flatMap((line) => {
+      const match = line.match(/^\s*(.*?)\s*\[([^\]]+)\]\s*$/)
+
+      if (!match || !isYouTubeUrl(match[2] ?? '')) {
+        return []
+      }
+
+      return [{
+        title: cleanMarkdown(match[1] ?? '') || 'YouTube 旅行影片',
+        youtubeUrl: match[2] ?? '',
+      }]
+    })
+}
+
 function parseDailyItinerary(markdown: string): NonNullable<TravelSeed['dailyItinerary']> {
   const matches = [
     ...markdown.matchAll(/##\s+\**(?:[^\n]*?)Day\s+(\d+)\s*[·．.-]\s*([^\n*]+)\**([\s\S]*?)(?=\n##\s+\**(?:[^\n]*?)Day\s+\d+|$)/gi),
   ]
 
-  return matches.map((match) => ({
-    day: Number(match[1]),
-    title: cleanMarkdown(match[2] ?? '').trim(),
-    segments: (match[3] ?? '')
-      .split('\n')
-      .filter((line) => line.trim().startsWith('- '))
-      .slice(0, 8)
-      .map((line) => ({ activity: cleanMarkdown(line.replace(/^-\s*/, '').trim()) })),
-  }))
+  return matches.map((match) => {
+    const content = match[3] ?? ''
+
+    return {
+      day: Number(match[1]),
+      title: cleanMarkdown(match[2] ?? '').trim(),
+      segments: parseDailySegments(content),
+      meals: parseDailyMeals(content),
+      lodging: parseDailyLodging(content),
+    }
+  })
+}
+
+function parseDailySegments(
+  content: string,
+): NonNullable<NonNullable<TravelSeed['dailyItinerary']>[number]['segments']> {
+  const tableRows = markdownTableRows(content)
+  const header = tableRows[0] ?? []
+  const hasItineraryTable = header.some((cell) => cell.includes('時間')) && header.some((cell) => cell.includes('安排'))
+
+  if (hasItineraryTable) {
+    return tableRows
+      .slice(1)
+      .filter((cells) => Boolean(cells[1]))
+      .slice(0, 12)
+      .map((cells) => ({
+        time: cells[0],
+        activity: cells[1] ?? '',
+        transport: cells[2],
+        notes: cells[3],
+      }))
+  }
+
+  return content
+    .split('\n')
+    .filter((line) => line.trim().startsWith('- '))
+    .slice(0, 12)
+    .map((line) => ({ activity: cleanMarkdown(line.replace(/^\s*-\s*/, '').trim()) }))
+}
+
+function parseDailyMeals(
+  content: string,
+): NonNullable<NonNullable<TravelSeed['dailyItinerary']>[number]['meals']> | undefined {
+  const fields = {
+    breakfast: mealValue(content, '早餐'),
+    lunch: mealValue(content, '午餐'),
+    dinner: mealValue(content, '晚餐'),
+  }
+
+  return Object.values(fields).some(Boolean) ? fields : undefined
+}
+
+function parseDailyLodging(content: string): string | undefined {
+  return mealValue(content, '住宿')
+}
+
+function mealValue(content: string, label: string): string | undefined {
+  return content
+    .split('\n')
+    .find((line) => new RegExp(`^\\s*-\\s*\\*\\*${escapeRegExp(label)}\\*\\*：`).test(line))
+    ?.replace(new RegExp(`^\\s*-\\s*\\*\\*${escapeRegExp(label)}\\*\\*：`), '')
+    .trim()
 }
 
 function parseReminders(markdown: string): TravelSeed['reminders'] {
@@ -1018,10 +1268,55 @@ function sectionContent(markdown: string, heading: string): string {
 }
 
 function sectionAfterHeading(markdown: string, heading: string): string {
-  const escaped = escapeRegExp(heading)
-  const pattern = new RegExp(`#{1,3}\\s+\\**[^\\n]*${escaped}[^\\n]*\\**\\n([\\s\\S]*?)(?=\\n#{1,3}\\s+|$)`)
+  const lines = markdown.split('\n')
+  const headingIndex = lines.findIndex((line) => {
+    const match = line.match(/^(#{1,3})\s+/)
+    return Boolean(match && line.includes(heading))
+  })
 
-  return markdown.match(pattern)?.[1]?.trim() ?? ''
+  if (headingIndex < 0) {
+    return ''
+  }
+
+  const level = lines[headingIndex]?.match(/^(#{1,3})\s+/)?.[1].length ?? 1
+  const content = lines.slice(headingIndex + 1)
+  const endIndex = content.findIndex((line) => {
+    const nextLevel = line.match(/^(#{1,3})\s+/)?.[1].length
+    return nextLevel !== undefined && nextLevel <= level
+  })
+
+  return content.slice(0, endIndex < 0 ? undefined : endIndex).join('\n').trim()
+}
+
+function isFlightRow(cells: string[]): boolean {
+  if (cells.some((cell) => ['日期', '乘機人', '方向'].includes(cell))) {
+    return false
+  }
+
+  return (
+    cells.some((cell) => /[A-Z]{1,3}\d{2,4}/.test(cell) || cell === 'TBD') ||
+    cells[1]?.includes('中華航空') === true
+  )
+}
+
+function cellByHeader(headers: string[], cells: string[], labels: string[]): string | undefined {
+  const index = headers.findIndex((header) => labels.some((label) => header.includes(label)))
+
+  return index >= 0 ? cells[index] : undefined
+}
+
+function isYouTubeUrl(value: string): boolean {
+  try {
+    const url = new URL(value)
+    const host = url.hostname.replace(/^www\./, '')
+
+    return (
+      host === 'youtu.be' ||
+      (host === 'youtube.com' && (url.pathname === '/watch' || url.pathname.startsWith('/shorts/')))
+    )
+  } catch {
+    return false
+  }
 }
 
 function markdownTableRows(markdown: string): string[][] {
