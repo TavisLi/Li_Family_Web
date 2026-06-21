@@ -50,7 +50,13 @@ dry-run 的 798 筆「update」代表此工具以來源路徑比對到既有資�
 
 ## 瀏覽器 QA 與已知限制
 
-瀏覽器互動式 QA 尚未完成。此環境的 in-app browser 初始化失敗，無法在此回合完成桌面／手機尺寸的實際視覺巡覽；也未使用家庭帳號登入測試私密頁面。
+瀏覽器互動式 QA 已完成以下範圍：
+
+- Production 首頁在桌機尺寸下可載入；Tavis、Lynn 頭像皆實際載入 800px 圖片。
+- `/travel/202702-thailand-phuket` 在桌機與 390px 手機尺寸下可載入封面、航班、住宿與每日行程內容。
+- 使用 Tavis 測試帳號可登入家人模式；Wrapped 與 Bucket List 都可讀取，Bucket List 顯示 4 筆願望與對應操作按鈕。
+
+首次登入後立即導向 Bucket List 時，in-app browser 曾出現一次暫時性的 `network error`；Production 沒有對應的 500 日誌，重新開啟同頁後即正常。此現象未再次重現，但建議在正式合併前由真人瀏覽器再確認一次首次登入後的導向體驗。
 
 R2 公開網址問題已於本報告初版後修復：Production 的 `NEXT_PUBLIC_R2_PUBLIC_URL` 已設定為 Cloudflare R2 的公開 `r2.dev` 網域，並已重新部署。已確認一筆新旅程媒體與 Tavis、Lynn 頭像皆為 HTTP 200。
 
@@ -63,10 +69,9 @@ Tavis 與 Lynn 原本缺少對應的 R2 object；已只重傳這兩個既有 Med
 - 分支已推送至 GitHub。
 - Draft PR #9 已建立，尚未合併。
 - 因 PR 尚未合併，Production 網站程式碼尚未包含本分支的前端與同步工具變更；Production Payload 內容則已依本報告同步。
-- v1 尚不可宣告正式上線，剩餘主要工作為實機圖片／響應式 QA、家庭登入流程 QA 與 Draft PR review／合併。
+- v1 尚不可宣告正式上線，剩餘主要工作為 Draft PR review／合併，以及真人瀏覽器對首次登入後導向的確認。
 
 ## 下一步
 
-1. 在桌面與手機上完成首頁、五個旅程頁、Tavis、Lynn 的實機圖片與版面 QA，確認無 ImageFallback。
-2. 完成家庭登入流程 QA，並處理 Draft PR review 後再合併。
-3. 如需保持儲存空間整潔，另開一次已授權的舊路徑媒體盤點／清理；不要以一般 Phase 9 seed 自動刪除。
+1. 在真人瀏覽器確認首次登入後會直接進入目標私密頁，並處理 Draft PR review 後再合併。
+2. 如需保持儲存空間整潔，另開一次已授權的舊路徑媒體盤點／清理；不要以一般 Phase 9 seed 自動刪除。
