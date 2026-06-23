@@ -16,6 +16,7 @@ import {
 import { buildPayloadDryRun } from './seed-dry-run'
 import { memberEnglishLocalizedData, memberLocalizedWriteOptions } from './seed-member-locale'
 import { mediaIdsBySourcePath } from './seed-media-context'
+import { mediaRefreshRequestFromArgs } from './seed-media-repair'
 import { uploadFilenameForSourcePath } from './seed-upload-name'
 
 interface SeedStats {
@@ -45,6 +46,7 @@ async function run() {
   const dryRun = process.argv.includes('--dry-run')
   const phase9Only = process.argv.includes('--phase-9')
   const phase9ReadBack = process.argv.includes('--phase-9-read-back')
+  const mediaRefreshRequest = mediaRefreshRequestFromArgs(process.argv)
 
   const seedContent = await buildSeedContent(projectRoot)
 
@@ -78,6 +80,22 @@ async function run() {
     categoryBySlug: new Map(),
     travelBySlug: new Map(),
     userBySlug: new Map(),
+  }
+
+  if (mediaRefreshRequest?.type === 'sources') {
+    for (const sourcePath of mediaRefreshRequest.sourcePaths) {
+      await refreshExistingMedia(payload, seedContent.media, sourcePath, stats)
+    }
+    console.log('Media refresh completed')
+    console.table(stats)
+    return
+  }
+
+  if (mediaRefreshRequest?.type === 'missing-current-media') {
+    await refreshMissingCurrentMedia(payload, seedContent.media, stats)
+    console.log('Missing current media refresh completed')
+    console.table(stats)
+    return
   }
 
   if (blogOnly) {
@@ -215,6 +233,111 @@ async function seedMedia(
       console.error(`Failed to seed media: ${item.sourcePath}`, error)
     }
   }
+}
+
+async function refreshExistingMedia(
+  payload: Payload,
+  mediaItems: MediaSeed[],
+  sourcePath: string,
+  stats: SeedStats,
+) {
+  const item = mediaItems.find((media) => media.sourcePath === sourcePath)
+
+  if (!item) {
+    throw new Error(`No source media found for refresh: ${sourcePath}`)
+  }
+
+  const existing = await payload.find({
+    collection: 'media',
+    depth: 0,
+    limit: 1,
+    where: {
+      sourcePath: {
+        equals: item.sourcePath,
+      },
+    },
+  })
+  const existingDoc = existing.docs[0]
+
+  if (!existingDoc) {
+    throw new Error(`No existing media record found for refresh: ${sourcePath}`)
+  }
+
+  const stagedFilePath = await stageUploadFile(item.absolutePath)
+
+  try {
+    await payload.update({
+      collection: 'media',
+      id: existingDoc.id,
+      data: {
+        type: 'photo',
+        altText: item.altText,
+        sourcePath: item.sourcePath,
+        tags: item.tags,
+      },
+      filePath: stagedFilePath,
+    })
+    stats.updated += 1
+    console.log(`Refreshed media object: ${sourcePath}`)
+  } finally {
+    await removeStagedFile(stagedFilePath)
+  }
+}
+
+async function refreshMissingCurrentMedia(payload: Payload, mediaItems: MediaSeed[], stats: SeedStats) {
+  const result = await payload.find({
+    collection: 'media',
+    depth: 0,
+    limit: 2000,
+    pagination: false,
+  })
+  const existingBySourcePath = new Map(result.docs.map((media) => [media.sourcePath, media]))
+  const missingSourcePaths: string[] = []
+  let nextItemIndex = 0
+
+  await Promise.all(
+    Array.from({ length: 4 }, async () => {
+      while (nextItemIndex < mediaItems.length) {
+        const item = mediaItems[nextItemIndex]
+        nextItemIndex += 1
+        const existing = existingBySourcePath.get(item.sourcePath)
+
+        if (!existing) {
+          throw new Error(`No existing media record found for refresh: ${item.sourcePath}`)
+        }
+
+        const mediumUrl = existing.sizes?.medium?.url ?? existing.url
+
+        if (!mediumUrl || !(await publicMediaUrlExists(mediumUrl))) {
+          missingSourcePaths.push(item.sourcePath)
+        }
+      }
+    }),
+  )
+
+  console.log(`Detected ${missingSourcePaths.length} missing current media objects`)
+
+  for (const sourcePath of missingSourcePaths) {
+    await refreshExistingMedia(payload, mediaItems, sourcePath, stats)
+  }
+}
+
+async function publicMediaUrlExists(url: string): Promise<boolean> {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const response = await fetch(url, { method: 'HEAD' })
+
+      if (response.status !== 429) {
+        return response.ok
+      }
+    } catch {
+      // A transient network failure is retried below before a media object is refreshed.
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 250 * (attempt + 1)))
+  }
+
+  return false
 }
 
 async function seedMembers(
