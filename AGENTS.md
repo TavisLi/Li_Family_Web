@@ -52,3 +52,17 @@ Whenever you need to build, run, or generate types, use the following exact comm
 - **Optional Media**: All image and media relational fields in Payload must be set to `required: false` to prevent data-entry blockers.
 - **Graceful Degradation (ImageFallback)**: If an image URL is null or missing, you MUST force-render the `ImageFallback` component. This component must use glassmorphism styling (`backdrop-blur-md bg-white/10`), a shimmer gradient, and center-aligned placeholder text.
 - **Storage Constraints**: Do NOT use Vercel Blob for storage configurations. The system is reserved for the Cloudflare R2 S3 adapter.
+
+## Agent skills
+
+### Issue tracker
+
+Issues and PRDs are tracked in this repository's GitHub Issues; external pull requests are not a triage surface. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The canonical `needs-*`, `ready-for-*`, and `wontfix` labels use their default names. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+This is a single-context repository. Read the root `CONTEXT.md` and relevant `docs/adr/` decisions when present. See `docs/agents/domain.md`.

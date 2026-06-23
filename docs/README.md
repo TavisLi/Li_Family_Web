@@ -95,6 +95,7 @@ pnpm dev
 - travel-projects.md – 旅游项目信息
 - travel-content-source-guidelines.md – 新增旅游项目的 Markdown、照片与影片准备规范
 - content-source-asset-guidelines.md – content-source/assets 照片与媒体命名规范
+- website-operations-sop.md – 日常內容更新、旅遊同步、發布與異常處理的營運手冊
 - design/ – 頁面級設計文檔，包含旅遊專案 DESIGN.md 參考
 - Web Li Prompt.txt – 原始功能需求
 
