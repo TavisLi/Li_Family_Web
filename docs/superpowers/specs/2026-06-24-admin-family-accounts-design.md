@@ -8,6 +8,7 @@
 
 - 在 `users` 新增必填 `role` select field，值為 `admin` 或 `family`，預設 `family`。
 - 為 `users.access.admin` 加入角色檢查；只有 `role === 'admin'` 的已登入使用者可進入 `/admin`。
+- 將 CMS 管理資料的 create／update／delete API 操作限制為 `admin`，避免一般家人略過後台 UI 直接呼叫 API；保留家人對 comments、bucket items 的既有參與權限。
 - 保留既有 Family Mode 行為：任一有效 `users` session 都可讀取家人限定內容與參與互動。
 - 以一次性、不可提交帳密的受控指令建立或更新：
   - 獨立 Administration 帳號與 Tavis 帳號：`role: admin`。
@@ -32,7 +33,7 @@
 | `family` | 是 | 否 | 一般家人帳號 |
 | `admin` | 是 | 是 | Administration、Tavis |
 
-Payload 的 `access.admin` 是 CMS 後台的強制邊界；前端家人登入不以 `role` 限制，以維持現有 Family Mode 設計。資料操作腳本會直接使用受保護 server-side Payload Local API，僅由本機或部署環境執行。
+Payload 的 `access.admin` 是 CMS 後台的強制邊界。由於 Payload 未設定的 collection write access 預設允許已登入使用者，CMS 管理資料也必須明確加入 `admin` create／update／delete access，不能只隱藏後台 UI。前端家人登入不以 `role` 限制，以維持現有 Family Mode 設計；comments 與 bucket items 維持家人參與。Bucket 完成時建立的 timeline event 改由已驗證的 server action 使用受控的 Local API write。資料操作腳本同樣只由受保護 server-side 環境執行。
 
 ## 帳號建立流程
 
