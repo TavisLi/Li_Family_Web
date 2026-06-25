@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import React from 'react'
 import type { ReactNode } from 'react'
 import { ArrowRight, CalendarDays, Compass, MapPin, Plane } from 'lucide-react'
 
@@ -81,40 +82,17 @@ export function TravelIndexPage({ projects }: TravelIndexPageProps) {
             </p>
           </div>
 
-          <div className="divide-y divide-slate-300/60 border-y border-slate-300/60">
-            {projects.map((project) => (
-              <Link
-                className="group grid gap-5 py-6 transition hover:bg-white/35 md:grid-cols-[10rem_1fr_auto]"
-                href={`/travel/${project.slug}`}
-                key={project.id}
-              >
-                <PayloadImage
-                  className="aspect-[16/10] rounded-md"
-                  fallbackLabel={project.title}
-                  media={project.coverImage}
-                  sizes="(min-width: 768px) 10rem, 100vw"
-                  tone={project.status === 'planning' ? 'travel' : 'lynn'}
-                />
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-500">
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="size-4" aria-hidden="true" />
-                      {statusLabel(project.status)}
-                    </span>
-                    <span>{formatDateRange(project)}</span>
-                  </div>
-                  <h3 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
-                    {project.title}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-7 text-slate-600">
-                    {project.summary || project.externalDocIdentifier || '旅行資料已在 Payload 建立。'}
-                  </p>
-                </div>
-                <div className="flex items-center text-slate-500 transition group-hover:translate-x-1 group-hover:text-slate-950">
-                  <ArrowRight className="size-5" aria-hidden="true" />
-                </div>
-              </Link>
-            ))}
+          <div className="grid gap-8">
+            <TravelProjectGroup
+              empty="目前沒有公開的規劃中旅程。"
+              projects={planning}
+              title="規劃中旅程"
+            />
+            <TravelProjectGroup
+              empty="目前沒有公開的已完成旅程。"
+              projects={completed}
+              title="已完成旅程"
+            />
           </div>
         </div>
       </section>
@@ -137,6 +115,70 @@ export function TravelIndexPage({ projects }: TravelIndexPageProps) {
         />
       </section>
     </main>
+  )
+}
+
+function TravelProjectGroup({
+  empty,
+  projects,
+  title,
+}: {
+  empty: string
+  projects: TravelProject[]
+  title: string
+}) {
+  return (
+    <section aria-labelledby={`travel-group-${title}`} className="grid gap-3">
+      <h3 className="text-xl font-semibold tracking-normal text-slate-950" id={`travel-group-${title}`}>
+        {title}
+      </h3>
+      {projects.length ? (
+        <div className="divide-y divide-slate-300/60 border-y border-slate-300/60">
+          {projects.map((project) => (
+            <TravelProjectRow key={project.id} project={project} />
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-lg border border-white/60 bg-white/45 p-5 text-sm leading-7 text-slate-600 shadow-sm backdrop-blur-xl">
+          {empty}
+        </p>
+      )}
+    </section>
+  )
+}
+
+function TravelProjectRow({ project }: { project: TravelProject }) {
+  return (
+    <Link
+      className="group grid gap-5 py-6 transition hover:bg-white/35 md:grid-cols-[10rem_1fr_auto]"
+      href={`/travel/${project.slug}`}
+    >
+      <PayloadImage
+        className="aspect-[16/10] rounded-md"
+        fallbackLabel={project.title}
+        media={project.coverImage}
+        sizes="(min-width: 768px) 10rem, 100vw"
+        tone={project.status === 'planning' ? 'travel' : 'lynn'}
+      />
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-500">
+          <span className="inline-flex items-center gap-1">
+            <MapPin className="size-4" aria-hidden="true" />
+            {statusLabel(project.status)}
+          </span>
+          <span>{formatDateRange(project)}</span>
+        </div>
+        <h4 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
+          {project.title}
+        </h4>
+        <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-7 text-slate-600">
+          {project.summary || project.externalDocIdentifier || '旅行資料已在 Payload 建立。'}
+        </p>
+      </div>
+      <div className="flex items-center text-slate-500 transition group-hover:translate-x-1 group-hover:text-slate-950">
+        <ArrowRight className="size-5" aria-hidden="true" />
+      </div>
+    </Link>
   )
 }
 

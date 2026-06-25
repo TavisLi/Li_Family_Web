@@ -15,6 +15,8 @@ import { PayloadImage } from '@/components/ui/payload-image'
 import type { TravelInteractionThread } from '@/lib/data/travel'
 import type { Media, TravelProject } from '@/payload/payload-types'
 import { CompletedTravelLedger } from './completed-travel-ledger'
+import { TravelPlanningExtras } from './travel-planning-extras'
+import { TravelSourceSections } from './travel-source-sections'
 import { TravelInteractionPanel } from './travel-interaction-panel'
 import { toYouTubeEmbedUrl } from './youtube'
 
@@ -32,6 +34,7 @@ export function TravelDetailPage({ project, threads }: TravelDetailPageProps) {
       ) : (
         <CompletedTravelView project={project} />
       )}
+      <TravelSourceSections project={project} />
     </main>
   )
 }
@@ -258,6 +261,8 @@ function PlanningTravelView({
           ))}
         </div>
       </section>
+
+      <TravelPlanningExtras project={project} />
 
       <section className="border-y border-white/60 bg-slate-950 px-5 py-14 text-white md:py-20">
         <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">

@@ -240,11 +240,63 @@ const travelSeedSchema = z.object({
       }),
     )
     .optional(),
+  foodRecommendations: z
+    .array(
+      z.object({
+        category: z.string().optional(),
+        name: z.string().min(1),
+        description: z.string().optional(),
+        suitableFor: z.string().optional(),
+      }),
+    )
+    .optional(),
+  costItems: z
+    .array(
+      z.object({
+        category: z.string().min(1),
+        item: z.string().min(1),
+        unitPrice: z.string().optional(),
+        quantity: z.string().optional(),
+        subtotal: z.string().optional(),
+        notes: z.string().optional(),
+      }),
+    )
+    .optional(),
+  optionalActivities: z
+    .array(
+      z.object({
+        city: z.string().optional(),
+        name: z.string().min(1),
+        description: z.string().optional(),
+        price: z.string().optional(),
+        riskLevel: z.string().optional(),
+        notes: z.string().optional(),
+      }),
+    )
+    .optional(),
   reminders: z
     .array(
       z.object({
         category: z.string().min(1),
         items: z.array(z.object({ text: z.string().min(1) })).optional(),
+      }),
+    )
+    .optional(),
+  sourceSections: z
+    .array(
+      z.object({
+        level: z.number().int().min(1).max(3),
+        title: z.string().min(1),
+        anchor: z.string().min(1),
+        body: z.string().min(1),
+        links: z
+          .array(
+            z.object({
+              label: z.string().min(1),
+              url: z.string().url(),
+            }),
+          )
+          .optional(),
       }),
     )
     .optional(),
@@ -562,7 +614,11 @@ export async function parseTravelMarkdown(
     lodgings: parseLodgings(parsed.content),
     cabinAssignments: parseCabinAssignments(parsed.content),
     dailyItinerary: parseDailyItinerary(parsed.content),
+    foodRecommendations: parseFoodRecommendations(parsed.content),
+    costItems: parseCostItems(parsed.content),
+    optionalActivities: parseOptionalActivities(parsed.content),
     reminders: parseReminders(parsed.content),
+    sourceSections: parseSourceSections(parsed.content),
     externalVideos: parseExternalVideos(parsed.content),
   })
 }
@@ -1259,6 +1315,167 @@ function parseReminders(markdown: string): TravelSeed['reminders'] {
         },
       ]
     : undefined
+}
+
+function parseFoodRecommendations(markdown: string): TravelSeed['foodRecommendations'] {
+  const section = sectionAfterHeading(markdown, '美食推薦匯總')
+
+  return markdownTableRows(section)
+    .filter((cells) => cells.length >= 3 && !['類型', '項目'].includes(cells[0] ?? ''))
+    .map((cells) => ({
+      category: cells[0],
+      name: cells[1] ?? '',
+      description: cells[2],
+      suitableFor: cells[3],
+    }))
+    .filter((item) => item.name)
+}
+
+function parseCostItems(markdown: string): TravelSeed['costItems'] {
+  const section = sectionAfterHeading(markdown, '費用匯總')
+
+  return markdownTableRows(section)
+    .filter((cells) => cells.length >= 2 && !['項目', '類型'].includes(cells[0] ?? ''))
+    .map((cells) => ({
+      category: '費用',
+      item: cells[0] ?? '',
+      unitPrice: cells[1],
+      quantity: cells[2],
+      subtotal: cells[3] ?? cells[1],
+      notes: cells[4],
+    }))
+    .filter((item) => item.item && !item.item.includes('小計'))
+}
+
+function parseOptionalActivities(markdown: string): TravelSeed['optionalActivities'] {
+  const options = new Map<string, NonNullable<TravelSeed['optionalActivities']>[number]>()
+  const addOption = (name: string, details: Partial<NonNullable<TravelSeed['optionalActivities']>[number]> = {}) => {
+    const cleanName = cleanMarkdown(name)
+
+    if (!cleanName || options.has(cleanName)) {
+      return
+    }
+
+    options.set(cleanName, {
+      name: cleanName,
+      ...details,
+    })
+  }
+
+  for (const day of parseDailyItinerary(markdown)) {
+    for (const segment of day.segments ?? []) {
+      const text = [segment.activity, segment.notes].filter(Boolean).join(' · ')
+
+      if (/選項|可選|自費/.test(text)) {
+        addOption(text, {
+          description: `Day ${day.day}：${text}`,
+          notes: segment.transport,
+        })
+      }
+    }
+  }
+
+  for (const item of parseCostItems(markdown) ?? []) {
+    if (/自費|演出|白帝城|升船機|索道|扶梯/.test(item.item)) {
+      addOption(item.item, {
+        price: [item.unitPrice, item.subtotal].filter(Boolean).join(' · '),
+        notes: item.notes,
+      })
+    }
+  }
+
+  return [...options.values()]
+}
+
+function parseSourceSections(markdown: string): NonNullable<TravelSeed['sourceSections']> {
+  const lines = markdown.split('\n')
+  const sections: NonNullable<TravelSeed['sourceSections']> = []
+  let current:
+    | {
+        level: number
+        title: string
+        bodyLines: string[]
+      }
+    | undefined
+
+  const flush = () => {
+    if (!current) {
+      return
+    }
+
+    const body = current.bodyLines.join('\n').trim()
+
+    if (body) {
+      sections.push({
+        level: current.level,
+        title: current.title,
+        anchor: slugify(current.title),
+        body,
+        links: extractLinks(body),
+      })
+    }
+
+    current = undefined
+  }
+
+  for (const line of lines) {
+    const heading = line.match(/^(#{1,3})\s+(.+)$/)
+
+    if (heading) {
+      flush()
+      current = {
+        level: heading[1]?.length ?? 1,
+        title: cleanMarkdown(heading[2] ?? '旅行章節'),
+        bodyLines: [],
+      }
+      continue
+    }
+
+    if (!current || line.trim() === '---') {
+      continue
+    }
+
+    current.bodyLines.push(line)
+  }
+
+  flush()
+
+  return sections
+}
+
+function extractLinks(markdown: string): NonNullable<NonNullable<TravelSeed['sourceSections']>[number]['links']> | undefined {
+  const links = new Map<string, { label: string; url: string }>()
+  const addLink = (label: string, url: string) => {
+    if (!isHttpUrl(url)) {
+      return
+    }
+
+    links.set(url, {
+      label: cleanMarkdown(label) || url,
+      url,
+    })
+  }
+
+  for (const match of markdown.matchAll(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g)) {
+    addLink(match[1] ?? '', match[2] ?? '')
+  }
+
+  for (const match of markdown.matchAll(/(^|[\s：:])((https?:\/\/)[^\s<>()]+)(?=$|\s)/g)) {
+    const url = (match[2] ?? '').replace(/[，。,.)）]+$/, '')
+    addLink(url, url)
+  }
+
+  return links.size ? [...links.values()] : undefined
+}
+
+function isHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value)
+
+    return url.protocol === 'http:' || url.protocol === 'https:'
+  } catch {
+    return false
+  }
 }
 
 function sectionContent(markdown: string, heading: string): string {

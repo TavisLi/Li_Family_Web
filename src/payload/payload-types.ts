@@ -442,6 +442,25 @@ export interface TravelProject {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Faithful Markdown source sections imported from content-source/travels for full-page coverage.
+   */
+  sourceSections?:
+    | {
+        level: number;
+        title: string;
+        anchor: string;
+        body: string;
+        links?:
+          | {
+              label: string;
+              url: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
   externalVideos?:
     | {
         title: string;
@@ -959,6 +978,22 @@ export interface TravelProjectsSelect<T extends boolean = true> {
           | T
           | {
               text?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  sourceSections?:
+    | T
+    | {
+        level?: T;
+        title?: T;
+        anchor?: T;
+        body?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              url?: T;
               id?: T;
             };
         id?: T;
