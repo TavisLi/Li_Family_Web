@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { canManageContent } from '../access/is-admin'
+
 export const Categories: CollectionConfig = {
   slug: 'categories',
   admin: {
@@ -7,7 +9,10 @@ export const Categories: CollectionConfig = {
     defaultColumns: ['title', 'slug', 'updatedAt'],
   },
   access: {
+    create: ({ req }) => canManageContent({ user: req.user }),
     read: () => true,
+    update: ({ req }) => canManageContent({ user: req.user }),
+    delete: ({ req }) => canManageContent({ user: req.user }),
   },
   fields: [
     {

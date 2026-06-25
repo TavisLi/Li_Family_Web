@@ -1,10 +1,13 @@
 import type { GlobalConfig } from 'payload'
 
+import { canManageContent } from '../access/is-admin'
+
 export const SiteConfig: GlobalConfig = {
   slug: 'site-config',
   label: 'Site Config',
   access: {
     read: ({ req }) => Boolean(req.user),
+    update: ({ req }) => canManageContent({ user: req.user }),
   },
   fields: [
     {
