@@ -73,6 +73,8 @@ Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國
 
 `pnpm run seed:audit` 結果顯示 5 個 travel slug 均具備來源文件、route path、封面媒體與結構化內容；`missingTravelRecords`、`missingCoverMedia`、`missingStructuredContent`、`missingSourceSections`、`missingRoutePaths` 皆為空陣列。
 
+2026-06-25 追加確認：`docs/family-members.md` 已修正 Tavis 的 typewriter 循環詞來源，避免被 seed 成空白 token；修正後已重新執行 `pnpm run test:phase-9` 並通過。
+
 ## 瀏覽器 QA 範圍
 
 本階段已完成 build-level route 驗證與 server-render component 回歸測試，並確認 Next.js production build 可產生：
@@ -99,7 +101,14 @@ Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國
 
 先前在 Node 26.3.1 下的 `payload migrate:create` 失敗，根因推測為 Payload CLI / tsx loader 在 Node 26 下解析 `node:` builtin namespace query 的相容性問題。已改用 Homebrew 安裝的 Node 22.23.1 產生 migration。
 
-尚未執行 `pnpm exec payload migrate` 套用 Production DB。此步驟屬於正式資料庫 schema 寫入，需在確認 seed source 乾淨後再執行。
+已嘗試執行 `pnpm exec payload migrate` 套用 Production DB，但 Payload CLI 偵測到過去曾以 dev mode 動態推送 schema，並提示若繼續 migration 可能造成資料遺失：
+
+```text
+It looks like you've run Payload in dev mode, meaning you've dynamically pushed changes to your database.
+If you'd like to run migrations, data loss will occur. Would you like to proceed?
+```
+
+此提示屬於正式資料風險，不是一般確認。因此本回合已中止 migration，未對 Production DB 套用任何 schema 寫入。後續應先備份／確認 Production DB schema 狀態，再決定是否以 Payload CLI 繼續 migration，或改採人工審核過的 SQL 套用策略。
 
 ### 2. 尚未執行正式環境 seed / read-back
 
@@ -123,8 +132,8 @@ Phase-11 已完成本地 source coverage、build 與 audit，但尚未對 Produc
 
 建議 Phase-11 後續收尾順序：
 
-1. 確認 `docs/family-members.md` 的未提交變更是否保留，避免 Production seed 誤改成員資料。
-2. 使用 Node 22 套用 `travel-source-sections` migration。
+1. 備份並審核 Production DB schema 狀態；處理 Payload CLI 的 data-loss warning。
+2. 使用 Node 22 套用 `travel-source-sections` migration，或採用人工審核過的 SQL 套用策略。
 3. 重新執行：
    - `pnpm exec payload generate:types`
    - `pnpm tsc --noEmit`
