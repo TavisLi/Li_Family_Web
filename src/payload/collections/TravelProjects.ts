@@ -529,6 +529,59 @@ export const TravelProjects: CollectionConfig = {
       ],
     },
     {
+      name: 'sourceSections',
+      type: 'array',
+      required: false,
+      admin: {
+        description:
+          'Faithful Markdown source sections imported from content-source/travels for full-page coverage.',
+      },
+      fields: [
+        {
+          name: 'level',
+          type: 'number',
+          required: true,
+          min: 1,
+          max: 3,
+        },
+        {
+          name: 'title',
+          type: 'text',
+          required: true,
+          localized: true,
+        },
+        {
+          name: 'anchor',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'body',
+          type: 'textarea',
+          required: true,
+          localized: true,
+        },
+        {
+          name: 'links',
+          type: 'array',
+          required: false,
+          fields: [
+            {
+              name: 'label',
+              type: 'text',
+              required: true,
+              localized: true,
+            },
+            {
+              name: 'url',
+              type: 'text',
+              required: true,
+            },
+          ],
+        },
+      ],
+    },
+    {
       name: 'externalVideos',
       type: 'array',
       required: false,

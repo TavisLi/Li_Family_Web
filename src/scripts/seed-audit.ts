@@ -9,9 +9,11 @@ export type SourceCoverageAudit = {
     title: string
     status: 'planning' | 'completed'
     sourceFile: string
+    routePath: string
     flights: number
     lodgings: number
     dailyItinerary: number
+    sourceSections: number
     externalVideos: number
     media: {
       cover: number
@@ -23,6 +25,8 @@ export type SourceCoverageAudit = {
     missingTravelRecords: string[]
     missingCoverMedia: string[]
     missingStructuredContent: string[]
+    missingSourceSections: string[]
+    missingRoutePaths: string[]
   }
   avatarSourcePaths: string[]
   mutationPlan: {
@@ -58,9 +62,11 @@ export function buildSourceCoverageAudit(seedContent: SeedContent): SourceCovera
       title: travel.title,
       status: travel.status,
       sourceFile: travel.externalDocIdentifier,
+      routePath: `/travel/${travel.slug}`,
       flights: travel.flights?.length ?? 0,
       lodgings: travel.lodgings?.length ?? 0,
       dailyItinerary: travel.dailyItinerary?.length ?? 0,
+      sourceSections: travel.sourceSections?.length ?? 0,
       externalVideos: travel.externalVideos?.length ?? 0,
       media: {
         cover: countUsage('cover'),
@@ -77,6 +83,12 @@ export function buildSourceCoverageAudit(seedContent: SeedContent): SourceCovera
       missingCoverMedia: catalog.filter((item) => item.media.cover === 0).map((item) => item.slug),
       missingStructuredContent: catalog
         .filter((item) => item.flights === 0 || item.lodgings === 0 || item.dailyItinerary === 0)
+        .map((item) => item.slug),
+      missingSourceSections: catalog
+        .filter((item) => item.sourceSections === 0)
+        .map((item) => item.slug),
+      missingRoutePaths: catalog
+        .filter((item) => item.routePath !== `/travel/${item.slug}`)
         .map((item) => item.slug),
     },
     avatarSourcePaths: seedContent.media
