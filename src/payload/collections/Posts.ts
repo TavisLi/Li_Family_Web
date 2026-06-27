@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { canManageContent } from '../access/is-admin'
+
 export const Posts: CollectionConfig = {
   slug: 'posts',
   admin: {
@@ -7,6 +9,7 @@ export const Posts: CollectionConfig = {
     defaultColumns: ['title', 'author', 'isPrivate', 'publishedDate'],
   },
   access: {
+    create: ({ req }) => canManageContent({ user: req.user }),
     read: ({ req }) => {
       if (req.user) {
         return true
@@ -18,6 +21,8 @@ export const Posts: CollectionConfig = {
         },
       }
     },
+    update: ({ req }) => canManageContent({ user: req.user }),
+    delete: ({ req }) => canManageContent({ user: req.user }),
   },
   fields: [
     {

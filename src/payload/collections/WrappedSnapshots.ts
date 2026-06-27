@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { canManageContent } from '../access/is-admin'
+
 export const WrappedSnapshots: CollectionConfig = {
   slug: 'wrapped-snapshots',
   admin: {
@@ -18,9 +20,9 @@ export const WrappedSnapshots: CollectionConfig = {
         },
       }
     },
-    create: ({ req }) => Boolean(req.user),
-    update: ({ req }) => Boolean(req.user),
-    delete: ({ req }) => Boolean(req.user),
+    create: ({ req }) => canManageContent({ user: req.user }),
+    update: ({ req }) => canManageContent({ user: req.user }),
+    delete: ({ req }) => canManageContent({ user: req.user }),
   },
   fields: [
     {

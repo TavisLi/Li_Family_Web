@@ -143,6 +143,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  role: 'admin' | 'family';
   displayName: string;
   slug: string;
   familyRole: 'father' | 'mother' | 'daughter' | 'son' | 'grandmother' | 'family';
@@ -715,6 +716,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
   displayName?: T;
   slug?: T;
   familyRole?: T;

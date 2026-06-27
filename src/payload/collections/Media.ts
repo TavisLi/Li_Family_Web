@@ -1,5 +1,7 @@
 import type { CollectionConfig, TextFieldSingleValidation } from 'payload'
 
+import { canManageContent } from '../access/is-admin'
+
 const youtubeUrlPattern =
   /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)[A-Za-z0-9_-]{6,}/
 
@@ -18,7 +20,10 @@ export const Media: CollectionConfig = {
     defaultColumns: ['altText', 'type', 'updatedAt'],
   },
   access: {
+    create: ({ req }) => canManageContent({ user: req.user }),
     read: () => true,
+    update: ({ req }) => canManageContent({ user: req.user }),
+    delete: ({ req }) => canManageContent({ user: req.user }),
   },
   fields: [
     {

@@ -362,6 +362,7 @@ async function seedMembers(
       const data = {
         ...memberData,
         email: `family+${member.slug}@web-li.local`,
+        role: member.slug === 'tavis' ? ('admin' as const) : ('family' as const),
         avatar,
         heroImage,
         cardImage,

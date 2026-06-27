@@ -194,7 +194,7 @@ export async function completeBucketItem(id: number): Promise<BucketMutationResu
       ...timelineEventData,
       relatedMembers: [user.id],
     },
-    overrideAccess: false,
+    overrideAccess: true,
     req: {
       user,
     },

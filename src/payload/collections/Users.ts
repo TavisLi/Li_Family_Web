@@ -1,5 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
+import { canAccessAdmin, canManageContent } from '../access/is-admin'
+
 export const Users: CollectionConfig = {
   slug: 'users',
   auth: true,
@@ -8,6 +10,8 @@ export const Users: CollectionConfig = {
     defaultColumns: ['displayName', 'familyRole', 'profileVisibility', 'updatedAt'],
   },
   access: {
+    admin: ({ req }) => canAccessAdmin({ user: req.user }),
+    create: ({ req }) => canManageContent({ user: req.user }),
     read: ({ req }) => {
       if (req.user) {
         return true
@@ -19,8 +23,20 @@ export const Users: CollectionConfig = {
         },
       }
     },
+    update: ({ req }) => canManageContent({ user: req.user }),
+    delete: ({ req }) => canManageContent({ user: req.user }),
   },
   fields: [
+    {
+      name: 'role',
+      type: 'select',
+      required: true,
+      defaultValue: 'family',
+      options: [
+        { label: 'Administrator', value: 'admin' },
+        { label: 'Family member', value: 'family' },
+      ],
+    },
     {
       name: 'displayName',
       type: 'text',

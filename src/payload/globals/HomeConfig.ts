@@ -1,10 +1,13 @@
 import type { GlobalConfig } from 'payload'
 
+import { canManageContent } from '../access/is-admin'
+
 export const HomeConfig: GlobalConfig = {
   slug: 'home-config',
   label: 'Home Config',
   access: {
     read: () => true,
+    update: ({ req }) => canManageContent({ user: req.user }),
   },
   fields: [
     {
