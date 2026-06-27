@@ -156,6 +156,13 @@ const planningProject: TravelProject = {
     },
     {
       id: 'source-2',
+      level: 2,
+      title: 'Day 1 · 2/2（二）— 台北 → 普吉島 · 安納塔拉入住',
+      anchor: 'day-1',
+      body: '| 時段 | 行程 | 備註 |\n| --- | --- | --- |\n| 上午 | 抵達普吉島 | 入住安納塔拉 |',
+    },
+    {
+      id: 'source-3',
       level: 1,
       title: '補充細節',
       anchor: 'details',
@@ -166,12 +173,25 @@ const planningProject: TravelProject = {
   updatedAt: '2026-06-21T00:00:00.000Z',
 }
 
-const planningHtml = renderToStaticMarkup(createElement(TravelSourceSections, { project: planningProject }))
+const planningHtml = renderToStaticMarkup(
+  createElement(TravelSourceSections, {
+    project: planningProject,
+    renderInteraction: ({ associatedId, label }) =>
+      createElement('div', {
+        'data-associated-id': associatedId,
+        'data-label': label,
+      }, 'interaction slot'),
+  }),
+)
 
-assert.match(planningHtml, /完整來源內容/)
+assert.doesNotMatch(planningHtml, /完整來源內容/)
+assert.match(planningHtml, /來源章節已整理成正式行程地圖/)
 assert.match(planningHtml, /外部網站/)
 assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuket/)
 assert.match(planningHtml, /最高\$1,500/)
+assert.match(planningHtml, /travel:202702-thailand-phuket:source:external-sites/)
+assert.match(planningHtml, /travel:202702-thailand-phuket:source:details/)
+assert.doesNotMatch(planningHtml, /入住安納塔拉/)
 
 const extrasHtml = renderToStaticMarkup(createElement(TravelPlanningExtras, { project: planningProject }))
 
