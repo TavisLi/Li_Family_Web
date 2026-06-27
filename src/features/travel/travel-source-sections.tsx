@@ -31,9 +31,7 @@ export function TravelSourceSections({
   renderInteraction?: RenderInteraction
   threads?: Record<string, TravelInteractionThread>
 }) {
-  const groups = groupSourceSections(project.sourceSections ?? []).filter(
-    (group) => !isDailyGroup(group),
-  )
+  const groups = groupSourceSections(project.sourceSections ?? [])
 
   if (!groups.length) {
     return null
