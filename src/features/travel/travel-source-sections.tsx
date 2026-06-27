@@ -6,6 +6,8 @@ import type { TravelProject } from '@/payload/payload-types'
 
 type SourceSection = NonNullable<TravelProject['sourceSections']>[number]
 
+const SOURCE_SECTION_BOUNDARY_BODY = '__SECTION_BOUNDARY__'
+
 type SourceSectionGroup = {
   anchor: string
   title: string
@@ -482,7 +484,7 @@ function isDailySection(section: SourceSection) {
 }
 
 function hasBody(section: SourceSection) {
-  return Boolean(section.body.trim())
+  return Boolean(section.body.trim()) && section.body.trim() !== SOURCE_SECTION_BOUNDARY_BODY
 }
 
 type SourceBlock =
