@@ -40,7 +40,32 @@ const summary = summarizeProvisioningActions([
 ])
 assert.deepEqual(summary.counts, { create: 1, update: 2 })
 assert.deepEqual(summary.roles, { admin: 2, family: 1 })
+assert.deepEqual(summary.access, { administrators: 2, familyMembers: 2 })
 assert.doesNotMatch(JSON.stringify(summary), /admin@example\.test|admin-test-password|person@example\.test/)
+const identitiesWithAdminRow = buildProvisioningIdentities(
+  [
+    {
+      slug: '-',
+      email: 'admin@example.test',
+      password: 'ignored-admin-row-password',
+      administrator: true,
+    },
+    ...accounts,
+  ],
+  {
+    email: 'admin@example.test',
+    password: 'admin-test-password',
+  },
+)
+assert.deepEqual(
+  identitiesWithAdminRow.map(({ slug, role }) => ({ slug, role })),
+  [
+    { slug: 'administration', role: 'admin' },
+    { slug: 'tavis', role: 'admin' },
+    { slug: 'lynn', role: 'family' },
+  ],
+)
+assert.equal(identitiesWithAdminRow[0]?.password, 'admin-test-password')
 assert.deepEqual(provisioningRequestFromArgs(['--accounts-file', '/tmp/accounts.md']), {
   accountsFile: '/tmp/accounts.md',
   apply: false,

@@ -33,6 +33,10 @@ export interface ProvisioningActionPlan {
 export interface ProvisioningSummary {
   counts: Record<ProvisioningAction, number>
   roles: Record<ProvisionedRole, number>
+  access: {
+    administrators: number
+    familyMembers: number
+  }
   actions: {
     slug: string
     role: ProvisionedRole
@@ -95,6 +99,18 @@ export function buildProvisioningIdentities(
   accounts: AccountTableRow[],
   administrationCredentials: AdministrationCredentials,
 ): ProvisioningIdentity[] {
+  const administrationEmail = administrationCredentials.email.toLowerCase()
+  const accountRows = accounts.filter((account) => {
+    if (account.email.toLowerCase() !== administrationEmail) {
+      return true
+    }
+
+    if (account.slug !== '-' && account.slug !== 'administration') {
+      throw new Error('Administration email can only be used by the Administration account')
+    }
+
+    return false
+  })
   const identities: ProvisioningIdentity[] = [
     {
       slug: 'administration',
@@ -102,7 +118,7 @@ export function buildProvisioningIdentities(
       password: administrationCredentials.password,
       role: 'admin',
     },
-    ...accounts.map((account) => ({
+    ...accountRows.map((account) => ({
       slug: account.slug,
       email: account.email,
       password: account.password,
@@ -129,12 +145,22 @@ export function summarizeProvisioningActions(actions: ProvisioningActionPlan[]):
       admin: 0,
       family: 0,
     },
+    access: {
+      administrators: 0,
+      familyMembers: 0,
+    },
     actions: [],
   }
 
   for (const action of actions) {
     summary.counts[action.action] += 1
     summary.roles[action.identity.role] += 1
+    if (action.identity.role === 'admin') {
+      summary.access.administrators += 1
+    }
+    if (action.identity.slug !== 'administration') {
+      summary.access.familyMembers += 1
+    }
     summary.actions.push({
       slug: action.identity.slug,
       role: action.identity.role,

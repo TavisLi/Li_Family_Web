@@ -1,8 +1,10 @@
 import path from 'node:path'
+import crypto from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 import { access, readFile } from 'node:fs/promises'
 
 import { getPayload, type Payload } from 'payload'
+import { sql } from '@payloadcms/db-postgres'
 
 import {
   buildProvisioningIdentities,
@@ -112,16 +114,7 @@ async function applyProvisioningAction(payload: Payload, action: ProvisioningAct
   const existing = await findUserBySlug(payload, action.identity.slug)
 
   if (existing) {
-    await payload.update({
-      collection: 'users',
-      id: existing.id,
-      overrideAccess: true,
-      data: {
-        email: action.identity.email,
-        password: action.identity.password,
-        role: action.identity.role,
-      },
-    })
+    await updateExistingAuthIdentity(payload, existing.id, action.identity)
 
     return
   }
@@ -156,6 +149,53 @@ async function verifyLogin(payload: Payload, identity: ProvisioningIdentity) {
     console.log(`${identity.slug}: login ok`)
   } catch {
     console.log(`${identity.slug}: login failed`)
+  }
+}
+
+async function updateExistingAuthIdentity(
+  payload: Payload,
+  id: number | string,
+  identity: ProvisioningIdentity,
+) {
+  const { hash, salt } = await generatePasswordSaltHash(identity.password)
+
+  await payload.db.drizzle.execute(sql`
+    UPDATE "users"
+    SET
+      "email" = ${identity.email},
+      "role" = ${identity.role}::"public"."enum_users_role",
+      "salt" = ${salt},
+      "hash" = ${hash},
+      "updated_at" = now()
+    WHERE "id" = ${id}
+  `)
+}
+
+async function generatePasswordSaltHash(password: string): Promise<{ hash: string; salt: string }> {
+  const salt = await new Promise<string>((resolve, reject) => {
+    crypto.randomBytes(32, (error, saltBuffer) => {
+      if (error) {
+        reject(error)
+        return
+      }
+
+      resolve(saltBuffer.toString('hex'))
+    })
+  })
+  const hash = await new Promise<string>((resolve, reject) => {
+    crypto.pbkdf2(password, salt, 25000, 512, 'sha256', (error, hashBuffer) => {
+      if (error) {
+        reject(error)
+        return
+      }
+
+      resolve(hashBuffer.toString('hex'))
+    })
+  })
+
+  return {
+    hash,
+    salt,
   }
 }
 
@@ -240,7 +280,11 @@ function isNodeError(error: unknown): error is NodeJS.ErrnoException {
   return error instanceof Error && 'code' in error
 }
 
-run().catch((error) => {
-  console.error(error instanceof Error ? error.message : 'Account provisioning failed')
-  process.exit(1)
-})
+run()
+  .then(() => {
+    process.exit(0)
+  })
+  .catch((error) => {
+    console.error(error instanceof Error ? error.message : 'Account provisioning failed')
+    process.exit(1)
+  })
