@@ -1,11 +1,12 @@
 import type { Payload } from 'payload'
 
 import type { SeedContent } from './seed-content'
+import { mediaRecordMatchesSeed } from './seed-media-compare'
 
 export type DryRunAction = {
   collection: 'media' | 'travel-projects' | 'users'
   key: string
-  action: 'create' | 'update'
+  action: 'create' | 'skip' | 'update'
   existingId?: number
 }
 
@@ -47,8 +48,8 @@ export async function buildPayloadDryRun(
   ])
   const userIdBySlug = new Map(users.docs.map((user) => [user.slug, user.id]))
   const travelIdBySlug = new Map(travels.docs.map((travel) => [travel.slug, travel.id]))
-  const mediaIdBySourcePath = new Map(
-    media.docs.flatMap((item) => (item.sourcePath ? [[item.sourcePath, item.id] as const] : [])),
+  const mediaBySourcePath = new Map(
+    media.docs.flatMap((item) => (item.sourcePath ? [[item.sourcePath, item] as const] : [])),
   )
 
   for (const member of seedContent.members) {
@@ -74,13 +75,13 @@ export async function buildPayloadDryRun(
   }
 
   for (const media of seedContent.media) {
-    const existingId = mediaIdBySourcePath.get(media.sourcePath)
+    const existing = mediaBySourcePath.get(media.sourcePath)
 
     actions.push({
       collection: 'media',
       key: media.sourcePath,
-      action: existingId ? 'update' : 'create',
-      existingId,
+      action: existing ? (mediaRecordMatchesSeed(existing, media) ? 'skip' : 'update') : 'create',
+      existingId: existing?.id,
     })
   }
 
@@ -96,8 +97,10 @@ export function summarizeDryRunActions(actions: DryRunAction[]): DryRunSummary {
     (summary, item) => {
       if (item.action === 'create') {
         summary.creates += 1
-      } else {
+      } else if (item.action === 'update') {
         summary.updates += 1
+      } else {
+        summary.skips += 1
       }
 
       return summary
