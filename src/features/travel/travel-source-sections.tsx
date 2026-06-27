@@ -38,36 +38,7 @@ export function TravelSourceSections({
   }
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-5 pb-14 md:pb-20">
-      <div className="mb-8 overflow-hidden rounded-[2rem] border border-white/65 bg-white/50 shadow-sm shadow-slate-900/5 backdrop-blur-xl">
-        <div className="grid gap-6 bg-[radial-gradient(circle_at_15%_0%,rgba(14,165,233,0.14),transparent_32%),radial-gradient(circle_at_82%_8%,rgba(251,146,60,0.12),transparent_28%)] p-6 md:grid-cols-[0.9fr_1.1fr] md:p-8">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-800">
-              Family travel atlas
-            </p>
-            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-slate-950 md:text-5xl">
-              來源章節已整理成正式行程地圖
-            </h2>
-          </div>
-          <div className="self-end">
-            <p className="text-sm leading-7 text-slate-600">
-              依 Markdown H1 的邏輯重排航班、住宿、網站、費用、美食、交通、提醒與其他規劃內容；來源細節直接進入正式頁面，每個章節都保留家人討論、thumb-up 與 thumb-down。
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
-              <span className="rounded-full border border-white/70 bg-white/60 px-3 py-1">
-                {groups.length} 個正式模組
-              </span>
-              <span className="rounded-full border border-white/70 bg-white/60 px-3 py-1">
-                來源表格已產品化
-              </span>
-              <span className="rounded-full border border-white/70 bg-white/60 px-3 py-1">
-                每段內容可討論
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <section className="mx-auto grid w-full max-w-7xl gap-8 px-5 pb-14 md:pb-20">
       <div className="grid gap-5">
         {groups.map((group, index) => (
           <SourceGroupCard
@@ -115,11 +86,12 @@ export function findDailySourceSections(
   return result
 }
 
-export function SourceBody({ body }: { body: string }) {
+export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'light' | 'dark' }) {
   const blocks = parseSourceBlocks(body)
+  const mutedText = tone === 'dark' ? 'text-slate-300' : 'text-slate-600'
 
   return (
-    <div className="mt-4 grid gap-4 text-sm leading-7 text-slate-600">
+    <div className={`mt-4 grid gap-4 text-sm leading-7 ${mutedText}`}>
       {blocks.map((block, index) => {
         if (block.type === 'table') {
           const [header, ...rows] = block.rows
@@ -130,11 +102,21 @@ export function SourceBody({ body }: { body: string }) {
 
           return (
             <div
-              className="overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5"
+              className={
+                tone === 'dark'
+                  ? 'overflow-x-auto rounded-2xl border border-cyan-100/15 bg-white/[0.06] shadow-sm shadow-slate-950/20'
+                  : 'overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5'
+              }
               key={`table-${index}`}
             >
               <table className="min-w-full divide-y divide-cyan-100/70 text-left text-sm">
-                <thead className="bg-cyan-50/80 text-xs font-semibold uppercase tracking-wide text-cyan-900">
+                <thead
+                  className={
+                    tone === 'dark'
+                      ? 'bg-cyan-100/10 text-xs font-semibold uppercase tracking-wide text-cyan-50'
+                      : 'bg-cyan-50/80 text-xs font-semibold uppercase tracking-wide text-cyan-900'
+                  }
+                >
                   <tr>
                     {header.map((cell) => (
                       <th className="px-4 py-3" key={cell}>
@@ -143,11 +125,17 @@ export function SourceBody({ body }: { body: string }) {
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className={tone === 'dark' ? 'divide-y divide-white/10' : 'divide-y divide-slate-100'}>
                   {rows.map((row, rowIndex) => (
-                    <tr className="transition hover:bg-cyan-50/45" key={`row-${rowIndex}`}>
+                    <tr
+                      className={tone === 'dark' ? 'transition hover:bg-white/[0.04]' : 'transition hover:bg-cyan-50/45'}
+                      key={`row-${rowIndex}`}
+                    >
                       {row.map((cell, cellIndex) => (
-                        <td className="px-4 py-3 align-top text-slate-600" key={`${rowIndex}-${cellIndex}`}>
+                        <td
+                          className={tone === 'dark' ? 'px-4 py-3 align-top text-slate-300' : 'px-4 py-3 align-top text-slate-600'}
+                          key={`${rowIndex}-${cellIndex}`}
+                        >
                           {cell}
                         </td>
                       ))}
@@ -164,7 +152,10 @@ export function SourceBody({ body }: { body: string }) {
             <ul className="grid gap-2" key={`list-${index}`}>
               {block.items.map((item) => (
                 <li className="flex gap-2" key={item}>
-                  <span className="mt-2 size-1.5 shrink-0 rounded-full bg-cyan-500" aria-hidden="true" />
+                  <span
+                    className={tone === 'dark' ? 'mt-2 size-1.5 shrink-0 rounded-full bg-cyan-200' : 'mt-2 size-1.5 shrink-0 rounded-full bg-cyan-500'}
+                    aria-hidden="true"
+                  />
                   <span>{item}</span>
                 </li>
               ))}
@@ -175,7 +166,11 @@ export function SourceBody({ body }: { body: string }) {
         if (block.type === 'quote') {
           return (
             <blockquote
-              className="rounded-md border border-amber-200/70 bg-amber-50/70 px-4 py-3 text-amber-950"
+              className={
+                tone === 'dark'
+                  ? 'rounded-md border border-amber-100/20 bg-amber-100/10 px-4 py-3 text-amber-50'
+                  : 'rounded-md border border-amber-200/70 bg-amber-50/70 px-4 py-3 text-amber-950'
+              }
               key={`quote-${index}`}
             >
               {block.text}
@@ -208,6 +203,69 @@ function SourceGroupCard({
 }) {
   const groupAssociatedId = sourceSectionKey(projectSlug, group.anchor)
 
+  if (isReminderGroup(group)) {
+    return (
+      <article
+        className="rounded-[2rem] border border-slate-800 bg-slate-950 px-5 py-12 text-white shadow-2xl shadow-slate-950/20 md:px-8 md:py-16"
+        id={group.anchor}
+      >
+        <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
+              Reminders
+            </p>
+            <h3 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-white md:text-5xl">
+              {group.title}
+            </h3>
+            <p className="mt-5 max-w-md text-sm leading-7 text-slate-300">
+              提醒、取消政策與待確認項目集中放在這裡，讓出發前需要注意的事情一眼可查。
+            </p>
+          </div>
+          <div className="rounded-[1.5rem] border border-white/15 bg-white/[0.06] p-5 shadow-sm backdrop-blur-xl md:p-7">
+            {group.intro && hasBody(group.intro) ? (
+              <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+                <SourceBody body={group.intro.body} tone="dark" />
+              </div>
+            ) : null}
+            <div className="grid gap-4">
+              {group.sections.map((section) => (
+                <section
+                  className="rounded-2xl border border-white/10 bg-slate-900/70 p-4"
+                  key={section.id ?? section.anchor}
+                >
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100/55">
+                    注意事項
+                  </p>
+                  <h4 className="mt-2 text-xl font-semibold tracking-normal text-white">
+                    {section.title}
+                  </h4>
+                  <SourceBody body={section.body} tone="dark" />
+                  <SourceLinks section={section} tone="dark" />
+                  {renderInteraction
+                    ? renderInteraction({
+                        className: 'border-white/15 bg-white/10 text-slate-300',
+                        associatedId: sourceSectionKey(projectSlug, section.anchor),
+                        label: section.title,
+                        thread: threads[sourceSectionKey(projectSlug, section.anchor)],
+                      })
+                    : null}
+                </section>
+              ))}
+            </div>
+            {renderInteraction
+              ? renderInteraction({
+                  className: 'border-white/15 bg-white/10 text-slate-300',
+                  associatedId: groupAssociatedId,
+                  label: group.title,
+                  thread: threads[groupAssociatedId],
+                })
+              : null}
+          </div>
+        </div>
+      </article>
+    )
+  }
+
   return (
     <article
       className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/55 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl md:p-7"
@@ -219,7 +277,7 @@ function SourceGroupCard({
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-800">
             行程章節 · {String(moduleIndex).padStart(2, '0')}
           </p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950 md:text-3xl">
+          <h3 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 md:text-5xl">
             {group.title}
           </h3>
         </div>
@@ -232,7 +290,7 @@ function SourceGroupCard({
           </span>
         </div>
       </div>
-      {group.intro ? (
+      {group.intro && hasBody(group.intro) ? (
         <div className="mt-5 rounded-[1.5rem] border border-white/60 bg-white/50 p-4">
           <SourceBody body={group.intro.body} />
         </div>
@@ -246,15 +304,30 @@ function SourceGroupCard({
           })
         : null}
       <div className="mt-5 grid gap-4">
-        {group.sections.map((section) => (
+        {group.sections.map((section) => {
+          const daily = isDailySection(section)
+
+          return (
           <section
-            className="rounded-[1.5rem] border border-white/60 bg-white/55 p-4 shadow-sm shadow-slate-900/5 md:p-5"
+            className={
+              daily
+                ? 'rounded-[1.75rem] border border-white/60 bg-white/60 p-5 shadow-sm shadow-slate-900/5 md:p-7'
+                : 'rounded-[1.5rem] border border-white/60 bg-white/55 p-4 shadow-sm shadow-slate-900/5 md:p-5'
+            }
             key={section.id ?? section.anchor}
           >
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-              子章節 · H{section.level}
+              {daily ? section.title.match(/Day\s+\d+/i)?.[0] ?? '每日節點' : `子章節 · H${section.level}`}
             </p>
-            <h4 className="mt-2 text-lg font-semibold tracking-normal text-slate-950">{section.title}</h4>
+            <h4
+              className={
+                daily
+                  ? 'mt-2 text-2xl font-semibold leading-tight tracking-normal text-slate-950 md:text-4xl'
+                  : 'mt-2 text-lg font-semibold tracking-normal text-slate-950'
+              }
+            >
+              {section.title}
+            </h4>
             <SourceBody body={section.body} />
             <SourceLinks section={section} />
             {renderInteraction
@@ -266,7 +339,8 @@ function SourceGroupCard({
                 })
               : null}
           </section>
-        ))}
+          )
+        })}
       </div>
       {group.intro ? <SourceLinks section={group.intro} /> : null}
     </article>
@@ -277,7 +351,7 @@ export function sourceSectionKey(slug: string, anchor: string): string {
   return `travel:${slug}:source:${anchor}`
 }
 
-function SourceLinks({ section }: { section: SourceSection }) {
+function SourceLinks({ section, tone = 'light' }: { section: SourceSection; tone?: 'light' | 'dark' }) {
   if (!section.links?.length) {
     return null
   }
@@ -286,7 +360,11 @@ function SourceLinks({ section }: { section: SourceSection }) {
     <div className="mt-4 flex flex-wrap gap-2 border-t border-white/40 pt-4">
       {section.links.map((link) => (
         <a
-          className="rounded-full border border-cyan-200/70 bg-cyan-50/70 px-3 py-1 text-sm font-medium text-cyan-900 transition hover:bg-cyan-100"
+          className={
+            tone === 'dark'
+              ? 'rounded-full border border-cyan-100/20 bg-cyan-100/10 px-3 py-1 text-sm font-medium text-cyan-50 transition hover:bg-cyan-100/15'
+              : 'rounded-full border border-cyan-200/70 bg-cyan-50/70 px-3 py-1 text-sm font-medium text-cyan-900 transition hover:bg-cyan-100'
+          }
           href={link.url}
           key={link.id ?? link.url}
           rel="noreferrer"
@@ -330,7 +408,7 @@ function groupSourceSections(sections: SourceSection[]): SourceSectionGroup[] {
       continue
     }
 
-    const virtualGroup = virtualGroupFor(section)
+    const virtualGroup = current ? null : virtualGroupFor(section)
 
     if (virtualGroup) {
       ensureGroup(virtualGroup.title, virtualGroup.anchor).sections.push(section)
@@ -393,6 +471,18 @@ function virtualGroupFor(section: SourceSection): Pick<SourceSectionGroup, 'anch
 
 function isDailyGroup(group: SourceSectionGroup) {
   return group.anchor === 'daily-itinerary-details' || /每日行程/.test(group.title)
+}
+
+function isReminderGroup(group: SourceSectionGroup) {
+  return /注意事項|提醒|安全/.test(group.title)
+}
+
+function isDailySection(section: SourceSection) {
+  return /^\s*(?:🚢|🌿)?\s*Day\s+\d+\b/i.test(section.title)
+}
+
+function hasBody(section: SourceSection) {
+  return Boolean(section.body.trim())
 }
 
 type SourceBlock =

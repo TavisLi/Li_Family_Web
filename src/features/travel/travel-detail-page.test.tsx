@@ -143,8 +143,15 @@ const planningProject: TravelProject = {
     {
       id: 'source-1',
       level: 1,
-      title: '外部網站',
-      anchor: 'external-sites',
+      title: '旅行戰情室',
+      anchor: 'war-room',
+      body: '',
+    },
+    {
+      id: 'source-2',
+      level: 2,
+      title: '度假村官方網站',
+      anchor: 'resort-sites',
       body: '安納塔拉度假會：https://www.anantara.com/en/vacation-club-phuket',
       links: [
         {
@@ -155,15 +162,29 @@ const planningProject: TravelProject = {
       ],
     },
     {
-      id: 'source-2',
+      id: 'source-3',
+      level: 1,
+      title: '每日節點與決策討論',
+      anchor: 'daily-decisions',
+      body: '',
+    },
+    {
+      id: 'source-4',
       level: 2,
       title: 'Day 1 · 2/2（二）— 台北 → 普吉島 · 安納塔拉入住',
       anchor: 'day-1',
       body: '| 時段 | 行程 | 備註 |\n| --- | --- | --- |\n| 上午 | 抵達普吉島 | 入住安納塔拉 |',
     },
     {
-      id: 'source-3',
+      id: 'source-5',
       level: 1,
+      title: '注意事項',
+      anchor: 'notes',
+      body: '',
+    },
+    {
+      id: 'source-6',
+      level: 2,
       title: '補充細節',
       anchor: 'details',
       body: '萬豪推介會出席提醒：否則需支付套餐全額零售價（最高$1,500）。',
@@ -185,13 +206,17 @@ const planningHtml = renderToStaticMarkup(
 )
 
 assert.doesNotMatch(planningHtml, /完整來源內容/)
-assert.match(planningHtml, /來源章節已整理成正式行程地圖/)
-assert.match(planningHtml, /外部網站/)
+assert.doesNotMatch(planningHtml, /來源章節已整理成正式行程地圖/)
+assert.match(planningHtml, /旅行戰情室/)
+assert.match(planningHtml, /每日節點與決策討論/)
+assert.match(planningHtml, /注意事項/)
+assert.match(planningHtml, /Reminders/)
+assert.match(planningHtml, /度假村官方網站/)
 assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuket/)
 assert.match(planningHtml, /最高\$1,500/)
-assert.match(planningHtml, /travel:202702-thailand-phuket:source:external-sites/)
+assert.match(planningHtml, /travel:202702-thailand-phuket:source:resort-sites/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:details/)
-assert.doesNotMatch(planningHtml, /入住安納塔拉/)
+assert.match(planningHtml, /入住安納塔拉/)
 
 const extrasHtml = renderToStaticMarkup(createElement(TravelPlanningExtras, { project: planningProject }))
 

@@ -1,11 +1,6 @@
 import { Suspense } from 'react'
-import type { ReactNode } from 'react'
 import {
   CalendarDays,
-  Hotel,
-  Lock,
-  Plane,
-  TrainFront,
   Users,
   Video,
 } from 'lucide-react'
@@ -16,8 +11,6 @@ import type { TravelInteractionThread } from '@/lib/data/travel'
 import type { Media, TravelProject } from '@/payload/payload-types'
 import { CompletedTravelLedger } from './completed-travel-ledger'
 import {
-  findDailySourceSections,
-  SourceBody,
   sourceSectionKey,
   TravelSourceSections,
 } from './travel-source-sections'
@@ -51,21 +44,11 @@ export function travelInteractionIds(project: TravelProject): string[] {
   }
 
   const slug = project.slug
-  const baseIds = [
-    planningKey(slug, 'flights'),
-    planningKey(slug, 'lodging'),
-    planningKey(slug, 'transport'),
-    planningKey(slug, 'members'),
-    planningKey(slug, 'reminders'),
-  ]
-  const dayIds = (project.dailyItinerary ?? []).map((day) =>
-    itineraryKey(slug, day.day),
-  )
   const sourceIds = (project.sourceSections ?? []).map((section) =>
     sourceSectionKey(slug, section.anchor),
   )
 
-  return [...baseIds, ...dayIds, ...sourceIds]
+  return sourceIds
 }
 
 function TravelHero({ project }: { project: TravelProject }) {
@@ -178,223 +161,12 @@ function PlanningTravelView({
   project: TravelProject
   threads: Record<string, TravelInteractionThread>
 }) {
-  const slug = project.slug
-  const sourceSections = project.sourceSections ?? []
-
   return (
-    <>
-      <section className="border-y border-white/60 bg-white/35 px-5 py-12 backdrop-blur-xl md:py-16">
-        <div className="mx-auto w-full max-w-7xl">
-          <SectionHeading
-            eyebrow="Planning War Room"
-            title="高級家庭旅行作戰室"
-            text="把航班、住宿、交通、成員、提醒與每日節點集中在同一個清楚可比較的決策空間。"
-          />
-          <div className="mt-8 grid gap-4 lg:grid-cols-2">
-            <DecisionPanel
-              associatedId={planningKey(slug, 'flights')}
-              icon={<Plane className="size-5" aria-hidden="true" />}
-              label="航班"
-              thread={threads[planningKey(slug, 'flights')]}
-              title="航班匯合"
-            >
-              <InfoList
-                empty="航班資料可在 Payload Admin 補上。"
-                items={(project.flights ?? []).map((flight) => ({
-                  title: flight.flightNumber,
-                  text: [
-                    flight.airline,
-                    flight.route,
-                    flight.departureTime && flight.arrivalTime
-                      ? `${flight.departureTime} → ${flight.arrivalTime}`
-                      : undefined,
-                    flight.passengers,
-                  ]
-                    .filter(Boolean)
-                    .join(' · '),
-                }))}
-              />
-            </DecisionPanel>
-
-            <DecisionPanel
-              associatedId={planningKey(slug, 'lodging')}
-              icon={<Hotel className="size-5" aria-hidden="true" />}
-              label="住宿"
-              thread={threads[planningKey(slug, 'lodging')]}
-              title="住宿與艙房"
-            >
-              <InfoList
-                empty="住宿資料可在 Payload Admin 補上。"
-                items={(project.lodgings ?? []).map((lodging) => ({
-                  title: lodging.hotel,
-                  text: [lodging.dateRange, lodging.city, lodging.highlights].filter(Boolean).join(' · '),
-                }))}
-              />
-              {project.cabinAssignments?.length ? (
-                <div className="mt-4 grid gap-2 border-t border-white/30 pt-4">
-                  {project.cabinAssignments.map((cabin) => (
-                    <p className="text-sm leading-6 text-slate-600" key={cabin.id}>
-                      <span className="font-semibold text-slate-900">{cabin.cabin}</span>
-                      {' · '}
-                      {cabin.passengers}
-                    </p>
-                  ))}
-                </div>
-              ) : null}
-            </DecisionPanel>
-
-            <DecisionPanel
-              associatedId={planningKey(slug, 'transport')}
-              icon={<TrainFront className="size-5" aria-hidden="true" />}
-              label="交通"
-              thread={threads[planningKey(slug, 'transport')]}
-              title="城市與返程交通"
-            >
-              <InfoList
-                empty="交通資料可在 Payload Admin 補上。"
-                items={(project.railSegments ?? []).map((rail) => ({
-                  title: rail.trainNumber,
-                  text: [rail.route, rail.departureTime, rail.arrivalTime, rail.fare].filter(Boolean).join(' · '),
-                }))}
-              />
-            </DecisionPanel>
-
-            <DecisionPanel
-              associatedId={planningKey(slug, 'members')}
-              icon={<Users className="size-5" aria-hidden="true" />}
-              label="成員"
-              thread={threads[planningKey(slug, 'members')]}
-              title="參與成員"
-            >
-              <InfoList
-                empty="成員名單可在 Payload Admin 補上。"
-                items={(project.party ?? []).map((person) => ({
-                  title: person.name,
-                  text: person.note || '同行家人',
-                }))}
-              />
-            </DecisionPanel>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto w-full max-w-7xl px-5 py-14 md:py-20">
-        <SectionHeading
-          eyebrow="Daily route cards"
-          title="每日節點與決策討論"
-          text="每天都是一張可討論的行程卡：保留來源表格、交通節點與家人決策，不再只是一段摘要。"
-        />
-        <div className="mt-8 grid gap-4">
-          {(project.dailyItinerary ?? []).map((day, index) => {
-            const dailySources = findDailySourceSections(sourceSections, day.day)
-
-            return (
-              <article
-                className="grid gap-5 overflow-hidden rounded-[2rem] border border-white/70 bg-white/55 p-4 shadow-sm shadow-slate-900/5 backdrop-blur-xl md:grid-cols-[14rem_1fr] md:p-5"
-                key={day.id}
-              >
-                <PayloadImage
-                  className="aspect-[4/3] rounded-[1.35rem]"
-                  fallbackLabel={`Day ${day.day}`}
-                  media={project.itineraryImages?.[index]}
-                  sizes="(min-width: 768px) 14rem, 100vw"
-                  tone="travel"
-                />
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-cyan-800">
-                    Day {day.day}
-                    {day.date ? ` · ${day.date}` : ''}
-                  </p>
-                  <h3 className="mt-2 text-2xl font-semibold leading-tight tracking-normal text-slate-950">
-                    {day.title}
-                  </h3>
-                  {day.theme ? <p className="mt-1 text-sm font-medium text-slate-500">{day.theme}</p> : null}
-                  <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-600">
-                    {(day.segments ?? []).slice(0, 5).map((segment) => (
-                      <li className="flex gap-2" key={segment.id}>
-                        <span className="mt-2 size-1.5 shrink-0 rounded-full bg-cyan-500" aria-hidden="true" />
-                        <span>
-                          {segment.time ? <span className="font-semibold text-slate-900">{segment.time} · </span> : null}
-                          {segment.activity}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                  {dailySources.length ? (
-                    <div className="mt-5 grid gap-3 rounded-[1.5rem] border border-white/60 bg-white/50 p-4 shadow-inner shadow-white/35">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        來源行程細節
-                      </p>
-                      {dailySources.map((section) => (
-                        <section key={section.id ?? section.anchor}>
-                          {section.level > 2 ? (
-                            <h4 className="text-base font-semibold tracking-normal text-slate-950">
-                              {section.title}
-                            </h4>
-                          ) : null}
-                          <SourceBody body={section.body} />
-                          {renderTravelInteraction({
-                            className: 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
-                            associatedId: sourceSectionKey(slug, section.anchor),
-                            label: section.title,
-                            thread: threads[sourceSectionKey(slug, section.anchor)],
-                          })}
-                        </section>
-                      ))}
-                    </div>
-                  ) : null}
-                  <TravelInteractionPanel
-                    associatedId={itineraryKey(slug, day.day)}
-                    label={`Day ${day.day}`}
-                    thread={threads[itineraryKey(slug, day.day)] ?? lockedThread(itineraryKey(slug, day.day))}
-                  />
-                </div>
-              </article>
-            )
-          })}
-        </div>
-      </section>
-
       <TravelSourceSections
         project={project}
         renderInteraction={renderTravelInteraction}
         threads={threads}
       />
-
-      <section className="border-y border-white/60 bg-slate-950 px-5 py-14 text-white md:py-20">
-        <div className="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-[0.85fr_1.15fr]">
-          <div>
-            <p className="text-sm font-semibold uppercase text-cyan-100/70">Reminders</p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-normal md:text-5xl">
-              高溫、登船與安全提醒
-            </h2>
-            <p className="mt-5 text-sm leading-7 text-slate-300">
-              提醒模組保留正式產品感，不把缺資料呈現成未完成灰框。
-            </p>
-          </div>
-          <DecisionPanel
-            associatedId={planningKey(slug, 'reminders')}
-            dark
-            icon={<Lock className="size-5" aria-hidden="true" />}
-            label="提醒"
-            thread={threads[planningKey(slug, 'reminders')]}
-            title="家庭提醒清單"
-          >
-            <div className="grid gap-3">
-              {(project.reminders ?? []).flatMap((group) =>
-                (group.items ?? []).map((item) => (
-                  <p className="text-sm leading-6 text-slate-300" key={item.id}>
-                    <span className="font-semibold text-white">{group.category}</span>
-                    {' · '}
-                    {item.text}
-                  </p>
-                )),
-              )}
-            </div>
-          </DecisionPanel>
-        </div>
-      </section>
-    </>
   )
 }
 
@@ -517,79 +289,6 @@ function renderTravelInteraction({
   )
 }
 
-function DecisionPanel({
-  associatedId,
-  children,
-  dark = false,
-  icon,
-  label,
-  thread,
-  title,
-}: {
-  associatedId: string
-  children: ReactNode
-  dark?: boolean
-  icon: ReactNode
-  label: string
-  thread: TravelInteractionThread | undefined
-  title: string
-}) {
-  return (
-    <article
-      className={
-        dark
-          ? 'rounded-lg border border-white/15 bg-white/[0.06] p-5 shadow-sm backdrop-blur-xl'
-          : 'rounded-lg border border-white/60 bg-white/45 p-5 shadow-sm backdrop-blur-xl'
-      }
-    >
-      <div className="mb-4 flex items-center gap-3">
-        <div className={dark ? 'text-cyan-100' : 'text-cyan-800'}>{icon}</div>
-        <div>
-          <p className={dark ? 'text-xs font-semibold uppercase text-cyan-100/60' : 'text-xs font-semibold uppercase text-slate-500'}>
-            {label}
-          </p>
-          <h3 className={dark ? 'text-xl font-semibold tracking-normal text-white' : 'text-xl font-semibold tracking-normal text-slate-950'}>
-            {title}
-          </h3>
-        </div>
-      </div>
-      {children}
-      <TravelInteractionPanel
-        associatedId={associatedId}
-        className={dark ? 'border-white/15 text-slate-300' : undefined}
-        label={label}
-        thread={thread ?? lockedThread(associatedId)}
-      />
-    </article>
-  )
-}
-
-function InfoList({
-  empty,
-  items,
-}: {
-  empty: string
-  items: {
-    title: string
-    text: string
-  }[]
-}) {
-  if (!items.length) {
-    return <p className="text-sm leading-6 text-slate-600">{empty}</p>
-  }
-
-  return (
-    <div className="grid gap-3">
-      {items.map((item) => (
-        <p className="text-sm leading-6 text-slate-600" key={`${item.title}-${item.text}`}>
-          <span className="font-semibold text-slate-900">{item.title}</span>
-          {item.text ? ` · ${item.text}` : ''}
-        </p>
-      ))}
-    </div>
-  )
-}
-
 function SectionHeading({
   eyebrow,
   light = false,
@@ -648,14 +347,6 @@ function statusLabel(status: TravelProject['status']) {
 
 function formatDateRange(project: TravelProject) {
   return `${project.startDate.slice(0, 10)} - ${project.endDate.slice(0, 10)}`
-}
-
-function planningKey(slug: string, section: string) {
-  return `travel:${slug}:planning:${section}`
-}
-
-function itineraryKey(slug: string, day: number) {
-  return `travel:${slug}:itinerary:day-${day}`
 }
 
 function lockedThread(associatedId: string): TravelInteractionThread {

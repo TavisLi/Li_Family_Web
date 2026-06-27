@@ -121,7 +121,7 @@ async function main() {
   )
   assert.ok(
     (phuket2027.sourceSections ?? []).some((section) =>
-      section.body.includes('待確認項目') &&
+      section.title.includes('待確認項目') &&
       section.body.includes('往返航班班次與時間'),
     ),
   )
