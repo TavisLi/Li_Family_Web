@@ -80,9 +80,7 @@ function TravelHero({ project }: { project: TravelProject }) {
             <CalendarDays className="size-4" aria-hidden="true" />
             {statusLabel(project.status)} · {formatDateRange(project)}
           </p>
-          <h1 className="mt-6 text-4xl font-semibold leading-tight tracking-normal md:text-6xl">
-            {project.title}
-          </h1>
+          <TravelTitle title={project.title} />
           <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
             {project.summary || project.externalDocIdentifier || '旅行內容已由 Payload TravelProjects 建立。'}
           </p>
@@ -118,6 +116,59 @@ function TravelHero({ project }: { project: TravelProject }) {
       </div>
     </section>
   )
+}
+
+function TravelTitle({ title }: { title: string }) {
+  const parts = splitTravelTitle(title)
+
+  if (!parts.subtitle) {
+    return (
+      <h1 className="mt-6 text-[clamp(2.75rem,11vw,4rem)] font-semibold leading-tight tracking-normal md:text-[clamp(3.25rem,4.3vw,4rem)] lg:whitespace-nowrap">
+        {parts.title}
+      </h1>
+    )
+  }
+
+  return (
+    <h1 className="mt-6">
+      <span className="block text-[clamp(2.75rem,10vw,3.8rem)] font-semibold leading-tight tracking-normal text-slate-950 md:text-[clamp(3.1rem,4vw,3.75rem)] lg:whitespace-nowrap">
+        {parts.title}
+      </span>
+      <span className="mt-3 block text-[clamp(1.45rem,5vw,2.1rem)] font-semibold leading-tight tracking-normal text-slate-700 md:text-[clamp(1.65rem,2.4vw,2.25rem)]">
+        {parts.subtitle}
+      </span>
+    </h1>
+  )
+}
+
+function splitTravelTitle(title: string) {
+  const separator = title.match(/\s[-—–]\s/)
+
+  if (separator?.index !== undefined) {
+    const titlePart = title.slice(0, separator.index).trim()
+    const subtitle = title.slice(separator.index + separator[0].length).trim()
+
+    if (titlePart && subtitle) {
+      return {
+        title: titlePart,
+        subtitle,
+      }
+    }
+  }
+
+  const colonIndex = title.indexOf('：')
+
+  if (colonIndex > 0) {
+    return {
+      title: title.slice(0, colonIndex).trim(),
+      subtitle: title.slice(colonIndex + 1).trim(),
+    }
+  }
+
+  return {
+    title,
+    subtitle: '',
+  }
 }
 
 function PlanningTravelView({
@@ -229,9 +280,9 @@ function PlanningTravelView({
 
       <section className="mx-auto w-full max-w-7xl px-5 py-14 md:py-20">
         <SectionHeading
-          eyebrow="Daily Nodes"
+          eyebrow="Daily route cards"
           title="每日節點與決策討論"
-          text="每一天都有獨立 interaction key，日後可累積家人留言與表態。"
+          text="每天都是一張可討論的行程卡：保留來源表格、交通節點與家人決策，不再只是一段摘要。"
         />
         <div className="mt-8 grid gap-4">
           {(project.dailyItinerary ?? []).map((day, index) => {
@@ -239,11 +290,11 @@ function PlanningTravelView({
 
             return (
               <article
-                className="grid gap-5 rounded-lg border border-white/60 bg-white/45 p-4 shadow-sm backdrop-blur-xl md:grid-cols-[14rem_1fr]"
+                className="grid gap-5 overflow-hidden rounded-[2rem] border border-white/70 bg-white/55 p-4 shadow-sm shadow-slate-900/5 backdrop-blur-xl md:grid-cols-[14rem_1fr] md:p-5"
                 key={day.id}
               >
                 <PayloadImage
-                  className="aspect-[4/3] rounded-md"
+                  className="aspect-[4/3] rounded-[1.35rem]"
                   fallbackLabel={`Day ${day.day}`}
                   media={project.itineraryImages?.[index]}
                   sizes="(min-width: 768px) 14rem, 100vw"
@@ -254,19 +305,26 @@ function PlanningTravelView({
                     Day {day.day}
                     {day.date ? ` · ${day.date}` : ''}
                   </p>
-                  <h3 className="mt-2 text-xl font-semibold tracking-normal">{day.title}</h3>
+                  <h3 className="mt-2 text-2xl font-semibold leading-tight tracking-normal text-slate-950">
+                    {day.title}
+                  </h3>
                   {day.theme ? <p className="mt-1 text-sm font-medium text-slate-500">{day.theme}</p> : null}
                   <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-600">
                     {(day.segments ?? []).slice(0, 5).map((segment) => (
-                      <li key={segment.id}>
-                        {segment.time ? <span className="font-semibold text-slate-900">{segment.time} · </span> : null}
-                        {segment.activity}
+                      <li className="flex gap-2" key={segment.id}>
+                        <span className="mt-2 size-1.5 shrink-0 rounded-full bg-cyan-500" aria-hidden="true" />
+                        <span>
+                          {segment.time ? <span className="font-semibold text-slate-900">{segment.time} · </span> : null}
+                          {segment.activity}
+                        </span>
                       </li>
                     ))}
                   </ul>
                   {dailySources.length ? (
-                    <div className="mt-5 grid gap-3 rounded-md border border-white/50 bg-white/40 p-4">
-                      <p className="text-xs font-semibold uppercase text-slate-500">來源行程細節</p>
+                    <div className="mt-5 grid gap-3 rounded-[1.5rem] border border-white/60 bg-white/50 p-4 shadow-inner shadow-white/35">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        來源行程細節
+                      </p>
                       {dailySources.map((section) => (
                         <section key={section.id ?? section.anchor}>
                           {section.level > 2 ? (
@@ -276,6 +334,7 @@ function PlanningTravelView({
                           ) : null}
                           <SourceBody body={section.body} />
                           {renderTravelInteraction({
+                            className: 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
                             associatedId: sourceSectionKey(slug, section.anchor),
                             label: section.title,
                             thread: threads[sourceSectionKey(slug, section.anchor)],

@@ -185,7 +185,7 @@ const planningHtml = renderToStaticMarkup(
 )
 
 assert.doesNotMatch(planningHtml, /完整來源內容/)
-assert.match(planningHtml, /按來源章節重組的正式行程模組/)
+assert.match(planningHtml, /來源章節已整理成正式行程地圖/)
 assert.match(planningHtml, /外部網站/)
 assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuket/)
 assert.match(planningHtml, /最高\$1,500/)

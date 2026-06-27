@@ -39,21 +39,41 @@ export function TravelSourceSections({
 
   return (
     <section className="mx-auto w-full max-w-7xl px-5 pb-14 md:pb-20">
-      <div className="mb-8 max-w-3xl">
-        <p className="text-sm font-semibold uppercase text-slate-500">Itinerary Modules</p>
-        <h2 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 md:text-5xl">
-          按來源章節重組的正式行程模組
-        </h2>
-        <p className="mt-4 text-sm leading-7 text-slate-600">
-          依 Markdown H1 的邏輯重排航班、住宿、網站、費用、美食、交通、提醒與其他規劃內容；來源細節直接進入正式頁面，不再另放附錄。
-        </p>
+      <div className="mb-8 overflow-hidden rounded-[2rem] border border-white/65 bg-white/50 shadow-sm shadow-slate-900/5 backdrop-blur-xl">
+        <div className="grid gap-6 bg-[radial-gradient(circle_at_15%_0%,rgba(14,165,233,0.14),transparent_32%),radial-gradient(circle_at_82%_8%,rgba(251,146,60,0.12),transparent_28%)] p-6 md:grid-cols-[0.9fr_1.1fr] md:p-8">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-cyan-800">
+              Family travel atlas
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-slate-950 md:text-5xl">
+              來源章節已整理成正式行程地圖
+            </h2>
+          </div>
+          <div className="self-end">
+            <p className="text-sm leading-7 text-slate-600">
+              依 Markdown H1 的邏輯重排航班、住宿、網站、費用、美食、交通、提醒與其他規劃內容；來源細節直接進入正式頁面，每個章節都保留家人討論、thumb-up 與 thumb-down。
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2 text-xs font-semibold text-slate-600">
+              <span className="rounded-full border border-white/70 bg-white/60 px-3 py-1">
+                {groups.length} 個正式模組
+              </span>
+              <span className="rounded-full border border-white/70 bg-white/60 px-3 py-1">
+                來源表格已產品化
+              </span>
+              <span className="rounded-full border border-white/70 bg-white/60 px-3 py-1">
+                每段內容可討論
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-5">
-        {groups.map((group) => (
+        {groups.map((group, index) => (
           <SourceGroupCard
             group={group}
             key={group.anchor}
+            moduleIndex={index + 1}
             projectSlug={project.slug}
             renderInteraction={renderInteraction}
             threads={threads}
@@ -109,22 +129,25 @@ export function SourceBody({ body }: { body: string }) {
           }
 
           return (
-            <div className="overflow-x-auto rounded-md border border-white/50 bg-white/45" key={`table-${index}`}>
-              <table className="min-w-full divide-y divide-white/60 text-left text-sm">
-                <thead className="bg-white/55 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div
+              className="overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5"
+              key={`table-${index}`}
+            >
+              <table className="min-w-full divide-y divide-cyan-100/70 text-left text-sm">
+                <thead className="bg-cyan-50/80 text-xs font-semibold uppercase tracking-wide text-cyan-900">
                   <tr>
                     {header.map((cell) => (
-                      <th className="px-3 py-2" key={cell}>
+                      <th className="px-4 py-3" key={cell}>
                         {cell}
                       </th>
                     ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/50">
+                <tbody className="divide-y divide-slate-100">
                   {rows.map((row, rowIndex) => (
-                    <tr key={`row-${rowIndex}`}>
+                    <tr className="transition hover:bg-cyan-50/45" key={`row-${rowIndex}`}>
                       {row.map((cell, cellIndex) => (
-                        <td className="px-3 py-2 align-top" key={`${rowIndex}-${cellIndex}`}>
+                        <td className="px-4 py-3 align-top text-slate-600" key={`${rowIndex}-${cellIndex}`}>
                           {cell}
                         </td>
                       ))}
@@ -172,11 +195,13 @@ export function SourceBody({ body }: { body: string }) {
 
 function SourceGroupCard({
   group,
+  moduleIndex,
   projectSlug,
   renderInteraction,
   threads,
 }: {
   group: SourceSectionGroup
+  moduleIndex: number
   projectSlug: string
   renderInteraction?: RenderInteraction
   threads: Record<string, TravelInteractionThread>
@@ -185,16 +210,36 @@ function SourceGroupCard({
 
   return (
     <article
-      className="rounded-lg border border-white/60 bg-white/45 p-5 shadow-sm backdrop-blur-xl md:p-6"
+      className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/55 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl md:p-7"
       id={group.anchor}
     >
-      <p className="text-xs font-semibold uppercase text-cyan-800">Markdown H1 Module</p>
-      <h3 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950 md:text-3xl">
-        {group.title}
-      </h3>
-      {group.intro ? <SourceBody body={group.intro.body} /> : null}
+      <div className="absolute inset-y-6 left-0 w-1 rounded-r-full bg-gradient-to-b from-cyan-400 via-teal-300 to-amber-300" />
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-800">
+            行程章節 · {String(moduleIndex).padStart(2, '0')}
+          </p>
+          <h3 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950 md:text-3xl">
+            {group.title}
+          </h3>
+        </div>
+        <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
+          <span className="rounded-full border border-white/70 bg-white/65 px-3 py-1">
+            Markdown H1
+          </span>
+          <span className="rounded-full border border-white/70 bg-white/65 px-3 py-1">
+            {group.sections.length + (group.intro ? 1 : 0)} 段內容
+          </span>
+        </div>
+      </div>
+      {group.intro ? (
+        <div className="mt-5 rounded-[1.5rem] border border-white/60 bg-white/50 p-4">
+          <SourceBody body={group.intro.body} />
+        </div>
+      ) : null}
       {renderInteraction
         ? renderInteraction({
+            className: 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
             associatedId: groupAssociatedId,
             label: group.title,
             thread: threads[groupAssociatedId],
@@ -202,13 +247,19 @@ function SourceGroupCard({
         : null}
       <div className="mt-5 grid gap-4">
         {group.sections.map((section) => (
-          <section className="rounded-md border border-white/50 bg-white/40 p-4" key={section.id ?? section.anchor}>
-            <p className="text-xs font-semibold uppercase text-slate-500">H{section.level}</p>
-            <h4 className="mt-1 text-lg font-semibold tracking-normal text-slate-950">{section.title}</h4>
+          <section
+            className="rounded-[1.5rem] border border-white/60 bg-white/55 p-4 shadow-sm shadow-slate-900/5 md:p-5"
+            key={section.id ?? section.anchor}
+          >
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              子章節 · H{section.level}
+            </p>
+            <h4 className="mt-2 text-lg font-semibold tracking-normal text-slate-950">{section.title}</h4>
             <SourceBody body={section.body} />
             <SourceLinks section={section} />
             {renderInteraction
               ? renderInteraction({
+                  className: 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
                   associatedId: sourceSectionKey(projectSlug, section.anchor),
                   label: section.title,
                   thread: threads[sourceSectionKey(projectSlug, section.anchor)],
