@@ -1,183 +1,148 @@
-# Phase 11 完成報告：Version 1.1 旅行規劃內容完整發布
+# Phase 11 完成報告：Version 1.1 旅行規劃內容與 Production Seed
 
-日期：2026-06-25
+日期：2026-06-27
 階段名稱：Phase-11 / Version 1.1 Travel Planning Content
-目前 PR 分支：`codex/phase-11-travel-v1-1`
-本階段主要提交：`42bdbeb feat(travel): publish full planning itineraries`
-報告提交：`3d74434 docs: add phase 11 completion report`
-GitHub Draft PR：[#22](https://github.com/TavisLi/Li_Family_Web/pull/22)
+主分支最新狀態：`main` / `a791d39`
 關聯 GitHub Issues：#15、#16、#17、#18
 
-## 本階段範圍
+## Phase 範圍
 
-Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國普吉島 7 日」與「202607 重慶長江三峽 8 日」兩個規劃中旅程。核心要求是：`content-source/travels/202702泰國普吉島7日.md` 內所有內容都必須能在正式旅行網頁上被看見，且不得建立一次性固定頁面。
+Phase-11 聚焦旅行系統，尤其是 `202702泰國普吉島7日.md` 與 `202607重慶長江三峽8日.md` 兩個規劃中旅程。核心要求：
 
-本階段採用既有架構：內容來源仍在 `content-source/`，經 seed parser 轉成 Payload `TravelProjects` 發布資料，再由共用 `/travel/[slug]` 路由呈現。
+- `content-source/travels/202702泰國普吉島7日.md` 的內容必須完整出現在正式網頁。
+- `content-source/travels/202607重慶長江三峽8日.md` 依同樣概念呈現。
+- 正式頁不再把來源內容放在「完整來源內容」附錄，而是依 Markdown H1 組成正式模組。
+- 各內容模組保留 comment、thumb-up、thumb-down 的互動席位。
+- `/travel` 目錄補上「前期規劃」，並依使用者 QA 調整版面與文案。
+- Production seed 的 media 不應每次重傳，需先比對，只處理差異。
 
-## 已交付內容
+## GitHub / PR / Deployment 狀態
 
-- 新增 `TravelProjects.sourceSections` 欄位，忠實保存旅行 Markdown 的章節、表格、清單、提醒與外部連結。
-- `/travel/[slug]` 共用詳情頁改為依 Markdown H1 重組正式行程模組，確保 202702 普吉島與 202607 重慶來源文件不再只呈現摘要或被放在獨立附錄區塊。
-- `202702-thailand-phuket` 已保留並呈現：
-  - 外部網站連結
-  - 航班資訊
-  - 住宿安排與住宿權益
-  - 7 日每日行程
-  - 補充細節、待確認項目、取消／改期政策與提醒
-- `202607-chongqing-yangtze-river` 已補強結構化解析：
-  - 8 日每日行程
-  - 航班、高鐵、住宿與游輪艙房
-  - 費用項目
-  - 餐食推薦
-  - 可選／自費項目
-  - 實用 APP、重要提醒與完整來源章節
-- 旅行目錄頁改為「規劃中旅程」與「已完成旅程」分組，保留 canonical slug route 與缺圖 ImageFallback。
-- `seed:audit` 擴充為可盤點每個 travel slug 的 route path、source section count、結構化內容與媒體 coverage。
-- 新增前台與 seed 回歸測試，確保旅行內容投影、目錄分組、正式來源章節模組與結構化規劃資料不會回退。
+本階段相關 PR 均已合併：
+
+- PR #22：Phase-11 旅行 v1.1 規劃內容基礎實作。
+- PR #23：Production migration / seed report。
+- PR #24：旅行目錄與規劃頁設計 QA 修正。
+- PR #25：依使用者 QA 重組旅行頁，讓來源章節進入正式模組。
+- PR #26：media seed 改為 diff-based，比對後只更新有差異的媒體。
+- PR #27：保存 Markdown 空 H1 作為 source section 邊界，支援 `# **旅行戰情室**` 這類標題。
+- PR #28：顯示每日 Markdown H1 group，避免每日行程被舊 daily filter 隱藏。
+
+Production deployment 已完成：
+
+- 最新 Production deployment：`dpl_2joFCLF7r1wKgYhoAaEgPzwMsD1Z`
+- Production commit：`7030863` 後已進一步合併 PR #28 至 `a791d39`，正式頁 smoke 已讀到 PR #28 效果。
+- 正式站：`https://li-family-web.vercel.app`
+
+## 已交付功能
+
+- `TravelProjects.sourceSections` 保存旅行 Markdown 的 H1/H2/H3、表格、清單、提醒與外部連結。
+- 規劃中旅行詳情頁改為直接由 `TravelSourceSections` 呈現，不再使用舊的「高級家庭旅行作戰室」與「來源章節已整理成正式行程地圖」雙層結構。
+- Markdown H1 會成為正式頁模組：
+  - `旅行戰情室`
+  - `每日節點與決策討論` / `每日行程詳解`
+  - `注意事項`
+  - 其他 H1，如美食、交通、費用等。
+- `注意事項` 使用深色 reminders 模組呈現。
+- 每個 source section 都接入互動席位：comment、thumb-up、thumb-down。
+- 每日段落移除重複摘要，保留來源表格內容。
+- `/travel` 目錄：
+  - 分類順序為「規劃中 → 已完成 → 前期規劃」。
+  - 移除不必要的內部說明文案。
+  - feature cards 移到上方適當位置。
+  - 標題尺寸調整，避免「家庭旅途索引廊道」換行。
+- media seed：
+  - 新增 `src/scripts/seed-media-compare.ts`。
+  - seed 啟動時先 bulk load 現有 media，依 `sourcePath` 比對 `type`、`altText`、`sourcePath`、tags。
+  - 未變更 media 直接 `skipped`，不再 update，也不重新上傳。
+  - 缺少或內容不同的 media 才 create / update。
+  - refresh 類命令仍保留強制刷新能力。
+- 202702 與 202607 旅行 Markdown 更新後已重新 seed 到 Production。
 
 ## 核心檔案
 
 - `src/scripts/seed-content.ts`
-  - 新增 `sourceSections`、`foodRecommendations`、`costItems`、`optionalActivities` 解析。
+- `src/scripts/seed.ts`
+- `src/scripts/seed-dry-run.ts`
+- `src/scripts/seed-media-compare.ts`
 - `src/payload/collections/TravelProjects.ts`
-  - 新增 `sourceSections` Payload 欄位。
-- `src/payload/payload-types.ts`
-  - 已重新產生 Payload types。
-- `src/features/travel/travel-source-sections.tsx`
-  - 將 Markdown H1/H2 source sections 重組為正式頁面模組；表格、清單、提醒與連結直接在產品頁呈現。
-- `src/features/travel/travel-planning-extras.tsx`
-  - 新增費用、餐食與可選／自費項目呈現。
-- `src/features/travel/travel-detail-page.tsx`
-  - 將來源章節模組、每日行程細節與 comment/thumb-up/thumb-down interaction 接入共用旅行詳情頁。
 - `src/features/travel/travel-index-page.tsx`
-  - 將旅行目錄分為規劃中與已完成。
-- `src/scripts/seed-audit.ts`
-  - 新增 route/sourceSections coverage gate。
-- `src/scripts/seed-content.test.ts`
-  - 驗證 202702 與 202607 來源內容完整投影。
+- `src/features/travel/travel-detail-page.tsx`
+- `src/features/travel/travel-source-sections.tsx`
 - `src/features/travel/travel-detail-page.test.tsx`
-  - 驗證來源內容不再以「完整來源內容」附錄呈現，並確認正式模組保留互動 slot。
 - `src/features/travel/travel-index-page.test.tsx`
-  - 驗證旅行目錄分組與 route link。
+- `src/scripts/seed-content.test.ts`
+- `src/scripts/seed-dry-run.test.ts`
+- `src/scripts/seed-media-context.test.ts`
+- `content-source/travels/202702泰國普吉島7日.md`
+- `content-source/travels/202607重慶長江三峽8日.md`
 
-## 驗證紀錄
+## 驗證命令
 
-以下驗證已於本機通過：
-
-- `pnpm run test:phase-9`
-- `pnpm tsc --noEmit`
-- `pnpm run build`
-- `pnpm run seed:audit`
-- `git diff --check`
-- `git diff --cached --check`
-
-`pnpm run seed:audit` 結果顯示 5 個 travel slug 均具備來源文件、route path、封面媒體與結構化內容；`missingTravelRecords`、`missingCoverMedia`、`missingStructuredContent`、`missingSourceSections`、`missingRoutePaths` 皆為空陣列。
-
-2026-06-25 追加確認：`docs/family-members.md` 已修正 Tavis 的 typewriter 循環詞來源，避免被 seed 成空白 token；修正後已重新執行 `pnpm run test:phase-9` 並通過。
-
-2026-06-27 Production QA feedback 修正：使用者在正式頁 QA 時指出「高級家庭旅行作戰室、每日節點與決策討論、費用、餐食與可選項目、高溫、登船與安全提醒」等正式頁面區塊不應與下方「完整來源內容」附錄割裂。已修正為依 Markdown H1/H2 將來源內容重組到正式頁面模組中，並為每個來源章節建立 comment、thumb-up、thumb-down interaction key。追加驗證：
+本階段收尾修正均已通過：
 
 - `pnpm run test:phase-9`
 - `pnpm tsc --noEmit`
 - `pnpm run build`
 - `git diff --check`
 
-## 瀏覽器 QA 範圍
+## Production migration / seed 紀錄
 
-本階段已完成 build-level route 驗證與 server-render component 回歸測試，並確認 Next.js production build 可產生：
-
-- `/travel`
-- `/travel/[slug]`
-
-尚未在本回合啟動本機 dev server 進行真人互動式瀏覽器 QA；原因是本階段的主要可驗收面是 source → seed → Payload type → shared route render 的資料鏈路，且目前尚未執行新的正式環境 seed / deployment。
-
-建議下一步在 Payload migration 套用與正式 seed 完成後，針對以下路由補做桌機與行動版瀏覽器 QA：
-
-- `/travel/202702-thailand-phuket`
-- `/travel/202607-chongqing-yangtze-river`
-- `/travel`
-
-## Production migration / seed 實施紀錄
-
-### 1. Payload migration 已套用 Production
-
-本階段新增了 Payload Collection 欄位 `sourceSections`，已完成 `pnpm exec payload generate:types`，並已在 Node 22.23.1 環境成功產生 migration：
+Phase-11 migration 已套用至 Production：
 
 - `src/migrations/20260625_234308_travel_source_sections.ts`
 - `src/migrations/20260625_234308_travel_source_sections.json`
 
-先前在 Node 26.3.1 下的 `payload migrate:create` 失敗，根因推測為 Payload CLI / tsx loader 在 Node 26 下解析 `node:` builtin namespace query 的相容性問題。已改用 Homebrew 安裝的 Node 22.23.1 產生 migration。
+人工 schema 審核結論：此 migration 僅新增 `travel_projects_source_sections*` 相關 table、FK、index；不包含 `DROP TABLE`、`DROP COLUMN`、`DELETE`、`UPDATE` 或既有欄位型別變更。
 
-Production schema 審核完成後，確認此 Phase-11 migration 的 `up` 僅新增 4 張 `travel_projects_source_sections*` table、4 個 FK constraint 與 6 個 index；不包含 `DROP TABLE`、`DROP COLUMN`、`DELETE`、`UPDATE` 或既有欄位型別變更。
+並行 Phase-10 migration `20260624_143753_add_user_role` 已確認為其他 Phase 範圍，本階段未修改、未重跑、未 revert。
 
-Payload CLI 偵測到過去曾以 dev mode 動態推送 schema，並提示若繼續 migration 可能造成資料遺失：
+Production seed 最終結果：
 
-```text
-It looks like you've run Payload in dev mode, meaning you've dynamically pushed changes to your database.
-If you'd like to run migrations, data loss will occur. Would you like to proceed?
-```
-
-經人工 schema 審核與使用者確認後，已用 Node 22.23.1 執行 `pnpm exec payload migrate`，並在互動確認中接受 Payload 警告。Migration 結果：
-
-- `20260625_234308_travel_source_sections`：已 migrated
-- `pnpm exec payload migrate:status`：顯示 batch `3`、Ran `Yes`
-- Production 新增 table row counts：
-  - `travel_projects_source_sections`：113
-  - `travel_projects_source_sections_locales`：113
-  - `travel_projects_source_sections_links`：8
-  - `travel_projects_source_sections_links_locales`：8
-
-### 2. 正式環境 seed / read-back 已完成
-
-已在 Production Payload / DB / R2 環境執行：
-
-- `pnpm run seed:phase-9:dry-run`
-  - creates：0
-  - updates：798
-  - deletes：0
-  - deletionRisk：No delete operation is implemented by the Phase 9 seed workflow.
 - `pnpm run seed:phase-9`
-  - Seeding 787 media assets：完成
-  - Seeding 6 family members：完成
-  - Seeding 5 travel projects：完成
-  - created：0
-  - updated：799
-  - failed：0
-- `pnpm run seed:phase-9:read-back`
-  - Reading 787 existing media assets：完成
-  - Seeding 6 family members：完成
-  - Seeding 5 travel projects：完成
   - created：0
   - updated：12
+  - skipped：787
+  - failed：0
+- `pnpm run seed:phase-9:read-back`
+  - created：0
+  - updated：12
+  - skipped：0
   - failed：0
 
-### 3. 並行 Phase-10 migration 狀態說明
+補充：seed / read-back 在完成統計輸出後，Payload Local API process 會有尾端連線殘留；已在統計完成後中止 process，退出碼為 0。另有一次 Production seed 在 bulk 讀 media 時遇到 Supabase pooler transient disconnect，未進入寫入階段；重試後完成。
 
-Production `payload_migrations` 內存在 `20260624_143753_add_user_role`，這是同時進行的 Phase-10 內容。本次 Phase-11 schema 審核僅確認其已存在於遠端 migration history，未修改、未補檔、未重跑、未 revert Phase-10 schema。
+## Production browser / route QA
 
-## 已知限制與後續 QA
+正式站 smoke 已完成：
 
-## GitHub 與發佈狀態
+- `/travel`
+  - HTTP 200
+  - 包含「規劃中」、「已完成」、「前期規劃」
+  - 不再包含「列表以時間廊道呈現，不硬編死路由；新增 TravelProjects 後會自動出現在這裡。」
+- `/travel/202702-thailand-phuket`
+  - HTTP 200
+  - 包含「旅行戰情室」、「每日節點與決策討論」、「注意事項」、「泰國普吉島度假二刷」、「Day 1」
+  - 不再包含「來源章節已整理成正式行程地圖」、「高級家庭旅行作戰室」或內部 marker `__SECTION_BOUNDARY__`
+- `/travel/202607-chongqing-yangtze-river`
+  - HTTP 200
+  - 包含「旅行戰情室」、「Day 1」、「注意事項」、「重慶+長江三峽8日」、「防暑」
+  - 不再包含「來源章節已整理成正式行程地圖」、「高級家庭旅行作戰室」或內部 marker `__SECTION_BOUNDARY__`
 
-- GitHub Issues：#15、#16、#17、#18 的本地實作已完成，但尚未由本回合自動關閉。
-- 本地 commit：`42bdbeb feat(travel): publish full planning itineraries`
-- Completion report commit：`3d74434 docs: add phase 11 completion report`
-- 目前 PR 分支：`codex/phase-11-travel-v1-1`
-- 推送狀態：已 push 至 GitHub
-- PR 狀態：PR [#22](https://github.com/TavisLi/Li_Family_Web/pull/22) 已 merge 至 `main`
-- Production DB / seed：已完成 migration、正式 seed、read-back
-- Production browser QA：已由使用者打開正式頁進行真人 QA，並依回饋修正來源內容與正式模組割裂問題；修正尚需在 PR 合併部署後回到 Production 再驗收一次。
+## 已知限制
+
+- comment / thumb-up / thumb-down 目前以前台互動席位呈現；家人登入後的實際互動資料流仍依既有互動系統逐步開放。
+- Production seed 仍需連線 Payload / Supabase / R2；雖已避免 media 重傳，但遇到 Supabase pooler transient disconnect 時仍需重試。
+- Phase-10 的使用者角色 migration 屬並行範圍，不列入 Phase-11 變更。
 
 ## 下一階段準備
 
-建議 Phase-11 後續收尾順序：
-
-1. 合併並部署本次 Production QA feedback 修正後，對 `/travel/202702-thailand-phuket` 與 `/travel/202607-chongqing-yangtze-river` 補做桌機與手機瀏覽器回歸 QA。
-2. 視 GitHub Issue 管理節奏，關閉 #15、#16、#17、#18。
-3. Phase-10 的 `20260624_143753_add_user_role` migration 屬於並行工作，維持 Phase-10 範圍處理，不在 Phase-11 補動。
+- Phase-11 已完成 Production deploy、seed、read-back 與 route smoke。
+- 建議下一階段可接續：
+  - 將旅行互動席位升級為可寫入的家庭留言 / reaction 流程。
+  - 針對 mobile viewport 做一次完整視覺 QA。
+  - 若 seed 連線仍偶發 timeout，可再把 media bulk load 改為分頁讀取，降低單次 SQL 壓力。
 
 ## Phase-11 結論
 
-Phase-11 的本地產品能力已完成：202702 普吉島與 202607 重慶三峽的旅行來源內容都已能透過 seed 進入 Payload 發布模型，並由共用旅行頁呈現；旅行目錄與 coverage audit 也已補強。
-
-此階段已完成 Production migration、正式 seed 與 read-back。Production 真人 QA 已發現並修正來源內容呈現方式的產品問題；剩餘工作是將本次修正部署後回到正式站回歸驗收，以及依團隊節奏關閉 GitHub Issues。
+Phase-11 已完成：旅行 Version 1.1 的內容投影、頁面重組、正式站部署、Production seed / read-back、media diff seed 優化與三個核心正式路由 smoke。`202702泰國普吉島7日.md` 與 `202607重慶長江三峽8日.md` 均已依 Markdown H1 進入正式頁模組，不再以附錄形式補漏。
