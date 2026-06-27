@@ -17,7 +17,7 @@ Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國
 ## 已交付內容
 
 - 新增 `TravelProjects.sourceSections` 欄位，忠實保存旅行 Markdown 的章節、表格、清單、提醒與外部連結。
-- `/travel/[slug]` 共用詳情頁新增「完整來源內容」區塊，確保 202702 普吉島來源文件不再只呈現摘要或部分結構欄位。
+- `/travel/[slug]` 共用詳情頁改為依 Markdown H1 重組正式行程模組，確保 202702 普吉島與 202607 重慶來源文件不再只呈現摘要或被放在獨立附錄區塊。
 - `202702-thailand-phuket` 已保留並呈現：
   - 外部網站連結
   - 航班資訊
@@ -33,7 +33,7 @@ Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國
   - 實用 APP、重要提醒與完整來源章節
 - 旅行目錄頁改為「規劃中旅程」與「已完成旅程」分組，保留 canonical slug route 與缺圖 ImageFallback。
 - `seed:audit` 擴充為可盤點每個 travel slug 的 route path、source section count、結構化內容與媒體 coverage。
-- 新增前台與 seed 回歸測試，確保旅行內容投影、目錄分組、完整來源內容與結構化規劃資料不會回退。
+- 新增前台與 seed 回歸測試，確保旅行內容投影、目錄分組、正式來源章節模組與結構化規劃資料不會回退。
 
 ## 核心檔案
 
@@ -44,11 +44,11 @@ Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國
 - `src/payload/payload-types.ts`
   - 已重新產生 Payload types。
 - `src/features/travel/travel-source-sections.tsx`
-  - 新增完整 Markdown 來源章節呈現。
+  - 將 Markdown H1/H2 source sections 重組為正式頁面模組；表格、清單、提醒與連結直接在產品頁呈現。
 - `src/features/travel/travel-planning-extras.tsx`
   - 新增費用、餐食與可選／自費項目呈現。
 - `src/features/travel/travel-detail-page.tsx`
-  - 將完整來源內容與規劃補充區接入共用旅行詳情頁。
+  - 將來源章節模組、每日行程細節與 comment/thumb-up/thumb-down interaction 接入共用旅行詳情頁。
 - `src/features/travel/travel-index-page.tsx`
   - 將旅行目錄分為規劃中與已完成。
 - `src/scripts/seed-audit.ts`
@@ -56,7 +56,7 @@ Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國
 - `src/scripts/seed-content.test.ts`
   - 驗證 202702 與 202607 來源內容完整投影。
 - `src/features/travel/travel-detail-page.test.tsx`
-  - 驗證完整來源內容與規劃補充資料呈現。
+  - 驗證來源內容不再以「完整來源內容」附錄呈現，並確認正式模組保留互動 slot。
 - `src/features/travel/travel-index-page.test.tsx`
   - 驗證旅行目錄分組與 route link。
 
@@ -74,6 +74,13 @@ Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國
 `pnpm run seed:audit` 結果顯示 5 個 travel slug 均具備來源文件、route path、封面媒體與結構化內容；`missingTravelRecords`、`missingCoverMedia`、`missingStructuredContent`、`missingSourceSections`、`missingRoutePaths` 皆為空陣列。
 
 2026-06-25 追加確認：`docs/family-members.md` 已修正 Tavis 的 typewriter 循環詞來源，避免被 seed 成空白 token；修正後已重新執行 `pnpm run test:phase-9` 並通過。
+
+2026-06-27 Production QA feedback 修正：使用者在正式頁 QA 時指出「高級家庭旅行作戰室、每日節點與決策討論、費用、餐食與可選項目、高溫、登船與安全提醒」等正式頁面區塊不應與下方「完整來源內容」附錄割裂。已修正為依 Markdown H1/H2 將來源內容重組到正式頁面模組中，並為每個來源章節建立 comment、thumb-up、thumb-down interaction key。追加驗證：
+
+- `pnpm run test:phase-9`
+- `pnpm tsc --noEmit`
+- `pnpm run build`
+- `git diff --check`
 
 ## 瀏覽器 QA 範圍
 
@@ -159,13 +166,13 @@ Production `payload_migrations` 內存在 `20260624_143753_add_user_role`，這�
 - 推送狀態：已 push 至 GitHub
 - PR 狀態：PR [#22](https://github.com/TavisLi/Li_Family_Web/pull/22) 已 merge 至 `main`
 - Production DB / seed：已完成 migration、正式 seed、read-back
-- Production browser QA：尚未在本回合補做真人互動式瀏覽器 QA
+- Production browser QA：已由使用者打開正式頁進行真人 QA，並依回饋修正來源內容與正式模組割裂問題；修正尚需在 PR 合併部署後回到 Production 再驗收一次。
 
 ## 下一階段準備
 
 建議 Phase-11 後續收尾順序：
 
-1. 對 `/travel`、`/travel/202702-thailand-phuket`、`/travel/202607-chongqing-yangtze-river` 做桌機與手機瀏覽器 QA。
+1. 合併並部署本次 Production QA feedback 修正後，對 `/travel/202702-thailand-phuket` 與 `/travel/202607-chongqing-yangtze-river` 補做桌機與手機瀏覽器回歸 QA。
 2. 視 GitHub Issue 管理節奏，關閉 #15、#16、#17、#18。
 3. Phase-10 的 `20260624_143753_add_user_role` migration 屬於並行工作，維持 Phase-10 範圍處理，不在 Phase-11 補動。
 
@@ -173,4 +180,4 @@ Production `payload_migrations` 內存在 `20260624_143753_add_user_role`，這�
 
 Phase-11 的本地產品能力已完成：202702 普吉島與 202607 重慶三峽的旅行來源內容都已能透過 seed 進入 Payload 發布模型，並由共用旅行頁呈現；旅行目錄與 coverage audit 也已補強。
 
-此階段已完成 Production migration、正式 seed 與 read-back。剩餘工作是正式瀏覽器 QA，以及依團隊節奏關閉 GitHub Issues。
+此階段已完成 Production migration、正式 seed 與 read-back。Production 真人 QA 已發現並修正來源內容呈現方式的產品問題；剩餘工作是將本次修正部署後回到正式站回歸驗收，以及依團隊節奏關閉 GitHub Issues。
