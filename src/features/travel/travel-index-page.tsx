@@ -34,9 +34,9 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
             從正在討論的重慶三峽作戰室，到海南與東澳的記憶長卷，所有行程都依狀態整理成可進入、可回看、可延續討論的家庭旅行檔案。
           </p>
           <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
-            <IndexMetric label="前期規劃" value={preliminary.length} />
             <IndexMetric label="規劃中" value={planning.length} />
             <IndexMetric label="已完成" value={completed.length} />
+            <IndexMetric label="前期規劃" value={preliminary.length} />
           </div>
         </div>
 
@@ -75,11 +75,6 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
       <section className="mx-auto w-full max-w-7xl px-5 pb-8">
         <div className="grid gap-4 md:grid-cols-3">
           <CorridorNote
-            icon={<Compass className="size-5" aria-hidden="true" />}
-            title="前期規劃"
-            text="規劃中但時間已過的旅程會先收在這裡，方便保留早期討論、待整理內容與後續復盤。"
-          />
-          <CorridorNote
             icon={<Plane className="size-5" aria-hidden="true" />}
             title="規劃中"
             text="即將發生或仍在決策中的行程，航班、住宿、提醒與每日節點都可進入討論。"
@@ -89,31 +84,26 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
             title="已完成"
             text="完成後的旅程轉成回憶檔案，保留照片、里程碑與當時留下的文字線索。"
           />
+          <CorridorNote
+            icon={<Compass className="size-5" aria-hidden="true" />}
+            title="前期規劃"
+            text="規劃中但時間已過的旅程會先收在這裡，方便保留早期討論、待整理內容與後續復盤。"
+          />
         </div>
       </section>
 
       <section className="border-y border-white/60 bg-white/35 px-5 py-14 backdrop-blur-xl md:py-20">
         <div className="mx-auto w-full max-w-7xl">
-          <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="mb-8">
             <div>
               <p className="text-sm font-semibold uppercase text-slate-500">Route Index</p>
               <h2 className="mt-2 text-3xl font-semibold tracking-normal md:text-5xl">
                 每一站都是可進入的家庭檔案。
               </h2>
             </div>
-            <p className="max-w-md text-sm leading-7 text-slate-600">
-              列表以時間廊道呈現，不硬編死路由；新增 TravelProjects 後會自動出現在這裡。
-            </p>
           </div>
 
           <div className="grid gap-8">
-            <TravelProjectGroup
-              empty="目前沒有過期的前期規劃旅程。"
-              icon={<Compass className="size-5" aria-hidden="true" />}
-              projects={preliminary}
-              statusLabelOverride="前期規劃"
-              title="前期規劃"
-            />
             <TravelProjectGroup
               empty="目前沒有公開的規劃中旅程。"
               icon={<Plane className="size-5" aria-hidden="true" />}
@@ -125,6 +115,13 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
               icon={<CalendarDays className="size-5" aria-hidden="true" />}
               projects={completed}
               title="已完成"
+            />
+            <TravelProjectGroup
+              empty="目前沒有過期的前期規劃旅程。"
+              icon={<Compass className="size-5" aria-hidden="true" />}
+              projects={preliminary}
+              statusLabelOverride="前期規劃"
+              title="前期規劃"
             />
           </div>
         </div>
