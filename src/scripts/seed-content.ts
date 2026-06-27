@@ -409,6 +409,8 @@ export type TravelSeed = z.infer<typeof travelSeedSchema>
 export type MediaSeed = z.infer<typeof mediaSeedSchema>
 export type BlogCategorySeed = z.infer<typeof blogCategorySeedSchema>
 export type BlogPostSeed = z.infer<typeof blogPostSeedSchema>
+
+const SOURCE_SECTION_BOUNDARY_BODY = '__SECTION_BOUNDARY__'
 export type LexicalContentSeed = z.infer<typeof lexicalContentSchema>
 
 export type TravelCatalogEntry = {
@@ -1405,13 +1407,15 @@ function parseSourceSections(markdown: string): NonNullable<TravelSeed['sourceSe
 
     const body = current.bodyLines.join('\n').trim()
 
-    if (body) {
+    if (body || current.level === 1) {
+      const sectionBody = body || SOURCE_SECTION_BOUNDARY_BODY
+
       sections.push({
         level: current.level,
         title: current.title,
         anchor: slugify(current.title),
-        body,
-        links: extractLinks(body),
+        body: sectionBody,
+        links: body ? extractLinks(body) : undefined,
       })
     }
 
