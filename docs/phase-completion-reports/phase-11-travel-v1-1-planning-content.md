@@ -90,9 +90,9 @@ Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國
 - `/travel/202607-chongqing-yangtze-river`
 - `/travel`
 
-## 已知限制與阻塞
+## Production migration / seed 實施紀錄
 
-### 1. Payload migration 已產生，尚未套用 Production
+### 1. Payload migration 已套用 Production
 
 本階段新增了 Payload Collection 欄位 `sourceSections`，已完成 `pnpm exec payload generate:types`，並已在 Node 22.23.1 環境成功產生 migration：
 
@@ -101,22 +101,54 @@ Phase-11 將 Version 1.1 的重點放在旅行系統，尤其是「202702 泰國
 
 先前在 Node 26.3.1 下的 `payload migrate:create` 失敗，根因推測為 Payload CLI / tsx loader 在 Node 26 下解析 `node:` builtin namespace query 的相容性問題。已改用 Homebrew 安裝的 Node 22.23.1 產生 migration。
 
-已嘗試執行 `pnpm exec payload migrate` 套用 Production DB，但 Payload CLI 偵測到過去曾以 dev mode 動態推送 schema，並提示若繼續 migration 可能造成資料遺失：
+Production schema 審核完成後，確認此 Phase-11 migration 的 `up` 僅新增 4 張 `travel_projects_source_sections*` table、4 個 FK constraint 與 6 個 index；不包含 `DROP TABLE`、`DROP COLUMN`、`DELETE`、`UPDATE` 或既有欄位型別變更。
+
+Payload CLI 偵測到過去曾以 dev mode 動態推送 schema，並提示若繼續 migration 可能造成資料遺失：
 
 ```text
 It looks like you've run Payload in dev mode, meaning you've dynamically pushed changes to your database.
 If you'd like to run migrations, data loss will occur. Would you like to proceed?
 ```
 
-此提示屬於正式資料風險，不是一般確認。因此本回合已中止 migration，未對 Production DB 套用任何 schema 寫入。後續應先備份／確認 Production DB schema 狀態，再決定是否以 Payload CLI 繼續 migration，或改採人工審核過的 SQL 套用策略。
+經人工 schema 審核與使用者確認後，已用 Node 22.23.1 執行 `pnpm exec payload migrate`，並在互動確認中接受 Payload 警告。Migration 結果：
 
-### 2. 尚未執行正式環境 seed / read-back
+- `20260625_234308_travel_source_sections`：已 migrated
+- `pnpm exec payload migrate:status`：顯示 batch `3`、Ran `Yes`
+- Production 新增 table row counts：
+  - `travel_projects_source_sections`：113
+  - `travel_projects_source_sections_locales`：113
+  - `travel_projects_source_sections_links`：8
+  - `travel_projects_source_sections_links_locales`：8
 
-Phase-11 已完成本地 source coverage、build 與 audit，但尚未對 Production Payload / R2 執行寫入。依 Phase-9 的安全原則，正式環境異動仍需明確授權後才能執行。
+### 2. 正式環境 seed / read-back 已完成
 
-### 3. GitHub push / PR 已完成，Production 尚未部署
+已在 Production Payload / DB / R2 環境執行：
 
-本階段已推送至 `codex/phase-11-travel-v1-1`，並建立 Draft PR [#22](https://github.com/TavisLi/Li_Family_Web/pull/22)。Production 部署與正式 seed 仍需等待 Payload migration 套用後再執行。
+- `pnpm run seed:phase-9:dry-run`
+  - creates：0
+  - updates：798
+  - deletes：0
+  - deletionRisk：No delete operation is implemented by the Phase 9 seed workflow.
+- `pnpm run seed:phase-9`
+  - Seeding 787 media assets：完成
+  - Seeding 6 family members：完成
+  - Seeding 5 travel projects：完成
+  - created：0
+  - updated：799
+  - failed：0
+- `pnpm run seed:phase-9:read-back`
+  - Reading 787 existing media assets：完成
+  - Seeding 6 family members：完成
+  - Seeding 5 travel projects：完成
+  - created：0
+  - updated：12
+  - failed：0
+
+### 3. 並行 Phase-10 migration 狀態說明
+
+Production `payload_migrations` 內存在 `20260624_143753_add_user_role`，這是同時進行的 Phase-10 內容。本次 Phase-11 schema 審核僅確認其已存在於遠端 migration history，未修改、未補檔、未重跑、未 revert Phase-10 schema。
+
+## 已知限制與後續 QA
 
 ## GitHub 與發佈狀態
 
@@ -125,26 +157,20 @@ Phase-11 已完成本地 source coverage、build 與 audit，但尚未對 Produc
 - Completion report commit：`3d74434 docs: add phase 11 completion report`
 - 目前 PR 分支：`codex/phase-11-travel-v1-1`
 - 推送狀態：已 push 至 GitHub
-- PR 狀態：Draft PR [#22](https://github.com/TavisLi/Li_Family_Web/pull/22)
-- Production 發佈：尚未部署本階段變更
+- PR 狀態：PR [#22](https://github.com/TavisLi/Li_Family_Web/pull/22) 已 merge 至 `main`
+- Production DB / seed：已完成 migration、正式 seed、read-back
+- Production browser QA：尚未在本回合補做真人互動式瀏覽器 QA
 
 ## 下一階段準備
 
 建議 Phase-11 後續收尾順序：
 
-1. 備份並審核 Production DB schema 狀態；處理 Payload CLI 的 data-loss warning。
-2. 使用 Node 22 套用 `travel-source-sections` migration，或採用人工審核過的 SQL 套用策略。
-3. 重新執行：
-   - `pnpm exec payload generate:types`
-   - `pnpm tsc --noEmit`
-   - `pnpm run build`
-   - `pnpm run test:phase-9`
-4. 在明確授權下執行 Production dry-run / seed / read-back。
-5. 對 `/travel`、`/travel/202702-thailand-phuket`、`/travel/202607-chongqing-yangtze-river` 做桌機與手機瀏覽器 QA。
-6. PR #22 通過 review 並合併後，再視情況關閉 #15、#16、#17、#18。
+1. 對 `/travel`、`/travel/202702-thailand-phuket`、`/travel/202607-chongqing-yangtze-river` 做桌機與手機瀏覽器 QA。
+2. 視 GitHub Issue 管理節奏，關閉 #15、#16、#17、#18。
+3. Phase-10 的 `20260624_143753_add_user_role` migration 屬於並行工作，維持 Phase-10 範圍處理，不在 Phase-11 補動。
 
 ## Phase-11 結論
 
 Phase-11 的本地產品能力已完成：202702 普吉島與 202607 重慶三峽的旅行來源內容都已能透過 seed 進入 Payload 發布模型，並由共用旅行頁呈現；旅行目錄與 coverage audit 也已補強。
 
-此階段尚未視為正式 Production 完成，原因是 Payload migration 尚未套用、Production seed / read-back 與瀏覽器 QA 仍需後續授權與環境處理。
+此階段已完成 Production migration、正式 seed 與 read-back。剩餘工作是正式瀏覽器 QA，以及依團隊節奏關閉 GitHub Issues。
