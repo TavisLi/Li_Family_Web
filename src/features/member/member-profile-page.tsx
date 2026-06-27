@@ -137,7 +137,7 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
             回到家庭大廳
           </Link>
           <p className={`mt-8 text-sm font-semibold uppercase ${style.accent}`}>{style.eyebrow}</p>
-          <h1 className="mt-4 text-5xl font-semibold leading-[1.02] tracking-normal text-slate-950 md:text-7xl">
+          <h1 className="mt-4 text-[clamp(3rem,12vw,4.25rem)] font-semibold leading-[1.02] tracking-normal text-slate-950 md:text-[clamp(3.5rem,4.8vw,4.5rem)] lg:whitespace-nowrap">
             {member.displayName}
           </h1>
           <div className="mt-6 max-w-3xl overflow-hidden text-2xl font-semibold leading-tight text-slate-800 md:text-3xl">

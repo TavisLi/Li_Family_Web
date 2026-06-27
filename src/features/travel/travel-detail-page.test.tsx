@@ -5,6 +5,8 @@ import { renderToStaticMarkup } from 'react-dom/server'
 
 import type { TravelProject } from '@/payload/payload-types'
 import { CompletedTravelLedger } from './completed-travel-ledger'
+import { TravelPlanningExtras } from './travel-planning-extras'
+import { TravelSourceSections } from './travel-source-sections'
 
 const completedProject: TravelProject = {
   id: 1,
@@ -66,3 +68,159 @@ const html = renderToStaticMarkup(createElement(CompletedTravelLedger, { project
 assert.match(html, /旅程資料簿/)
 assert.match(html, /BR211/)
 assert.match(html, /Splash Beach Resort/)
+
+const planningProject: TravelProject = {
+  id: 2,
+  title: '泰國普吉島度假二刷',
+  slug: '202702-thailand-phuket',
+  status: 'planning',
+  isPrivate: false,
+  startDate: '2027-02-02T00:00:00.000Z',
+  endDate: '2027-02-08T00:00:00.000Z',
+  summary: '雙度假會體驗',
+  coverImage: null,
+  galleryImages: [],
+  itineraryImages: [],
+  party: [{ id: 'party-1', name: 'Tavis' }],
+  flights: [
+    {
+      id: 'flight-1',
+      flightNumber: 'TBD',
+      route: '台北 → 普吉島',
+      notes: '出發前60天提供航班信息',
+    },
+  ],
+  lodgings: [
+    {
+      id: 'lodging-1',
+      dateRange: '2/2 – 2/5',
+      hotel: 'Anantara Vacation Club Mai Khao Phuket',
+    },
+  ],
+  dailyItinerary: [
+    {
+      id: 'day-1',
+      day: 1,
+      title: '台北 → 普吉島 · 安納塔拉入住',
+      segments: [{ id: 'segment-1', activity: '抵達普吉島' }],
+    },
+  ],
+  reminders: [
+    {
+      id: 'reminder-1',
+      category: '補充細節',
+      items: [{ id: 'reminder-item-1', text: '萬豪推介會出席提醒' }],
+    },
+  ],
+  foodRecommendations: [
+    {
+      id: 'food-1',
+      category: '酸湯兔',
+      name: '老來福酸湯兔',
+      description: '完全不辣',
+      suitableFor: '小孩最愛',
+    },
+  ],
+  costItems: [
+    {
+      id: 'cost-1',
+      category: '費用',
+      item: '《烽煙三國》演出',
+      unitPrice: '290元/人',
+      quantity: '6人',
+      subtotal: '1,740元',
+    },
+  ],
+  optionalActivities: [
+    {
+      id: 'option-1',
+      name: '白帝城',
+      price: '252元/人',
+      notes: '自費項目',
+    },
+  ],
+  sourceSections: [
+    {
+      id: 'source-1',
+      level: 1,
+      title: '旅行戰情室',
+      anchor: 'war-room',
+      body: '',
+    },
+    {
+      id: 'source-2',
+      level: 2,
+      title: '度假村官方網站',
+      anchor: 'resort-sites',
+      body: '安納塔拉度假會：https://www.anantara.com/en/vacation-club-phuket',
+      links: [
+        {
+          id: 'source-link-1',
+          label: 'https://www.anantara.com/en/vacation-club-phuket',
+          url: 'https://www.anantara.com/en/vacation-club-phuket',
+        },
+      ],
+    },
+    {
+      id: 'source-3',
+      level: 1,
+      title: '每日節點與決策討論',
+      anchor: 'daily-decisions',
+      body: '',
+    },
+    {
+      id: 'source-4',
+      level: 2,
+      title: 'Day 1 · 2/2（二）— 台北 → 普吉島 · 安納塔拉入住',
+      anchor: 'day-1',
+      body: '| 時段 | 行程 | 備註 |\n| --- | --- | --- |\n| 上午 | 抵達普吉島 | 入住安納塔拉 |',
+    },
+    {
+      id: 'source-5',
+      level: 1,
+      title: '注意事項',
+      anchor: 'notes',
+      body: '',
+    },
+    {
+      id: 'source-6',
+      level: 2,
+      title: '補充細節',
+      anchor: 'details',
+      body: '萬豪推介會出席提醒：否則需支付套餐全額零售價（最高$1,500）。',
+    },
+  ],
+  createdAt: '2026-06-21T00:00:00.000Z',
+  updatedAt: '2026-06-21T00:00:00.000Z',
+}
+
+const planningHtml = renderToStaticMarkup(
+  createElement(TravelSourceSections, {
+    project: planningProject,
+    renderInteraction: ({ associatedId, label }) =>
+      createElement('div', {
+        'data-associated-id': associatedId,
+        'data-label': label,
+      }, 'interaction slot'),
+  }),
+)
+
+assert.doesNotMatch(planningHtml, /完整來源內容/)
+assert.doesNotMatch(planningHtml, /來源章節已整理成正式行程地圖/)
+assert.match(planningHtml, /旅行戰情室/)
+assert.match(planningHtml, /每日節點與決策討論/)
+assert.match(planningHtml, /注意事項/)
+assert.match(planningHtml, /Reminders/)
+assert.match(planningHtml, /度假村官方網站/)
+assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuket/)
+assert.match(planningHtml, /最高\$1,500/)
+assert.match(planningHtml, /travel:202702-thailand-phuket:source:resort-sites/)
+assert.match(planningHtml, /travel:202702-thailand-phuket:source:details/)
+assert.match(planningHtml, /入住安納塔拉/)
+
+const extrasHtml = renderToStaticMarkup(createElement(TravelPlanningExtras, { project: planningProject }))
+
+assert.match(extrasHtml, /費用、餐食與可選項目/)
+assert.match(extrasHtml, /老來福酸湯兔/)
+assert.match(extrasHtml, /《烽煙三國》演出/)
+assert.match(extrasHtml, /白帝城/)

@@ -111,7 +111,7 @@ export function HomePageView({
               <Sparkles className="size-4" aria-hidden="true" />
               The Grand Family Lobby
             </p>
-            <h1 className="mt-6 max-w-4xl text-5xl font-semibold leading-[1.02] tracking-normal text-slate-950 md:text-7xl">
+            <h1 className="mt-6 max-w-4xl text-[clamp(3rem,12vw,4.25rem)] font-semibold leading-[1.02] tracking-normal text-slate-950 md:text-[clamp(3.5rem,5vw,4.5rem)] lg:whitespace-nowrap">
               {homeConfig.heroTitle || 'Li Family'}
             </h1>
             <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">

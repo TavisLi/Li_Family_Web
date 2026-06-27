@@ -22,7 +22,7 @@ export function TimelinePageView({ data }: TimelinePageViewProps) {
             <Clock3 className="size-4" aria-hidden="true" />
             Time Machine Timeline
           </p>
-          <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-normal md:text-7xl">
+          <h1 className="mt-6 max-w-3xl text-[clamp(3rem,12vw,4.25rem)] font-semibold leading-[1.02] tracking-normal md:text-[clamp(3.5rem,4.4vw,4rem)] lg:whitespace-nowrap">
             時空膠囊大事記
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">

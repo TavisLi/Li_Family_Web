@@ -14,6 +14,7 @@ import {
   type TravelSeed,
 } from './seed-content'
 import { buildPayloadDryRun } from './seed-dry-run'
+import { mediaRecordMatchesSeed, mediaSeedData } from './seed-media-compare'
 import { memberEnglishLocalizedData, memberLocalizedWriteOptions } from './seed-member-locale'
 import { mediaIdsBySourcePath } from './seed-media-context'
 import { mediaRefreshRequestFromArgs } from './seed-media-repair'
@@ -179,34 +180,35 @@ async function seedMedia(
 ) {
   console.log(`Seeding ${mediaItems.length} media assets...`)
 
-  for (const item of mediaItems) {
+  const existing = await payload.find({
+    collection: 'media',
+    depth: 0,
+    limit: 2000,
+    pagination: false,
+  })
+  const existingBySourcePath = new Map(
+    existing.docs.flatMap((doc) => (doc.sourcePath ? [[doc.sourcePath, doc] as const] : [])),
+  )
+  console.log(`Loaded ${existingBySourcePath.size} existing media records for diff-based seed.`)
+
+  for (const [index, item] of mediaItems.entries()) {
     try {
-      const index = mediaItems.indexOf(item) + 1
-      if (index === 1 || index % 10 === 0 || index === mediaItems.length) {
-        console.log(`Media progress: ${index}/${mediaItems.length}`)
+      const displayIndex = index + 1
+      if (displayIndex === 1 || displayIndex % 50 === 0 || displayIndex === mediaItems.length) {
+        console.log(`Media progress: ${displayIndex}/${mediaItems.length}`)
       }
 
-      const existing = await payload.find({
-        collection: 'media',
-        depth: 0,
-        limit: 1,
-        where: {
-          sourcePath: {
-            equals: item.sourcePath,
-          },
-        },
-      })
-
-      const data = {
-        type: 'photo' as const,
-        altText: item.altText,
-        sourcePath: item.sourcePath,
-        tags: item.tags,
-      }
-
-      const existingDoc = existing.docs[0]
+      const data = mediaSeedData(item)
+      const existingDoc = existingBySourcePath.get(item.sourcePath)
 
       if (existingDoc) {
+        if (mediaRecordMatchesSeed(existingDoc, item)) {
+          context.mediaBySourcePath.set(item.sourcePath, Number(existingDoc.id))
+          stats.skipped += 1
+          addOwnerMedia(context, item)
+          continue
+        }
+
         const updated = await payload.update({
           collection: 'media',
           id: existingDoc.id,

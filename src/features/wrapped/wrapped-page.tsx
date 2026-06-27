@@ -21,7 +21,7 @@ export function WrappedPage({ data }: WrappedPageProps) {
             <Sparkles className="size-4" aria-hidden="true" />
             Family Wrapped
           </p>
-          <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-normal md:text-7xl">
+          <h1 className="mt-6 max-w-3xl text-[clamp(3rem,12vw,4.25rem)] font-semibold leading-[1.02] tracking-normal md:text-[clamp(3.25rem,4vw,3.8rem)] lg:whitespace-nowrap">
             年度時光報告正在醞釀
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-8 text-slate-300 md:text-lg">

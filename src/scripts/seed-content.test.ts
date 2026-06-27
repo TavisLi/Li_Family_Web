@@ -107,6 +107,24 @@ async function main() {
   assert.equal(phuket2027.status, 'planning')
   assert.equal((phuket2027.flights ?? []).length, 2)
   assert.equal((phuket2027.lodgings ?? []).length, 2)
+  assert.ok((phuket2027.sourceSections ?? []).length >= 10)
+  assert.ok(
+    (phuket2027.sourceSections ?? []).some((section) =>
+      section.body.includes('https://www.anantara.com/en/vacation-club-phuket'),
+    ),
+  )
+  assert.ok(
+    (phuket2027.sourceSections ?? []).some((section) =>
+      section.body.includes('萬豪推介會出席提醒') &&
+      section.body.includes('最高$1,500'),
+    ),
+  )
+  assert.ok(
+    (phuket2027.sourceSections ?? []).some((section) =>
+      section.title.includes('待確認項目') &&
+      section.body.includes('往返航班班次與時間'),
+    ),
+  )
 
   const seedContent = await buildSeedContent(projectRoot)
 
@@ -128,8 +146,46 @@ async function main() {
     assert.ok((travel.flights ?? []).length > 0, `${entry.slug} must retain flight information`)
     assert.ok((travel.lodgings ?? []).length > 0, `${entry.slug} must retain lodging information`)
     assert.ok((travel.dailyItinerary ?? []).length > 0, `${entry.slug} must retain daily itinerary`)
+    assert.ok((travel.sourceSections ?? []).length > 0, `${entry.slug} must retain source sections`)
     assert.ok(media.some((item) => item.usage === 'cover'), `${entry.slug} must have cover media`)
   }
+
+  const chongqingSeed = seedContent.travels.find(
+    (travel) => travel.slug === '202607-chongqing-yangtze-river',
+  )
+
+  assert.ok(chongqingSeed)
+  assert.ok((chongqingSeed.sourceSections ?? []).length >= 16)
+  assert.ok(
+    (chongqingSeed.costItems ?? []).some((item) =>
+      item.item.includes('烽煙三國') &&
+      item.subtotal?.includes('1,740元'),
+    ),
+  )
+  assert.ok(
+    (chongqingSeed.foodRecommendations ?? []).some((item) =>
+      item.name.includes('老來福酸湯兔') &&
+      item.suitableFor?.includes('小孩'),
+    ),
+  )
+  assert.ok(
+    (chongqingSeed.optionalActivities ?? []).some((item) =>
+      item.name.includes('白帝城') &&
+      item.price?.includes('252元'),
+    ),
+  )
+  assert.ok(
+    (chongqingSeed.sourceSections ?? []).some((section) =>
+      section.body.includes('烽煙三國') &&
+      section.body.includes('1,740元'),
+    ),
+  )
+  assert.ok(
+    (chongqingSeed.sourceSections ?? []).some((section) =>
+      section.body.includes('高德地圖') &&
+      section.body.includes('12306'),
+    ),
+  )
 
   assert.ok(seedContent.media.length >= 10)
   assert.ok(seedContent.media.some((item) => item.ownerType === 'member' && item.ownerSlug === 'tavis'))

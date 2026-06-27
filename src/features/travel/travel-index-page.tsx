@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import React from 'react'
 import type { ReactNode } from 'react'
 import { ArrowRight, CalendarDays, Compass, MapPin, Plane } from 'lucide-react'
 
@@ -7,12 +8,15 @@ import { PayloadImage } from '@/components/ui/payload-image'
 import type { TravelProject } from '@/payload/payload-types'
 
 type TravelIndexPageProps = {
+  currentDate?: Date | string
   projects: TravelProject[]
 }
 
-export function TravelIndexPage({ projects }: TravelIndexPageProps) {
+export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIndexPageProps) {
   const featured = projects[0]
-  const planning = projects.filter((project) => project.status === 'planning')
+  const now = startOfDay(currentDate)
+  const planning = projects.filter((project) => project.status === 'planning' && !isPastPlanning(project, now))
+  const preliminary = projects.filter((project) => project.status === 'planning' && isPastPlanning(project, now))
   const completed = projects.filter((project) => project.status === 'completed')
 
   return (
@@ -23,15 +27,16 @@ export function TravelIndexPage({ projects }: TravelIndexPageProps) {
             <Compass className="size-4" aria-hidden="true" />
             Travel Corridor
           </p>
-          <h1 className="mt-6 max-w-3xl text-5xl font-semibold leading-[1.02] tracking-normal md:text-7xl">
+          <h1 className="mt-6 max-w-3xl text-[clamp(3rem,12vw,4.25rem)] font-semibold leading-[1.02] tracking-normal md:text-[clamp(3.5rem,4.4vw,4rem)] lg:whitespace-nowrap">
             家庭旅途索引廊道
           </h1>
           <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-            從正在討論的重慶三峽作戰室，到海南與東澳的記憶長卷，所有行程都由 Payload TravelProjects 與 seed 後媒體關聯驅動。
+            從正在討論的重慶三峽作戰室，到海南與東澳的記憶長卷，所有行程都依狀態整理成可進入、可回看、可延續討論的家庭旅行檔案。
           </p>
-          <div className="mt-8 grid max-w-xl grid-cols-2 gap-3">
+          <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
             <IndexMetric label="規劃中" value={planning.length} />
             <IndexMetric label="已完成" value={completed.length} />
+            <IndexMetric label="前期規劃" value={preliminary.length} />
           </div>
         </div>
 
@@ -67,76 +72,143 @@ export function TravelIndexPage({ projects }: TravelIndexPageProps) {
         )}
       </section>
 
+      <section className="mx-auto w-full max-w-7xl px-5 pb-8">
+        <div className="grid gap-4 md:grid-cols-3">
+          <CorridorNote
+            icon={<Plane className="size-5" aria-hidden="true" />}
+            title="規劃中"
+            text="即將發生或仍在決策中的行程，航班、住宿、提醒與每日節點都可進入討論。"
+          />
+          <CorridorNote
+            icon={<CalendarDays className="size-5" aria-hidden="true" />}
+            title="已完成"
+            text="完成後的旅程轉成回憶檔案，保留照片、里程碑與當時留下的文字線索。"
+          />
+          <CorridorNote
+            icon={<Compass className="size-5" aria-hidden="true" />}
+            title="前期規劃"
+            text="規劃中但時間已過的旅程會先收在這裡，方便保留早期討論、待整理內容與後續復盤。"
+          />
+        </div>
+      </section>
+
       <section className="border-y border-white/60 bg-white/35 px-5 py-14 backdrop-blur-xl md:py-20">
         <div className="mx-auto w-full max-w-7xl">
-          <div className="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+          <div className="mb-8">
             <div>
               <p className="text-sm font-semibold uppercase text-slate-500">Route Index</p>
               <h2 className="mt-2 text-3xl font-semibold tracking-normal md:text-5xl">
                 每一站都是可進入的家庭檔案。
               </h2>
             </div>
-            <p className="max-w-md text-sm leading-7 text-slate-600">
-              列表以時間廊道呈現，不硬編死路由；新增 TravelProjects 後會自動出現在這裡。
-            </p>
           </div>
 
-          <div className="divide-y divide-slate-300/60 border-y border-slate-300/60">
-            {projects.map((project) => (
-              <Link
-                className="group grid gap-5 py-6 transition hover:bg-white/35 md:grid-cols-[10rem_1fr_auto]"
-                href={`/travel/${project.slug}`}
-                key={project.id}
-              >
-                <PayloadImage
-                  className="aspect-[16/10] rounded-md"
-                  fallbackLabel={project.title}
-                  media={project.coverImage}
-                  sizes="(min-width: 768px) 10rem, 100vw"
-                  tone={project.status === 'planning' ? 'travel' : 'lynn'}
-                />
-                <div className="min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-500">
-                    <span className="inline-flex items-center gap-1">
-                      <MapPin className="size-4" aria-hidden="true" />
-                      {statusLabel(project.status)}
-                    </span>
-                    <span>{formatDateRange(project)}</span>
-                  </div>
-                  <h3 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
-                    {project.title}
-                  </h3>
-                  <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-7 text-slate-600">
-                    {project.summary || project.externalDocIdentifier || '旅行資料已在 Payload 建立。'}
-                  </p>
-                </div>
-                <div className="flex items-center text-slate-500 transition group-hover:translate-x-1 group-hover:text-slate-950">
-                  <ArrowRight className="size-5" aria-hidden="true" />
-                </div>
-              </Link>
-            ))}
+          <div className="grid gap-8">
+            <TravelProjectGroup
+              empty="目前沒有公開的規劃中旅程。"
+              icon={<Plane className="size-5" aria-hidden="true" />}
+              projects={planning}
+              title="規劃中"
+            />
+            <TravelProjectGroup
+              empty="目前沒有公開的已完成旅程。"
+              icon={<CalendarDays className="size-5" aria-hidden="true" />}
+              projects={completed}
+              title="已完成"
+            />
+            <TravelProjectGroup
+              empty="目前沒有過期的前期規劃旅程。"
+              icon={<Compass className="size-5" aria-hidden="true" />}
+              projects={preliminary}
+              statusLabelOverride="前期規劃"
+              title="前期規劃"
+            />
           </div>
         </div>
       </section>
-
-      <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-14 md:grid-cols-3 md:py-20">
-        <CorridorNote
-          icon={<Plane className="size-5" aria-hidden="true" />}
-          title="規劃中"
-          text="航班、住宿、提醒與每日節點集中在高密度作戰室，互動入口由家人模式解鎖。"
-        />
-        <CorridorNote
-          icon={<CalendarDays className="size-5" aria-hidden="true" />}
-          title="已完成"
-          text="回憶頁改用 editorial journal 節奏，讓里程碑、照片與文字一起推進。"
-        />
-        <CorridorNote
-          icon={<MapPin className="size-5" aria-hidden="true" />}
-          title="媒體關聯"
-          text="所有照片都來自 Payload Media relationship；缺圖時統一落到正式 ImageFallback。"
-        />
-      </section>
     </main>
+  )
+}
+
+function TravelProjectGroup({
+  empty,
+  icon,
+  projects,
+  statusLabelOverride,
+  title,
+}: {
+  empty: string
+  icon: ReactNode
+  projects: TravelProject[]
+  statusLabelOverride?: string
+  title: string
+}) {
+  return (
+    <section aria-labelledby={`travel-group-${title}`} className="grid gap-3">
+      <div className="flex items-center gap-3" id={`travel-group-${title}`}>
+        <div className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm shadow-slate-900/15">
+          {icon}
+        </div>
+        <div>
+          <h3 className="text-2xl font-semibold tracking-normal text-slate-950">{title}</h3>
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            {groupDescription(title)}
+          </p>
+        </div>
+      </div>
+      {projects.length ? (
+        <div className="divide-y divide-slate-300/60 border-y border-slate-300/60">
+          {projects.map((project) => (
+            <TravelProjectRow key={project.id} project={project} statusLabelOverride={statusLabelOverride} />
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-lg border border-white/60 bg-white/45 p-5 text-sm leading-7 text-slate-600 shadow-sm backdrop-blur-xl">
+          {empty}
+        </p>
+      )}
+    </section>
+  )
+}
+
+function TravelProjectRow({
+  project,
+  statusLabelOverride,
+}: {
+  project: TravelProject
+  statusLabelOverride?: string
+}) {
+  return (
+    <Link
+      className="group grid gap-5 py-6 transition hover:bg-white/35 md:grid-cols-[10rem_1fr_auto]"
+      href={`/travel/${project.slug}`}
+    >
+      <PayloadImage
+        className="aspect-[16/10] rounded-md"
+        fallbackLabel={project.title}
+        media={project.coverImage}
+        sizes="(min-width: 768px) 10rem, 100vw"
+        tone={project.status === 'planning' ? 'travel' : 'lynn'}
+      />
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-center gap-2 text-sm font-medium text-slate-500">
+          <span className="inline-flex items-center gap-1">
+            <MapPin className="size-4" aria-hidden="true" />
+            {statusLabelOverride ?? statusLabel(project.status)}
+          </span>
+          <span>{formatDateRange(project)}</span>
+        </div>
+        <h4 className="mt-2 text-2xl font-semibold tracking-normal text-slate-950">
+          {project.title}
+        </h4>
+        <p className="mt-2 line-clamp-2 max-w-3xl text-sm leading-7 text-slate-600">
+          {project.summary || project.externalDocIdentifier || '旅行資料已在 Payload 建立。'}
+        </p>
+      </div>
+      <div className="flex items-center text-slate-500 transition group-hover:translate-x-1 group-hover:text-slate-950">
+        <ArrowRight className="size-5" aria-hidden="true" />
+      </div>
+    </Link>
   )
 }
 
@@ -159,13 +231,13 @@ function CorridorNote({
   text: string
 }) {
   return (
-    <div className="rounded-lg border border-white/60 bg-white/45 p-5 shadow-sm backdrop-blur-xl">
-      <div className="mb-4 flex size-10 items-center justify-center rounded-md bg-slate-950 text-white">
+    <article className="rounded-[1.5rem] border border-white/65 bg-white/45 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl">
+      <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm shadow-slate-900/15">
         {icon}
       </div>
-      <h3 className="text-lg font-semibold tracking-normal">{title}</h3>
+      <h3 className="text-lg font-semibold tracking-normal text-slate-950">{title}</h3>
       <p className="mt-2 text-sm leading-7 text-slate-600">{text}</p>
-    </div>
+    </article>
   )
 }
 
@@ -175,4 +247,26 @@ function statusLabel(status: TravelProject['status']) {
 
 function formatDateRange(project: TravelProject) {
   return `${project.startDate.slice(0, 10)} - ${project.endDate.slice(0, 10)}`
+}
+
+function groupDescription(title: string) {
+  if (title === '前期規劃') {
+    return '規劃中但日期已過的行程會先收在這裡，保留討論脈絡。'
+  }
+
+  if (title === '規劃中') {
+    return '即將發生或仍在決策中的旅行作戰室。'
+  }
+
+  return '已完成的家庭旅程與照片記憶。'
+}
+
+function isPastPlanning(project: TravelProject, currentDate: Date) {
+  return new Date(project.endDate) < currentDate
+}
+
+function startOfDay(value: Date | string) {
+  const date = typeof value === 'string' ? new Date(value) : value
+
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }

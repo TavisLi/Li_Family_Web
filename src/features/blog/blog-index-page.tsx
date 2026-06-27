@@ -24,7 +24,7 @@ export function BlogIndexPage({ data }: BlogIndexPageProps) {
               <Newspaper className="size-4 text-cyan-700" aria-hidden="true" />
               Premium Family Blog
             </p>
-            <h1 className="mt-5 text-4xl font-semibold leading-tight tracking-normal text-slate-950 md:text-6xl">
+            <h1 className="mt-5 text-[clamp(2.5rem,10vw,3.5rem)] font-semibold leading-tight tracking-normal text-slate-950 md:text-[clamp(3rem,4vw,3.75rem)]">
               家庭文章、旅行札記與長期思考。
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-8 text-slate-600">

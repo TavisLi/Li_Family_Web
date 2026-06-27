@@ -6,11 +6,12 @@ const summary = summarizeDryRunActions([
   { collection: 'users', key: 'tavis', action: 'update', existingId: 7 },
   { collection: 'travel-projects', key: '202602-thailand-phuket', action: 'create' },
   { collection: 'media', key: 'content-source/assets/members/tavis/tavis-avatar.jpeg', action: 'update', existingId: 42 },
+  { collection: 'media', key: 'content-source/assets/members/tavis/tavis-hero.jpeg', action: 'skip', existingId: 43 },
 ])
 
 assert.deepEqual(summary, {
   creates: 1,
   updates: 2,
-  skips: 0,
+  skips: 1,
   deletes: 0,
 })
