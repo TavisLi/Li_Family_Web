@@ -4,7 +4,14 @@
 分支：`codex/admin-family-accounts`
 主要實作提交：`160edfb feat: add admin and family account provisioning`
 補充修正與本報告：本報告所在提交
-GitHub / PR 狀態：本地驗證完成；待 push 分支並建立 PR。
+GitHub / PR 狀態：本地驗證完成，分支已 push；PR 建立受 GitHub 權限阻擋。
+GitHub push：已推送 `codex/admin-family-accounts` 至 `origin`。
+PR 狀態：GitHub CLI token 失效，GitHub connector 建立 PR 回傳 403 `Resource not accessible by integration`；需由網站擁有者手動開啟 PR。
+PR 建立 URL：
+
+```text
+https://github.com/TavisLi/Li_Family_Web/pull/new/codex/admin-family-accounts
+```
 
 ## 本階段範圍
 
@@ -149,6 +156,6 @@ Production provisioning 驗證：
 
 ## 下一步
 
-1. Push `codex/admin-family-accounts` 分支並建立 PR。
+1. 由網站擁有者使用上述 URL 建立 PR，或重新授權 GitHub CLI 後再由代理建立 PR。
 2. 在真人瀏覽器抽查 `/admin` 與 `/family/login`。
 3. 合併後於 Production 再次執行一次只讀 dry-run，確認 `create: 0` 且 access summary 維持 `administrators: 2`、`familyMembers: 8`。
