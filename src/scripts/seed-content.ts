@@ -563,10 +563,10 @@ export async function parseTravelCatalog(
 export async function parseResumeMarkdown(filePath: string, slug: string): Promise<FamilyMemberSeed> {
   const markdown = stripBom(await fs.readFile(filePath, 'utf8'))
   const title = markdown.match(/^#\s+(.+)$/m)?.[1]?.trim() ?? slug
-  const bio = sectionContent(markdown, '專業摘要')
-  const skillRadar = parseSkillRadar(sectionContent(markdown, '核心能力'))
+  const bio = firstAvailableSection(markdown, ['專業摘要', '基本資料'])
+  const skillRadar = parseSkillRadar(firstAvailableSection(markdown, ['核心能力', '專業']))
   const careerTimeline = parseCareerTimeline(markdown)
-  const education = parseEducation(sectionContent(markdown, '教育'))
+  const education = parseEducation(firstAvailableSection(markdown, ['教育']))
 
   return familyMemberSeedSchema.parse({
     slug,
@@ -1083,7 +1083,7 @@ function parseSkillRadar(section: string): FamilyMemberSeed['skillRadar'] {
 }
 
 function parseCareerTimeline(markdown: string): FamilyMemberSeed['careerTimeline'] {
-  const career = sectionContent(markdown, '職業經歷')
+  const career = firstAvailableSection(markdown, ['職業經歷', '經歷'])
 
   return career
     .split(/\n(?=###\s+)/)
@@ -1113,12 +1113,16 @@ function parseCareerTimeline(markdown: string): FamilyMemberSeed['careerTimeline
 }
 
 function parseEducation(section: string): FamilyMemberSeed['education'] {
-  return markdownTableRows(section)
+  const rows = markdownTableRows(section)
+  const headers = rows[0] ?? []
+  const dataRows = rows.slice(1)
+
+  return dataRows
     .map((cells) => ({
-      degree: cells[0],
-      school: cells[1] ?? '',
-      major: cells[2],
-      year: cells[3],
+      degree: cellByHeader(headers, cells, ['學位']) ?? undefined,
+      school: cellByHeader(headers, cells, ['學校']) ?? '',
+      major: cellByHeader(headers, cells, ['專業', '備注']) ?? undefined,
+      year: cellByHeader(headers, cells, ['年份', '畢業年份']) ?? undefined,
     }))
     .filter((item) => item.school)
 }
@@ -1486,6 +1490,35 @@ function sectionContent(markdown: string, heading: string): string {
   const pattern = new RegExp(`##\\s+${escapeRegExp(heading)}\\n([\\s\\S]*?)(?=\\n---\\n\\n##(?!#)|\\n##(?!#)\\s+|$)`)
 
   return markdown.match(pattern)?.[1]?.trim() ?? ''
+}
+
+function firstAvailableSection(markdown: string, headings: string[]): string {
+  for (const heading of headings) {
+    const content =
+      sectionContent(markdown, heading) ||
+      sectionAfterHeading(markdown, heading) ||
+      sectionAfterPlainLabel(markdown, heading)
+
+    if (content) {
+      return content
+    }
+  }
+
+  return ''
+}
+
+function sectionAfterPlainLabel(markdown: string, label: string): string {
+  const lines = markdown.split('\n')
+  const labelIndex = lines.findIndex((line) => line.trim() === label)
+
+  if (labelIndex < 0) {
+    return ''
+  }
+
+  const content = lines.slice(labelIndex + 1)
+  const endIndex = content.findIndex((line) => /^(---|#{1,3}\s+)/.test(line.trim()))
+
+  return content.slice(0, endIndex < 0 ? undefined : endIndex).join('\n').trim()
 }
 
 function sectionAfterHeading(markdown: string, heading: string): string {

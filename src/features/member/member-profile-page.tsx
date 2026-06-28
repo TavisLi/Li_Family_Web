@@ -1,31 +1,26 @@
 import Link from 'next/link'
+import React from 'react'
 import type { ReactNode } from 'react'
 import {
   ArrowLeft,
   BookOpen,
   BriefcaseBusiness,
+  Mail,
   GraduationCap,
   MapPin,
+  Phone,
   Sparkles,
 } from 'lucide-react'
 
 import { PayloadImage } from '@/components/ui/payload-image'
 import type { User } from '@/payload/payload-types'
+import { MemberTypewriter } from './member-typewriter'
 
 type MemberProfilePageProps = {
   member: User
 }
 
 type MemberTone = 'neutral' | 'tavis' | 'lynn' | 'leo' | 'travel'
-
-const roleLabel: Record<User['familyRole'], string> = {
-  daughter: '女兒',
-  family: '家人',
-  father: '父親',
-  grandmother: '奶奶',
-  mother: '母親',
-  son: '兒子',
-}
 
 function toneForMember(member: User): MemberTone {
   const persona = member.theme?.persona
@@ -44,7 +39,7 @@ function profileStyle(member: User) {
       background:
         'bg-[linear-gradient(120deg,rgba(245,249,255,0.96),rgba(229,242,249,0.88)_45%,rgba(250,252,255,0.94))]',
       border: 'border-sky-100',
-      eyebrow: 'Apple-like technology leadership',
+      eyebrow: 'DIGITAL TRANSFORMATION TECHNOLOGY LEADERSHIP',
       panel: 'border-sky-100/80 bg-white/58',
       quote: '天行健，君子以自強不息',
       title: '冷靜、精密，讓製造與系統一起前進。',
@@ -76,10 +71,6 @@ function profileStyle(member: User) {
   }
 }
 
-function timelineLimit(member: User) {
-  return member.slug === 'tavis' || member.slug === 'lynn' ? 6 : 4
-}
-
 function scoreClass(score: number) {
   if (score >= 95) {
     return 'w-[96%]'
@@ -100,15 +91,66 @@ function scoreClass(score: number) {
   return 'w-[72%]'
 }
 
+function portraitImageClass(member: User) {
+  if (member.slug === 'tavis') {
+    return 'object-[50%_18%]'
+  }
+
+  if (member.slug === 'lynn') {
+    return 'object-[50%_16%]'
+  }
+
+  return 'object-top'
+}
+
+const publicContact = {
+  email: 'txli@icloud.com',
+  phone: '+886-988-115546',
+}
+
+function displayText(value: unknown, fallback = ''): string {
+  if (typeof value === 'string') {
+    return value.trim() || fallback
+  }
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    const localized = record['zh-TW'] ?? record.en ?? record.value
+
+    if (typeof localized === 'string') {
+      return localized.trim() || fallback
+    }
+  }
+
+  return fallback
+}
+
+function compactTextList(values: unknown[]): string[] {
+  return values.map((value) => displayText(value)).filter(Boolean)
+}
+
+function timelineHighlightItems(item: NonNullable<User['careerTimeline']>[number]): string[] {
+  return compactTextList(item.highlights?.map((highlight) => highlight.text) ?? [])
+}
+
 export function MemberProfilePage({ member }: MemberProfilePageProps) {
   const style = profileStyle(member)
   const tone = toneForMember(member)
-  const timeline = member.careerTimeline?.slice(0, timelineLimit(member)) ?? []
-  const skills = member.skillRadar?.slice(0, 6) ?? []
+  const timeline = (member.careerTimeline ?? []).filter((item) => {
+    const highlights = timelineHighlightItems(item)
+
+    return Boolean(
+      displayText(item.organization) ||
+        displayText(item.role) ||
+        displayText(item.summary) ||
+        highlights.length,
+    )
+  })
+  const skills = (member.skillRadar ?? []).filter((skill) => displayText(skill.skill))
   const heroImage = member.heroImage ?? member.avatar
-  const gallery = member.resumeMilestoneImages?.length
-    ? member.resumeMilestoneImages
-    : member.galleryImages
+  const milestoneImages = member.resumeMilestoneImages ?? []
+  const displayName = displayText(member.displayName, 'Family member')
+  const typewriterWords = compactTextList(member.typewriter?.rotatingWords?.map((item) => item.word) ?? [])
 
   return (
     <main className={style.background}>
@@ -116,15 +158,15 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
         <div className="relative order-2 lg:order-1">
           <PayloadImage
             className={`aspect-[4/5] min-h-[32rem] rounded-lg border ${style.border} shadow-2xl shadow-slate-900/10`}
-            fallbackLabel={member.displayName}
+            fallbackLabel={displayName}
+            imageClassName={portraitImageClass(member)}
             media={heroImage}
             priority
             sizes="(min-width: 1024px) 42vw, 100vw"
             tone={tone}
           />
-          <div className={`absolute -bottom-5 left-5 right-5 rounded-lg border ${style.panel} p-4 shadow-xl backdrop-blur-xl`}>
-            <p className="text-xs font-semibold uppercase text-slate-500">{roleLabel[member.familyRole]}</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">{style.quote}</p>
+          <div className="absolute -bottom-5 left-5 right-5 rounded-lg border border-white/45 bg-slate-950/62 p-4 text-white shadow-xl backdrop-blur-xl">
+            <p className="text-sm leading-6 text-white">{style.quote}</p>
           </div>
         </div>
 
@@ -138,15 +180,15 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
           </Link>
           <p className={`mt-8 text-sm font-semibold uppercase ${style.accent}`}>{style.eyebrow}</p>
           <h1 className="mt-4 text-[clamp(3rem,12vw,4.25rem)] font-semibold leading-[1.02] tracking-normal text-slate-950 md:text-[clamp(3.5rem,4.8vw,4.5rem)] lg:whitespace-nowrap">
-            {member.displayName}
+            {displayName}
           </h1>
           <div className="mt-6 max-w-3xl overflow-hidden text-2xl font-semibold leading-tight text-slate-800 md:text-3xl">
-            {member.typewriter?.prefix ? <span>{member.typewriter.prefix}</span> : null}
-            <TypewriterWords words={member.typewriter?.rotatingWords?.map((item) => item.word) ?? []} />
-            {member.typewriter?.suffix ? <span>{member.typewriter.suffix}</span> : null}
+            {displayText(member.typewriter?.prefix) ? <span>{displayText(member.typewriter?.prefix)}</span> : null}
+            <MemberTypewriter words={typewriterWords} />
+            {displayText(member.typewriter?.suffix) ? <span>{displayText(member.typewriter?.suffix)}</span> : null}
           </div>
           <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600">
-            {member.bio || style.title}
+            {displayText(member.bio, style.title)}
           </p>
         </div>
       </section>
@@ -165,44 +207,51 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
             </h2>
           </div>
           <p className="max-w-md text-sm leading-7 text-slate-600">
-            由 Payload 中的履歷時間軸資料驅動，保留重點里程碑與每段職涯的核心貢獻。
+            從早期自動化工程到數字化轉型領導，每段經歷都保留當時的責任、判斷與具體成果。
           </p>
         </div>
         <div className="grid gap-4">
           {timeline.length > 0 ? (
             timeline.map((item, index) => (
               <article
-                className={`grid gap-5 rounded-lg border ${style.panel} p-5 shadow-sm backdrop-blur-md md:grid-cols-[10rem_1fr]`}
-                key={item.id ?? `${item.organization}-${index}`}
+                className={`grid gap-5 rounded-lg border ${style.panel} p-5 shadow-sm backdrop-blur-md lg:grid-cols-[10rem_1fr_16rem]`}
+                key={item.id ?? `${displayText(item.organization, 'milestone')}-${index}`}
               >
                 <div>
                   <p className="text-sm font-semibold text-slate-500">
-                    {[item.start, item.end].filter(Boolean).join(' - ')}
+                    {compactTextList([item.start, item.end]).join(' - ')}
                   </p>
-                  {item.location ? (
+                  {displayText(item.location) ? (
                     <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
                       <MapPin className="size-4" aria-hidden="true" />
-                      {item.location}
+                      {displayText(item.location)}
                     </p>
                   ) : null}
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold tracking-normal text-slate-950">
-                    {item.organization} · {item.role}
+                    {displayText(item.organization, '職涯里程碑')} · {displayText(item.role, '專業經歷')}
                   </h3>
-                  {item.summary ? (
-                    <p className="mt-3 text-sm leading-7 text-slate-600">{item.summary}</p>
+                  {displayText(item.summary) ? (
+                    <p className="mt-3 text-sm leading-7 text-slate-600">{displayText(item.summary)}</p>
                   ) : null}
-                  {item.highlights?.length ? (
+                  {timelineHighlightItems(item).length ? (
                     <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-600 md:grid-cols-2">
-                      {item.highlights.slice(0, 4).map((highlight) => (
-                        <li className="border-l border-slate-300 pl-3" key={highlight.id ?? highlight.text}>
-                          {highlight.text}
-                        </li>
-                      ))}
+                      {timelineHighlightItems(item).slice(0, 4).map((highlight, highlightIndex) => (
+                          <li className="border-l border-slate-300 pl-3" key={`${highlight}-${highlightIndex}`}>
+                            {highlight}
+                          </li>
+                        ))}
                     </ul>
                   ) : null}
                 </div>
+                <PayloadImage
+                  className="aspect-[4/3] min-h-44 rounded-lg shadow-md shadow-slate-900/10"
+                  fallbackLabel={`${displayText(item.organization, '職涯里程碑')} milestone media`}
+                  media={milestoneImages[index]}
+                  sizes="(min-width: 1024px) 16rem, 100vw"
+                  tone={tone}
+                />
               </article>
             ))
           ) : (
@@ -213,45 +262,27 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
         </div>
       </section>
 
-      {gallery?.length ? (
-        <section className="mx-auto w-full max-w-7xl px-5 pb-20">
-          <div className="grid gap-4 md:grid-cols-3">
-            {gallery.slice(0, 3).map((image, index) => (
-              <PayloadImage
-                className="aspect-[4/3] rounded-lg shadow-lg shadow-slate-900/10"
-                fallbackLabel={`${member.displayName} milestone ${index + 1}`}
-                key={typeof image === 'number' ? image : image.id}
-                media={image}
-                sizes="(min-width: 768px) 31vw, 100vw"
-                tone={tone}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
+      <PublicSiteFooter />
     </main>
   )
 }
 
-function TypewriterWords({ words }: { words: string[] }) {
-  if (!words.length) {
-    return null
-  }
-
-  return (
-    <span className="mx-2 inline-grid h-[1.18em] min-w-[8em] overflow-hidden align-bottom text-slate-950">
-      <span className="animate-word-rail">
-        {words.slice(0, 4).map((word) => (
-          <span className="block h-[1.18em]" key={word}>
-            {word}
-          </span>
-        ))}
-      </span>
-    </span>
-  )
-}
-
 function NarrativePanel({ member, stylePanel }: { member: User; stylePanel: string }) {
+  const beliefItems = compactTextList(member.beliefs?.map((belief) => belief.text) ?? [member.status])
+  const educationItems = compactTextList(
+    member.education?.map((item) =>
+      compactTextList([item.school, item.degree, item.major, item.year]).join(' · '),
+    ) ?? [],
+  ).filter((item) => !['學校', '學位', '專業', '年份', '畢業年份'].includes(item))
+  const interestItems = compactTextList(
+    member.interests?.map((item) => {
+      const name = displayText(item.name)
+      const description = displayText(item.description)
+
+      return description ? `${name}：${description}` : name
+    }) ?? [],
+  )
+
   return (
     <article className={`rounded-lg border ${stylePanel} p-6 shadow-sm backdrop-blur-md`}>
       <div className="mb-6 flex items-center gap-3">
@@ -261,29 +292,44 @@ function NarrativePanel({ member, stylePanel }: { member: User; stylePanel: stri
       <div className="grid gap-5">
         <InfoBlock
           icon={<BookOpen className="size-5" aria-hidden="true" />}
-          items={member.beliefs?.map((belief) => belief.text) ?? [member.status || '家人的故事正在展開。']}
+          items={beliefItems.length ? beliefItems : ['家人的故事正在展開。']}
           title="Beliefs"
         />
         <InfoBlock
           icon={<GraduationCap className="size-5" aria-hidden="true" />}
-          items={
-            member.education?.map((item) =>
-              [item.school, item.degree, item.major, item.year].filter(Boolean).join(' · '),
-            ) ?? ['教育資料可在 Payload Admin 中補充。']
-          }
+          items={educationItems.length ? educationItems : ['教育資料可在 Payload Admin 中補充。']}
           title="Education"
         />
         <InfoBlock
           icon={<BriefcaseBusiness className="size-5" aria-hidden="true" />}
-          items={
-            member.interests?.map((item) =>
-              item.description ? `${item.name}：${item.description}` : item.name,
-            ) ?? ['興趣與生活美學資料可在 Payload Admin 中補充。']
-          }
+          items={interestItems.length ? interestItems : ['興趣與生活美學資料可在 Payload Admin 中補充。']}
           title="Interests"
         />
       </div>
     </article>
+  )
+}
+
+function PublicSiteFooter() {
+  return (
+    <footer className="border-t border-slate-200/80 bg-white/60 px-5 py-10 backdrop-blur-md">
+      <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="font-semibold uppercase tracking-normal text-slate-950">Web Li</p>
+          <p className="mt-2 max-w-xl leading-6">公開聯絡方式僅用於家庭網站與專業交流，私密家庭資訊仍保留在家人模式。</p>
+        </div>
+        <div className="flex flex-col gap-3 md:items-end">
+          <a className="inline-flex items-center gap-2 font-medium text-slate-700 transition hover:text-slate-950" href={`mailto:${publicContact.email}`}>
+            <Mail className="size-4" aria-hidden="true" />
+            {publicContact.email}
+          </a>
+          <a className="inline-flex items-center gap-2 font-medium text-slate-700 transition hover:text-slate-950" href={`tel:${publicContact.phone.replace(/[^+\d]/g, '')}`}>
+            <Phone className="size-4" aria-hidden="true" />
+            {publicContact.phone}
+          </a>
+        </div>
+      </div>
+    </footer>
   )
 }
 
@@ -329,14 +375,14 @@ function SkillRadar({
           skills.map((skill) => (
             <div key={skill.id ?? skill.skill}>
               <div className="mb-2 flex items-center justify-between gap-4 text-sm">
-                <span className="font-medium text-slate-800">{skill.skill}</span>
+                <span className="font-medium text-slate-800">{displayText(skill.skill, '專業能力')}</span>
                 <span className="text-slate-500">{skill.score}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-slate-200/80">
                 <div className={`h-full rounded-full bg-slate-900 ${scoreClass(skill.score)}`} />
               </div>
-              {skill.evidence ? (
-                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">{skill.evidence}</p>
+              {displayText(skill.evidence) ? (
+                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">{displayText(skill.evidence)}</p>
               ) : null}
             </div>
           ))
