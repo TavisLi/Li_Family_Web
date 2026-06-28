@@ -106,6 +106,37 @@ export const Users: CollectionConfig = {
       required: false,
     },
     {
+      name: 'publicContact',
+      type: 'group',
+      admin: {
+        description: 'Controls the public footer contact block on this member profile.',
+      },
+      fields: [
+        {
+          name: 'siteTitle',
+          type: 'text',
+          required: false,
+          localized: true,
+        },
+        {
+          name: 'description',
+          type: 'textarea',
+          required: false,
+          localized: true,
+        },
+        {
+          name: 'email',
+          type: 'email',
+          required: false,
+        },
+        {
+          name: 'phone',
+          type: 'text',
+          required: false,
+        },
+      ],
+    },
+    {
       name: 'theme',
       type: 'group',
       fields: [
@@ -278,6 +309,16 @@ export const Users: CollectionConfig = {
           type: 'textarea',
           required: false,
           localized: true,
+        },
+        {
+          name: 'milestoneMedia',
+          type: 'relationship',
+          relationTo: 'media',
+          hasMany: true,
+          required: false,
+          admin: {
+            description: 'Optional media shown for this career milestone. Leave empty to show no milestone media.',
+          },
         },
         {
           name: 'highlights',

@@ -40,10 +40,10 @@ export function MemberTypewriter({ words }: MemberTypewriterProps) {
   }
 
   return (
-    <span className="mx-2 inline-grid min-w-[8em] align-bottom text-slate-950">
+    <span className="mx-2 inline-grid min-w-[8em] align-bottom text-[#1e3494]">
       <span className="motion-reduce:hidden" aria-hidden="true">
         {visibleTypewriterWord(words, state)}
-        <span className="ml-1 inline-block h-[1em] w-px translate-y-1 bg-slate-900 animate-pulse" />
+        <span className="ml-1 inline-block h-[1em] w-px translate-y-1 bg-[#1e3494] animate-pulse" />
       </span>
       <span className="hidden motion-reduce:inline">{reducedMotionTypewriterWords(words)}</span>
       <span className="sr-only">{reducedMotionTypewriterWords(words)}</span>

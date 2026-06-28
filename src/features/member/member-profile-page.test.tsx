@@ -56,6 +56,12 @@ const tavis = baseMember({
     media(203, 'SOI Micro office', 'tavis-career-SOImicro.jpeg'),
     media(204, 'Nanya Technology milestone', 'tavis-career-nanya.jpeg'),
   ],
+  publicContact: {
+    siteTitle: 'Tavis Li',
+    description: '這段 footer 文案來自 Users 表。',
+    email: 'tavis@example.test',
+    phone: '+886-900-000-001',
+  },
   typewriter: {
     prefix: '兒子、丈夫、父親，以及近30年半導體產業經驗的',
     rotatingWords: [{ word: '工廠自動化' }, { word: '數字化轉型' }],
@@ -84,6 +90,7 @@ const tavis = baseMember({
       end: '至今',
       summary: '從零開始組建IT中心。',
       highlights: [{ text: '完成部門職責梳理與核心管理層招募' }],
+      milestoneMedia: [media(205, 'Configured SOI image one'), media(206, 'Configured SOI image two')],
     },
     {
       organization: '長江存儲',
@@ -99,7 +106,8 @@ const tavis = baseMember({
       start: '2006/12',
       end: '2017/2',
       summary: '推動自動化系統改善。',
-      highlights: [{ text: '**全球協作**與卓越項目管理' }],
+      highlights: [{ text: '**全球協作**與卓越項目管理：\n- 完成自動化搬運系統升級\n- 建置300mm AMHS系統' }],
+      milestoneMedia: [],
     },
     {
       organization: '南亞科技',
@@ -156,6 +164,21 @@ const tavisHtml = renderToStaticMarkup(createElement(MemberProfilePage, { member
 
 assert.match(tavisHtml, /DIGITAL TRANSFORMATION TECHNOLOGY LEADERSHIP/)
 assert.match(tavisHtml, /Beliefs, Education &amp; Interest/)
+assert.match(
+  tavisHtml,
+  /<h2 class="mt-2 text-3xl font-semibold tracking-normal text-slate-950">信念、教育與生活<\/h2>/,
+)
+assert.match(
+  tavisHtml,
+  /<h2 class="mt-2 text-3xl font-semibold tracking-normal text-slate-950">經歷不是列表，是一路形成的判斷力。<\/h2>/,
+)
+assert.match(
+  tavisHtml,
+  /<h2 class="mt-2 text-3xl font-semibold tracking-normal text-slate-950">能力不是標籤，而是證據。<\/h2>/,
+)
+assert.match(tavisHtml, /<p class="text-lg leading-7 text-white">天行健，君子以自強不息<\/p>/)
+assert.match(tavisHtml, /<p class="text-lg font-semibold text-slate-500">2023\/6 - 至今<\/p>/)
+assert.match(tavisHtml, /<span class="mx-2 inline-grid min-w-\[8em\] align-bottom text-\[#1e3494\]">/)
 assert.match(tavisHtml, /工廠自動化 \/ 數字化轉型/)
 assert.match(tavisHtml, /數字化轉型戰略/)
 assert.match(tavisHtml, /智能製造與自動化/)
@@ -163,15 +186,23 @@ assert.match(tavisHtml, /銳立平芯微電子/)
 assert.match(tavisHtml, /長江存儲/)
 assert.match(tavisHtml, /華亞科技/)
 assert.match(tavisHtml, /南亞科技/)
-assert.match(tavisHtml, /SOI Micro office/)
+assert.doesNotMatch(tavisHtml, /SOI Micro office/)
+assert.match(tavisHtml, /Configured SOI image one/)
+assert.match(tavisHtml, /Configured SOI image two/)
 assert.match(tavisHtml, /Yangtze Memory senior director milestone/)
-assert.match(tavisHtml, /Hwa Ya automation milestone/)
+assert.doesNotMatch(tavisHtml, /Hwa Ya automation milestone/)
 assert.match(tavisHtml, /Nanya Technology milestone/)
 assert.doesNotMatch(tavisHtml, /南亞科技 milestone media/)
 assert.match(tavisHtml, /<strong class="font-semibold text-slate-900">數字化轉型戰略<\/strong>/)
 assert.match(tavisHtml, /<strong class="font-semibold text-slate-900">IT戰略規劃<\/strong>/)
 assert.match(tavisHtml, /<strong class="font-semibold text-slate-900">全球協作<\/strong>/)
-assert.match(tavisHtml, /txli@icloud\.com/)
+assert.match(tavisHtml, /<li>完成自動化搬運系統升級<\/li>/)
+assert.match(tavisHtml, /<li>建置300mm AMHS系統<\/li>/)
+assert.match(tavisHtml, /Tavis Li/)
+assert.match(tavisHtml, /這段 footer 文案來自 Users 表。/)
+assert.match(tavisHtml, /tavis@example\.test/)
+assert.match(tavisHtml, /\+886-900-000-001/)
+assert.doesNotMatch(tavisHtml, /txli@icloud\.com/)
 assert.doesNotMatch(tavisHtml, /\*\*數字化轉型戰略\*\*/)
 assert.doesNotMatch(tavisHtml, /Payload/)
 assert.doesNotMatch(tavisHtml, /父親<\/p>/)
@@ -185,4 +216,4 @@ assert.match(lynnHtml, /內部稽核/)
 assert.match(lynnHtml, /宏達國際電子股份有限公司/)
 assert.match(lynnHtml, /勤業眾信會計師事務所/)
 assert.match(lynnHtml, /HTC milestone/)
-assert.match(lynnHtml, /勤業眾信會計師事務所 milestone media/)
+assert.doesNotMatch(lynnHtml, /勤業眾信會計師事務所 milestone media/)
