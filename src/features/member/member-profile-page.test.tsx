@@ -6,15 +6,15 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import type { Media, User } from '@/payload/payload-types'
 import { MemberProfilePage } from './member-profile-page'
 
-function media(id: number, altText: string): Media {
+function media(id: number, altText: string, filename = `${id}.jpeg`): Media {
   return {
     id,
     type: 'photo',
     altText,
-    filename: `${id}.jpeg`,
+    filename,
     filesize: 1,
     mimeType: 'image/jpeg',
-    url: `https://media.web-li.test/${id}.jpeg`,
+    url: `https://media.web-li.test/${filename}`,
     width: 1200,
     height: 900,
     createdAt: '2026-06-28T00:00:00.000Z',
@@ -50,7 +50,12 @@ const tavis = baseMember({
     persona: 'tavis',
   },
   heroImage: media(101, 'Tavis portrait'),
-  resumeMilestoneImages: [media(201, 'SOI Micro office'), media(202, 'Yangtze Memory milestone')],
+  resumeMilestoneImages: [
+    media(201, 'Hwa Ya automation milestone', 'tavis-career-inotera-001.jpeg'),
+    media(202, 'Yangtze Memory senior director milestone', 'tavis-career-yangtze-memory-senior-director.jpeg'),
+    media(203, 'SOI Micro office', 'tavis-career-SOImicro.jpeg'),
+    media(204, 'Nanya Technology milestone', 'tavis-career-nanya.jpeg'),
+  ],
   typewriter: {
     prefix: '兒子、丈夫、父親，以及近30年半導體產業經驗的',
     rotatingWords: [{ word: '工廠自動化' }, { word: '數字化轉型' }],
@@ -68,7 +73,7 @@ const tavis = baseMember({
   ],
   interests: [{ name: '閱讀' }, { name: '旅行', description: '讀萬卷書行萬里路' }],
   skillRadar: [
-    { skill: '數字化轉型戰略', score: 96, evidence: 'IT戰略規劃與高管顧問服務導入' },
+    { skill: '**數字化轉型戰略**', score: 96, evidence: '**IT戰略規劃**與高管顧問服務導入' },
     { skill: '智能製造與自動化', score: 95, evidence: 'CIM、MES、AMHS、Full Auto' },
   ],
   careerTimeline: [
@@ -87,6 +92,14 @@ const tavis = baseMember({
       end: '2021/4',
       summary: '領導288人IT團隊推動數字化轉型。',
       highlights: [{ text: '建立 FAB IT 產品發展路線圖' }],
+    },
+    {
+      organization: '華亞科技',
+      role: '自動化部經理',
+      start: '2006/12',
+      end: '2017/2',
+      summary: '推動自動化系統改善。',
+      highlights: [{ text: '**全球協作**與卓越項目管理' }],
     },
     {
       organization: '南亞科技',
@@ -142,16 +155,24 @@ const lynn = baseMember({
 const tavisHtml = renderToStaticMarkup(createElement(MemberProfilePage, { member: tavis }))
 
 assert.match(tavisHtml, /DIGITAL TRANSFORMATION TECHNOLOGY LEADERSHIP/)
+assert.match(tavisHtml, /Beliefs, Education &amp; Interest/)
 assert.match(tavisHtml, /工廠自動化 \/ 數字化轉型/)
 assert.match(tavisHtml, /數字化轉型戰略/)
 assert.match(tavisHtml, /智能製造與自動化/)
 assert.match(tavisHtml, /銳立平芯微電子/)
 assert.match(tavisHtml, /長江存儲/)
+assert.match(tavisHtml, /華亞科技/)
 assert.match(tavisHtml, /南亞科技/)
 assert.match(tavisHtml, /SOI Micro office/)
-assert.match(tavisHtml, /Yangtze Memory milestone/)
-assert.match(tavisHtml, /南亞科技 milestone media/)
+assert.match(tavisHtml, /Yangtze Memory senior director milestone/)
+assert.match(tavisHtml, /Hwa Ya automation milestone/)
+assert.match(tavisHtml, /Nanya Technology milestone/)
+assert.doesNotMatch(tavisHtml, /南亞科技 milestone media/)
+assert.match(tavisHtml, /<strong class="font-semibold text-slate-900">數字化轉型戰略<\/strong>/)
+assert.match(tavisHtml, /<strong class="font-semibold text-slate-900">IT戰略規劃<\/strong>/)
+assert.match(tavisHtml, /<strong class="font-semibold text-slate-900">全球協作<\/strong>/)
 assert.match(tavisHtml, /txli@icloud\.com/)
+assert.doesNotMatch(tavisHtml, /\*\*數字化轉型戰略\*\*/)
 assert.doesNotMatch(tavisHtml, /Payload/)
 assert.doesNotMatch(tavisHtml, /父親<\/p>/)
 
