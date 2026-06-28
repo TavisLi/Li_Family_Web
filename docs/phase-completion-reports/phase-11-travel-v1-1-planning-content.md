@@ -2,7 +2,7 @@
 
 日期：2026-06-27
 階段名稱：Phase-11 / Version 1.1 Travel Planning Content
-主分支最新狀態：`main` / `a791d39`
+主分支最新狀態：`main` / `202bbcd`
 關聯 GitHub Issues：#15、#16、#17、#18
 
 ## Phase 範圍
@@ -30,12 +30,12 @@ Phase-11 聚焦旅行系統，尤其是 `202702泰國普吉島7日.md` 與 `2026
 
 追加 QA 修正：
 
-- PR #31：依 browser comments 追加旅行 source section 視覺修正；目前為 follow-up PR，待合併與 Production 部署後回寫最終狀態。
+- PR #31：依 browser comments 追加旅行 source section 視覺修正，已合併至 `main` 並完成 Production smoke。
 
 Production deployment 已完成：
 
 - 最新 Production deployment：`dpl_2joFCLF7r1wKgYhoAaEgPzwMsD1Z`
-- Production commit：`7030863` 後已進一步合併 PR #28 至 `a791d39`，正式頁 smoke 已讀到 PR #28 效果。
+- Production commit：`7030863` 後已進一步合併 PR #28 至 `a791d39`；2026-06-28 已合併 PR #31 至 `202bbcd`，正式頁 smoke 已讀到 PR #31 效果。
 - 正式站：`https://li-family-web.vercel.app`
 
 ## 已交付功能
@@ -153,7 +153,10 @@ Production seed 最終結果：
   - `pnpm tsc --noEmit`
   - `pnpm run build`
   - `git diff --check`
-- 目前 PR：#31，待合併後需回到 Production 再做一次 `/travel/202607-chongqing-yangtze-river` 視覺回歸。
+- PR #31 已合併並部署；正式站 `/travel/202607-chongqing-yangtze-river` 第 11 次 no-cache smoke 讀到新 HTML，確認：
+  - 不再包含「行程章節」、「Markdown H1」、「子章節」。
+  - 保留 `Day 1` 並移除內部 marker `__SECTION_BOUNDARY__`。
+  - 已出現 H1 漸變卡片、每日標籤色 `#65808b`、桌面 reminders 兩欄 layout。
 
 ## 已知限制
 
