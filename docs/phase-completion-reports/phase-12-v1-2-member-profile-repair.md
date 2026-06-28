@@ -13,12 +13,13 @@
 
 - Branch: `codex/phase-12-v1-2-member-profiles`
 - Base: `origin/main` / `main` at `9ca96e606d6fe1f825242f38d601392233ae7ac4`
-- Local commit: to be created with this report in the Phase 12 completion commit.
+- Local commit: `d96a0b7` (`Implement phase 12 member profile repairs`)
 
 ## GitHub Sync / PR Status
 
-- 本地實作與驗證已完成。
-- Push 與 PR 建立尚未執行；若本階段要正式關閉，需推送此分支並建立 PR，或在 PR 中連結 Issue #13、#14、#19、#20、#21。
+- Branch pushed to GitHub: `origin/codex/phase-12-v1-2-member-profiles`
+- Pull Request: https://github.com/TavisLi/Li_Family_Web/pull/33
+- PR status at report update: Open, targeting `main`.
 
 ## Delivered Features
 
@@ -68,4 +69,4 @@ All commands passed.
 
 ## Next-Phase Readiness
 
-Phase 12 code is ready for branch push and PR review. Before closing the GitHub issues in production, refresh the published member records with the corrected seed path and verify `/member/tavis` and `/member/lynn` visually on desktop and mobile.
+Phase 12 code is ready for PR review. Before closing the GitHub issues in production, refresh the published member records with the corrected seed path and verify `/member/tavis` and `/member/lynn` visually on desktop and mobile.
