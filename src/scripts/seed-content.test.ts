@@ -66,8 +66,27 @@ async function main() {
 
   assert.equal(tavisResume.slug, 'tavis')
   assert.ok((tavisResume.bio ?? '').includes('28年半導體'))
+  assert.deepEqual(
+    tavisResume.education?.map((item) => `${item.school}:${item.degree}:${item.major}:${item.year}`),
+    ['台灣大學:碩士:機械工程研究所 流體力學組:1996', '台灣大學:學士:機械工程學系:1994'],
+  )
   assert.ok((tavisResume.careerTimeline ?? []).length >= 7)
   assert.ok((tavisResume.skillRadar ?? []).length >= 4)
+
+  const lynnResume = await parseResumeMarkdown(
+    path.join(projectRoot, 'content-source/profiles/lynn_resume.md'),
+    'lynn',
+  )
+
+  assert.equal(lynnResume.slug, 'lynn')
+  assert.ok((lynnResume.bio ?? '').includes('台大會計系畢業'))
+  assert.deepEqual(
+    lynnResume.education?.map((item) => `${item.school}:${item.degree ?? ''}:${item.major}:${item.year}`),
+    ['台灣大學::會計系 學士:1996', '台北市立第一女子中學::—:1992'],
+  )
+  assert.ok((lynnResume.skillRadar ?? []).some((skill) => skill.skill.includes('財務會計')))
+  assert.ok((lynnResume.careerTimeline ?? []).some((item) => item.organization.includes('宏達國際電子')))
+  assert.ok((lynnResume.careerTimeline ?? []).some((item) => item.organization.includes('勤業眾信')))
 
   const chongqing = await parseTravelMarkdown(
     path.join(projectRoot, 'content-source/travels/202607重慶長江三峽8日.md'),

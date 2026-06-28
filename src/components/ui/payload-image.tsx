@@ -2,11 +2,15 @@
 
 import React from 'react'
 import { useState } from 'react'
-import Image from 'next/image'
+import ImageModule from 'next/image'
 
 import type { Media } from '@/payload/payload-types'
 import { cn } from '@/lib/utils'
 import { ImageFallback } from './image-fallback'
+
+const Image = (
+  'default' in ImageModule ? ImageModule.default : ImageModule
+) as typeof ImageModule
 
 type PayloadImageProps = {
   media: Media | number | null | undefined
