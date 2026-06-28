@@ -9,7 +9,6 @@ import {
   GraduationCap,
   MapPin,
   Phone,
-  Sparkles,
 } from 'lucide-react'
 
 import { PayloadImage } from '@/components/ui/payload-image'
@@ -21,6 +20,7 @@ type MemberProfilePageProps = {
 }
 
 type MemberTone = 'neutral' | 'tavis' | 'lynn' | 'leo' | 'travel'
+type MemberMedia = NonNullable<User['resumeMilestoneImages']>[number]
 
 function toneForMember(member: User): MemberTone {
   const persona = member.theme?.persona
@@ -129,8 +129,95 @@ function compactTextList(values: unknown[]): string[] {
   return values.map((value) => displayText(value)).filter(Boolean)
 }
 
+function renderInlineEmphasis(text: string): ReactNode[] {
+  return text
+    .split(/(\*\*[^*]+\*\*)/g)
+    .filter(Boolean)
+    .map((part, index) => {
+      const match = /^\*\*([^*]+)\*\*$/.exec(part)
+
+      if (!match) {
+        return part
+      }
+
+      return (
+        <strong className="font-semibold text-slate-900" key={`${match[1]}-${index}`}>
+          {match[1]}
+        </strong>
+      )
+    })
+}
+
 function timelineHighlightItems(item: NonNullable<User['careerTimeline']>[number]): string[] {
   return compactTextList(item.highlights?.map((highlight) => highlight.text) ?? [])
+}
+
+function mediaSearchText(media: MemberMedia): string {
+  if (!media || typeof media === 'number') {
+    return ''
+  }
+
+  return compactTextList([media.filename, media.altText, media.url]).join(' ').toLowerCase()
+}
+
+function findCareerMedia(milestoneImages: MemberMedia[], tokens: string[]): MemberMedia | null {
+  const normalizedTokens = tokens.map((token) => token.toLowerCase())
+
+  return milestoneImages.find((media) => {
+    const searchText = mediaSearchText(media)
+
+    return normalizedTokens.some((token) => searchText.includes(token))
+  }) ?? null
+}
+
+function timelineCareerMedia({
+  index,
+  item,
+  member,
+  milestoneImages,
+}: {
+  index: number
+  item: NonNullable<User['careerTimeline']>[number]
+  member: User
+  milestoneImages: MemberMedia[]
+}): MemberMedia | null {
+  if (member.slug !== 'tavis') {
+    return milestoneImages[index] ?? null
+  }
+
+  const organization = displayText(item.organization)
+  const role = displayText(item.role)
+  const label = `${organization} ${role}`.toLowerCase()
+
+  if (label.includes('銳立平芯') || label.includes('soimicro')) {
+    return findCareerMedia(milestoneImages, ['soimicro', 'soi micro'])
+  }
+
+  if (label.includes('鵬新旭') || label.includes('pensun')) {
+    return findCareerMedia(milestoneImages, ['pst', 'pensun'])
+  }
+
+  if (label.includes('華亞科技') || label.includes('inotera')) {
+    return findCareerMedia(milestoneImages, ['inotera'])
+  }
+
+  if (label.includes('南亞科技') || label.includes('nanya')) {
+    return findCareerMedia(milestoneImages, ['nanya'])
+  }
+
+  if (label.includes('長江存儲') || label.includes('yangtze')) {
+    if (label.includes('資深')) {
+      return findCareerMedia(milestoneImages, ['yangtze-memory-senior-director', 'yangtze-memory-001'])
+    }
+
+    if (label.includes('mit')) {
+      return findCareerMedia(milestoneImages, ['yangtze-memory-002'])
+    }
+
+    return findCareerMedia(milestoneImages, ['yangtze-memory'])
+  }
+
+  return null
 }
 
 export function MemberProfilePage({ member }: MemberProfilePageProps) {
@@ -194,7 +281,7 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
       </section>
 
       <section className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-14 lg:grid-cols-[0.95fr_1.05fr]">
-        <NarrativePanel member={member} stylePanel={style.panel} />
+        <NarrativePanel accentClass={style.accent} member={member} stylePanel={style.panel} />
         <SkillRadar accentClass={style.accent} panelClass={style.panel} skills={skills} />
       </section>
 
@@ -233,13 +320,15 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
                     {displayText(item.organization, '職涯里程碑')} · {displayText(item.role, '專業經歷')}
                   </h3>
                   {displayText(item.summary) ? (
-                    <p className="mt-3 text-sm leading-7 text-slate-600">{displayText(item.summary)}</p>
+                    <p className="mt-3 text-sm leading-7 text-slate-600">
+                      {renderInlineEmphasis(displayText(item.summary))}
+                    </p>
                   ) : null}
                   {timelineHighlightItems(item).length ? (
                     <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-600 md:grid-cols-2">
                       {timelineHighlightItems(item).slice(0, 4).map((highlight, highlightIndex) => (
                           <li className="border-l border-slate-300 pl-3" key={`${highlight}-${highlightIndex}`}>
-                            {highlight}
+                            {renderInlineEmphasis(highlight)}
                           </li>
                         ))}
                     </ul>
@@ -248,7 +337,7 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
                 <PayloadImage
                   className="aspect-[4/3] min-h-44 rounded-lg shadow-md shadow-slate-900/10"
                   fallbackLabel={`${displayText(item.organization, '職涯里程碑')} milestone media`}
-                  media={milestoneImages[index]}
+                  media={timelineCareerMedia({ index, item, member, milestoneImages })}
                   sizes="(min-width: 1024px) 16rem, 100vw"
                   tone={tone}
                 />
@@ -267,7 +356,15 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
   )
 }
 
-function NarrativePanel({ member, stylePanel }: { member: User; stylePanel: string }) {
+function NarrativePanel({
+  accentClass,
+  member,
+  stylePanel,
+}: {
+  accentClass: string
+  member: User
+  stylePanel: string
+}) {
   const beliefItems = compactTextList(member.beliefs?.map((belief) => belief.text) ?? [member.status])
   const educationItems = compactTextList(
     member.education?.map((item) =>
@@ -285,9 +382,9 @@ function NarrativePanel({ member, stylePanel }: { member: User; stylePanel: stri
 
   return (
     <article className={`rounded-lg border ${stylePanel} p-6 shadow-sm backdrop-blur-md`}>
-      <div className="mb-6 flex items-center gap-3">
-        <Sparkles className="size-5 text-slate-600" aria-hidden="true" />
-        <h2 className="text-2xl font-semibold tracking-normal text-slate-950">信念、教育與生活</h2>
+      <div className="mb-6">
+        <p className={`text-sm font-semibold uppercase ${accentClass}`}>Beliefs, Education & Interest</p>
+        <h2 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 md:text-5xl">信念、教育與生活</h2>
       </div>
       <div className="grid gap-5">
         <InfoBlock
@@ -350,7 +447,7 @@ function InfoBlock({
       </div>
       <div className="grid gap-2 text-sm leading-7 text-slate-600">
         {items.map((item) => (
-          <p key={item}>{item}</p>
+          <p key={item}>{renderInlineEmphasis(item)}</p>
         ))}
       </div>
     </section>
@@ -375,14 +472,18 @@ function SkillRadar({
           skills.map((skill) => (
             <div key={skill.id ?? skill.skill}>
               <div className="mb-2 flex items-center justify-between gap-4 text-sm">
-                <span className="font-medium text-slate-800">{displayText(skill.skill, '專業能力')}</span>
+                <span className="font-medium text-slate-800">
+                  {renderInlineEmphasis(displayText(skill.skill, '專業能力'))}
+                </span>
                 <span className="text-slate-500">{skill.score}</span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-slate-200/80">
                 <div className={`h-full rounded-full bg-slate-900 ${scoreClass(skill.score)}`} />
               </div>
               {displayText(skill.evidence) ? (
-                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">{displayText(skill.evidence)}</p>
+                <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">
+                  {renderInlineEmphasis(displayText(skill.evidence))}
+                </p>
               ) : null}
             </div>
           ))
