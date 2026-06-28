@@ -21,6 +21,10 @@ type MemberProfilePageProps = {
 
 type MemberTone = 'neutral' | 'tavis' | 'lynn' | 'leo' | 'travel'
 type MemberMedia = NonNullable<User['resumeMilestoneImages']>[number]
+type CareerTimelineItem = NonNullable<User['careerTimeline']>[number]
+
+const sectionHeadingClass = 'mt-2 text-3xl font-semibold tracking-normal text-slate-950'
+const timelineMetaClass = 'text-lg font-semibold text-slate-500'
 
 function toneForMember(member: User): MemberTone {
   const persona = member.theme?.persona
@@ -103,9 +107,11 @@ function portraitImageClass(member: User) {
   return 'object-top'
 }
 
-const publicContact = {
+const defaultPublicContact = {
+  description: '公開聯絡方式僅用於家庭網站與專業交流，私密家庭資訊仍保留在家人模式。',
   email: 'txli@icloud.com',
   phone: '+886-988-115546',
+  siteTitle: 'Web Li',
 }
 
 function displayText(value: unknown, fallback = ''): string {
@@ -129,7 +135,7 @@ function compactTextList(values: unknown[]): string[] {
   return values.map((value) => displayText(value)).filter(Boolean)
 }
 
-function renderInlineEmphasis(text: string): ReactNode[] {
+function renderInlineEmphasisSegment(text: string): ReactNode[] {
   return text
     .split(/(\*\*[^*]+\*\*)/g)
     .filter(Boolean)
@@ -148,7 +154,67 @@ function renderInlineEmphasis(text: string): ReactNode[] {
     })
 }
 
-function timelineHighlightItems(item: NonNullable<User['careerTimeline']>[number]): string[] {
+function renderInlineEmphasis(text: string): ReactNode[] {
+  return text.split('\n').flatMap((line, lineIndex, lines) => {
+    const parts = renderInlineEmphasisSegment(line)
+
+    if (lineIndex === lines.length - 1) {
+      return parts
+    }
+
+    return [...parts, <br key={`line-break-${lineIndex}`} />]
+  })
+}
+
+function splitListLines(text: string): { intro: string; items: string[] } {
+  const lines = text.split(/\r?\n/)
+  const items: string[] = []
+  const introLines: string[] = []
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+
+    if (trimmed.startsWith('-')) {
+      const itemText = trimmed.replace(/^-\s*/, '').trim()
+
+      if (itemText) {
+        items.push(itemText)
+      }
+
+      continue
+    }
+
+    if (trimmed) {
+      introLines.push(trimmed)
+    }
+  }
+
+  return {
+    intro: introLines.join('\n'),
+    items,
+  }
+}
+
+function renderRichTextLines(text: string): ReactNode {
+  const { intro, items } = splitListLines(text)
+
+  if (!items.length) {
+    return renderInlineEmphasis(text)
+  }
+
+  return (
+    <>
+      {intro ? <span>{renderInlineEmphasis(intro)}</span> : null}
+      <ul className="mt-2 list-disc space-y-1 pl-5">
+        {items.map((item) => (
+          <li key={item}>{renderInlineEmphasis(item)}</li>
+        ))}
+      </ul>
+    </>
+  )
+}
+
+function timelineHighlightItems(item: CareerTimelineItem): string[] {
   return compactTextList(item.highlights?.map((highlight) => highlight.text) ?? [])
 }
 
@@ -177,12 +243,16 @@ function timelineCareerMedia({
   milestoneImages,
 }: {
   index: number
-  item: NonNullable<User['careerTimeline']>[number]
+  item: CareerTimelineItem
   member: User
   milestoneImages: MemberMedia[]
-}): MemberMedia | null {
+}): MemberMedia[] {
+  if (Array.isArray(item.milestoneMedia)) {
+    return item.milestoneMedia
+  }
+
   if (member.slug !== 'tavis') {
-    return milestoneImages[index] ?? null
+    return milestoneImages[index] ? [milestoneImages[index]] : []
   }
 
   const organization = displayText(item.organization)
@@ -190,34 +260,52 @@ function timelineCareerMedia({
   const label = `${organization} ${role}`.toLowerCase()
 
   if (label.includes('銳立平芯') || label.includes('soimicro')) {
-    return findCareerMedia(milestoneImages, ['soimicro', 'soi micro'])
+    const media = findCareerMedia(milestoneImages, ['soimicro', 'soi micro'])
+    return media ? [media] : []
   }
 
   if (label.includes('鵬新旭') || label.includes('pensun')) {
-    return findCareerMedia(milestoneImages, ['pst', 'pensun'])
+    const media = findCareerMedia(milestoneImages, ['pst', 'pensun'])
+    return media ? [media] : []
   }
 
   if (label.includes('華亞科技') || label.includes('inotera')) {
-    return findCareerMedia(milestoneImages, ['inotera'])
+    const media = findCareerMedia(milestoneImages, ['inotera'])
+    return media ? [media] : []
   }
 
   if (label.includes('南亞科技') || label.includes('nanya')) {
-    return findCareerMedia(milestoneImages, ['nanya'])
+    const media = findCareerMedia(milestoneImages, ['nanya'])
+    return media ? [media] : []
   }
 
   if (label.includes('長江存儲') || label.includes('yangtze')) {
     if (label.includes('資深')) {
-      return findCareerMedia(milestoneImages, ['yangtze-memory-senior-director', 'yangtze-memory-001'])
+      const media = findCareerMedia(milestoneImages, ['yangtze-memory-senior-director', 'yangtze-memory-001'])
+      return media ? [media] : []
     }
 
     if (label.includes('mit')) {
-      return findCareerMedia(milestoneImages, ['yangtze-memory-002'])
+      const media = findCareerMedia(milestoneImages, ['yangtze-memory-002'])
+      return media ? [media] : []
     }
 
-    return findCareerMedia(milestoneImages, ['yangtze-memory'])
+    const media = findCareerMedia(milestoneImages, ['yangtze-memory'])
+    return media ? [media] : []
   }
 
-  return null
+  return []
+}
+
+function publicContactForMember(member: User) {
+  const configured = member.publicContact
+
+  return {
+    description: displayText(configured?.description, defaultPublicContact.description),
+    email: displayText(configured?.email, defaultPublicContact.email),
+    phone: displayText(configured?.phone, defaultPublicContact.phone),
+    siteTitle: displayText(configured?.siteTitle, defaultPublicContact.siteTitle),
+  }
 }
 
 export function MemberProfilePage({ member }: MemberProfilePageProps) {
@@ -237,6 +325,7 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
   const heroImage = member.heroImage ?? member.avatar
   const milestoneImages = member.resumeMilestoneImages ?? []
   const displayName = displayText(member.displayName, 'Family member')
+  const publicContact = publicContactForMember(member)
   const typewriterWords = compactTextList(member.typewriter?.rotatingWords?.map((item) => item.word) ?? [])
 
   return (
@@ -252,8 +341,8 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
             sizes="(min-width: 1024px) 42vw, 100vw"
             tone={tone}
           />
-          <div className="absolute -bottom-5 left-5 right-5 rounded-lg border border-white/45 bg-slate-950/62 p-4 text-white shadow-xl backdrop-blur-xl">
-            <p className="text-sm leading-6 text-white">{style.quote}</p>
+          <div className="absolute -bottom-5 left-5 right-5 rounded-lg border border-white/45 bg-slate-950/48 p-4 text-center text-white shadow-xl backdrop-blur-xl">
+            <p className="text-lg leading-7 text-white">{style.quote}</p>
           </div>
         </div>
 
@@ -289,7 +378,7 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
         <div className="mb-7 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <p className={`text-sm font-semibold uppercase ${style.accent}`}>Professional Timeline</p>
-            <h2 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 md:text-5xl">
+            <h2 className={sectionHeadingClass}>
               經歷不是列表，是一路形成的判斷力。
             </h2>
           </div>
@@ -305,11 +394,11 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
                 key={item.id ?? `${displayText(item.organization, 'milestone')}-${index}`}
               >
                 <div>
-                  <p className="text-sm font-semibold text-slate-500">
+                  <p className={timelineMetaClass}>
                     {compactTextList([item.start, item.end]).join(' - ')}
                   </p>
                   {displayText(item.location) ? (
-                    <p className="mt-2 flex items-center gap-2 text-sm text-slate-500">
+                    <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-slate-500">
                       <MapPin className="size-4" aria-hidden="true" />
                       {displayText(item.location)}
                     </p>
@@ -327,18 +416,16 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
                   {timelineHighlightItems(item).length ? (
                     <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-600 md:grid-cols-2">
                       {timelineHighlightItems(item).slice(0, 4).map((highlight, highlightIndex) => (
-                          <li className="border-l border-slate-300 pl-3" key={`${highlight}-${highlightIndex}`}>
-                            {renderInlineEmphasis(highlight)}
-                          </li>
-                        ))}
+                        <li className="border-l border-slate-300 pl-3" key={`${highlight}-${highlightIndex}`}>
+                          {renderRichTextLines(highlight)}
+                        </li>
+                      ))}
                     </ul>
                   ) : null}
                 </div>
-                <PayloadImage
-                  className="aspect-[4/3] min-h-44 rounded-lg shadow-md shadow-slate-900/10"
-                  fallbackLabel={`${displayText(item.organization, '職涯里程碑')} milestone media`}
+                <CareerMilestoneMedia
+                  item={item}
                   media={timelineCareerMedia({ index, item, member, milestoneImages })}
-                  sizes="(min-width: 1024px) 16rem, 100vw"
                   tone={tone}
                 />
               </article>
@@ -351,7 +438,7 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
         </div>
       </section>
 
-      <PublicSiteFooter />
+      <PublicSiteFooter contact={publicContact} />
     </main>
   )
 }
@@ -384,7 +471,7 @@ function NarrativePanel({
     <article className={`rounded-lg border ${stylePanel} p-6 shadow-sm backdrop-blur-md`}>
       <div className="mb-6">
         <p className={`text-sm font-semibold uppercase ${accentClass}`}>Beliefs, Education & Interest</p>
-        <h2 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 md:text-5xl">信念、教育與生活</h2>
+        <h2 className={sectionHeadingClass}>信念、教育與生活</h2>
       </div>
       <div className="grid gap-5">
         <InfoBlock
@@ -407,22 +494,55 @@ function NarrativePanel({
   )
 }
 
-function PublicSiteFooter() {
+function CareerMilestoneMedia({
+  item,
+  media,
+  tone,
+}: {
+  item: CareerTimelineItem
+  media: MemberMedia[]
+  tone: MemberTone
+}) {
+  if (!media.length) {
+    return null
+  }
+
+  return (
+    <div className="grid gap-3">
+      {media.map((mediaItem, mediaIndex) => (
+        <PayloadImage
+          className="aspect-[4/3] min-h-44 rounded-lg shadow-md shadow-slate-900/10"
+          fallbackLabel={`${displayText(item.organization, '職涯里程碑')} milestone media`}
+          key={typeof mediaItem === 'number' ? mediaItem : (mediaItem.id ?? mediaIndex)}
+          media={mediaItem}
+          sizes="(min-width: 1024px) 16rem, 100vw"
+          tone={tone}
+        />
+      ))}
+    </div>
+  )
+}
+
+function PublicSiteFooter({
+  contact,
+}: {
+  contact: ReturnType<typeof publicContactForMember>
+}) {
   return (
     <footer className="border-t border-slate-200/80 bg-white/60 px-5 py-10 backdrop-blur-md">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 text-sm text-slate-600 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="font-semibold uppercase tracking-normal text-slate-950">Web Li</p>
-          <p className="mt-2 max-w-xl leading-6">公開聯絡方式僅用於家庭網站與專業交流，私密家庭資訊仍保留在家人模式。</p>
+          <p className="font-semibold uppercase tracking-normal text-slate-950">{contact.siteTitle}</p>
+          <p className="mt-2 max-w-xl leading-6">{contact.description}</p>
         </div>
         <div className="flex flex-col gap-3 md:items-end">
-          <a className="inline-flex items-center gap-2 font-medium text-slate-700 transition hover:text-slate-950" href={`mailto:${publicContact.email}`}>
+          <a className="inline-flex items-center gap-2 font-medium text-slate-700 transition hover:text-slate-950" href={`mailto:${contact.email}`}>
             <Mail className="size-4" aria-hidden="true" />
-            {publicContact.email}
+            {contact.email}
           </a>
-          <a className="inline-flex items-center gap-2 font-medium text-slate-700 transition hover:text-slate-950" href={`tel:${publicContact.phone.replace(/[^+\d]/g, '')}`}>
+          <a className="inline-flex items-center gap-2 font-medium text-slate-700 transition hover:text-slate-950" href={`tel:${contact.phone.replace(/[^+\d]/g, '')}`}>
             <Phone className="size-4" aria-hidden="true" />
-            {publicContact.phone}
+            {contact.phone}
           </a>
         </div>
       </div>
@@ -466,7 +586,7 @@ function SkillRadar({
   return (
     <article className={`rounded-lg border ${panelClass} p-6 shadow-sm backdrop-blur-md`}>
       <p className={`text-sm font-semibold uppercase ${accentClass}`}>Skill Radar</p>
-      <h2 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950">能力不是標籤，而是證據。</h2>
+      <h2 className={sectionHeadingClass}>能力不是標籤，而是證據。</h2>
       <div className="mt-7 grid gap-4">
         {skills.length > 0 ? (
           skills.map((skill) => (

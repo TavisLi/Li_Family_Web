@@ -117,6 +117,14 @@ const familyMemberSeedSchema = z.object({
     })
     .optional(),
   bio: z.string().optional(),
+  publicContact: z
+    .object({
+      siteTitle: z.string().optional(),
+      description: z.string().optional(),
+      email: z.string().optional(),
+      phone: z.string().optional(),
+    })
+    .optional(),
   beliefs: z.array(z.object({ text: z.string().min(1) })).optional(),
   interests: z.array(z.object({ name: z.string().min(1), description: z.string().optional() })).optional(),
   education: z
@@ -137,6 +145,7 @@ const familyMemberSeedSchema = z.object({
         start: z.string().optional(),
         end: z.string().optional(),
         summary: z.string().optional(),
+        milestoneMedia: z.array(z.number()).optional(),
         highlights: z.array(z.object({ text: z.string().min(1) })).optional(),
       }),
     )
@@ -998,6 +1007,7 @@ function mergeMemberSeeds(base: FamilyMemberSeed | undefined, resume: FamilyMemb
   return familyMemberSeedSchema.parse({
     ...base,
     bio: resume.bio ?? base.bio,
+    publicContact: resume.publicContact ?? base.publicContact,
     education: resume.education ?? base.education,
     careerTimeline: resume.careerTimeline ?? base.careerTimeline,
     skillRadar: resume.skillRadar ?? base.skillRadar,

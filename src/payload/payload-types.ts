@@ -153,6 +153,15 @@ export interface User {
   cardImage?: (number | null) | Media;
   galleryImages?: (number | Media)[] | null;
   resumeMilestoneImages?: (number | Media)[] | null;
+  /**
+   * Controls the public footer contact block on this member profile.
+   */
+  publicContact?: {
+    siteTitle?: string | null;
+    description?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  };
   theme: {
     persona: 'neutral' | 'tavis' | 'lynn' | 'leo' | 'academy' | 'heritage';
     primaryColor?: string | null;
@@ -200,6 +209,10 @@ export interface User {
         start?: string | null;
         end?: string | null;
         summary?: string | null;
+        /**
+         * Optional media shown for this career milestone. Leave empty to show no milestone media.
+         */
+        milestoneMedia?: (number | Media)[] | null;
         highlights?:
           | {
               text: string;
@@ -726,6 +739,14 @@ export interface UsersSelect<T extends boolean = true> {
   cardImage?: T;
   galleryImages?: T;
   resumeMilestoneImages?: T;
+  publicContact?:
+    | T
+    | {
+        siteTitle?: T;
+        description?: T;
+        email?: T;
+        phone?: T;
+      };
   theme?:
     | T
     | {
@@ -778,6 +799,7 @@ export interface UsersSelect<T extends boolean = true> {
         start?: T;
         end?: T;
         summary?: T;
+        milestoneMedia?: T;
         highlights?:
           | T
           | {
