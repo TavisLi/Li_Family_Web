@@ -28,6 +28,10 @@ Phase-11 聚焦旅行系統，尤其是 `202702泰國普吉島7日.md` 與 `2026
 - PR #27：保存 Markdown 空 H1 作為 source section 邊界，支援 `# **旅行戰情室**` 這類標題。
 - PR #28：顯示每日 Markdown H1 group，避免每日行程被舊 daily filter 隱藏。
 
+追加 QA 修正：
+
+- PR #31：依 browser comments 追加旅行 source section 視覺修正；目前為 follow-up PR，待合併與 Production 部署後回寫最終狀態。
+
 Production deployment 已完成：
 
 - 最新 Production deployment：`dpl_2joFCLF7r1wKgYhoAaEgPzwMsD1Z`
@@ -46,6 +50,13 @@ Production deployment 已完成：
 - `注意事項` 使用深色 reminders 模組呈現。
 - 每個 source section 都接入互動席位：comment、thumb-up、thumb-down。
 - 每日段落移除重複摘要，保留來源表格內容。
+- Browser comments follow-up 視覺修正：
+  - 移除 H1 上方「行程章節 · 01」與 `Markdown H1`、段數等 source/debug 標籤。
+  - 移除 H2 上方「子章節 · H2」標示。
+  - 移除 H1 卡片左側垂直色條，改成整張 H1 卡片的低飽和漸變底色，讓主題區塊更完整。
+  - 每日行程卡的 `DAY 1` 類標籤放大，顏色調整為 `#65808b`，套用到所有每日卡片。
+  - `注意事項` 模組內不再重複顯示與 H1 標題相同的「注意事項」小標。
+  - Mac / PC 寬螢幕下，`注意事項` 的 H2 卡片改為兩欄並列。
 - `/travel` 目錄：
   - 分類順序為「規劃中 → 已完成 → 前期規劃」。
   - 移除不必要的內部說明文案。
@@ -128,6 +139,21 @@ Production seed 最終結果：
   - HTTP 200
   - 包含「旅行戰情室」、「Day 1」、「注意事項」、「重慶+長江三峽8日」、「防暑」
   - 不再包含「來源章節已整理成正式行程地圖」、「高級家庭旅行作戰室」或內部 marker `__SECTION_BOUNDARY__`
+
+2026-06-28 追加 browser comments QA：
+
+- 使用者在正式站 `/travel/202607-chongqing-yangtze-river` 針對 source section 模組提出 8 點視覺註記。
+- 已依 `redesign-existing-projects` 與 `frontend-design` 做最小範圍修正，集中於 `TravelSourceSections`：
+  - 去除 H1/H2 技術性 metadata。
+  - H1 模組改為整卡漸變底色並移除側邊色條。
+  - 每日行程 label 放大並統一顏色。
+  - reminders H2 卡片於桌面寬度改為兩欄。
+- 本地驗證已通過：
+  - `pnpm run test:phase-9`
+  - `pnpm tsc --noEmit`
+  - `pnpm run build`
+  - `git diff --check`
+- 目前 PR：#31，待合併後需回到 Production 再做一次 `/travel/202607-chongqing-yangtze-river` 視覺回歸。
 
 ## 已知限制
 
