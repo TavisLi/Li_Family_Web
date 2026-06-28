@@ -40,11 +40,10 @@ export function TravelSourceSections({
   return (
     <section className="mx-auto grid w-full max-w-7xl gap-8 px-5 pb-14 md:pb-20">
       <div className="grid gap-5">
-        {groups.map((group, index) => (
+        {groups.map((group) => (
           <SourceGroupCard
             group={group}
             key={group.anchor}
-            moduleIndex={index + 1}
             projectSlug={project.slug}
             renderInteraction={renderInteraction}
             threads={threads}
@@ -190,13 +189,11 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
 
 function SourceGroupCard({
   group,
-  moduleIndex,
   projectSlug,
   renderInteraction,
   threads,
 }: {
   group: SourceSectionGroup
-  moduleIndex: number
   projectSlug: string
   renderInteraction?: RenderInteraction
   threads: Record<string, TravelInteractionThread>
@@ -209,8 +206,8 @@ function SourceGroupCard({
         className="rounded-[2rem] border border-slate-800 bg-slate-950 px-5 py-12 text-white shadow-2xl shadow-slate-950/20 md:px-8 md:py-16"
         id={group.anchor}
       >
-        <div className="grid gap-8 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
-          <div>
+        <div className="grid gap-8">
+          <header className="max-w-4xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
               Reminders
             </p>
@@ -220,23 +217,20 @@ function SourceGroupCard({
             <p className="mt-5 max-w-md text-sm leading-7 text-slate-300">
               提醒、取消政策與待確認項目集中放在這裡，讓出發前需要注意的事情一眼可查。
             </p>
-          </div>
+          </header>
           <div className="rounded-[1.5rem] border border-white/15 bg-white/[0.06] p-5 shadow-sm backdrop-blur-xl md:p-7">
             {group.intro && hasBody(group.intro) ? (
               <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                 <SourceBody body={group.intro.body} tone="dark" />
               </div>
             ) : null}
-            <div className="grid gap-4">
+            <div className="grid gap-4 lg:grid-cols-2">
               {group.sections.map((section) => (
                 <section
                   className="rounded-2xl border border-white/10 bg-slate-900/70 p-4"
                   key={section.id ?? section.anchor}
                 >
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100/55">
-                    注意事項
-                  </p>
-                  <h4 className="mt-2 text-xl font-semibold tracking-normal text-white">
+                  <h4 className="text-xl font-semibold tracking-normal text-white">
                     {section.title}
                   </h4>
                   <SourceBody body={section.body} tone="dark" />
@@ -268,28 +262,12 @@ function SourceGroupCard({
 
   return (
     <article
-      className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-white/55 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl md:p-7"
+      className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br from-cyan-50/80 via-white/65 to-amber-50/70 p-5 shadow-sm shadow-cyan-950/5 backdrop-blur-xl md:p-7"
       id={group.anchor}
     >
-      <div className="absolute inset-y-6 left-0 w-1 rounded-r-full bg-gradient-to-b from-cyan-400 via-teal-300 to-amber-300" />
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-800">
-            行程章節 · {String(moduleIndex).padStart(2, '0')}
-          </p>
-          <h3 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950 md:text-5xl">
-            {group.title}
-          </h3>
-        </div>
-        <div className="flex flex-wrap gap-2 text-xs font-semibold text-slate-500">
-          <span className="rounded-full border border-white/70 bg-white/65 px-3 py-1">
-            Markdown H1
-          </span>
-          <span className="rounded-full border border-white/70 bg-white/65 px-3 py-1">
-            {group.sections.length + (group.intro ? 1 : 0)} 段內容
-          </span>
-        </div>
-      </div>
+      <h3 className="text-3xl font-semibold tracking-normal text-slate-950 md:text-5xl">
+        {group.title}
+      </h3>
       {group.intro && hasBody(group.intro) ? (
         <div className="mt-5 rounded-[1.5rem] border border-white/60 bg-white/50 p-4">
           <SourceBody body={group.intro.body} />
@@ -316,14 +294,16 @@ function SourceGroupCard({
             }
             key={section.id ?? section.anchor}
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-              {daily ? section.title.match(/Day\s+\d+/i)?.[0] ?? '每日節點' : `子章節 · H${section.level}`}
-            </p>
+            {daily ? (
+              <p className="text-base font-semibold uppercase tracking-[0.22em] text-[#65808b] md:text-lg">
+                {section.title.match(/Day\s+\d+/i)?.[0] ?? '每日節點'}
+              </p>
+            ) : null}
             <h4
               className={
                 daily
                   ? 'mt-2 text-2xl font-semibold leading-tight tracking-normal text-slate-950 md:text-4xl'
-                  : 'mt-2 text-lg font-semibold tracking-normal text-slate-950'
+                  : 'text-lg font-semibold tracking-normal text-slate-950'
               }
             >
               {section.title}
