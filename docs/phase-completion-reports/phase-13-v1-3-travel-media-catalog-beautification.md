@@ -17,8 +17,8 @@
 ## GitHub Sync / PR Status
 
 - Issue：#36、#37、#38
-- Push：待本地提交完成後執行
-- PR：待 push 後建立
+- Push：已推送 `codex/phase-13-v1.3-travel-enhancements`
+- PR：#39 https://github.com/TavisLi/Li_Family_Web/pull/39
 
 ## Delivered Features
 
