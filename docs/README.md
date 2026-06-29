@@ -23,7 +23,7 @@
 
 ### 前置要求
 
-- Node.js 18+
+- Node.js 20 LTS（本專案固定使用 `20.20.2`；Payload CMS v3 要求 Node.js `20.9.0+`，請避免使用 Node 24/26 執行 migration）
 - pnpm (推荐) 或 npm
 - Vercel 账号 (用于数据库和存储)
 
@@ -35,6 +35,7 @@ cd Li_Family_Web
 ```
 ### 2. 安装依赖
 ```bash
+nvm use
 pnpm install
 ```
 ### 3. 配置环境变量
