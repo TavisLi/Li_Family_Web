@@ -1,10 +1,14 @@
-import React from 'react'
+import React, { Suspense } from 'react'
 import type { ReactNode } from 'react'
+import { Image as ImageIcon, Video } from 'lucide-react'
 
 import type { TravelInteractionThread } from '@/lib/data/travel'
-import type { TravelProject } from '@/payload/payload-types'
+import { PayloadImage } from '@/components/ui/payload-image'
+import type { Media, TravelProject } from '@/payload/payload-types'
+import { toYouTubeEmbedUrl } from './youtube'
 
 type SourceSection = NonNullable<TravelProject['sourceSections']>[number]
+type SourceSectionMedia = NonNullable<SourceSection['mediaItems']>[number]
 
 const SOURCE_SECTION_BOUNDARY_BODY = '__SECTION_BOUNDARY__'
 
@@ -13,6 +17,11 @@ type SourceSectionGroup = {
   title: string
   intro?: SourceSection
   sections: SourceSection[]
+}
+
+type SourceSectionNode = {
+  section: SourceSection
+  children: SourceSection[]
 }
 
 type RenderInteraction = (input: {
@@ -38,7 +47,7 @@ export function TravelSourceSections({
   }
 
   return (
-    <section className="mx-auto grid w-full max-w-7xl gap-8 px-5 pb-14 md:pb-20">
+    <section className="grid w-full gap-8 pb-14 md:pb-20">
       <div className="grid gap-5">
         {groups.map((group) => (
           <SourceGroupCard
@@ -199,14 +208,16 @@ function SourceGroupCard({
   threads: Record<string, TravelInteractionThread>
 }) {
   const groupAssociatedId = sourceSectionKey(projectSlug, group.anchor)
+  const sectionNodes = nestSourceSections(group.sections)
 
   if (isReminderGroup(group)) {
     return (
       <article
-        className="rounded-[2rem] border border-slate-800 bg-slate-950 px-5 py-12 text-white shadow-2xl shadow-slate-950/20 md:px-8 md:py-16"
+        className="border-y border-slate-800 bg-slate-950 px-5 py-12 text-white shadow-2xl shadow-slate-950/20 md:px-8 md:py-16"
+        data-source-level="1"
         id={group.anchor}
       >
-        <div className="grid gap-8">
+        <div className="mx-auto grid w-full max-w-7xl gap-8">
           <header className="max-w-4xl">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-cyan-100/70">
               Reminders
@@ -222,28 +233,19 @@ function SourceGroupCard({
             {group.intro && hasBody(group.intro) ? (
               <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
                 <SourceBody body={group.intro.body} tone="dark" />
+                <SourceSectionMediaRail section={group.intro} tone="dark" />
               </div>
             ) : null}
-            <div className="grid gap-4 lg:grid-cols-2">
-              {group.sections.map((section) => (
-                <section
-                  className="rounded-2xl border border-white/10 bg-slate-900/70 p-4"
-                  key={section.id ?? section.anchor}
-                >
-                  <h4 className="text-xl font-semibold tracking-normal text-white">
-                    {section.title}
-                  </h4>
-                  <SourceBody body={section.body} tone="dark" />
-                  <SourceLinks section={section} tone="dark" />
-                  {renderInteraction
-                    ? renderInteraction({
-                        className: 'border-white/15 bg-white/10 text-slate-300',
-                        associatedId: sourceSectionKey(projectSlug, section.anchor),
-                        label: section.title,
-                        thread: threads[sourceSectionKey(projectSlug, section.anchor)],
-                      })
-                    : null}
-                </section>
+            <div className="grid gap-4">
+              {sectionNodes.map((node) => (
+                <NestedSourceSection
+                  key={node.section.id ?? node.section.anchor}
+                  node={node}
+                  projectSlug={projectSlug}
+                  renderInteraction={renderInteraction}
+                  threads={threads}
+                  tone="dark"
+                />
               ))}
             </div>
             {renderInteraction
@@ -262,68 +264,209 @@ function SourceGroupCard({
 
   return (
     <article
-      className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-gradient-to-br from-cyan-50/80 via-white/65 to-amber-50/70 p-5 shadow-sm shadow-cyan-950/5 backdrop-blur-xl md:p-7"
+      className="relative overflow-hidden border-y border-white/70 bg-gradient-to-br from-cyan-100/90 via-white/80 to-amber-100/80 px-5 py-10 shadow-sm shadow-cyan-950/5 backdrop-blur-xl md:py-14"
+      data-source-level="1"
       id={group.anchor}
     >
-      <h3 className="text-3xl font-semibold tracking-normal text-slate-950 md:text-5xl">
-        {group.title}
-      </h3>
-      {group.intro && hasBody(group.intro) ? (
-        <div className="mt-5 rounded-[1.5rem] border border-white/60 bg-white/50 p-4">
-          <SourceBody body={group.intro.body} />
+      <div className="mx-auto w-full max-w-7xl">
+        <div className="rounded-lg bg-gradient-to-r from-cyan-900 via-slate-900 to-amber-900 px-5 py-7 text-white shadow-xl shadow-slate-900/15 md:px-7">
+          <h3 className="text-3xl font-semibold tracking-normal md:text-5xl">
+            {group.title}
+          </h3>
+          {group.intro && hasBody(group.intro) ? (
+            <div className="mt-5 rounded-[1.5rem] border border-white/15 bg-white/10 p-4">
+              <SourceBody body={group.intro.body} tone="dark" />
+              <SourceSectionMediaRail section={group.intro} tone="dark" />
+            </div>
+          ) : null}
+          {renderInteraction
+            ? renderInteraction({
+                className: 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300',
+                associatedId: groupAssociatedId,
+                label: group.title,
+                thread: threads[groupAssociatedId],
+              })
+            : null}
+        </div>
+        <div className="mt-5 grid gap-4">
+          {sectionNodes.map((node) => (
+            <NestedSourceSection
+              key={node.section.id ?? node.section.anchor}
+              node={node}
+              projectSlug={projectSlug}
+              renderInteraction={renderInteraction}
+              threads={threads}
+            />
+          ))}
+        </div>
+        {group.intro ? <SourceLinks section={group.intro} /> : null}
+      </div>
+    </article>
+  )
+}
+
+function NestedSourceSection({
+  node,
+  projectSlug,
+  renderInteraction,
+  threads,
+  tone = 'light',
+}: {
+  node: SourceSectionNode
+  projectSlug: string
+  renderInteraction?: RenderInteraction
+  threads: Record<string, TravelInteractionThread>
+  tone?: 'light' | 'dark'
+}) {
+  const { section } = node
+  const daily = isDailySection(section)
+  const dark = tone === 'dark'
+  const associatedId = sourceSectionKey(projectSlug, section.anchor)
+
+  return (
+    <section
+      className={
+        dark
+          ? 'rounded-[1.5rem] border border-white/10 bg-slate-900/70 p-5 shadow-sm md:p-7'
+          : 'rounded-[1.5rem] border border-white/60 bg-white/65 p-5 shadow-sm shadow-slate-900/5 md:p-7'
+      }
+      data-source-level={section.level}
+      id={section.anchor}
+    >
+      {daily ? (
+        <p className={dark ? 'text-base font-semibold uppercase tracking-[0.22em] text-cyan-100/70 md:text-lg' : 'text-base font-semibold uppercase tracking-[0.22em] text-[#65808b] md:text-lg'}>
+          {section.title.match(/Day\s+\d+/i)?.[0] ?? '每日節點'}
+        </p>
+      ) : null}
+      <h4
+        className={
+          daily
+            ? dark
+              ? 'mt-2 text-2xl font-semibold leading-tight tracking-normal text-white md:text-4xl'
+              : 'mt-2 text-2xl font-semibold leading-tight tracking-normal text-slate-950 md:text-4xl'
+            : dark
+              ? 'text-xl font-semibold tracking-normal text-white'
+              : 'text-xl font-semibold tracking-normal text-slate-950'
+        }
+      >
+        {section.title}
+      </h4>
+      <SourceBody body={section.body} tone={tone} />
+      <SourceLinks section={section} tone={tone} />
+      <SourceSectionMediaRail section={section} tone={tone} />
+      {node.children.length ? (
+        <div className="mt-5 grid gap-3">
+          {node.children.map((child) => (
+            <section
+              className={
+                dark
+                  ? 'rounded-2xl border border-white/10 bg-white/[0.06] p-4'
+                  : 'rounded-2xl border border-cyan-100/80 bg-cyan-50/55 p-4'
+              }
+              data-source-level={child.level}
+              id={child.anchor}
+              key={child.id ?? child.anchor}
+            >
+              <h5 className={dark ? 'text-lg font-semibold tracking-normal text-white' : 'text-lg font-semibold tracking-normal text-slate-950'}>
+                {child.title}
+              </h5>
+              <SourceBody body={child.body} tone={tone} />
+              <SourceLinks section={child} tone={tone} />
+              <SourceSectionMediaRail section={child} tone={tone} />
+              {renderInteraction
+                ? renderInteraction({
+                    className: dark
+                      ? 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300'
+                      : 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
+                    associatedId: sourceSectionKey(projectSlug, child.anchor),
+                    label: child.title,
+                    thread: threads[sourceSectionKey(projectSlug, child.anchor)],
+                  })
+                : null}
+            </section>
+          ))}
         </div>
       ) : null}
       {renderInteraction
         ? renderInteraction({
-            className: 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
-            associatedId: groupAssociatedId,
-            label: group.title,
-            thread: threads[groupAssociatedId],
+            className: dark
+              ? 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300'
+              : 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
+            associatedId,
+            label: section.title,
+            thread: threads[associatedId],
           })
         : null}
-      <div className="mt-5 grid gap-4">
-        {group.sections.map((section) => {
-          const daily = isDailySection(section)
+    </section>
+  )
+}
 
-          return (
-          <section
-            className={
-              daily
-                ? 'rounded-[1.75rem] border border-white/60 bg-white/60 p-5 shadow-sm shadow-slate-900/5 md:p-7'
-                : 'rounded-[1.5rem] border border-white/60 bg-white/55 p-4 shadow-sm shadow-slate-900/5 md:p-5'
-            }
-            key={section.id ?? section.anchor}
-          >
-            {daily ? (
-              <p className="text-base font-semibold uppercase tracking-[0.22em] text-[#65808b] md:text-lg">
-                {section.title.match(/Day\s+\d+/i)?.[0] ?? '每日節點'}
-              </p>
-            ) : null}
-            <h4
-              className={
-                daily
-                  ? 'mt-2 text-2xl font-semibold leading-tight tracking-normal text-slate-950 md:text-4xl'
-                  : 'text-lg font-semibold tracking-normal text-slate-950'
-              }
-            >
-              {section.title}
-            </h4>
-            <SourceBody body={section.body} />
-            <SourceLinks section={section} />
-            {renderInteraction
-              ? renderInteraction({
-                  className: 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
-                  associatedId: sourceSectionKey(projectSlug, section.anchor),
-                  label: section.title,
-                  thread: threads[sourceSectionKey(projectSlug, section.anchor)],
-                })
-              : null}
-          </section>
-          )
-        })}
-      </div>
-      {group.intro ? <SourceLinks section={group.intro} /> : null}
-    </article>
+function SourceSectionMediaRail({
+  section,
+  tone = 'light',
+}: {
+  section: SourceSection
+  tone?: 'light' | 'dark'
+}) {
+  const items = mediaObjects(section.mediaItems)
+
+  if (!items.length) {
+    return null
+  }
+
+  return (
+    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {items.map((item) => (
+        <SectionMediaCard key={item.id} media={item} tone={tone} />
+      ))}
+    </div>
+  )
+}
+
+function SectionMediaCard({ media, tone }: { media: Media; tone: 'light' | 'dark' }) {
+  if (media.type === 'video') {
+    const embedUrl = media.youtubeUrl ? toYouTubeEmbedUrl(media.youtubeUrl) : null
+
+    if (!embedUrl) {
+      return null
+    }
+
+    return (
+      <Suspense fallback={<SectionVideoPlaceholder title={media.altText} tone={tone} />}>
+        <iframe
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          className={tone === 'dark' ? 'aspect-video w-full rounded-lg border border-white/15 bg-white/10' : 'aspect-video w-full rounded-lg border border-cyan-100/80 bg-white/70'}
+          src={embedUrl}
+          title={media.altText}
+        />
+      </Suspense>
+    )
+  }
+
+  return (
+    <div className={tone === 'dark' ? 'rounded-lg border border-white/15 bg-white/10 p-2' : 'rounded-lg border border-white/70 bg-white/55 p-2'}>
+      <PayloadImage
+        className="aspect-[4/3] rounded-md"
+        fallbackLabel={media.altText}
+        media={media}
+        sizes="(min-width: 1024px) 28vw, (min-width: 640px) 45vw, 100vw"
+        tone="travel"
+      />
+      <p className={tone === 'dark' ? 'mt-2 flex items-center gap-1 text-xs font-medium text-slate-300' : 'mt-2 flex items-center gap-1 text-xs font-medium text-slate-500'}>
+        <ImageIcon className="size-3.5" aria-hidden="true" />
+        {media.altText}
+      </p>
+    </div>
+  )
+}
+
+function SectionVideoPlaceholder({ title, tone }: { title: string; tone: 'light' | 'dark' }) {
+  return (
+    <div className={tone === 'dark' ? 'flex aspect-video items-center justify-center rounded-lg border border-white/15 bg-white/10 p-4 text-sm text-slate-300' : 'flex aspect-video items-center justify-center rounded-lg border border-cyan-100/80 bg-white/70 p-4 text-sm text-slate-600'}>
+      <Video className="mr-2 size-4" aria-hidden="true" />
+      {title}
+    </div>
   )
 }
 
@@ -408,6 +551,30 @@ function groupSourceSections(sections: SourceSection[]): SourceSectionGroup[] {
   }
 
   return groups
+}
+
+function nestSourceSections(sections: SourceSection[]): SourceSectionNode[] {
+  const nodes: SourceSectionNode[] = []
+  let current: SourceSectionNode | undefined
+
+  for (const section of sections) {
+    if (section.level >= 3 && current) {
+      current.children.push(section)
+      continue
+    }
+
+    current = {
+      section,
+      children: [],
+    }
+    nodes.push(current)
+  }
+
+  return nodes
+}
+
+function mediaObjects(items: SourceSectionMedia[] | null | undefined): Media[] {
+  return (items ?? []).filter((item): item is Media => Boolean(item && typeof item === 'object'))
 }
 
 function virtualGroupFor(section: SourceSection): Pick<SourceSectionGroup, 'anchor' | 'title'> | null {

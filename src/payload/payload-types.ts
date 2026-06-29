@@ -472,6 +472,10 @@ export interface TravelProject {
               id?: string | null;
             }[]
           | null;
+        /**
+         * Optional photos or YouTube media selected for this source section. Leave empty when no section media should render.
+         */
+        mediaItems?: (number | Media)[] | null;
         id?: string | null;
       }[]
     | null;
@@ -1020,6 +1024,7 @@ export interface TravelProjectsSelect<T extends boolean = true> {
               url?: T;
               id?: T;
             };
+        mediaItems?: T;
         id?: T;
       };
   externalVideos?:

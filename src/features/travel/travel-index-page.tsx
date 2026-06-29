@@ -33,11 +33,6 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
           <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
             從正在討論的重慶三峽作戰室，到海南與東澳的記憶長卷，所有行程都依狀態整理成可進入、可回看、可延續討論的家庭旅行檔案。
           </p>
-          <div className="mt-8 grid max-w-2xl grid-cols-3 gap-3">
-            <IndexMetric label="規劃中" value={planning.length} />
-            <IndexMetric label="已完成" value={completed.length} />
-            <IndexMetric label="前期規劃" value={preliminary.length} />
-          </div>
         </div>
 
         {featured ? (
@@ -75,16 +70,22 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
       <section className="mx-auto w-full max-w-7xl px-5 pb-8">
         <div className="grid gap-4 md:grid-cols-3">
           <CorridorNote
+            count={planning.length}
+            href="#travel-group-planning"
             icon={<Plane className="size-5" aria-hidden="true" />}
             title="規劃中"
             text="即將發生或仍在決策中的行程，航班、住宿、提醒與每日節點都可進入討論。"
           />
           <CorridorNote
+            count={completed.length}
+            href="#travel-group-completed"
             icon={<CalendarDays className="size-5" aria-hidden="true" />}
             title="已完成"
             text="完成後的旅程轉成回憶檔案，保留照片、里程碑與當時留下的文字線索。"
           />
           <CorridorNote
+            count={preliminary.length}
+            href="#travel-group-preliminary"
             icon={<Compass className="size-5" aria-hidden="true" />}
             title="前期規劃"
             text="規劃中但時間已過的旅程會先收在這裡，方便保留早期討論、待整理內容與後續復盤。"
@@ -94,10 +95,10 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
 
       <section className="border-y border-white/60 bg-white/35 px-5 py-14 backdrop-blur-xl md:py-20">
         <div className="mx-auto w-full max-w-7xl">
-          <div className="mb-8">
+          <div className="mb-8 rounded-lg border border-white/60 bg-gradient-to-r from-slate-950 via-cyan-950 to-amber-900 px-5 py-8 text-white shadow-lg shadow-slate-900/10 md:px-7">
             <div>
-              <p className="text-sm font-semibold uppercase text-slate-500">Route Index</p>
-              <h2 className="mt-2 text-3xl font-semibold tracking-normal md:text-5xl">
+              <p className="text-sm font-semibold uppercase text-cyan-100/70">Route Index</p>
+              <h2 className="mt-2 text-3xl font-semibold tracking-normal text-white md:text-5xl">
                 每一站都是可進入的家庭檔案。
               </h2>
             </div>
@@ -107,18 +108,21 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
             <TravelProjectGroup
               empty="目前沒有公開的規劃中旅程。"
               icon={<Plane className="size-5" aria-hidden="true" />}
+              id="travel-group-planning"
               projects={planning}
               title="規劃中"
             />
             <TravelProjectGroup
               empty="目前沒有公開的已完成旅程。"
               icon={<CalendarDays className="size-5" aria-hidden="true" />}
+              id="travel-group-completed"
               projects={completed}
               title="已完成"
             />
             <TravelProjectGroup
               empty="目前沒有過期的前期規劃旅程。"
               icon={<Compass className="size-5" aria-hidden="true" />}
+              id="travel-group-preliminary"
               projects={preliminary}
               statusLabelOverride="前期規劃"
               title="前期規劃"
@@ -133,27 +137,31 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
 function TravelProjectGroup({
   empty,
   icon,
+  id,
   projects,
   statusLabelOverride,
   title,
 }: {
   empty: string
   icon: ReactNode
+  id: string
   projects: TravelProject[]
   statusLabelOverride?: string
   title: string
 }) {
   return (
-    <section aria-labelledby={`travel-group-${title}`} className="grid gap-3">
-      <div className="flex items-center gap-3" id={`travel-group-${title}`}>
+    <section aria-labelledby={`${id}-heading`} className="scroll-mt-24 grid gap-3" id={id}>
+      <div className="rounded-lg border border-white/60 bg-gradient-to-r from-white/75 via-cyan-50/80 to-amber-50/80 p-4 shadow-sm shadow-slate-900/5">
+        <div className="flex items-center gap-3">
         <div className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm shadow-slate-900/15">
           {icon}
         </div>
         <div>
-          <h3 className="text-2xl font-semibold tracking-normal text-slate-950">{title}</h3>
+          <h3 className="text-2xl font-semibold tracking-normal text-slate-950" id={`${id}-heading`}>{title}</h3>
           <p className="mt-1 text-sm leading-6 text-slate-500">
             {groupDescription(title)}
           </p>
+        </div>
         </div>
       </div>
       {projects.length ? (
@@ -212,32 +220,39 @@ function TravelProjectRow({
   )
 }
 
-function IndexMetric({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="border-l border-slate-300/80 bg-white/35 px-4 py-3 backdrop-blur-md">
-      <p className="text-3xl font-semibold tracking-normal">{value}</p>
-      <p className="mt-1 text-sm font-medium text-slate-500">{label}</p>
-    </div>
-  )
-}
-
 function CorridorNote({
+  count,
+  href,
   icon,
   title,
   text,
 }: {
+  count: number
+  href: string
   icon: ReactNode
   title: string
   text: string
 }) {
   return (
-    <article className="rounded-[1.5rem] border border-white/65 bg-white/45 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl">
-      <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm shadow-slate-900/15">
-        {icon}
+    <Link
+      className="group rounded-lg border border-white/65 bg-white/45 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/60"
+      href={href}
+    >
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm shadow-slate-900/15">
+          {icon}
+        </div>
+        <span className="rounded-full border border-slate-200 bg-white/75 px-3 py-1 text-sm font-semibold text-slate-700">
+          {count}
+        </span>
       </div>
       <h3 className="text-lg font-semibold tracking-normal text-slate-950">{title}</h3>
       <p className="mt-2 text-sm leading-7 text-slate-600">{text}</p>
-    </article>
+      <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-slate-700 transition group-hover:translate-x-1 group-hover:text-slate-950">
+        前往區塊
+        <ArrowRight className="size-4" aria-hidden="true" />
+      </span>
+    </Link>
   )
 }
 

@@ -33,6 +33,7 @@ export function TravelInteractionPanel({
 }: TravelInteractionPanelProps) {
   const [thread, setThread] = useState(initialThread)
   const [message, setMessage] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
   const [isPending, startTransition] = useTransition()
   const [optimisticThread, addOptimistic] = useOptimistic(thread, applyOptimisticAction)
 
@@ -58,6 +59,7 @@ export function TravelInteractionPanel({
       return
     }
 
+    setDraft('')
     setMessage(null)
     startTransition(async () => {
       addOptimistic({ type: 'comment', text: commentText })
@@ -80,7 +82,7 @@ export function TravelInteractionPanel({
           className,
         )}
       >
-        <div className="flex items-center gap-2 font-semibold text-slate-800">
+        <div className="flex items-center gap-2 font-semibold text-current">
           <Lock className="size-4" aria-hidden="true" />
           討論席已預留
         </div>
@@ -140,13 +142,21 @@ export function TravelInteractionPanel({
           className="h-10 min-w-0 rounded-full border border-white/60 bg-white/70 px-4 text-sm text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-200/60"
           disabled={isPending}
           name="commentText"
+          onChange={(event) => setDraft(event.target.value)}
           placeholder="留下家人討論意見"
+          value={draft}
         />
         <Button
-          className="rounded-full bg-slate-950 px-4 text-white transition duration-200 hover:-translate-y-0.5 hover:bg-slate-800 active:translate-y-0"
+          className={cn(
+            'rounded-full border px-4 transition duration-200 hover:-translate-y-0.5 active:translate-y-0',
+            draft.trim()
+              ? 'border-cyan-300 bg-cyan-100 text-cyan-950 hover:bg-cyan-200'
+              : 'border-white/60 bg-white/65 text-slate-500 hover:bg-white/80',
+          )}
           disabled={isPending}
           size="sm"
           type="submit"
+          variant="outline"
         >
           <MessageCircle className="size-4" aria-hidden="true" />
           送出
