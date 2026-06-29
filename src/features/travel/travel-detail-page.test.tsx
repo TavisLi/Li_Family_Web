@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-import type { TravelProject } from '@/payload/payload-types'
+import type { Media, TravelProject } from '@/payload/payload-types'
 import { CompletedTravelLedger } from './completed-travel-ledger'
 import { TravelPlanningExtras } from './travel-planning-extras'
 import { TravelSourceSections } from './travel-source-sections'
@@ -194,6 +194,42 @@ const planningProject: TravelProject = {
   updatedAt: '2026-06-21T00:00:00.000Z',
 }
 
+const sectionPhoto: Media = {
+  id: 301,
+  type: 'photo',
+  altText: '安納塔拉泳池照片',
+  url: 'https://cdn.example.com/anantara-pool.jpg',
+  createdAt: '2026-06-21T00:00:00.000Z',
+  updatedAt: '2026-06-21T00:00:00.000Z',
+}
+
+const sectionVideo: Media = {
+  id: 302,
+  type: 'video',
+  altText: '度假村介紹影片',
+  youtubeUrl: 'https://youtu.be/lYP3m2N8yvs',
+  createdAt: '2026-06-21T00:00:00.000Z',
+  updatedAt: '2026-06-21T00:00:00.000Z',
+}
+
+planningProject.sourceSections?.push(
+  {
+    id: 'source-7',
+    level: 2,
+    title: '安納塔拉媒體選集',
+    anchor: 'anantara-media',
+    body: '這段可以選擇照片與 YouTube 影片。',
+    mediaItems: [sectionPhoto, sectionVideo],
+  },
+  {
+    id: 'source-8',
+    level: 3,
+    title: '泳池角度',
+    anchor: 'pool-angle',
+    body: 'Level 3 內容嵌入在 Level 2 卡片內。',
+  },
+)
+
 const planningHtml = renderToStaticMarkup(
   createElement(TravelSourceSections, {
     project: planningProject,
@@ -221,6 +257,14 @@ assert.match(planningHtml, /最高\$1,500/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:resort-sites/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:details/)
 assert.match(planningHtml, /入住安納塔拉/)
+assert.match(planningHtml, /data-source-level="1"/)
+assert.match(planningHtml, /data-source-level="2"/)
+assert.match(planningHtml, /data-source-level="3"/)
+assert.match(planningHtml, /安納塔拉媒體選集/)
+assert.match(planningHtml, /安納塔拉泳池照片/)
+assert.match(planningHtml, /youtube-nocookie\.com\/embed\/lYP3m2N8yvs/)
+assert.match(planningHtml, /泳池角度/)
+assert.doesNotMatch(planningHtml, /anantara-media photo 1/)
 
 const extrasHtml = renderToStaticMarkup(createElement(TravelPlanningExtras, { project: planningProject }))
 

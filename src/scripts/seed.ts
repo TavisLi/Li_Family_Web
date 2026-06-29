@@ -18,6 +18,7 @@ import { mediaRecordMatchesSeed, mediaSeedData } from './seed-media-compare'
 import { memberEnglishLocalizedData, memberLocalizedWriteOptions } from './seed-member-locale'
 import { mediaIdsBySourcePath } from './seed-media-context'
 import { mediaRefreshRequestFromArgs } from './seed-media-repair'
+import { attachSourceSectionMediaIds } from './travel-section-media'
 import { uploadFilenameForSourcePath } from './seed-upload-name'
 
 interface SeedStats {
@@ -570,7 +571,11 @@ async function seedTravelProjects(
       const galleryImages = mediaIds(context, assets, ['gallery', 'cover'])
       const itineraryImages = mediaIds(context, assets, ['itinerary'])
       const data = {
-        ...travel,
+        ...attachSourceSectionMediaIds({
+          mediaBySourcePath: context.mediaBySourcePath,
+          mediaItems: assets,
+          travel,
+        }),
         coverImage,
         galleryImages,
         itineraryImages,

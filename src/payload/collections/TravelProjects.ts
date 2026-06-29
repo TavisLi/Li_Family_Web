@@ -584,6 +584,17 @@ export const TravelProjects: CollectionConfig = {
             },
           ],
         },
+        {
+          name: 'mediaItems',
+          type: 'relationship',
+          relationTo: 'media',
+          hasMany: true,
+          required: false,
+          admin: {
+            description:
+              'Optional photos or YouTube media selected for this source section. Leave empty when no section media should render.',
+          },
+        },
       ],
     },
     {

@@ -2,6 +2,7 @@ import * as migration_20260619_055511_phase_7_time_capsule from './20260619_0555
 import * as migration_20260624_143753_add_user_role from './20260624_143753_add_user_role';
 import * as migration_20260625_234308_travel_source_sections from './20260625_234308_travel_source_sections';
 import * as migration_20260628_130305_member_profile_config from './20260628_130305_member_profile_config';
+import * as migration_20260629_144118_add_travel_source_section_media from './20260629_144118_add_travel_source_section_media';
 
 export const migrations = [
   {
@@ -22,6 +23,11 @@ export const migrations = [
   {
     up: migration_20260628_130305_member_profile_config.up,
     down: migration_20260628_130305_member_profile_config.down,
-    name: '20260628_130305_member_profile_config'
+    name: '20260628_130305_member_profile_config',
+  },
+  {
+    up: migration_20260629_144118_add_travel_source_section_media.up,
+    down: migration_20260629_144118_add_travel_source_section_media.down,
+    name: '20260629_144118_add_travel_source_section_media'
   },
 ];
