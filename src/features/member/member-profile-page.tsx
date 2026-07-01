@@ -335,6 +335,7 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
           <PayloadImage
             className={`aspect-[4/5] min-h-[32rem] rounded-lg border ${style.border} shadow-2xl shadow-slate-900/10`}
             fallbackLabel={displayName}
+            fit="cover"
             imageClassName={portraitImageClass(member)}
             media={heroImage}
             priority

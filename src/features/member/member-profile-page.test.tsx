@@ -177,6 +177,8 @@ assert.match(
   /<h2 class="mt-2 text-3xl font-semibold tracking-normal text-slate-950">能力不是標籤，而是證據。<\/h2>/,
 )
 assert.match(tavisHtml, /<p class="text-lg leading-7 text-white">天行健，君子以自強不息<\/p>/)
+assert.match(tavisHtml, /object-cover object-\[50%_18%\]/)
+assert.doesNotMatch(tavisHtml, /object-contain object-\[50%_18%\]/)
 assert.match(tavisHtml, /<p class="text-lg font-semibold text-slate-500">2023\/6 - 至今<\/p>/)
 assert.match(tavisHtml, /<span class="mx-2 inline-grid min-w-\[8em\] align-bottom text-\[#1e3494\]">/)
 assert.match(tavisHtml, /工廠自動化 \/ 數字化轉型/)

@@ -3,8 +3,22 @@ import assert from 'node:assert/strict'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-import type { TravelProject } from '@/payload/payload-types'
+import type { Media, TravelProject } from '@/payload/payload-types'
 import { TravelIndexPage } from './travel-index-page'
+
+const coverImage: Media = {
+  id: 101,
+  altText: 'Phuket coast cover image',
+  type: 'photo',
+  createdAt: '2026-06-21T00:00:00.000Z',
+  updatedAt: '2026-06-21T00:00:00.000Z',
+  filename: 'phuket-cover.jpeg',
+  filesize: 1024,
+  height: 900,
+  mimeType: 'image/jpeg',
+  url: '/media/phuket-cover.jpeg',
+  width: 1600,
+}
 
 const projects: TravelProject[] = [
   {
@@ -16,7 +30,7 @@ const projects: TravelProject[] = [
     startDate: '2026-07-01T00:00:00.000Z',
     endDate: '2026-07-08T00:00:00.000Z',
     summary: '已過期但保留討論脈絡',
-    coverImage: null,
+    coverImage,
     galleryImages: [],
     itineraryImages: [],
     createdAt: '2026-06-21T00:00:00.000Z',
@@ -31,7 +45,7 @@ const projects: TravelProject[] = [
     startDate: '2027-02-02T00:00:00.000Z',
     endDate: '2027-02-08T00:00:00.000Z',
     summary: '雙度假會體驗',
-    coverImage: null,
+    coverImage,
     galleryImages: [],
     itineraryImages: [],
     createdAt: '2026-06-21T00:00:00.000Z',
@@ -46,7 +60,7 @@ const projects: TravelProject[] = [
     startDate: '2023-08-01T00:00:00.000Z',
     endDate: '2023-08-09T00:00:00.000Z',
     summary: '墨爾本與悉尼',
-    coverImage: null,
+    coverImage,
     galleryImages: [],
     itineraryImages: [],
     createdAt: '2026-06-21T00:00:00.000Z',
@@ -75,6 +89,10 @@ assert.match(html, /\/travel\/202702-thailand-phuket/)
 assert.match(html, /\/travel\/202308-east-australia/)
 assert.match(html, /\/travel\/202607-chongqing-yangtze-river/)
 assert.match(html, /規劃中但日期已過的行程會先收在這裡/)
+assert.match(html, /object-cover transition duration-500 group-hover:scale-105/)
+assert.doesNotMatch(html, /object-contain transition duration-500 group-hover:scale-105/)
+assert.match(html, /bg-gradient-to-r from-slate-950 via-sky-800 to-cyan-600 bg-clip-text/)
+assert.doesNotMatch(html, /from-slate-950 via-cyan-950 to-amber-900 px-5 py-8 text-white/)
 assert.doesNotMatch(html, /<p class="text-3xl font-semibold tracking-normal">2<\/p>/)
 assert.doesNotMatch(html, /媒體關聯/)
 assert.doesNotMatch(html, /缺圖時統一落到正式 ImageFallback/)
