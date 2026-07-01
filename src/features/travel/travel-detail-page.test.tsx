@@ -5,8 +5,10 @@ import { renderToStaticMarkup } from 'react-dom/server'
 
 import type { Media, TravelProject } from '@/payload/payload-types'
 import { CompletedTravelLedger } from './completed-travel-ledger'
+import { TravelPhotoGalleryPreview } from './travel-photo-gallery'
 import { TravelPlanningExtras } from './travel-planning-extras'
 import { TravelSourceSections } from './travel-source-sections'
+import { PayloadImage } from '@/components/ui/payload-image'
 
 const completedProject: TravelProject = {
   id: 1,
@@ -212,6 +214,15 @@ const sectionVideo: Media = {
   updatedAt: '2026-06-21T00:00:00.000Z',
 }
 
+const galleryPhotos: Media[] = Array.from({ length: 6 }).map((_, index) => ({
+  id: 400 + index,
+  type: 'photo',
+  altText: `普吉相簿照片 ${index + 1}`,
+  url: `https://cdn.example.com/phuket-${index + 1}.jpg`,
+  createdAt: '2026-06-21T00:00:00.000Z',
+  updatedAt: '2026-06-21T00:00:00.000Z',
+}))
+
 planningProject.sourceSections?.push(
   {
     id: 'source-7',
@@ -227,6 +238,9 @@ planningProject.sourceSections?.push(
     title: '泳池角度',
     anchor: 'pool-angle',
     body: 'Level 3 內容嵌入在 Level 2 卡片內。',
+    enableComments: false,
+    enableThumbsUp: false,
+    enableThumbsDown: false,
   },
 )
 
@@ -260,10 +274,16 @@ assert.match(planningHtml, /入住安納塔拉/)
 assert.match(planningHtml, /data-source-level="1"/)
 assert.match(planningHtml, /data-source-level="2"/)
 assert.match(planningHtml, /data-source-level="3"/)
+assert.match(planningHtml, /bg-clip-text/)
+assert.doesNotMatch(planningHtml, /rounded-lg bg-gradient-to-r/)
+assert.match(planningHtml, /data-daily-title-row="day"/)
+assert.match(planningHtml, /data-daily-title-row="date"/)
+assert.match(planningHtml, /data-daily-title-row="subtitle"/)
 assert.match(planningHtml, /安納塔拉媒體選集/)
 assert.match(planningHtml, /安納塔拉泳池照片/)
 assert.match(planningHtml, /youtube-nocookie\.com\/embed\/lYP3m2N8yvs/)
 assert.match(planningHtml, /泳池角度/)
+assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:pool-angle/)
 assert.doesNotMatch(planningHtml, /anantara-media photo 1/)
 
 const extrasHtml = renderToStaticMarkup(createElement(TravelPlanningExtras, { project: planningProject }))
@@ -272,3 +292,26 @@ assert.match(extrasHtml, /費用、餐食與可選項目/)
 assert.match(extrasHtml, /老來福酸湯兔/)
 assert.match(extrasHtml, /《烽煙三國》演出/)
 assert.match(extrasHtml, /白帝城/)
+
+const mediaHtml = renderToStaticMarkup(
+  createElement(PayloadImage, {
+    fallbackLabel: '原比例照片',
+    media: sectionPhoto,
+    sizes: '100vw',
+  }),
+)
+
+assert.match(mediaHtml, /object-contain/)
+assert.doesNotMatch(mediaHtml, /object-cover/)
+
+const completedGalleryHtml = renderToStaticMarkup(
+  createElement(TravelPhotoGalleryPreview, {
+    project: {
+      ...completedProject,
+      galleryImages: galleryPhotos,
+    } as TravelProject,
+  }),
+)
+
+assert.match(completedGalleryHtml, /Show all photos/)
+assert.match(completedGalleryHtml, /\/travel\/202602-thailand-phuket\/photos/)

@@ -24,9 +24,16 @@ type SourceSectionNode = {
   children: SourceSection[]
 }
 
+export type TravelInteractionOptions = {
+  comments: boolean
+  thumbUp: boolean
+  thumbDown: boolean
+}
+
 type RenderInteraction = (input: {
   associatedId: string
   className?: string
+  enabledInteractions: TravelInteractionOptions
   label: string
   thread?: TravelInteractionThread
 }) => ReactNode
@@ -248,13 +255,14 @@ function SourceGroupCard({
                 />
               ))}
             </div>
-            {renderInteraction
-              ? renderInteraction({
-                  className: 'border-white/15 bg-white/10 text-slate-300',
-                  associatedId: groupAssociatedId,
-                  label: group.title,
-                  thread: threads[groupAssociatedId],
-                })
+          {renderInteraction
+            ? renderInteraction({
+                className: 'border-white/15 bg-white/10 text-slate-300',
+                associatedId: groupAssociatedId,
+                enabledInteractions: interactionOptionsFor(group.intro),
+                label: group.title,
+                thread: threads[groupAssociatedId],
+              })
               : null}
           </div>
         </div>
@@ -269,25 +277,26 @@ function SourceGroupCard({
       id={group.anchor}
     >
       <div className="mx-auto w-full max-w-7xl">
-        <div className="rounded-lg bg-gradient-to-r from-cyan-900 via-slate-900 to-amber-900 px-5 py-7 text-white shadow-xl shadow-slate-900/15 md:px-7">
-          <h3 className="text-3xl font-semibold tracking-normal md:text-5xl">
+        <header className="max-w-5xl">
+          <h3 className="bg-gradient-to-r from-cyan-900 via-slate-900 to-amber-800 bg-clip-text text-3xl font-semibold tracking-normal text-transparent md:text-5xl">
             {group.title}
           </h3>
           {group.intro && hasBody(group.intro) ? (
-            <div className="mt-5 rounded-[1.5rem] border border-white/15 bg-white/10 p-4">
-              <SourceBody body={group.intro.body} tone="dark" />
-              <SourceSectionMediaRail section={group.intro} tone="dark" />
+            <div className="mt-5 max-w-3xl border-l border-cyan-800/25 pl-5">
+              <SourceBody body={group.intro.body} />
+              <SourceSectionMediaRail section={group.intro} />
             </div>
           ) : null}
           {renderInteraction
             ? renderInteraction({
-                className: 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300',
+                className: 'max-w-3xl border-white/60 bg-white/35 px-4 pb-1',
                 associatedId: groupAssociatedId,
+                enabledInteractions: interactionOptionsFor(group.intro),
                 label: group.title,
                 thread: threads[groupAssociatedId],
               })
             : null}
-        </div>
+        </header>
         <div className="mt-5 grid gap-4">
           {sectionNodes.map((node) => (
             <NestedSourceSection
@@ -327,30 +336,19 @@ function NestedSourceSection({
     <section
       className={
         dark
-          ? 'rounded-[1.5rem] border border-white/10 bg-slate-900/70 p-5 shadow-sm md:p-7'
-          : 'rounded-[1.5rem] border border-white/60 bg-white/65 p-5 shadow-sm shadow-slate-900/5 md:p-7'
+          ? 'border-t border-white/10 py-5 md:py-7'
+          : 'border-t border-slate-300/50 py-5 md:py-7'
       }
       data-source-level={section.level}
       id={section.anchor}
     >
       {daily ? (
-        <p className={dark ? 'text-base font-semibold uppercase tracking-[0.22em] text-cyan-100/70 md:text-lg' : 'text-base font-semibold uppercase tracking-[0.22em] text-[#65808b] md:text-lg'}>
-          {section.title.match(/Day\s+\d+/i)?.[0] ?? '每日節點'}
-        </p>
-      ) : null}
-      <h4
-        className={
-          daily
-            ? dark
-              ? 'mt-2 text-2xl font-semibold leading-tight tracking-normal text-white md:text-4xl'
-              : 'mt-2 text-2xl font-semibold leading-tight tracking-normal text-slate-950 md:text-4xl'
-            : dark
-              ? 'text-xl font-semibold tracking-normal text-white'
-              : 'text-xl font-semibold tracking-normal text-slate-950'
-        }
-      >
-        {section.title}
-      </h4>
+        <DailySectionTitle title={section.title} tone={tone} />
+      ) : (
+        <h4 className={dark ? 'text-xl font-semibold tracking-normal text-white' : 'text-xl font-semibold tracking-normal text-slate-950'}>
+          {section.title}
+        </h4>
+      )}
       <SourceBody body={section.body} tone={tone} />
       <SourceLinks section={section} tone={tone} />
       <SourceSectionMediaRail section={section} tone={tone} />
@@ -374,11 +372,13 @@ function NestedSourceSection({
               <SourceLinks section={child} tone={tone} />
               <SourceSectionMediaRail section={child} tone={tone} />
               {renderInteraction
+                && hasEnabledInteractions(interactionOptionsFor(child))
                 ? renderInteraction({
                     className: dark
                       ? 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300'
                       : 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
                     associatedId: sourceSectionKey(projectSlug, child.anchor),
+                    enabledInteractions: interactionOptionsFor(child),
                     label: child.title,
                     thread: threads[sourceSectionKey(projectSlug, child.anchor)],
                   })
@@ -388,11 +388,13 @@ function NestedSourceSection({
         </div>
       ) : null}
       {renderInteraction
+        && hasEnabledInteractions(interactionOptionsFor(section))
         ? renderInteraction({
             className: dark
               ? 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300'
               : 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
             associatedId,
+            enabledInteractions: interactionOptionsFor(section),
             label: section.title,
             thread: threads[associatedId],
           })
@@ -414,13 +416,72 @@ function SourceSectionMediaRail({
     return null
   }
 
+  const layoutClass =
+    items.length === 1
+      ? 'mt-5 grid max-w-4xl gap-3'
+      : items.length <= 4
+        ? 'mt-5 grid gap-3 sm:grid-cols-2'
+        : 'mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3'
+
   return (
-    <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div className={layoutClass}>
       {items.map((item) => (
         <SectionMediaCard key={item.id} media={item} tone={tone} />
       ))}
     </div>
   )
+}
+
+function DailySectionTitle({ title, tone }: { title: string; tone: 'light' | 'dark' }) {
+  const dark = tone === 'dark'
+  const titleParts = splitDailyTitle(title)
+
+  return (
+    <div className="grid gap-1">
+      <p
+        className={dark ? 'text-base font-semibold uppercase tracking-[0.18em] text-cyan-100/75 md:text-lg' : 'text-base font-semibold uppercase tracking-[0.18em] text-[#65808b] md:text-lg'}
+        data-daily-title-row="day"
+      >
+        {titleParts.day}
+      </p>
+      {titleParts.date ? (
+        <p
+          className={dark ? 'text-sm font-medium text-slate-300 md:text-base' : 'text-sm font-medium text-slate-500 md:text-base'}
+          data-daily-title-row="date"
+        >
+          {titleParts.date}
+        </p>
+      ) : null}
+      <h4
+        className={dark ? 'text-2xl font-semibold leading-tight tracking-normal text-white md:text-4xl' : 'text-2xl font-semibold leading-tight tracking-normal text-slate-950 md:text-4xl'}
+        data-daily-title-row="subtitle"
+      >
+        {titleParts.subtitle || title}
+      </h4>
+    </div>
+  )
+}
+
+function splitDailyTitle(title: string): { day: string; date: string; subtitle: string } {
+  const match = title.match(/^\s*((?:🚢|🌿)?\s*Day\s+\d+)\s*[·.-]?\s*(.*)$/i)
+
+  if (!match) {
+    return {
+      day: '每日節點',
+      date: '',
+      subtitle: title,
+    }
+  }
+
+  const day = match[1]?.trim() ?? '每日節點'
+  const rest = match[2]?.trim() ?? ''
+  const [date = '', ...subtitleParts] = rest.split(/\s*[—–-]\s*/)
+
+  return {
+    day,
+    date: date.trim(),
+    subtitle: subtitleParts.join(' — ').trim(),
+  }
 }
 
 function SectionMediaCard({ media, tone }: { media: Media; tone: 'light' | 'dark' }) {
@@ -575,6 +636,18 @@ function nestSourceSections(sections: SourceSection[]): SourceSectionNode[] {
 
 function mediaObjects(items: SourceSectionMedia[] | null | undefined): Media[] {
   return (items ?? []).filter((item): item is Media => Boolean(item && typeof item === 'object'))
+}
+
+function interactionOptionsFor(section: SourceSection | undefined): TravelInteractionOptions {
+  return {
+    comments: section?.enableComments !== false,
+    thumbUp: section?.enableThumbsUp !== false,
+    thumbDown: section?.enableThumbsDown !== false,
+  }
+}
+
+function hasEnabledInteractions(options: TravelInteractionOptions): boolean {
+  return options.comments || options.thumbUp || options.thumbDown
 }
 
 function virtualGroupFor(section: SourceSection): Pick<SourceSectionGroup, 'anchor' | 'title'> | null {

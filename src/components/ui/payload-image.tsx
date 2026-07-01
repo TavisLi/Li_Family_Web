@@ -47,10 +47,10 @@ export function PayloadImage({
   }
 
   return (
-    <div className={cn('relative aspect-[4/3] overflow-hidden rounded-lg', className)}>
+    <div className={cn('relative aspect-[4/3] overflow-hidden rounded-lg bg-white/35', className)}>
       <Image
         alt={media.altText}
-        className={cn('object-cover', imageClassName)}
+        className={cn('object-contain', imageClassName)}
         fill
         priority={priority}
         sizes={sizes}

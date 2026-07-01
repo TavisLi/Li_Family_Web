@@ -306,6 +306,9 @@ const travelSeedSchema = z.object({
             }),
           )
           .optional(),
+        enableComments: z.boolean().optional(),
+        enableThumbsUp: z.boolean().optional(),
+        enableThumbsDown: z.boolean().optional(),
       }),
     )
     .optional(),

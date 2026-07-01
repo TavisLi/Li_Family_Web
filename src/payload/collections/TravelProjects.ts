@@ -595,6 +595,33 @@ export const TravelProjects: CollectionConfig = {
               'Optional photos or YouTube media selected for this source section. Leave empty when no section media should render.',
           },
         },
+        {
+          name: 'enableComments',
+          type: 'checkbox',
+          required: false,
+          defaultValue: true,
+          admin: {
+            description: 'Enable the comment seat for this source section.',
+          },
+        },
+        {
+          name: 'enableThumbsUp',
+          type: 'checkbox',
+          required: false,
+          defaultValue: true,
+          admin: {
+            description: 'Enable thumb-up reactions for this source section.',
+          },
+        },
+        {
+          name: 'enableThumbsDown',
+          type: 'checkbox',
+          required: false,
+          defaultValue: true,
+          admin: {
+            description: 'Enable thumb-down reactions for this source section.',
+          },
+        },
       ],
     },
     {
