@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import type { TravelInteractionThread, TravelReaction } from '@/lib/data/travel'
 import { cn } from '@/lib/utils'
 import { submitTravelInteractionAction } from './actions'
+import type { TravelInteractionOptions } from './travel-source-sections'
 
 type OptimisticAction =
   | {
@@ -23,11 +24,17 @@ type TravelInteractionPanelProps = {
   associatedId: string
   label: string
   className?: string
+  enabledInteractions?: TravelInteractionOptions
 }
 
 export function TravelInteractionPanel({
   thread: initialThread,
   associatedId,
+  enabledInteractions = {
+    comments: true,
+    thumbUp: true,
+    thumbDown: true,
+  },
   label,
   className,
 }: TravelInteractionPanelProps) {
@@ -75,6 +82,12 @@ export function TravelInteractionPanel({
   }
 
   if (optimisticThread.locked) {
+    const enabledLabels = [
+      enabledInteractions.comments ? '留言' : null,
+      enabledInteractions.thumbUp ? 'thumb-up' : null,
+      enabledInteractions.thumbDown ? 'thumb-down' : null,
+    ].filter(Boolean).join('、')
+
     return (
       <div
         className={cn(
@@ -87,7 +100,7 @@ export function TravelInteractionPanel({
           討論席已預留
         </div>
         <p className="mt-2">
-          {label} 的留言、thumb-up 與 thumb-down 會在家人登入後開放。
+          {label} 的{enabledLabels || '互動'}會在家人登入後開放。
         </p>
       </div>
     )
@@ -110,62 +123,70 @@ export function TravelInteractionPanel({
         </span>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button
-          aria-label={`${label} thumb up`}
-          className="rounded-full border-cyan-200/70 bg-cyan-50/75 text-cyan-950 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-cyan-100 active:translate-y-0"
-          disabled={isPending}
-          onClick={() => submitReaction('up')}
-          size="sm"
-          type="button"
-          variant="outline"
-        >
-          <ThumbsUp className="size-4" aria-hidden="true" />
-          {optimisticThread.reactions.up}
-        </Button>
-        <Button
-          aria-label={`${label} thumb down`}
-          className="rounded-full border-amber-200/70 bg-amber-50/75 text-amber-950 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-amber-100 active:translate-y-0"
-          disabled={isPending}
-          onClick={() => submitReaction('down')}
-          size="sm"
-          type="button"
-          variant="outline"
-        >
-          <ThumbsDown className="size-4" aria-hidden="true" />
-          {optimisticThread.reactions.down}
-        </Button>
-      </div>
+      {enabledInteractions.thumbUp || enabledInteractions.thumbDown ? (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {enabledInteractions.thumbUp ? (
+            <Button
+              aria-label={`${label} thumb up`}
+              className="rounded-full border-cyan-200/70 bg-cyan-50/75 text-cyan-950 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-cyan-100 active:translate-y-0"
+              disabled={isPending}
+              onClick={() => submitReaction('up')}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              <ThumbsUp className="size-4" aria-hidden="true" />
+              {optimisticThread.reactions.up}
+            </Button>
+          ) : null}
+          {enabledInteractions.thumbDown ? (
+            <Button
+              aria-label={`${label} thumb down`}
+              className="rounded-full border-amber-200/70 bg-amber-50/75 text-amber-950 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:bg-amber-100 active:translate-y-0"
+              disabled={isPending}
+              onClick={() => submitReaction('down')}
+              size="sm"
+              type="button"
+              variant="outline"
+            >
+              <ThumbsDown className="size-4" aria-hidden="true" />
+              {optimisticThread.reactions.down}
+            </Button>
+          ) : null}
+        </div>
+      ) : null}
 
-      <form action={submitComment} className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
-        <input
-          className="h-10 min-w-0 rounded-full border border-white/60 bg-white/70 px-4 text-sm text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-200/60"
-          disabled={isPending}
-          name="commentText"
-          onChange={(event) => setDraft(event.target.value)}
-          placeholder="留下家人討論意見"
-          value={draft}
-        />
-        <Button
-          className={cn(
-            'rounded-full border px-4 transition duration-200 hover:-translate-y-0.5 active:translate-y-0',
-            draft.trim()
-              ? 'border-cyan-300 bg-cyan-100 text-cyan-950 hover:bg-cyan-200'
-              : 'border-white/60 bg-white/65 text-slate-500 hover:bg-white/80',
-          )}
-          disabled={isPending}
-          size="sm"
-          type="submit"
-          variant="outline"
-        >
-          <MessageCircle className="size-4" aria-hidden="true" />
-          送出
-        </Button>
-      </form>
+      {enabledInteractions.comments ? (
+        <form action={submitComment} className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto]">
+          <input
+            className="h-10 min-w-0 rounded-full border border-white/60 bg-white/70 px-4 text-sm text-slate-900 outline-none transition duration-200 placeholder:text-slate-400 focus:border-cyan-300 focus:ring-2 focus:ring-cyan-200/60"
+            disabled={isPending}
+            name="commentText"
+            onChange={(event) => setDraft(event.target.value)}
+            placeholder="留下家人討論意見"
+            value={draft}
+          />
+          <Button
+            className={cn(
+              'rounded-full border px-4 transition duration-200 hover:-translate-y-0.5 active:translate-y-0',
+              draft.trim()
+                ? 'border-cyan-300 bg-cyan-100 text-cyan-950 hover:bg-cyan-200'
+                : 'border-white/60 bg-white/65 text-slate-500 hover:bg-white/80',
+            )}
+            disabled={isPending}
+            size="sm"
+            type="submit"
+            variant="outline"
+          >
+            <MessageCircle className="size-4" aria-hidden="true" />
+            送出
+          </Button>
+        </form>
+      ) : null}
 
       {message ? <p className="mt-2 text-xs font-medium text-amber-700">{message}</p> : null}
 
-      {optimisticThread.comments.length ? (
+      {enabledInteractions.comments && optimisticThread.comments.length ? (
         <div className="mt-4 grid gap-2">
           {optimisticThread.comments.slice(-3).map((comment) => (
             <div

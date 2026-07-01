@@ -5,13 +5,14 @@ import {
   Video,
 } from 'lucide-react'
 
-import { ImageFallback } from '@/components/ui/image-fallback'
 import { PayloadImage } from '@/components/ui/payload-image'
 import type { TravelInteractionThread } from '@/lib/data/travel'
-import type { Media, TravelProject } from '@/payload/payload-types'
+import type { TravelProject } from '@/payload/payload-types'
 import { CompletedTravelLedger } from './completed-travel-ledger'
+import { TravelPhotoGalleryPreview } from './travel-photo-gallery'
 import {
   sourceSectionKey,
+  type TravelInteractionOptions,
   TravelSourceSections,
 } from './travel-source-sections'
 import { TravelInteractionPanel } from './travel-interaction-panel'
@@ -171,7 +172,6 @@ function PlanningTravelView({
 }
 
 function CompletedTravelView({ project }: { project: TravelProject }) {
-  const gallery = mediaObjects(project.galleryImages)
   const highlights = (project.dailyItinerary ?? []).slice(0, 6)
 
   return (
@@ -202,34 +202,7 @@ function CompletedTravelView({ project }: { project: TravelProject }) {
 
       <CompletedTravelLedger project={project} />
 
-      <section className="mx-auto w-full max-w-7xl px-5 py-14 md:py-20">
-        <SectionHeading
-          eyebrow="Photo Rhythm"
-          title="照片瀑布流與正式預留模組"
-          text="有照片時讀 Payload Media，照片不足時以 ImageFallback 保持版面節奏。"
-        />
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {gallery.length ? (
-            gallery.slice(0, 12).map((media, index) => (
-              <article className="rounded-lg border border-white/60 bg-white/45 p-3 shadow-sm backdrop-blur-xl" key={media.id}>
-                <PayloadImage
-                  className={index % 3 === 1 ? 'aspect-[4/5]' : 'aspect-[4/3]'}
-                  fallbackLabel={media.altText}
-                  media={media}
-                  sizes="(min-width: 1024px) 31vw, (min-width: 640px) 46vw, 100vw"
-                  tone="lynn"
-                />
-              </article>
-            ))
-          ) : (
-            Array.from({ length: 6 }).map((_, index) => (
-              <article className="rounded-lg border border-white/60 bg-white/45 p-3 shadow-sm backdrop-blur-xl" key={index}>
-                <ImageFallback label={`${project.title} photo ${index + 1}`} tone="lynn" />
-              </article>
-            ))
-          )}
-        </div>
-      </section>
+      <TravelPhotoGalleryPreview project={project} />
 
       <section className="border-y border-white/60 bg-slate-950 px-5 py-14 text-white md:py-20">
         <div className="mx-auto w-full max-w-7xl">
@@ -271,11 +244,13 @@ function CompletedTravelView({ project }: { project: TravelProject }) {
 function renderTravelInteraction({
   associatedId,
   className,
+  enabledInteractions,
   label,
   thread,
 }: {
   associatedId: string
   className?: string
+  enabledInteractions: TravelInteractionOptions
   label: string
   thread?: TravelInteractionThread
 }) {
@@ -283,6 +258,7 @@ function renderTravelInteraction({
     <TravelInteractionPanel
       associatedId={associatedId}
       className={className}
+      enabledInteractions={enabledInteractions}
       label={label}
       thread={thread ?? lockedThread(associatedId)}
     />
@@ -335,11 +311,6 @@ function participantNames(project: TravelProject): string[] {
 
   return [...party, ...members.filter((member): member is string => Boolean(member))].slice(0, 8)
 }
-
-function mediaObjects(media: TravelProject['galleryImages']): Media[] {
-  return (media ?? []).filter((item): item is Media => typeof item === 'object')
-}
-
 
 function statusLabel(status: TravelProject['status']) {
   return status === 'planning' ? '規劃中' : '已完成'

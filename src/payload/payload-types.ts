@@ -476,6 +476,18 @@ export interface TravelProject {
          * Optional photos or YouTube media selected for this source section. Leave empty when no section media should render.
          */
         mediaItems?: (number | Media)[] | null;
+        /**
+         * Enable the comment seat for this source section.
+         */
+        enableComments?: boolean | null;
+        /**
+         * Enable thumb-up reactions for this source section.
+         */
+        enableThumbsUp?: boolean | null;
+        /**
+         * Enable thumb-down reactions for this source section.
+         */
+        enableThumbsDown?: boolean | null;
         id?: string | null;
       }[]
     | null;
@@ -1025,6 +1037,9 @@ export interface TravelProjectsSelect<T extends boolean = true> {
               id?: T;
             };
         mediaItems?: T;
+        enableComments?: T;
+        enableThumbsUp?: T;
+        enableThumbsDown?: T;
         id?: T;
       };
   externalVideos?:
