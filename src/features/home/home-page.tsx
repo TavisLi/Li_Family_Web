@@ -149,6 +149,7 @@ export function HomePageView({
             <PayloadImage
               className="aspect-[5/4] min-h-80 rounded-lg border border-white/50 shadow-2xl shadow-slate-900/10"
               fallbackLabel="Li Family"
+              fit="cover"
               imageClassName={heroHasImage ? 'scale-[1.02]' : undefined}
               media={homeConfig.heroBackground}
               priority
@@ -192,6 +193,7 @@ export function HomePageView({
                 <PayloadImage
                   className="aspect-[4/3] rounded-none border-b border-white/50"
                   fallbackLabel={member.displayName}
+                  fit="cover"
                   media={memberImage(member)}
                   sizes="(min-width: 1024px) 31vw, (min-width: 640px) 46vw, 100vw"
                   tone={memberTone(member)}
@@ -245,8 +247,9 @@ export function HomePageView({
                     key={project.id}
                   >
                     <PayloadImage
-                      className="rounded-md"
+                      className="aspect-[4/3] rounded-md"
                       fallbackLabel={project.title}
+                      fit="cover"
                       media={project.coverImage}
                       sizes="(min-width: 768px) 13rem, 100vw"
                       tone={travelTone(project)}
@@ -298,6 +301,14 @@ export function HomePageView({
               ) : null}
             </HubPanel>
             <HubPanel
+              actionMeta={
+                familySession.isFamilyMode ? null : (
+                  <span className="inline-flex items-center gap-2 text-sm font-medium text-slate-300">
+                    <LockKeyhole className="size-4" aria-hidden="true" />
+                    家人模式解鎖
+                  </span>
+                )
+              }
               description={
                 familySession.isFamilyMode
                   ? '家人可在首頁直接完成進行中的共同願望。'
@@ -310,29 +321,25 @@ export function HomePageView({
             >
               {familySession.isFamilyMode ? (
                 <HomeBucketQuickView items={bucketItems} />
-              ) : (
-                <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-slate-300">
-                  <LockKeyhole className="size-4" aria-hidden="true" />
-                  家人模式解鎖
-                </p>
-              )}
+              ) : null}
             </HubPanel>
             <HubPanel
+              actionMeta={
+                <span className="inline-flex items-center gap-2 text-sm font-medium text-cyan-100">
+                  {wrappedCta.available ? (
+                    <CheckCircle2 className="size-4" aria-hidden="true" />
+                  ) : (
+                    <Sparkles className="size-4" aria-hidden="true" />
+                  )}
+                  {wrappedCta.available ? '已發布' : '季節性預告'}
+                </span>
+              }
               description={wrappedDescription}
               href={familySession.isFamilyMode ? '/wrapped' : '/family/login?next=/wrapped'}
               icon={<Sparkles className="size-5" aria-hidden="true" />}
               label="Wrapped"
               title="年度時光報告"
-            >
-              <p className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-cyan-100">
-                {wrappedCta.available ? (
-                  <CheckCircle2 className="size-4" aria-hidden="true" />
-                ) : (
-                  <Sparkles className="size-4" aria-hidden="true" />
-                )}
-                {wrappedCta.available ? '已發布' : '季節性預告'}
-              </p>
-            </HubPanel>
+            />
           </div>
         </div>
       </section>
@@ -341,6 +348,7 @@ export function HomePageView({
 }
 
 function HubPanel({
+  actionMeta,
   children,
   description,
   href,
@@ -348,6 +356,7 @@ function HubPanel({
   label,
   title,
 }: {
+  actionMeta?: ReactNode
   children?: ReactNode
   description: string
   href?: string
@@ -364,13 +373,18 @@ function HubPanel({
       <h3 className="text-2xl font-semibold tracking-normal">{title}</h3>
       <p className="mt-3 text-sm leading-7 text-slate-300">{description}</p>
       {children}
-      {href ? (
-        <Button asChild className="mt-5 rounded-md bg-white/10 text-white" size="sm" variant="outline">
-          <Link href={href}>
-            進入
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </Button>
+      {href || actionMeta ? (
+        <div className="mt-5 flex items-center justify-between gap-4">
+          {href ? (
+            <Button asChild className="rounded-md bg-white/10 text-white" size="sm" variant="outline">
+              <Link href={href}>
+                進入
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </Button>
+          ) : null}
+          {actionMeta ? <div className="ml-auto text-right">{actionMeta}</div> : null}
+        </div>
       ) : null}
     </article>
   )

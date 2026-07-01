@@ -91,6 +91,7 @@ function TravelHero({ project }: { project: TravelProject }) {
         <PayloadImage
           className="aspect-[5/4] min-h-80 rounded-lg border border-white/60 shadow-2xl shadow-slate-900/10"
           fallbackLabel={project.title}
+          fit="cover"
           imageClassName="scale-[1.01]"
           media={project.coverImage}
           priority

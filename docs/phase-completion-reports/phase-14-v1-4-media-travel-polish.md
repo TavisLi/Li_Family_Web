@@ -12,12 +12,15 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - 每日行程標題支援 Day、日期、subtitle 三列拆分顯示。
 - Travel source section 新增 comments、thumb-up、thumb-down 三項互動開關，未設定時維持既有全開行為。
 - Seed content 可寫入互動開關預設值，避免既有內容在重建資料時失去互動能力。
+- Phase 14 browser QA follow-up：補齊首頁、成員頁、旅行索引與旅行詳情頁的媒體容器規則，封面卡片可裁切填滿，內容照片改由圖片比例決定容器高度，並調整 Travel Level-1 / Route Index 漸層標題與卡片內容對齊。
 
 ## Branch / Commit
 
 - Branch：`codex/phase-14-v1-4-media-travel-polish`
 - Implementation commit：`def6c0f Implement phase 14 media and travel polish`
 - Completion report commit：本報告提交後位於同一 PR 分支 HEAD。
+- Browser QA follow-up branch：`codex/fix-tavis-hero-image-fit`
+- Browser QA follow-up commit：以 PR #44 最新 HEAD `Fix media frame display regressions` 為準。
 
 ## GitHub Sync / PR Status
 
@@ -27,7 +30,9 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - GitHub merge state：`MERGEABLE / CLEAN`
 - Vercel check：`SUCCESS`
 - Vercel Preview Comments check：`SUCCESS`
-- Closeout 狀態：本報告補齊後可轉 Ready 並 merge。
+- PR #43 closeout：已合併至 `main`，merge commit `dfd578d2db119876c84aa98bf8a61663cc754fb2`。
+- Phase 14 browser QA follow-up PR：[#44 Fix media frame display regressions](https://github.com/TavisLi/Li_Family_Web/pull/44)
+- Closeout 狀態：PR #44 納入 Phase 14 追加視覺 QA 修正，等待 Vercel check 通過後可合併。
 
 ## Database / Migration 狀態
 
@@ -60,6 +65,11 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - `src/features/travel/travel-photo-gallery.tsx`
 - `src/features/travel/travel-detail-page.tsx`
 - `src/features/travel/travel-source-sections.tsx`
+- `src/features/travel/travel-index-page.tsx`
+- `src/features/home/home-page.tsx`
+- `src/features/member/member-profile-page.tsx`
+- `src/features/member/member-profile-page.test.tsx`
+- `src/features/travel/travel-index-page.test.tsx`
 - `src/features/travel/travel-interaction-panel.tsx`
 - `src/features/travel/travel-detail-page.test.tsx`
 - `src/payload/collections/TravelProjects.ts`
@@ -81,15 +91,25 @@ Closeout 前已確認：
 - `pnpm tsc --noEmit`：通過。
 - `pnpm run build`：通過，Next.js 15.4.11 production build 成功。
 
+Phase 14 browser QA follow-up 另已確認：
+
+- `node --import tsx src/features/member/member-profile-page.test.tsx`：通過。
+- `node --import tsx src/features/travel/travel-index-page.test.tsx`：通過。
+- `node --import tsx src/features/travel/travel-detail-page.test.tsx`：通過。
+- `git diff --check`：通過。
+- `pnpm tsc --noEmit`：通過。
+- `pnpm run build`：通過。
+
 ## Browser / Runtime QA Scope
 
 - 本輪 closeout 使用本機 Next dev server 驗證 `/travel/202602-thailand-phuket/photos` 可回應 `200`。
 - HTML smoke 已確認完整照片頁有預期內容，且沒有 `Something needs attention` 或 `Application error` error boundary。
 - 本輪沒有進一步做人工桌機/手機瀏覽器視覺截圖比對；視覺細節以 PR preview 與後續 review 為準。
+- Browser comments follow-up 覆蓋 production 上回報的 `/member/tavis`、`/travel`、`/travel/202607-chongqing-yangtze-river` 與 `/` 視覺問題：封面/入口卡片統一使用 cover fit；source-section 內容照片使用 intrinsic layout；Travel Level-1 與 Route Index 標題改為更明確的漸層字；首頁 HubPanel 與 Travel Corridor 卡片調整對齊與比例。
 
 ## Known Limitations
 
-- 工作區仍有兩張既有未追蹤 Tavis media 圖片，與 Phase 14 PR 無關，未納入本階段 commit。
+- 工作區仍有使用者管理中的 Tavis media 素材變更，與 Phase 14 browser QA follow-up 無關，未納入本階段 commit。
 - Production 視覺驗證需等 PR merge 後由 Vercel production deployment 完成再確認。
 - 本階段不新增 comment/reaction collection，也不改 Cloudflare R2 儲存策略。
 

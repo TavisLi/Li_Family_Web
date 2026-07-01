@@ -201,6 +201,8 @@ const sectionPhoto: Media = {
   type: 'photo',
   altText: '安納塔拉泳池照片',
   url: 'https://cdn.example.com/anantara-pool.jpg',
+  width: 1600,
+  height: 1200,
   createdAt: '2026-06-21T00:00:00.000Z',
   updatedAt: '2026-06-21T00:00:00.000Z',
 }
@@ -274,7 +276,8 @@ assert.match(planningHtml, /入住安納塔拉/)
 assert.match(planningHtml, /data-source-level="1"/)
 assert.match(planningHtml, /data-source-level="2"/)
 assert.match(planningHtml, /data-source-level="3"/)
-assert.match(planningHtml, /bg-clip-text/)
+assert.match(planningHtml, /from-slate-950 via-sky-800 to-cyan-500 bg-clip-text/)
+assert.doesNotMatch(planningHtml, /from-cyan-900 via-slate-900 to-amber-800/)
 assert.doesNotMatch(planningHtml, /rounded-lg bg-gradient-to-r/)
 assert.match(planningHtml, /data-daily-title-row="day"/)
 assert.match(planningHtml, /data-daily-title-row="date"/)
@@ -302,7 +305,9 @@ const mediaHtml = renderToStaticMarkup(
 )
 
 assert.match(mediaHtml, /object-contain/)
+assert.match(mediaHtml, /data-image-layout="fill"/)
 assert.doesNotMatch(mediaHtml, /object-cover/)
+assert.match(planningHtml, /data-image-layout="intrinsic"/)
 
 const completedGalleryHtml = renderToStaticMarkup(
   createElement(TravelPhotoGalleryPreview, {

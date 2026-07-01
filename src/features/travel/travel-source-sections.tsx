@@ -278,7 +278,7 @@ function SourceGroupCard({
     >
       <div className="mx-auto w-full max-w-7xl">
         <header className="max-w-5xl">
-          <h3 className="bg-gradient-to-r from-cyan-900 via-slate-900 to-amber-800 bg-clip-text text-3xl font-semibold tracking-normal text-transparent md:text-5xl">
+          <h3 className="bg-gradient-to-r from-slate-950 via-sky-800 to-cyan-500 bg-clip-text text-3xl font-semibold leading-tight tracking-normal text-transparent md:text-5xl">
             {group.title}
           </h3>
           {group.intro && hasBody(group.intro) ? (
@@ -508,8 +508,9 @@ function SectionMediaCard({ media, tone }: { media: Media; tone: 'light' | 'dark
   return (
     <div className={tone === 'dark' ? 'rounded-lg border border-white/15 bg-white/10 p-2' : 'rounded-lg border border-white/70 bg-white/55 p-2'}>
       <PayloadImage
-        className="aspect-[4/3] rounded-md"
+        className="rounded-md"
         fallbackLabel={media.altText}
+        layout="intrinsic"
         media={media}
         sizes="(min-width: 1024px) 28vw, (min-width: 640px) 45vw, 100vw"
         tone="travel"
