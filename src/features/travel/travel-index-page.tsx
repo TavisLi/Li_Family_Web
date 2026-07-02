@@ -237,22 +237,26 @@ function CorridorNote({
 }) {
   return (
     <Link
-      className="group grid min-h-[12rem] grid-cols-[3.25rem_1fr_auto] gap-x-4 gap-y-3 rounded-lg border border-white/65 bg-white/45 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/60"
+      className="group grid min-h-[12rem] gap-5 rounded-lg border border-white/65 bg-white/45 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/60"
       href={href}
     >
-      <div className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm shadow-slate-900/15">
-        {icon}
-      </div>
-      <div className="flex min-h-full flex-col">
-        <h3 className="text-xl font-semibold tracking-normal text-slate-950">{title}</h3>
-        <p className="mt-2 text-sm leading-7 text-slate-600">{text}</p>
-        <span className="mt-auto inline-flex items-center gap-1 pt-4 text-sm font-semibold text-slate-700 transition group-hover:translate-x-1 group-hover:text-slate-950">
-          前往區塊
-          <ArrowRight className="size-4" aria-hidden="true" />
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm shadow-slate-900/15">
+          {icon}
+        </div>
+        <span className="text-4xl font-semibold leading-none tracking-normal text-slate-700/75 md:text-5xl">
+          {count}
         </span>
       </div>
-      <span className="rounded-full border border-slate-200 bg-white/75 px-3 py-1 text-sm font-semibold text-slate-700">
-        {count}
+
+      <div>
+        <h3 className="text-xl font-semibold tracking-normal text-slate-950">{title}</h3>
+        <p className="mt-2 text-sm leading-7 text-slate-600">{text}</p>
+      </div>
+
+      <span className="inline-flex items-center gap-1 text-sm font-semibold text-slate-700 transition group-hover:translate-x-1 group-hover:text-slate-950">
+        前往區塊
+        <ArrowRight className="size-4" aria-hidden="true" />
       </span>
     </Link>
   )

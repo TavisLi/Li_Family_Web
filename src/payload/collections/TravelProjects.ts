@@ -561,6 +561,36 @@ export const TravelProjects: CollectionConfig = {
           required: true,
         },
         {
+          name: 'displayDay',
+          type: 'text',
+          required: false,
+          localized: true,
+          admin: {
+            description:
+              'Optional daily section day label, e.g. Day 1. Leave empty to derive it from title.',
+          },
+        },
+        {
+          name: 'displayDate',
+          type: 'text',
+          required: false,
+          localized: true,
+          admin: {
+            description:
+              'Optional daily section date label. Leave empty to derive it from title.',
+          },
+        },
+        {
+          name: 'displaySubtitle',
+          type: 'text',
+          required: false,
+          localized: true,
+          admin: {
+            description:
+              'Optional daily section subtitle, e.g. 抵達日. Leave empty to derive it from title.',
+          },
+        },
+        {
           name: 'body',
           type: 'textarea',
           required: true,

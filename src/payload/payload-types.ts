@@ -464,6 +464,18 @@ export interface TravelProject {
         level: number;
         title: string;
         anchor: string;
+        /**
+         * Optional daily section day label, e.g. Day 1. Leave empty to derive it from title.
+         */
+        displayDay?: string | null;
+        /**
+         * Optional daily section date label. Leave empty to derive it from title.
+         */
+        displayDate?: string | null;
+        /**
+         * Optional daily section subtitle, e.g. 抵達日. Leave empty to derive it from title.
+         */
+        displaySubtitle?: string | null;
         body: string;
         links?:
           | {
@@ -1028,6 +1040,9 @@ export interface TravelProjectsSelect<T extends boolean = true> {
         level?: T;
         title?: T;
         anchor?: T;
+        displayDay?: T;
+        displayDate?: T;
+        displaySubtitle?: T;
         body?: T;
         links?:
           | T
