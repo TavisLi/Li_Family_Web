@@ -36,7 +36,7 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - PR #43 closeout：已合併至 `main`，merge commit `dfd578d2db119876c84aa98bf8a61663cc754fb2`。
 - Phase 14 browser QA follow-up PR：[#44 Fix media frame display regressions](https://github.com/TavisLi/Li_Family_Web/pull/44)
 - PR #44 closeout：已合併至 `main`，並作為本輪 follow-up 2 的基底。
-- Phase 14 browser QA follow-up 2 PR：本報告提交與 push 後建立。
+- Phase 14 browser QA follow-up 2 PR：[#45 Phase 14 travel source QA follow-up](https://github.com/TavisLi/Li_Family_Web/pull/45)
 
 ## Database / Migration 狀態
 
