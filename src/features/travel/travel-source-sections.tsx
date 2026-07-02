@@ -106,7 +106,7 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
   const mutedText = tone === 'dark' ? 'text-slate-300' : 'text-slate-600'
 
   return (
-    <div className={`mt-4 grid gap-4 text-sm leading-7 ${mutedText}`}>
+    <div className={`mt-4 grid gap-4 text-sm leading-7 md:grid-cols-2 ${mutedText}`}>
       {blocks.map((block, index) => {
         if (block.type === 'table') {
           const [header, ...rows] = block.rows
@@ -119,8 +119,8 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
             <div
               className={
                 tone === 'dark'
-                  ? 'overflow-x-auto rounded-2xl border border-cyan-100/15 bg-white/[0.06] shadow-sm shadow-slate-950/20'
-                  : 'overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5'
+                  ? 'overflow-x-auto rounded-2xl border border-cyan-100/15 bg-white/[0.06] shadow-sm shadow-slate-950/20 md:col-span-2'
+                  : 'overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5 md:col-span-2'
               }
               key={`table-${index}`}
             >
@@ -236,14 +236,14 @@ function SourceGroupCard({
               提醒、取消政策與待確認項目集中放在這裡，讓出發前需要注意的事情一眼可查。
             </p>
           </header>
-          <div className="rounded-[1.5rem] border border-white/15 bg-white/[0.06] p-5 shadow-sm backdrop-blur-xl md:p-7">
+          <div className="grid gap-4">
             {group.intro && hasBody(group.intro) ? (
-              <div className="mb-5 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+              <div>
                 <SourceBody body={group.intro.body} tone="dark" />
                 <SourceSectionMediaRail section={group.intro} tone="dark" />
               </div>
             ) : null}
-            <div className="grid gap-4">
+            <div className="grid gap-6">
               {sectionNodes.map((node) => (
                 <NestedSourceSection
                   key={node.section.id ?? node.section.anchor}
@@ -255,7 +255,7 @@ function SourceGroupCard({
                 />
               ))}
             </div>
-          {renderInteraction
+          {renderInteraction && hasEnabledInteractions(interactionOptionsFor(group.intro))
             ? renderInteraction({
                 className: 'border-white/15 bg-white/10 text-slate-300',
                 associatedId: groupAssociatedId,
@@ -287,7 +287,7 @@ function SourceGroupCard({
               <SourceSectionMediaRail section={group.intro} />
             </div>
           ) : null}
-          {renderInteraction
+          {renderInteraction && hasEnabledInteractions(interactionOptionsFor(group.intro))
             ? renderInteraction({
                 className: 'max-w-3xl border-white/60 bg-white/35 px-4 pb-1',
                 associatedId: groupAssociatedId,
@@ -334,16 +334,12 @@ function NestedSourceSection({
 
   return (
     <section
-      className={
-        dark
-          ? 'border-t border-white/10 py-5 md:py-7'
-          : 'border-t border-slate-300/50 py-5 md:py-7'
-      }
+      className={dark ? 'py-5 md:py-7' : 'py-5 md:py-7'}
       data-source-level={section.level}
       id={section.anchor}
     >
       {daily ? (
-        <DailySectionTitle title={section.title} tone={tone} />
+        <DailySectionTitle section={section} tone={tone} />
       ) : (
         <h4 className={dark ? 'text-xl font-semibold tracking-normal text-white' : 'text-xl font-semibold tracking-normal text-slate-950'}>
           {section.title}
@@ -432,9 +428,9 @@ function SourceSectionMediaRail({
   )
 }
 
-function DailySectionTitle({ title, tone }: { title: string; tone: 'light' | 'dark' }) {
+function DailySectionTitle({ section, tone }: { section: SourceSection; tone: 'light' | 'dark' }) {
   const dark = tone === 'dark'
-  const titleParts = splitDailyTitle(title)
+  const titleParts = dailyTitleParts(section)
 
   return (
     <div className="grid gap-1">
@@ -456,10 +452,20 @@ function DailySectionTitle({ title, tone }: { title: string; tone: 'light' | 'da
         className={dark ? 'text-2xl font-semibold leading-tight tracking-normal text-white md:text-4xl' : 'text-2xl font-semibold leading-tight tracking-normal text-slate-950 md:text-4xl'}
         data-daily-title-row="subtitle"
       >
-        {titleParts.subtitle || title}
+        {titleParts.subtitle || section.title}
       </h4>
     </div>
   )
+}
+
+function dailyTitleParts(section: SourceSection): { day: string; date: string; subtitle: string } {
+  const fallback = splitDailyTitle(section.title)
+
+  return {
+    day: displayText(section.displayDay, fallback.day),
+    date: displayText(section.displayDate, fallback.date),
+    subtitle: displayText(section.displaySubtitle, fallback.subtitle),
+  }
 }
 
 function splitDailyTitle(title: string): { day: string; date: string; subtitle: string } {
@@ -512,6 +518,7 @@ function SectionMediaCard({ media, tone }: { media: Media; tone: 'light' | 'dark
         fallbackLabel={media.altText}
         layout="intrinsic"
         media={media}
+        preferOriginal
         sizes="(min-width: 1024px) 28vw, (min-width: 640px) 45vw, 100vw"
         tone="travel"
       />
@@ -637,6 +644,23 @@ function nestSourceSections(sections: SourceSection[]): SourceSectionNode[] {
 
 function mediaObjects(items: SourceSectionMedia[] | null | undefined): Media[] {
   return (items ?? []).filter((item): item is Media => Boolean(item && typeof item === 'object'))
+}
+
+function displayText(value: unknown, fallback = ''): string {
+  if (typeof value === 'string') {
+    return value.trim() || fallback
+  }
+
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>
+    const localized = record['zh-TW'] ?? record.en ?? record.value
+
+    if (typeof localized === 'string') {
+      return localized.trim() || fallback
+    }
+  }
+
+  return fallback
 }
 
 function interactionOptionsFor(section: SourceSection | undefined): TravelInteractionOptions {

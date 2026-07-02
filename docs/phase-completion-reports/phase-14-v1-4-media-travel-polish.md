@@ -13,6 +13,7 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - Travel source section 新增 comments、thumb-up、thumb-down 三項互動開關，未設定時維持既有全開行為。
 - Seed content 可寫入互動開關預設值，避免既有內容在重建資料時失去互動能力。
 - Phase 14 browser QA follow-up：補齊首頁、成員頁、旅行索引與旅行詳情頁的媒體容器規則，封面卡片可裁切填滿，內容照片改由圖片比例決定容器高度，並調整 Travel Level-1 / Route Index 漸層標題與卡片內容對齊。
+- Phase 14 browser QA follow-up 2：補齊 Travel source section 的密度與資料配置，包括 Level 2 非表格內容改為兩欄、表格維持單欄全寬、Level 2 外框線移除、互動配置全關時不再顯示討論席、每日行程標頭改由獨立欄位控制，並讓內容圖片使用原圖 URL 與 intrinsic layout 避免被 Payload 預設尺寸裁切。
 
 ## Branch / Commit
 
@@ -21,6 +22,8 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - Completion report commit：本報告提交後位於同一 PR 分支 HEAD。
 - Browser QA follow-up branch：`codex/fix-tavis-hero-image-fit`
 - Browser QA follow-up commit：以 PR #44 最新 HEAD `Fix media frame display regressions` 為準。
+- Browser QA follow-up 2 branch：`codex/phase-14-browser-qa-followup-2`
+- Browser QA follow-up 2 commit：本報告提交後位於同一 PR 分支 HEAD。
 
 ## GitHub Sync / PR Status
 
@@ -32,7 +35,8 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - Vercel Preview Comments check：`SUCCESS`
 - PR #43 closeout：已合併至 `main`，merge commit `dfd578d2db119876c84aa98bf8a61663cc754fb2`。
 - Phase 14 browser QA follow-up PR：[#44 Fix media frame display regressions](https://github.com/TavisLi/Li_Family_Web/pull/44)
-- Closeout 狀態：PR #44 納入 Phase 14 追加視覺 QA 修正，等待 Vercel check 通過後可合併。
+- PR #44 closeout：已合併至 `main`，並作為本輪 follow-up 2 的基底。
+- Phase 14 browser QA follow-up 2 PR：本報告提交與 push 後建立。
 
 ## Database / Migration 狀態
 
@@ -57,6 +61,23 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 
 調查結論：未發現欄位重複、目標表結構漂移，或本階段 migration 對既有資料造成刪除、清空、型別覆寫等破壞性影響。
 
+Browser QA follow-up 2 另新增每日行程標頭顯示欄位：
+
+- Migration：`src/migrations/20260701_123939_add_travel_source_section_display_title_fields.ts`
+- 目標 table：`travel_projects_source_sections_locales`
+- 套用前 row count：`132`
+- 套用後 row count：`132`
+- 新增欄位：
+  - `display_day varchar null`
+  - `display_date varchar null`
+  - `display_subtitle varchar null`
+- 重複目標欄位：`0`
+- 缺少目標欄位：`0`
+- 新欄位非空值分佈：132 筆既有資料皆為 `null`，未覆寫既有內容。
+- `payload_migrations` 對應 record：`1`
+
+調查結論：此次 migration 為 additive nullable 欄位，受控套用前後 row count 不變；未發現欄位重複、表結構漂移，或 Payload 為對齊 schema 而執行刪除、清空、型別覆寫等會影響既有資料的操作。
+
 ## Key Files
 
 - `docs/superpowers/specs/2026-06-30-phase-14-v1-4-media-travel-polish-prd.md`
@@ -76,6 +97,7 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - `src/payload/payload-types.ts`
 - `src/scripts/seed-content.ts`
 - `src/migrations/index.ts`
+- `src/migrations/20260701_123939_add_travel_source_section_display_title_fields.ts`
 
 ## Validation Commands
 
@@ -100,12 +122,25 @@ Phase 14 browser QA follow-up 另已確認：
 - `pnpm tsc --noEmit`：通過。
 - `pnpm run build`：通過。
 
+Phase 14 browser QA follow-up 2 另已確認：
+
+- Controlled DB migration inspect：套用前 row count `132`，三個目標欄位不存在、無重複欄位、migration record `0`。
+- Controlled DB migration apply/verify：通過，row count 維持 `132`，三個 nullable 顯示欄位已存在，migration record `1`。
+- `node --import tsx src/features/travel/travel-detail-page.test.tsx`：通過。
+- `node --import tsx src/features/travel/travel-index-page.test.tsx`：通過。
+- `node --import tsx src/features/member/member-profile-page.test.tsx`：通過。
+- `pnpm run test:seed-content`：通過。
+- `git diff --check`：通過。
+- `pnpm tsc --noEmit`：通過。
+- `pnpm run build`：通過。
+
 ## Browser / Runtime QA Scope
 
 - 本輪 closeout 使用本機 Next dev server 驗證 `/travel/202602-thailand-phuket/photos` 可回應 `200`。
 - HTML smoke 已確認完整照片頁有預期內容，且沒有 `Something needs attention` 或 `Application error` error boundary。
 - 本輪沒有進一步做人工桌機/手機瀏覽器視覺截圖比對；視覺細節以 PR preview 與後續 review 為準。
 - Browser comments follow-up 覆蓋 production 上回報的 `/member/tavis`、`/travel`、`/travel/202607-chongqing-yangtze-river` 與 `/` 視覺問題：封面/入口卡片統一使用 cover fit；source-section 內容照片使用 intrinsic layout；Travel Level-1 與 Route Index 標題改為更明確的漸層字；首頁 HubPanel 與 Travel Corridor 卡片調整對齊與比例。
+- Browser comments follow-up 2 覆蓋 production 上回報的 `/travel#travel-group-planning`、`/travel#travel-group-preliminary`、`/travel/202607-chongqing-yangtze-river`：Travel group 卡片改以圖標、文案、數字橫向分區；Route Index title 去除底色與外框線後改用漸層字；每日行程標頭改由獨立欄位輸出；Level 2 內容增加兩欄資訊密度，表格維持全寬；互動配置全關時不展示討論席；內容圖片改用原圖 URL 避免衍生尺寸裁切。
 
 ## Known Limitations
 

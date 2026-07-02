@@ -19,14 +19,19 @@ type PayloadImageProps = {
   imageClassName?: string
   fit?: 'contain' | 'cover'
   layout?: 'fill' | 'intrinsic'
+  preferOriginal?: boolean
   priority?: boolean
   sizes: string
   tone?: 'neutral' | 'tavis' | 'lynn' | 'leo' | 'travel'
 }
 
-function getMediaUrl(media: Media | number | null | undefined) {
+function getMediaUrl(media: Media | number | null | undefined, preferOriginal = false) {
   if (!media || typeof media === 'number') {
     return null
+  }
+
+  if (preferOriginal) {
+    return media.url ?? media.sizes?.large?.url ?? media.sizes?.medium?.url ?? null
   }
 
   return media.sizes?.large?.url ?? media.sizes?.medium?.url ?? media.url ?? null
@@ -54,12 +59,13 @@ export function PayloadImage({
   imageClassName,
   fit = 'contain',
   layout = 'fill',
+  preferOriginal = false,
   priority = false,
   sizes,
   tone = 'neutral',
 }: PayloadImageProps) {
   const [hasError, setHasError] = useState(false)
-  const src = getMediaUrl(media)
+  const src = getMediaUrl(media, preferOriginal)
   const dimensions = getMediaDimensions(media)
 
   if (hasError || !src || !media || typeof media === 'number') {

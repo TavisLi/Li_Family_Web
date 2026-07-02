@@ -148,6 +148,9 @@ const planningProject: TravelProject = {
       title: '旅行戰情室',
       anchor: 'war-room',
       body: '',
+      enableComments: false,
+      enableThumbsUp: false,
+      enableThumbsDown: false,
     },
     {
       id: 'source-2',
@@ -174,6 +177,9 @@ const planningProject: TravelProject = {
       id: 'source-4',
       level: 2,
       title: 'Day 1 · 2/2（二）— 台北 → 普吉島 · 安納塔拉入住',
+      displayDay: 'Day 1',
+      displayDate: '2027年2月2日（二）',
+      displaySubtitle: '安納塔拉入住日',
       anchor: 'day-1',
       body: '| 時段 | 行程 | 備註 |\n| --- | --- | --- |\n| 上午 | 抵達普吉島 | 入住安納塔拉 |',
     },
@@ -263,6 +269,7 @@ assert.doesNotMatch(planningHtml, /行程章節/)
 assert.doesNotMatch(planningHtml, /Markdown H1/)
 assert.doesNotMatch(planningHtml, /子章節/)
 assert.match(planningHtml, /旅行戰情室/)
+assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:war-room/)
 assert.match(planningHtml, /每日節點與決策討論/)
 assert.match(planningHtml, /注意事項/)
 assert.match(planningHtml, /Reminders/)
@@ -282,6 +289,9 @@ assert.doesNotMatch(planningHtml, /rounded-lg bg-gradient-to-r/)
 assert.match(planningHtml, /data-daily-title-row="day"/)
 assert.match(planningHtml, /data-daily-title-row="date"/)
 assert.match(planningHtml, /data-daily-title-row="subtitle"/)
+assert.match(planningHtml, /2027年2月2日（二）/)
+assert.match(planningHtml, /安納塔拉入住日/)
+assert.doesNotMatch(planningHtml, /data-daily-title-row="subtitle">台北 → 普吉島 · 安納塔拉入住/)
 assert.match(planningHtml, /安納塔拉媒體選集/)
 assert.match(planningHtml, /安納塔拉泳池照片/)
 assert.match(planningHtml, /youtube-nocookie\.com\/embed\/lYP3m2N8yvs/)
@@ -308,6 +318,10 @@ assert.match(mediaHtml, /object-contain/)
 assert.match(mediaHtml, /data-image-layout="fill"/)
 assert.doesNotMatch(mediaHtml, /object-cover/)
 assert.match(planningHtml, /data-image-layout="intrinsic"/)
+assert.match(planningHtml, /https:\/\/cdn\.example\.com\/anantara-pool\.jpg/)
+assert.match(planningHtml, /md:grid-cols-2/)
+assert.match(planningHtml, /md:col-span-2/)
+assert.doesNotMatch(planningHtml, /border-t border-white\/10 py-5/)
 
 const completedGalleryHtml = renderToStaticMarkup(
   createElement(TravelPhotoGalleryPreview, {
