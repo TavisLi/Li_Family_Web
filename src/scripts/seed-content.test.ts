@@ -205,6 +205,16 @@ async function main() {
       section.body.includes('12306'),
     ),
   )
+  assert.ok(
+    (chongqingSeed.sourceSections ?? []).some((section) =>
+      section.level === 1 &&
+      section.title === '注意事項' &&
+      section.body.includes('提醒、取消政策與待確認項目集中放在這裡') &&
+      section.enableComments === false &&
+      section.enableThumbsUp === false &&
+      section.enableThumbsDown === false,
+    ),
+  )
 
   assert.ok(seedContent.media.length >= 10)
   assert.ok(seedContent.media.some((item) => item.ownerType === 'member' && item.ownerSlug === 'tavis'))

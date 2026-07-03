@@ -14,6 +14,7 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - Seed content 可寫入互動開關預設值，避免既有內容在重建資料時失去互動能力。
 - Phase 14 browser QA follow-up：補齊首頁、成員頁、旅行索引與旅行詳情頁的媒體容器規則，封面卡片可裁切填滿，內容照片改由圖片比例決定容器高度，並調整 Travel Level-1 / Route Index 漸層標題與卡片內容對齊。
 - Phase 14 browser QA follow-up 2：補齊 Travel source section 的密度與資料配置，包括 Level 2 非表格內容改為兩欄、表格維持單欄全寬、Level 2 外框線移除、互動配置全關時不再顯示討論席、每日行程標頭改由獨立欄位控制，並讓內容圖片使用原圖 URL 與 intrinsic layout 避免被 Payload 預設尺寸裁切。
+- Phase 14 browser QA follow-up 3：依 production browser annotation 微調旅行來源章節字級與對齊，包括每日行程 Day/date 字級、Level-3 標題 22px、Level-1 漸層色彩強化、注意事項 intro 改由該 Level-1 section 的 localized body 提供、不再硬編在 React 中，且該 Level-1 互動開關關閉以避免多餘討論席；來源圖片 rail 在桌機置中，以及 560px 以上非表格內容雙欄、表格全寬。
 
 ## Branch / Commit
 
@@ -24,6 +25,8 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - Browser QA follow-up commit：以 PR #44 最新 HEAD `Fix media frame display regressions` 為準。
 - Browser QA follow-up 2 branch：`codex/phase-14-browser-qa-followup-2`
 - Browser QA follow-up 2 commit：本報告提交後位於同一 PR 分支 HEAD。
+- Browser QA follow-up 3 branch：`codex/phase-14-browser-qa-followup-3`
+- Browser QA follow-up 3 commit：本報告提交後位於同一 PR 分支 HEAD。
 
 ## GitHub Sync / PR Status
 
@@ -37,6 +40,7 @@ Phase 14 v1.4 對應 Issue #40 與 Issue #41，目標是在既有 Travel / Media
 - Phase 14 browser QA follow-up PR：[#44 Fix media frame display regressions](https://github.com/TavisLi/Li_Family_Web/pull/44)
 - PR #44 closeout：已合併至 `main`，並作為本輪 follow-up 2 的基底。
 - Phase 14 browser QA follow-up 2 PR：[#45 Phase 14 travel source QA follow-up](https://github.com/TavisLi/Li_Family_Web/pull/45)
+- Phase 14 browser QA follow-up 3 PR：[#46 Phase 14 travel source annotation follow-up](https://github.com/TavisLi/Li_Family_Web/pull/46)
 
 ## Database / Migration 狀態
 
@@ -134,6 +138,16 @@ Phase 14 browser QA follow-up 2 另已確認：
 - `pnpm tsc --noEmit`：通過。
 - `pnpm run build`：通過。
 
+Phase 14 browser QA follow-up 3 另已確認：
+
+- Controlled DB data fix inspect/apply/verify：`202607-chongqing-yangtze-river` Level-1 `注意事項` localized body 已由 `__SECTION_BOUNDARY__` 改為正式 intro 文案，該 section 的 comments、thumb-up、thumb-down 已設為 `false`，更新範圍為 1 筆 section。
+- `node --import tsx src/features/travel/travel-detail-page.test.tsx`：通過。
+- `node --import tsx src/features/travel/travel-index-page.test.tsx`：通過。
+- `pnpm run test:seed-content`：通過。
+- `git diff --check`：通過。
+- `pnpm tsc --noEmit`：通過。
+- `pnpm run build`：通過。
+
 ## Browser / Runtime QA Scope
 
 - 本輪 closeout 使用本機 Next dev server 驗證 `/travel/202602-thailand-phuket/photos` 可回應 `200`。
@@ -141,6 +155,7 @@ Phase 14 browser QA follow-up 2 另已確認：
 - 本輪沒有進一步做人工桌機/手機瀏覽器視覺截圖比對；視覺細節以 PR preview 與後續 review 為準。
 - Browser comments follow-up 覆蓋 production 上回報的 `/member/tavis`、`/travel`、`/travel/202607-chongqing-yangtze-river` 與 `/` 視覺問題：封面/入口卡片統一使用 cover fit；source-section 內容照片使用 intrinsic layout；Travel Level-1 與 Route Index 標題改為更明確的漸層字；首頁 HubPanel 與 Travel Corridor 卡片調整對齊與比例。
 - Browser comments follow-up 2 覆蓋 production 上回報的 `/travel#travel-group-planning`、`/travel#travel-group-preliminary`、`/travel/202607-chongqing-yangtze-river`：Travel group 卡片改以圖標、文案、數字橫向分區；Route Index title 去除底色與外框線後改用漸層字；每日行程標頭改由獨立欄位輸出；Level 2 內容增加兩欄資訊密度，表格維持全寬；互動配置全關時不展示討論席；內容圖片改用原圖 URL 避免衍生尺寸裁切。
+- Browser comments follow-up 3 覆蓋 production 上回報的 `/travel/202607-chongqing-yangtze-river`：每日行程標題字級調整為 Day 18px、date 16px；非每日 Level-3 標題調整為 22px；Level-1 title 漸層加強；注意事項 intro 維持顯示但來源改為資料表 localized body；`__SECTION_BOUNDARY__` 保留為其他空 Level-1 section 的內部邊界佔位，不作為前台內容；注意事項 Level-1 互動開關關閉以移除多餘討論席；圖片 rail 在桌機置中；非表格文字於 560px 以上雙欄，表格仍單欄全寬。
 
 ## Known Limitations
 

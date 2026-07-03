@@ -188,7 +188,10 @@ const planningProject: TravelProject = {
       level: 1,
       title: '注意事項',
       anchor: 'notes',
-      body: '',
+      body: '提醒、取消政策與待確認項目集中放在這裡，讓出發前需要注意的事情一眼可查。',
+      enableComments: false,
+      enableThumbsUp: false,
+      enableThumbsDown: false,
     },
     {
       id: 'source-6',
@@ -273,22 +276,27 @@ assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:war-room
 assert.match(planningHtml, /每日節點與決策討論/)
 assert.match(planningHtml, /注意事項/)
 assert.match(planningHtml, /Reminders/)
+assert.match(planningHtml, /提醒、取消政策與待確認項目集中放在這裡/)
 assert.match(planningHtml, /Day 1/)
 assert.match(planningHtml, /度假村官方網站/)
 assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuket/)
 assert.match(planningHtml, /最高\$1,500/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:resort-sites/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:details/)
+assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:notes/)
 assert.match(planningHtml, /入住安納塔拉/)
 assert.match(planningHtml, /data-source-level="1"/)
 assert.match(planningHtml, /data-source-level="2"/)
 assert.match(planningHtml, /data-source-level="3"/)
-assert.match(planningHtml, /from-slate-950 via-sky-800 to-cyan-500 bg-clip-text/)
+assert.match(planningHtml, /from-slate-950 via-cyan-700 to-amber-500 bg-clip-text/)
+assert.doesNotMatch(planningHtml, /from-slate-950 via-sky-800 to-cyan-500 bg-clip-text/)
 assert.doesNotMatch(planningHtml, /from-cyan-900 via-slate-900 to-amber-800/)
 assert.doesNotMatch(planningHtml, /rounded-lg bg-gradient-to-r/)
 assert.match(planningHtml, /data-daily-title-row="day"/)
 assert.match(planningHtml, /data-daily-title-row="date"/)
 assert.match(planningHtml, /data-daily-title-row="subtitle"/)
+assert.match(planningHtml, /text-lg font-semibold uppercase tracking-\[0\.18em\] text-\[#65808b\] md:text-xl/)
+assert.match(planningHtml, /text-base font-medium text-slate-500 md:text-lg/)
 assert.match(planningHtml, /2027年2月2日（二）/)
 assert.match(planningHtml, /安納塔拉入住日/)
 assert.doesNotMatch(planningHtml, /data-daily-title-row="subtitle">台北 → 普吉島 · 安納塔拉入住/)
@@ -319,8 +327,10 @@ assert.match(mediaHtml, /data-image-layout="fill"/)
 assert.doesNotMatch(mediaHtml, /object-cover/)
 assert.match(planningHtml, /data-image-layout="intrinsic"/)
 assert.match(planningHtml, /https:\/\/cdn\.example\.com\/anantara-pool\.jpg/)
-assert.match(planningHtml, /md:grid-cols-2/)
-assert.match(planningHtml, /md:col-span-2/)
+assert.match(planningHtml, /min-\[560px\]:grid-cols-2/)
+assert.match(planningHtml, /min-\[560px\]:col-span-2/)
+assert.match(planningHtml, /mx-auto mt-5 grid w-full gap-3 sm:grid-cols-2/)
+assert.match(planningHtml, /text-\[22px\] font-semibold tracking-normal text-slate-950/)
 assert.doesNotMatch(planningHtml, /border-t border-white\/10 py-5/)
 
 const completedGalleryHtml = renderToStaticMarkup(

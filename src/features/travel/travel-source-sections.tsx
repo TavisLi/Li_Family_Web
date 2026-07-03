@@ -106,7 +106,7 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
   const mutedText = tone === 'dark' ? 'text-slate-300' : 'text-slate-600'
 
   return (
-    <div className={`mt-4 grid gap-4 text-sm leading-7 md:grid-cols-2 ${mutedText}`}>
+    <div className={`mt-4 grid gap-4 text-sm leading-7 min-[560px]:grid-cols-2 ${mutedText}`}>
       {blocks.map((block, index) => {
         if (block.type === 'table') {
           const [header, ...rows] = block.rows
@@ -119,8 +119,8 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
             <div
               className={
                 tone === 'dark'
-                  ? 'overflow-x-auto rounded-2xl border border-cyan-100/15 bg-white/[0.06] shadow-sm shadow-slate-950/20 md:col-span-2'
-                  : 'overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5 md:col-span-2'
+                  ? 'overflow-x-auto rounded-2xl border border-cyan-100/15 bg-white/[0.06] shadow-sm shadow-slate-950/20 min-[560px]:col-span-2'
+                  : 'overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5 min-[560px]:col-span-2'
               }
               key={`table-${index}`}
             >
@@ -232,9 +232,6 @@ function SourceGroupCard({
             <h3 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-white md:text-5xl">
               {group.title}
             </h3>
-            <p className="mt-5 max-w-md text-sm leading-7 text-slate-300">
-              提醒、取消政策與待確認項目集中放在這裡，讓出發前需要注意的事情一眼可查。
-            </p>
           </header>
           <div className="grid gap-4">
             {group.intro && hasBody(group.intro) ? (
@@ -255,7 +252,7 @@ function SourceGroupCard({
                 />
               ))}
             </div>
-          {renderInteraction && hasEnabledInteractions(interactionOptionsFor(group.intro))
+          {renderInteraction && group.intro && hasBody(group.intro) && hasEnabledInteractions(interactionOptionsFor(group.intro))
             ? renderInteraction({
                 className: 'border-white/15 bg-white/10 text-slate-300',
                 associatedId: groupAssociatedId,
@@ -278,7 +275,7 @@ function SourceGroupCard({
     >
       <div className="mx-auto w-full max-w-7xl">
         <header className="max-w-5xl">
-          <h3 className="bg-gradient-to-r from-slate-950 via-sky-800 to-cyan-500 bg-clip-text text-3xl font-semibold leading-tight tracking-normal text-transparent md:text-5xl">
+          <h3 className="bg-gradient-to-r from-slate-950 via-cyan-700 to-amber-500 bg-clip-text text-3xl font-semibold leading-tight tracking-normal text-transparent md:text-5xl">
             {group.title}
           </h3>
           {group.intro && hasBody(group.intro) ? (
@@ -287,7 +284,7 @@ function SourceGroupCard({
               <SourceSectionMediaRail section={group.intro} />
             </div>
           ) : null}
-          {renderInteraction && hasEnabledInteractions(interactionOptionsFor(group.intro))
+          {renderInteraction && group.intro && hasBody(group.intro) && hasEnabledInteractions(interactionOptionsFor(group.intro))
             ? renderInteraction({
                 className: 'max-w-3xl border-white/60 bg-white/35 px-4 pb-1',
                 associatedId: groupAssociatedId,
@@ -341,7 +338,7 @@ function NestedSourceSection({
       {daily ? (
         <DailySectionTitle section={section} tone={tone} />
       ) : (
-        <h4 className={dark ? 'text-xl font-semibold tracking-normal text-white' : 'text-xl font-semibold tracking-normal text-slate-950'}>
+        <h4 className={dark ? 'text-[22px] font-semibold tracking-normal text-white' : 'text-[22px] font-semibold tracking-normal text-slate-950'}>
           {section.title}
         </h4>
       )}
@@ -361,7 +358,7 @@ function NestedSourceSection({
               id={child.anchor}
               key={child.id ?? child.anchor}
             >
-              <h5 className={dark ? 'text-lg font-semibold tracking-normal text-white' : 'text-lg font-semibold tracking-normal text-slate-950'}>
+              <h5 className={dark ? 'text-[22px] font-semibold tracking-normal text-white' : 'text-[22px] font-semibold tracking-normal text-slate-950'}>
                 {child.title}
               </h5>
               <SourceBody body={child.body} tone={tone} />
@@ -414,10 +411,10 @@ function SourceSectionMediaRail({
 
   const layoutClass =
     items.length === 1
-      ? 'mt-5 grid max-w-4xl gap-3'
+      ? 'mx-auto mt-5 grid w-full max-w-4xl gap-3'
       : items.length <= 4
-        ? 'mt-5 grid gap-3 sm:grid-cols-2'
-        : 'mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3'
+        ? 'mx-auto mt-5 grid w-full gap-3 sm:grid-cols-2'
+        : 'mx-auto mt-5 grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3'
 
   return (
     <div className={layoutClass}>
@@ -435,14 +432,14 @@ function DailySectionTitle({ section, tone }: { section: SourceSection; tone: 'l
   return (
     <div className="grid gap-1">
       <p
-        className={dark ? 'text-base font-semibold uppercase tracking-[0.18em] text-cyan-100/75 md:text-lg' : 'text-base font-semibold uppercase tracking-[0.18em] text-[#65808b] md:text-lg'}
+        className={dark ? 'text-lg font-semibold uppercase tracking-[0.18em] text-cyan-100/75 md:text-xl' : 'text-lg font-semibold uppercase tracking-[0.18em] text-[#65808b] md:text-xl'}
         data-daily-title-row="day"
       >
         {titleParts.day}
       </p>
       {titleParts.date ? (
         <p
-          className={dark ? 'text-sm font-medium text-slate-300 md:text-base' : 'text-sm font-medium text-slate-500 md:text-base'}
+          className={dark ? 'text-base font-medium text-slate-300 md:text-lg' : 'text-base font-medium text-slate-500 md:text-lg'}
           data-daily-title-row="date"
         >
           {titleParts.date}
