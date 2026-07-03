@@ -426,6 +426,8 @@ export type BlogCategorySeed = z.infer<typeof blogCategorySeedSchema>
 export type BlogPostSeed = z.infer<typeof blogPostSeedSchema>
 
 const SOURCE_SECTION_BOUNDARY_BODY = '__SECTION_BOUNDARY__'
+const REMINDER_SOURCE_SECTION_INTRO =
+  '提醒、取消政策與待確認項目集中放在這裡，讓出發前需要注意的事情一眼可查。'
 export type LexicalContentSeed = z.infer<typeof lexicalContentSchema>
 
 export type TravelCatalogEntry = {
@@ -1428,7 +1430,8 @@ function parseSourceSections(markdown: string): NonNullable<TravelSeed['sourceSe
     const body = current.bodyLines.join('\n').trim()
 
     if (body || current.level === 1) {
-      const sectionBody = body || SOURCE_SECTION_BOUNDARY_BODY
+      const fallbackFields = fallbackFieldsForSourceSection(current.title, current.level)
+      const sectionBody = body || fallbackFields.body
       const dailyTitle = dailyTitlePartsFromSourceTitle(current.title)
 
       sections.push({
@@ -1440,6 +1443,9 @@ function parseSourceSections(markdown: string): NonNullable<TravelSeed['sourceSe
         displaySubtitle: dailyTitle?.subtitle,
         body: sectionBody,
         links: body ? extractLinks(body) : undefined,
+        enableComments: fallbackFields.enableComments,
+        enableThumbsUp: fallbackFields.enableThumbsUp,
+        enableThumbsDown: fallbackFields.enableThumbsDown,
       })
     }
 
@@ -1469,6 +1475,26 @@ function parseSourceSections(markdown: string): NonNullable<TravelSeed['sourceSe
   flush()
 
   return sections
+}
+
+function fallbackFieldsForSourceSection(title: string, level: number): {
+  body: string
+  enableComments?: boolean
+  enableThumbsUp?: boolean
+  enableThumbsDown?: boolean
+} {
+  if (level === 1 && /注意事項|提醒|安全/.test(title)) {
+    return {
+      body: REMINDER_SOURCE_SECTION_INTRO,
+      enableComments: false,
+      enableThumbsUp: false,
+      enableThumbsDown: false,
+    }
+  }
+
+  return {
+    body: SOURCE_SECTION_BOUNDARY_BODY,
+  }
 }
 
 function dailyTitlePartsFromSourceTitle(
