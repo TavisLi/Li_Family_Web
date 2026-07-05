@@ -14,11 +14,13 @@
 - Branch: `codex/phase-15-v1-5`
 - Implementation commit: `c7b1f86 Fix travel planning source layout`
 - Completion report commit: 本報告所在 commit
+- Pull Request: https://github.com/TavisLi/Li_Family_Web/pull/51
 
 ## GitHub Sync / PR Status
 
-- 截至本報告初稿：尚未 push，尚未建立 PR。
-- 本階段完成條件要求 push 與 PR；會在本報告提交後繼續執行。
+- Branch 已 push 至 `origin/codex/phase-15-v1-5`。
+- PR 已建立：#51 `Phase 15 v1.5 travel planning layout`。
+- PR body 已設定自動關閉 #47、#48、#49，並以 non-destructive schema/data refactor 方式標註 `Addresses #50`。
 
 ## Delivered Features
 
