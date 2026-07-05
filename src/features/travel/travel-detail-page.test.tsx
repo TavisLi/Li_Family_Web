@@ -181,6 +181,13 @@ const planningProject: TravelProject = {
       body: '| 項目 | 費用 |\n| --- | --- |\n| 宜昌1790梵居（2間房1晚） | 約800元 |\n| 宜昌東→武漢站高鐵（6人） | ¥666元 |\n| 小計 | 約1,466元 |',
     },
     {
+      id: 'source-2d',
+      level: 2,
+      title: '🚕 機場→酒店交通',
+      anchor: 'airport-hotel-transfer',
+      body: '- 推薦方案：打車2輛，夜間價較穩\n- 備選方案：地鐵3號線→2號線至臨江門站',
+    },
+    {
       id: 'source-3',
       level: 1,
       title: '每日節點與決策討論',
@@ -308,6 +315,8 @@ assert.match(planningHtml, /三峽人家費用估算/)
 assert.match(planningHtml, /約1,260-1,640元/)
 assert.match(planningHtml, /宜昌段住宿與交通/)
 assert.match(planningHtml, /約1,466元/)
+assert.match(planningHtml, /機場→酒店交通/)
+assert.match(planningHtml, /地鐵3號線→2號線/)
 assert.match(planningHtml, /三峽人家交通方案/)
 assert.match(planningHtml, /套票210元\/人含車/)
 assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:notes/)
@@ -360,6 +369,7 @@ assert.match(planningHtml, /grid gap-6 lg:grid-cols-2/)
 assert.match(planningHtml, /mt-5 grid gap-4 lg:grid-cols-2/)
 assert.match(planningHtml, /id="three-gorges-estimate"><h4/)
 assert.match(planningHtml, /id="yichang-lodging-transport"><h4/)
+assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="airport-hotel-transfer"/)
 assert.match(planningHtml, /id="three-gorges-transport"><h4 class="text-\[22px\] font-semibold tracking-normal text-white"/)
 assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="three-gorges-transport"/)
 assert.match(planningHtml, /max-w-3xl border-l border-cyan-100\/20 pl-5/)

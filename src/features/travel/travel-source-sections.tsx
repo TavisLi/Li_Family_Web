@@ -218,6 +218,7 @@ function SourceGroupCard({
 }) {
   const groupAssociatedId = sourceSectionKey(projectSlug, group.anchor)
   const sectionNodes = nestSourceSections(group.sections)
+  const layoutNodes = sourceSectionLayoutNodes(sectionNodes)
 
   if (isReminderGroup(group)) {
     return (
@@ -243,9 +244,10 @@ function SourceGroupCard({
               </div>
             ) : null}
             <div className="grid gap-6 lg:grid-cols-2">
-              {sectionNodes.map((node) => (
+              {layoutNodes.map(({ forceWide, node }) => (
                 <NestedSourceSection
                   key={node.section.id ?? node.section.anchor}
+                  forceWide={forceWide}
                   node={node}
                   projectSlug={projectSlug}
                   renderInteraction={renderInteraction}
@@ -297,9 +299,10 @@ function SourceGroupCard({
             : null}
         </header>
         <div className="mt-5 grid gap-4 lg:grid-cols-2">
-          {sectionNodes.map((node) => (
+          {layoutNodes.map(({ forceWide, node }) => (
             <NestedSourceSection
               key={node.section.id ?? node.section.anchor}
+              forceWide={forceWide}
               node={node}
               projectSlug={projectSlug}
               renderInteraction={renderInteraction}
@@ -314,12 +317,14 @@ function SourceGroupCard({
 }
 
 function NestedSourceSection({
+  forceWide = false,
   node,
   projectSlug,
   renderInteraction,
   threads,
   tone = 'light',
 }: {
+  forceWide?: boolean
   node: SourceSectionNode
   projectSlug: string
   renderInteraction?: RenderInteraction
@@ -330,7 +335,7 @@ function NestedSourceSection({
   const daily = isDailySection(section)
   const dark = tone === 'dark'
   const associatedId = sourceSectionKey(projectSlug, section.anchor)
-  const spanClass = sourceSectionSpanClass(node)
+  const spanClass = sourceSectionSpanClass(node, forceWide)
 
   return (
     <section
@@ -748,8 +753,43 @@ function sourceBlockSpanClass(block: SourceBlock): string {
   return isWideSourceText(block.text) ? 'min-[560px]:col-span-2' : ''
 }
 
-function sourceSectionSpanClass(node: SourceSectionNode): string {
-  return isWideSourceSectionNode(node) ? 'lg:col-span-2' : ''
+function sourceSectionLayoutNodes(nodes: SourceSectionNode[]): Array<{
+  forceWide: boolean
+  node: SourceSectionNode
+}> {
+  const layout = nodes.map((node) => ({
+    node,
+    forceWide: false,
+  }))
+  let compactRun: number[] = []
+
+  const flushCompactRun = () => {
+    if (compactRun.length % 2 === 1) {
+      const lastIndex = compactRun[compactRun.length - 1]
+
+      if (lastIndex !== undefined) {
+        layout[lastIndex]!.forceWide = true
+      }
+    }
+
+    compactRun = []
+  }
+
+  nodes.forEach((node, index) => {
+    if (isWideSourceSectionNode(node)) {
+      flushCompactRun()
+      return
+    }
+
+    compactRun.push(index)
+  })
+  flushCompactRun()
+
+  return layout
+}
+
+function sourceSectionSpanClass(node: SourceSectionNode, forceWide = false): string {
+  return forceWide || isWideSourceSectionNode(node) ? 'lg:col-span-2' : ''
 }
 
 function isWideSourceSectionNode(node: SourceSectionNode): boolean {
