@@ -167,6 +167,20 @@ const planningProject: TravelProject = {
       ],
     },
     {
+      id: 'source-2b',
+      level: 2,
+      title: '三峽人家費用估算',
+      anchor: 'three-gorges-estimate',
+      body: '| 項目 | 估算 |\n| --- | --- |\n| 門票（按6人估算） | 約700-1,080元 |\n| 交通（打車往返） | 約200元 |\n| 小計 | 約1,260-1,640元 |',
+    },
+    {
+      id: 'source-2c',
+      level: 2,
+      title: '宜昌段住宿與交通',
+      anchor: 'yichang-lodging-transport',
+      body: '| 項目 | 費用 |\n| --- | --- |\n| 宜昌1790梵居（2間房1晚） | 約800元 |\n| 宜昌東→武漢站高鐵（6人） | ¥666元 |\n| 小計 | 約1,466元 |',
+    },
+    {
       id: 'source-3',
       level: 1,
       title: '每日節點與決策討論',
@@ -290,6 +304,10 @@ assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuk
 assert.match(planningHtml, /最高\$1,500/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:resort-sites/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:details/)
+assert.match(planningHtml, /三峽人家費用估算/)
+assert.match(planningHtml, /約1,260-1,640元/)
+assert.match(planningHtml, /宜昌段住宿與交通/)
+assert.match(planningHtml, /約1,466元/)
 assert.match(planningHtml, /三峽人家交通方案/)
 assert.match(planningHtml, /套票210元\/人含車/)
 assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:notes/)
@@ -338,6 +356,12 @@ assert.match(planningHtml, /data-image-layout="intrinsic"/)
 assert.match(planningHtml, /https:\/\/cdn\.example\.com\/anantara-pool\.jpg/)
 assert.match(planningHtml, /min-\[560px\]:grid-cols-2/)
 assert.match(planningHtml, /min-\[560px\]:col-span-2/)
+assert.match(planningHtml, /grid gap-6 lg:grid-cols-2/)
+assert.match(planningHtml, /mt-5 grid gap-4 lg:grid-cols-2/)
+assert.match(planningHtml, /id="three-gorges-estimate"><h4/)
+assert.match(planningHtml, /id="yichang-lodging-transport"><h4/)
+assert.match(planningHtml, /id="three-gorges-transport"><h4 class="text-\[22px\] font-semibold tracking-normal text-white"/)
+assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="three-gorges-transport"/)
 assert.match(planningHtml, /max-w-3xl border-l border-cyan-100\/20 pl-5/)
 assert.match(planningHtml, /max-w-3xl border-l border-cyan-800\/25 pl-5/)
 assert.match(planningHtml, /mx-auto mt-5 grid w-full gap-3 sm:grid-cols-2/)

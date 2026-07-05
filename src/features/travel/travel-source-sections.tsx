@@ -242,7 +242,7 @@ function SourceGroupCard({
                 <SourceSectionMediaRail section={group.intro} tone="dark" />
               </div>
             ) : null}
-            <div className="grid gap-6">
+            <div className="grid gap-6 lg:grid-cols-2">
               {sectionNodes.map((node) => (
                 <NestedSourceSection
                   key={node.section.id ?? node.section.anchor}
@@ -296,7 +296,7 @@ function SourceGroupCard({
               })
             : null}
         </header>
-        <div className="mt-5 grid gap-4">
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
           {sectionNodes.map((node) => (
             <NestedSourceSection
               key={node.section.id ?? node.section.anchor}
@@ -330,10 +330,11 @@ function NestedSourceSection({
   const daily = isDailySection(section)
   const dark = tone === 'dark'
   const associatedId = sourceSectionKey(projectSlug, section.anchor)
+  const spanClass = sourceSectionSpanClass(node)
 
   return (
     <section
-      className={dark ? 'py-5 md:py-7' : 'py-5 md:py-7'}
+      className={`py-5 md:py-7 ${spanClass}`}
       data-source-level={section.level}
       id={section.anchor}
     >
@@ -745,6 +746,52 @@ function sourceBlockSpanClass(block: SourceBlock): string {
   }
 
   return isWideSourceText(block.text) ? 'min-[560px]:col-span-2' : ''
+}
+
+function sourceSectionSpanClass(node: SourceSectionNode): string {
+  return isWideSourceSectionNode(node) ? 'lg:col-span-2' : ''
+}
+
+function isWideSourceSectionNode(node: SourceSectionNode): boolean {
+  const { section } = node
+
+  if (isDailySection(section) || node.children.length || mediaObjects(section.mediaItems).length) {
+    return true
+  }
+
+  return parseSourceBlocks(section.body).some(isWideSourceBlock)
+}
+
+function isWideSourceBlock(block: SourceBlock): boolean {
+  if (block.type === 'table') {
+    return !isCompactTable(block.rows)
+  }
+
+  if (block.type === 'list') {
+    return block.items.some((item) => isWideSourceText(item))
+  }
+
+  return isWideSourceText(block.text)
+}
+
+function isCompactTable(rows: string[][]): boolean {
+  if (!rows.length || rows.length > 6) {
+    return false
+  }
+
+  const columnCount = Math.max(...rows.map((row) => row.length))
+
+  if (columnCount > 2) {
+    return false
+  }
+
+  return rows.every((row) => row.every((cell) => isCompactTableCell(cell)))
+}
+
+function isCompactTableCell(cell: string): boolean {
+  const normalized = cell.replace(/\s+/g, ' ').trim()
+
+  return normalized.length <= 28 && !/https?:\/\/|；|;/.test(normalized)
 }
 
 function isWideSourceText(text: string): boolean {
