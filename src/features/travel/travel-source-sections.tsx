@@ -108,6 +108,8 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
   return (
     <div className={`mt-4 grid gap-4 text-sm leading-7 min-[560px]:grid-cols-2 ${mutedText}`}>
       {blocks.map((block, index) => {
+        const spanClass = sourceBlockSpanClass(block)
+
         if (block.type === 'table') {
           const [header, ...rows] = block.rows
 
@@ -119,8 +121,8 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
             <div
               className={
                 tone === 'dark'
-                  ? 'overflow-x-auto rounded-2xl border border-cyan-100/15 bg-white/[0.06] shadow-sm shadow-slate-950/20 min-[560px]:col-span-2'
-                  : 'overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5 min-[560px]:col-span-2'
+                  ? `overflow-x-auto rounded-2xl border border-cyan-100/15 bg-white/[0.06] shadow-sm shadow-slate-950/20 ${spanClass}`
+                  : `overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5 ${spanClass}`
               }
               key={`table-${index}`}
             >
@@ -164,7 +166,7 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
 
         if (block.type === 'list') {
           return (
-            <ul className="grid gap-2" key={`list-${index}`}>
+            <ul className={`grid gap-2 ${spanClass}`} key={`list-${index}`}>
               {block.items.map((item) => (
                 <li className="flex gap-2" key={item}>
                   <span
@@ -183,8 +185,8 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
             <blockquote
               className={
                 tone === 'dark'
-                  ? 'rounded-md border border-amber-100/20 bg-amber-100/10 px-4 py-3 text-amber-50'
-                  : 'rounded-md border border-amber-200/70 bg-amber-50/70 px-4 py-3 text-amber-950'
+                  ? `rounded-md border border-amber-100/20 bg-amber-100/10 px-4 py-3 text-amber-50 ${spanClass}`
+                  : `rounded-md border border-amber-200/70 bg-amber-50/70 px-4 py-3 text-amber-950 ${spanClass}`
               }
               key={`quote-${index}`}
             >
@@ -194,7 +196,7 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
         }
 
         return (
-          <p className="whitespace-pre-wrap" key={`paragraph-${index}`}>
+          <p className={`whitespace-pre-wrap ${spanClass}`} key={`paragraph-${index}`}>
             {block.text}
           </p>
         )
@@ -235,7 +237,7 @@ function SourceGroupCard({
           </header>
           <div className="grid gap-4">
             {group.intro && hasBody(group.intro) ? (
-              <div>
+              <div className="max-w-3xl border-l border-cyan-100/20 pl-5">
                 <SourceBody body={group.intro.body} tone="dark" />
                 <SourceSectionMediaRail section={group.intro} tone="dark" />
               </div>
@@ -732,6 +734,24 @@ type SourceBlock =
   | { type: 'quote'; text: string }
   | { type: 'list'; items: string[] }
   | { type: 'table'; rows: string[][] }
+
+function sourceBlockSpanClass(block: SourceBlock): string {
+  if (block.type === 'table') {
+    return 'min-[560px]:col-span-2'
+  }
+
+  if (block.type === 'list') {
+    return block.items.some((item) => isWideSourceText(item)) ? 'min-[560px]:col-span-2' : ''
+  }
+
+  return isWideSourceText(block.text) ? 'min-[560px]:col-span-2' : ''
+}
+
+function isWideSourceText(text: string): boolean {
+  const normalized = text.replace(/\s+/g, ' ').trim()
+
+  return normalized.length > 88 || /https?:\/\/| vs | vs\.|；|;/.test(normalized)
+}
 
 function parseSourceBlocks(body: string): SourceBlock[] {
   const blocks: SourceBlock[] = []

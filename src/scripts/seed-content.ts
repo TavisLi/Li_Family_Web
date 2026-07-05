@@ -1432,15 +1432,10 @@ function parseSourceSections(markdown: string): NonNullable<TravelSeed['sourceSe
     if (body || current.level === 1) {
       const fallbackFields = fallbackFieldsForSourceSection(current.title, current.level)
       const sectionBody = body || fallbackFields.body
-      const dailyTitle = dailyTitlePartsFromSourceTitle(current.title)
-
       sections.push({
         level: current.level,
         title: current.title,
         anchor: slugify(current.title),
-        displayDay: dailyTitle?.day,
-        displayDate: dailyTitle?.date,
-        displaySubtitle: dailyTitle?.subtitle,
         body: sectionBody,
         links: body ? extractLinks(body) : undefined,
         enableComments: fallbackFields.enableComments,
@@ -1494,26 +1489,6 @@ function fallbackFieldsForSourceSection(title: string, level: number): {
 
   return {
     body: SOURCE_SECTION_BOUNDARY_BODY,
-  }
-}
-
-function dailyTitlePartsFromSourceTitle(
-  title: string,
-): { day: string; date: string; subtitle: string } | undefined {
-  const match = title.match(/^\s*((?:🚢|🌿)?\s*Day\s+\d+)\s*[·.-]?\s*(.*)$/i)
-
-  if (!match) {
-    return undefined
-  }
-
-  const rest = match[2]?.trim() ?? ''
-  const [date = '', ...subtitleParts] = rest.split(/\s*[—–-]\s*/)
-  const subtitle = subtitleParts.join(' — ').trim()
-
-  return {
-    day: cleanMarkdown(match[1]?.trim() ?? ''),
-    date: cleanMarkdown(date.trim()),
-    subtitle: cleanMarkdown(subtitle),
   }
 }
 

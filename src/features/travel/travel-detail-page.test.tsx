@@ -147,7 +147,7 @@ const planningProject: TravelProject = {
       level: 1,
       title: '旅行戰情室',
       anchor: 'war-room',
-      body: '',
+      body: '集中整理航班、住宿、每日決策與待確認事項，讓行前討論有同一個入口。',
       enableComments: false,
       enableThumbsUp: false,
       enableThumbsDown: false,
@@ -199,6 +199,13 @@ const planningProject: TravelProject = {
       title: '補充細節',
       anchor: 'details',
       body: '萬豪推介會出席提醒：否則需支付套餐全額零售價（最高$1,500）。',
+    },
+    {
+      id: 'source-6b',
+      level: 2,
+      title: '三峽人家交通方案',
+      anchor: 'three-gorges-transport',
+      body: '💡 建議：方案A打車更靈活，適合6人家庭自主安排時間；方案B套票省心但需配合固定班次。可提前在攜程對比套票價格是否划算（單獨買門票180元/人+打車200元 vs 套票210元/人含車）',
     },
   ],
   createdAt: '2026-06-21T00:00:00.000Z',
@@ -283,6 +290,8 @@ assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuk
 assert.match(planningHtml, /最高\$1,500/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:resort-sites/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:details/)
+assert.match(planningHtml, /三峽人家交通方案/)
+assert.match(planningHtml, /套票210元\/人含車/)
 assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:notes/)
 assert.match(planningHtml, /入住安納塔拉/)
 assert.match(planningHtml, /data-source-level="1"/)
@@ -329,6 +338,8 @@ assert.match(planningHtml, /data-image-layout="intrinsic"/)
 assert.match(planningHtml, /https:\/\/cdn\.example\.com\/anantara-pool\.jpg/)
 assert.match(planningHtml, /min-\[560px\]:grid-cols-2/)
 assert.match(planningHtml, /min-\[560px\]:col-span-2/)
+assert.match(planningHtml, /max-w-3xl border-l border-cyan-100\/20 pl-5/)
+assert.match(planningHtml, /max-w-3xl border-l border-cyan-800\/25 pl-5/)
 assert.match(planningHtml, /mx-auto mt-5 grid w-full gap-3 sm:grid-cols-2/)
 assert.match(planningHtml, /text-\[22px\] font-semibold tracking-normal text-slate-950/)
 assert.doesNotMatch(planningHtml, /border-t border-white\/10 py-5/)

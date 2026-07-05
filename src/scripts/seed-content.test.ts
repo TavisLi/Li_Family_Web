@@ -144,6 +144,14 @@ async function main() {
       section.body.includes('往返航班班次與時間'),
     ),
   )
+  assert.ok(
+    (phuket2027.sourceSections ?? []).some((section) =>
+      section.title.includes('Day 1') &&
+      section.displayDay === undefined &&
+      section.displayDate === undefined &&
+      section.displaySubtitle === undefined,
+    ),
+  )
 
   const seedContent = await buildSeedContent(projectRoot)
 
