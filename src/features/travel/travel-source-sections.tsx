@@ -101,14 +101,23 @@ export function findDailySourceSections(
   return result
 }
 
-export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'light' | 'dark' }) {
+export function SourceBody({
+  body,
+  layout = 'auto',
+  tone = 'light',
+}: {
+  body: string
+  layout?: 'auto' | 'single'
+  tone?: 'light' | 'dark'
+}) {
   const blocks = parseSourceBlocks(body)
   const mutedText = tone === 'dark' ? 'text-slate-300' : 'text-slate-600'
+  const bodyGridClass = layout === 'auto' ? 'min-[560px]:grid-cols-2' : ''
 
   return (
-    <div className={`mt-4 grid gap-4 text-sm leading-7 min-[560px]:grid-cols-2 ${mutedText}`}>
+    <div className={`mt-4 grid gap-4 text-sm leading-7 ${bodyGridClass} ${mutedText}`}>
       {blocks.map((block, index) => {
-        const spanClass = sourceBlockSpanClass(block)
+        const spanClass = layout === 'auto' ? sourceBlockSpanClass(block) : ''
 
         if (block.type === 'table') {
           const [header, ...rows] = block.rows
@@ -218,9 +227,12 @@ function SourceGroupCard({
 }) {
   const groupAssociatedId = sourceSectionKey(projectSlug, group.anchor)
   const sectionNodes = nestSourceSections(group.sections)
-  const layoutNodes = sourceSectionLayoutNodes(sectionNodes)
+  const reminderGroup = isReminderGroup(group)
+  const layoutNodes = sourceSectionLayoutNodes(sectionNodes, {
+    orphanPlacement: reminderGroup ? 'first' : 'last',
+  })
 
-  if (isReminderGroup(group)) {
+  if (reminderGroup) {
     return (
       <article
         className="border-y border-slate-800 bg-slate-950 px-5 py-12 text-white shadow-2xl shadow-slate-950/20 md:px-8 md:py-16"
@@ -238,8 +250,8 @@ function SourceGroupCard({
           </header>
           <div className="grid gap-4">
             {group.intro && hasBody(group.intro) ? (
-              <div className="max-w-3xl border-l border-cyan-100/20 pl-5">
-                <SourceBody body={group.intro.body} tone="dark" />
+              <div className="max-w-5xl border-l border-cyan-100/20 pl-5">
+                <SourceBody body={group.intro.body} layout="single" tone="dark" />
                 <SourceSectionMediaRail section={group.intro} tone="dark" />
               </div>
             ) : null}
@@ -283,8 +295,8 @@ function SourceGroupCard({
             {group.title}
           </h3>
           {group.intro && hasBody(group.intro) ? (
-            <div className="mt-5 max-w-3xl border-l border-cyan-800/25 pl-5">
-              <SourceBody body={group.intro.body} />
+            <div className="mt-5 max-w-5xl border-l border-cyan-800/25 pl-5">
+              <SourceBody body={group.intro.body} layout="single" />
               <SourceSectionMediaRail section={group.intro} />
             </div>
           ) : null}
@@ -336,6 +348,7 @@ function NestedSourceSection({
   const dark = tone === 'dark'
   const associatedId = sourceSectionKey(projectSlug, section.anchor)
   const spanClass = sourceSectionSpanClass(node, forceWide)
+  const bodyLayout = spanClass ? 'auto' : 'single'
 
   return (
     <section
@@ -350,7 +363,7 @@ function NestedSourceSection({
           {section.title}
         </h4>
       )}
-      <SourceBody body={section.body} tone={tone} />
+      <SourceBody body={section.body} layout={bodyLayout} tone={tone} />
       <SourceLinks section={section} tone={tone} />
       <SourceSectionMediaRail section={section} tone={tone} />
       {node.children.length ? (
@@ -369,7 +382,7 @@ function NestedSourceSection({
               <h5 className={dark ? 'text-[22px] font-semibold tracking-normal text-white' : 'text-[22px] font-semibold tracking-normal text-slate-950'}>
                 {child.title}
               </h5>
-              <SourceBody body={child.body} tone={tone} />
+              <SourceBody body={child.body} layout="single" tone={tone} />
               <SourceLinks section={child} tone={tone} />
               <SourceSectionMediaRail section={child} tone={tone} />
               {renderInteraction
@@ -753,7 +766,16 @@ function sourceBlockSpanClass(block: SourceBlock): string {
   return isWideSourceText(block.text) ? 'min-[560px]:col-span-2' : ''
 }
 
-function sourceSectionLayoutNodes(nodes: SourceSectionNode[]): Array<{
+type CompactOrphanPlacement = 'first' | 'last'
+
+function sourceSectionLayoutNodes(
+  nodes: SourceSectionNode[],
+  {
+    orphanPlacement = 'last',
+  }: {
+    orphanPlacement?: CompactOrphanPlacement
+  } = {},
+): Array<{
   forceWide: boolean
   node: SourceSectionNode
 }> {
@@ -765,10 +787,13 @@ function sourceSectionLayoutNodes(nodes: SourceSectionNode[]): Array<{
 
   const flushCompactRun = () => {
     if (compactRun.length % 2 === 1) {
-      const lastIndex = compactRun[compactRun.length - 1]
+      const orphanIndex =
+        orphanPlacement === 'first'
+          ? compactRun[0]
+          : compactRun[compactRun.length - 1]
 
-      if (lastIndex !== undefined) {
-        layout[lastIndex]!.forceWide = true
+      if (orphanIndex !== undefined) {
+        layout[orphanIndex]!.forceWide = true
       }
     }
 

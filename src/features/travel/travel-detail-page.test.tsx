@@ -222,6 +222,20 @@ const planningProject: TravelProject = {
       body: '萬豪推介會出席提醒：否則需支付套餐全額零售價（最高$1,500）。',
     },
     {
+      id: 'source-6a',
+      level: 2,
+      title: '防暑降溫（全程適用）',
+      anchor: 'heat-prevention',
+      body: '- 攜帶防曬霜、遮陽帽、便攜小風扇、藿香正氣水\n- 12:00-15:00避免戶外暴走，安排室內景點或午休\n- 隨時補充水分，便利店買水方便',
+    },
+    {
+      id: 'source-6aa',
+      level: 2,
+      title: '老人小孩注意',
+      anchor: 'senior-kids-notes',
+      body: '- 洪崖洞內部人多擁擠，傍晚遠觀即可，不建議帶小孩進入\n- 山城步道從領事巷入口往下走，避免小孩爬坡太累',
+    },
+    {
       id: 'source-6b',
       level: 2,
       title: '三峽人家交通方案',
@@ -311,6 +325,10 @@ assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuk
 assert.match(planningHtml, /最高\$1,500/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:resort-sites/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:details/)
+assert.match(planningHtml, /防暑降溫（全程適用）/)
+assert.match(planningHtml, /藿香正氣水/)
+assert.match(planningHtml, /老人小孩注意/)
+assert.match(planningHtml, /山城步道從領事巷入口/)
 assert.match(planningHtml, /三峽人家費用估算/)
 assert.match(planningHtml, /約1,260-1,640元/)
 assert.match(planningHtml, /宜昌段住宿與交通/)
@@ -370,10 +388,14 @@ assert.match(planningHtml, /mt-5 grid gap-4 lg:grid-cols-2/)
 assert.match(planningHtml, /id="three-gorges-estimate"><h4/)
 assert.match(planningHtml, /id="yichang-lodging-transport"><h4/)
 assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="airport-hotel-transfer"/)
+assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="details"/)
+assert.match(planningHtml, /py-5 md:py-7 " data-source-level="2" id="heat-prevention"/)
+assert.match(planningHtml, /py-5 md:py-7 " data-source-level="2" id="senior-kids-notes"/)
+assert.doesNotMatch(planningHtml, /id="heat-prevention"[\s\S]*?min-\[560px\]:grid-cols-2[\s\S]*?id="senior-kids-notes"/)
 assert.match(planningHtml, /id="three-gorges-transport"><h4 class="text-\[22px\] font-semibold tracking-normal text-white"/)
 assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="three-gorges-transport"/)
-assert.match(planningHtml, /max-w-3xl border-l border-cyan-100\/20 pl-5/)
-assert.match(planningHtml, /max-w-3xl border-l border-cyan-800\/25 pl-5/)
+assert.match(planningHtml, /max-w-5xl border-l border-cyan-100\/20 pl-5/)
+assert.match(planningHtml, /max-w-5xl border-l border-cyan-800\/25 pl-5/)
 assert.match(planningHtml, /mx-auto mt-5 grid w-full gap-3 sm:grid-cols-2/)
 assert.match(planningHtml, /text-\[22px\] font-semibold tracking-normal text-slate-950/)
 assert.doesNotMatch(planningHtml, /border-t border-white\/10 py-5/)
