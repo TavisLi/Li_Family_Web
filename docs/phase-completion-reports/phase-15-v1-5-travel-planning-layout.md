@@ -20,14 +20,19 @@
   - `451a838 Refine adaptive travel section columns`
   - `9c8cd57 Avoid orphaned compact travel columns`
   - `c809079 Keep compact travel copy readable`
-- Review follow-up: 本報告與 planning travel template 的修正位於本報告所在後續 commit，推送後同屬 PR #51。
+  - `119546f Update phase 15 review docs`
+  - `da657d0 Support level 3 reminder columns`
+  - `cd94f85 Align planning travel template section title`
+  - `864ca8d Keep short reminder lists in columns`
+  - `b2b053f Avoid unpaired travel content columns`
+- Final closeout note: 2026-07-10 人工 review 已確認 OK，PR #51 merge state 為 `CLEAN`，Vercel Preview check 已通過，準備 merge 回 `main`。
 
 ## GitHub 與 Vercel 狀態
 
 - Branch 已 push 至 `origin/codex/phase-15-v1-5`。
-- PR 已建立且仍為 open：#51 `Phase 15 v1.5 travel planning layout`。
+- PR 已建立且於 merge 前為 open / clean：#51 `Phase 15 v1.5 travel planning layout`。
 - PR body 已設定自動關閉 #47、#48、#49，並以 non-destructive schema/data refactor 方式標註 `Addresses #50`。
-- 2026-07-05 最新功能 commit `c809079` 的 Vercel check 已通過。
+- 2026-07-10 最新功能 commit `b2b053f` 的 Vercel check 已通過。
 - 受保護 Preview 曾透過 Vercel connector 驗證 `/travel/202607-chongqing-yangtze-river` 回應 `200 OK`。
 
 ## 已交付內容
@@ -40,6 +45,7 @@
 2. Level 1 intro 統一：
    - `旅行戰情室` 與 `注意事項` 的 body 都使用較寬的說明區與左側導引線。
    - dark reminder tone 與 light planning tone 保持視覺區分。
+   - body 內部也遵守 compact pair 規則：只有有兩個可配對的短內容才雙欄；孤項與長項維持 full width，避免類似氣象預報的不正常換行。
 3. 注意事項區塊調整：
    - PC/Mac 下 Level 2 與 Level 3 短項目可雙欄。
    - 深色提醒區的奇數短項目採前段單欄、後續成對並列，避免最後一個短項目被擠在半欄中。
@@ -78,6 +84,7 @@ git diff --check
 - TypeScript 與 build 以專案標準 Node `20.20.2` 執行。
 - 本階段未修改 Payload collection，因此未執行 `pnpm exec payload generate:types` 或 migration。
 - Vercel Preview 已完成部署並通過 PR check。
+- 2026-07-10 人工 review 後追加驗證已覆蓋：短提醒含分號仍可雙欄、氣象預報長清單項 full width、落單短 block 不再硬切半欄。
 
 ## Browser QA 範圍
 
@@ -89,6 +96,7 @@ git diff --check
   - `注意事項` 中 Level 2 / Level 3 的防暑、老人小孩、登船、游輪注意事項與子段落單欄/雙欄是否符合 PC/Mac 閱讀密度。
   - `三峽人家費用估算`、`宜昌段住宿與交通` 等短表格雙欄是否可讀。
   - `三峽人家交通方案` 長建議是否保持 full width。
+- 2026-07-10 使用者回覆 `Reviewed Ok`，確認 Preview 視覺 review 可進入 merge closeout。
 
 ## 已知限制
 
