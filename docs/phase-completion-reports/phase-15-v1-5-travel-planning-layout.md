@@ -4,7 +4,7 @@
 
 本階段處理 GitHub Issue #47-#50，範圍限於 Travel project 規劃中頁面的 source section 呈現、planning travel seed 冗餘資料控制，以及新增規劃中旅遊 Markdown template。
 
-- #47：注意事項中的短內容在 PC/Mac 橫向空間足夠時，以雙欄掃讀；後續人工 review 補充規則為落單項目維持單欄。
+- #47：注意事項中的 Level 2 與 Level 3 短內容，在 PC/Mac 橫向空間足夠時以雙欄掃讀；後續人工 review 補充規則為落單項目維持單欄。
 - #48：Level 1 若配置 body，旅行戰情室與注意事項的 body 顯示方式需要一致。
 - #49：Travel Project 多處文字在橫向空間足夠時不應不正常換行，尤其長建議與方案比較文字。
 - #50：針對 `202607-chongqing-yangtze-river`、`202702-thailand-phuket` 的 planning travel 結構，先做安全的 schema/data 重構切面：保留 Payload 相容欄位，不做破壞性 migration；停止 seed import 寫入可由標題推導的 daily display 冗餘資料，並新增後續 planning travel Markdown template。
@@ -41,8 +41,9 @@
    - `旅行戰情室` 與 `注意事項` 的 body 都使用較寬的說明區與左側導引線。
    - dark reminder tone 與 light planning tone 保持視覺區分。
 3. 注意事項區塊調整：
-   - PC/Mac 下短項目可雙欄。
+   - PC/Mac 下 Level 2 與 Level 3 短項目可雙欄。
    - 深色提醒區的奇數短項目採前段單欄、後續成對並列，避免最後一個短項目被擠在半欄中。
+   - nested Level 3 child section 使用同一套 compact/wide 判斷；短內容並列，長內容、media、daily 或複雜表格維持 full width。
 4. seed import 不再寫入 `displayDay`、`displayDate`、`displaySubtitle` 這類可由 daily heading 推導的資料，降低新 planning travel record 冗餘。
 5. 新增並修正 planning travel Markdown template：
    - 以 `# 旅行戰情室` 作為 Level 1 起點，符合現有 planning travel source shape。
@@ -85,14 +86,14 @@ git diff --check
   - `/travel/202607-chongqing-yangtze-river`
 - 人工 review 重點：
   - `旅行戰情室` Level 1 body 是否不再不必要換行。
-  - `注意事項` 中防暑、老人小孩、登船、游輪注意事項的單欄/雙欄是否符合 PC/Mac 閱讀密度。
+  - `注意事項` 中 Level 2 / Level 3 的防暑、老人小孩、登船、游輪注意事項與子段落單欄/雙欄是否符合 PC/Mac 閱讀密度。
   - `三峽人家費用估算`、`宜昌段住宿與交通` 等短表格雙欄是否可讀。
   - `三峽人家交通方案` 長建議是否保持 full width。
 
 ## 已知限制
 
 - #50 的破壞性資料庫清理沒有在本階段執行。原因是現有 published content 可能仍含舊欄位資料；本階段採保守路線，保留相容欄位，先停止未來 seed 產生冗餘資料。若未來要 drop 欄位或清 production data，需要獨立 migration PR 與 production 資料驗證。
-- Issue #47 原文提到 Level 3；實際 `202607-chongqing-yangtze-river` 注意事項目前多為 Level 2。此階段主要修正實際 planning source 中的注意事項短 section。nested Level 3 仍維持在父 section 內，避免破壞含表格、media 或 daily child 的閱讀結構。
+- Issue #47 已改為 Level 2 與 Level 3 短內容皆需支援 PC/Mac 雙欄。本階段已讓 nested Level 3 child section 接入同一套 layout 判斷；若 Level 3 內容本身是長文、media、daily 或複雜表格，仍會維持 full width 以保護可讀性。
 - 本地工作樹仍有非本 phase 的 Tavis member asset 變更，未納入 commit：
   - `content-source/assets/members/tavis/tavis-hero.jpeg` deleted
   - `content-source/assets/members/tavis/tavis-career-inotera-dept-2.jpeg`

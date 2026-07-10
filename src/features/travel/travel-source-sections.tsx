@@ -349,6 +349,9 @@ function NestedSourceSection({
   const associatedId = sourceSectionKey(projectSlug, section.anchor)
   const spanClass = sourceSectionSpanClass(node, forceWide)
   const bodyLayout = spanClass ? 'auto' : 'single'
+  const childLayoutNodes = node.children.length
+    ? sourceSectionLayoutNodes(nodesForSections(node.children))
+    : []
 
   return (
     <section
@@ -367,38 +370,43 @@ function NestedSourceSection({
       <SourceLinks section={section} tone={tone} />
       <SourceSectionMediaRail section={section} tone={tone} />
       {node.children.length ? (
-        <div className="mt-5 grid gap-3">
-          {node.children.map((child) => (
-            <section
-              className={
-                dark
-                  ? 'rounded-2xl border border-white/10 bg-white/[0.06] p-4'
-                  : 'rounded-2xl border border-cyan-100/80 bg-cyan-50/55 p-4'
-              }
-              data-source-level={child.level}
-              id={child.anchor}
-              key={child.id ?? child.anchor}
-            >
-              <h5 className={dark ? 'text-[22px] font-semibold tracking-normal text-white' : 'text-[22px] font-semibold tracking-normal text-slate-950'}>
-                {child.title}
-              </h5>
-              <SourceBody body={child.body} layout="single" tone={tone} />
-              <SourceLinks section={child} tone={tone} />
-              <SourceSectionMediaRail section={child} tone={tone} />
-              {renderInteraction
-                && hasEnabledInteractions(interactionOptionsFor(child))
-                ? renderInteraction({
-                    className: dark
-                      ? 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300'
-                      : 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
-                    associatedId: sourceSectionKey(projectSlug, child.anchor),
-                    enabledInteractions: interactionOptionsFor(child),
-                    label: child.title,
-                    thread: threads[sourceSectionKey(projectSlug, child.anchor)],
-                  })
-                : null}
-            </section>
-          ))}
+        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+          {childLayoutNodes.map(({ forceWide: forceWideChild, node: childNode }) => {
+            const child = childNode.section
+            const childSpanClass = sourceSectionSpanClass(childNode, forceWideChild)
+
+            return (
+              <section
+                className={
+                  dark
+                    ? `rounded-2xl border border-white/10 bg-white/[0.06] p-4 ${childSpanClass}`
+                    : `rounded-2xl border border-cyan-100/80 bg-cyan-50/55 p-4 ${childSpanClass}`
+                }
+                data-source-level={child.level}
+                id={child.anchor}
+                key={child.id ?? child.anchor}
+              >
+                <h5 className={dark ? 'text-[22px] font-semibold tracking-normal text-white' : 'text-[22px] font-semibold tracking-normal text-slate-950'}>
+                  {child.title}
+                </h5>
+                <SourceBody body={child.body} layout={childSpanClass ? 'auto' : 'single'} tone={tone} />
+                <SourceLinks section={child} tone={tone} />
+                <SourceSectionMediaRail section={child} tone={tone} />
+                {renderInteraction
+                  && hasEnabledInteractions(interactionOptionsFor(child))
+                  ? renderInteraction({
+                      className: dark
+                        ? 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300'
+                        : 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
+                      associatedId: sourceSectionKey(projectSlug, child.anchor),
+                      enabledInteractions: interactionOptionsFor(child),
+                      label: child.title,
+                      thread: threads[sourceSectionKey(projectSlug, child.anchor)],
+                    })
+                  : null}
+              </section>
+            )
+          })}
         </div>
       ) : null}
       {renderInteraction
@@ -658,6 +666,13 @@ function nestSourceSections(sections: SourceSection[]): SourceSectionNode[] {
   }
 
   return nodes
+}
+
+function nodesForSections(sections: SourceSection[]): SourceSectionNode[] {
+  return sections.map((section) => ({
+    section,
+    children: [],
+  }))
 }
 
 function mediaObjects(items: SourceSectionMedia[] | null | undefined): Media[] {

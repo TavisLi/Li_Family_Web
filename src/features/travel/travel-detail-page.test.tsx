@@ -222,6 +222,20 @@ const planningProject: TravelProject = {
       body: '萬豪推介會出席提醒：否則需支付套餐全額零售價（最高$1,500）。',
     },
     {
+      id: 'source-6-child-a',
+      level: 3,
+      title: '證件提醒',
+      anchor: 'document-reminder',
+      body: '- 身份證護照原件隨身攜帶\n- 票券截圖離線保存',
+    },
+    {
+      id: 'source-6-child-b',
+      level: 3,
+      title: '家人分工',
+      anchor: 'family-roles',
+      body: '- 大件行李集中托運\n- 小孩用品放隨身小包',
+    },
+    {
       id: 'source-6a',
       level: 2,
       title: '防暑降溫（全程適用）',
@@ -329,6 +343,10 @@ assert.match(planningHtml, /防暑降溫（全程適用）/)
 assert.match(planningHtml, /藿香正氣水/)
 assert.match(planningHtml, /老人小孩注意/)
 assert.match(planningHtml, /山城步道從領事巷入口/)
+assert.match(planningHtml, /證件提醒/)
+assert.match(planningHtml, /票券截圖離線保存/)
+assert.match(planningHtml, /家人分工/)
+assert.match(planningHtml, /小孩用品放隨身小包/)
 assert.match(planningHtml, /三峽人家費用估算/)
 assert.match(planningHtml, /約1,260-1,640元/)
 assert.match(planningHtml, /宜昌段住宿與交通/)
@@ -389,6 +407,10 @@ assert.match(planningHtml, /id="three-gorges-estimate"><h4/)
 assert.match(planningHtml, /id="yichang-lodging-transport"><h4/)
 assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="airport-hotel-transfer"/)
 assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="details"/)
+assert.match(planningHtml, /mt-5 grid gap-3 lg:grid-cols-2/)
+assert.match(planningHtml, /rounded-2xl border border-white\/10 bg-white\/\[0\.06\] p-4 " data-source-level="3" id="document-reminder"/)
+assert.match(planningHtml, /rounded-2xl border border-white\/10 bg-white\/\[0\.06\] p-4 " data-source-level="3" id="family-roles"/)
+assert.doesNotMatch(planningHtml, /id="document-reminder"[\s\S]*?min-\[560px\]:grid-cols-2[\s\S]*?id="family-roles"/)
 assert.match(planningHtml, /py-5 md:py-7 " data-source-level="2" id="heat-prevention"/)
 assert.match(planningHtml, /py-5 md:py-7 " data-source-level="2" id="senior-kids-notes"/)
 assert.doesNotMatch(planningHtml, /id="heat-prevention"[\s\S]*?min-\[560px\]:grid-cols-2[\s\S]*?id="senior-kids-notes"/)
