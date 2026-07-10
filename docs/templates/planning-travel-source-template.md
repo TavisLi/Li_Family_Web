@@ -4,33 +4,39 @@ author: "Tavis Li"
 date: "YYYY-MM-DD"
 ---
 
-# **👥 核心信息速覽**
+# **旅行戰情室**
+
+包含本次旅行的核心信息、住宿、交通與待確認事項，供家人掌握基本狀況並提出意見。
+
+> 使用前請先在 `docs/travel-projects.md` 登錄本旅行的呈現名稱、Canonical slug、狀態與 Markdown 資料源。Canonical slug 需使用 `YYYYMM-short-location-or-theme` 格式，並與 `/travel/[slug]`、Payload record、資產資料夾保持一致。
+
+## **👥 核心信息速覽**
 
 - **行程名稱**：YYYYMM旅遊名稱N日 - 主要城市·核心亮點·家庭主題
-- **Canonical slug**：yyyyMM-location-theme
+- **Canonical slug**：YYYYMM-short-location-or-theme
 - **時間**：YYYY年M月D日-YYYY年M月D日（N天N晚）
 - **狀態**：planning
 - **出行人**：Tavis、Lynn、Nini、Leo、Sophie、Grandma
 - **行程概覽**：出發地 → 城市A → 城市B → 返回地
 - **規劃重點**：填寫最需要家人共同決策的 1-3 個重點。
 
-# **🎬 外部影片**
+## **🎬 外部影片**
 
 - **參考影片 1**：https://youtu.be/xxxx
 
-# **✈️ 航班信息**
+## **✈️ 航班信息**
 
 | 日期 | 航班號 | 航線 | 起飛 | 抵達 | 備注 |
 | --- | --- | --- | --- | --- | --- |
 | M/D | TBD | 台北 → 目的地 | TBD | TBD | 待確認 |
 
-# **🚄 返程高鐵**
+## **🚄 返程高鐵**
 
 | 日期 | 車次 | 航線 | 出發 | 抵達 | 備注 |
 | --- | --- | --- | --- | --- | --- |
 | M/D | TBD | 城市A → 城市B | TBD | TBD | 若無高鐵可刪除此段 |
 
-# **🏨 住宿安排**
+## **🏨 住宿安排**
 
 | 日期 | 城市 | 酒店 | 地址 | 電話 | 備注 |
 | --- | --- | --- | --- | --- | --- |
