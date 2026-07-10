@@ -147,13 +147,20 @@ const planningProject: TravelProject = {
       level: 1,
       title: '旅行戰情室',
       anchor: 'war-room',
-      body: '',
+      body: '集中整理航班、住宿、每日決策與待確認事項，讓行前討論有同一個入口。',
       enableComments: false,
       enableThumbsUp: false,
       enableThumbsDown: false,
     },
     {
       id: 'source-2',
+      level: 2,
+      title: '👥 核心信息速覽',
+      anchor: 'core-summary',
+      body: '- 出行人：李天行、簡採涵、李若妍、黃鳳珠、李宇晴、李向紘（共6人，含兒童）\n- 時間：2026年7月1日-8日（8天7晚）\n- 行程概覽：重慶4天3晚（山城精華）→ 長江三峽游輪4天3晚 → 宜昌1天（三峽人家）→ 高鐵返漢\n- 氣象預報：7月2日到4日：重慶多雲到晴25-35°C；7月7日到8日：宜昌小雨23-35°C，上午/傍晚安排戶外，中午室內避暑；節奏適中，照顧老人小孩',
+    },
+    {
+      id: 'source-2a',
       level: 2,
       title: '度假村官方網站',
       anchor: 'resort-sites',
@@ -165,6 +172,27 @@ const planningProject: TravelProject = {
           url: 'https://www.anantara.com/en/vacation-club-phuket',
         },
       ],
+    },
+    {
+      id: 'source-2b',
+      level: 2,
+      title: '三峽人家費用估算',
+      anchor: 'three-gorges-estimate',
+      body: '| 項目 | 估算 |\n| --- | --- |\n| 門票（按6人估算） | 約700-1,080元 |\n| 交通（打車往返） | 約200元 |\n| 小計 | 約1,260-1,640元 |',
+    },
+    {
+      id: 'source-2c',
+      level: 2,
+      title: '宜昌段住宿與交通',
+      anchor: 'yichang-lodging-transport',
+      body: '| 項目 | 費用 |\n| --- | --- |\n| 宜昌1790梵居（2間房1晚） | 約800元 |\n| 宜昌東→武漢站高鐵（6人） | ¥666元 |\n| 小計 | 約1,466元 |',
+    },
+    {
+      id: 'source-2d',
+      level: 2,
+      title: '🚕 機場→酒店交通',
+      anchor: 'airport-hotel-transfer',
+      body: '- 推薦方案：打車2輛，夜間價較穩\n- 備選方案：地鐵3號線→2號線至臨江門站',
     },
     {
       id: 'source-3',
@@ -199,6 +227,41 @@ const planningProject: TravelProject = {
       title: '補充細節',
       anchor: 'details',
       body: '萬豪推介會出席提醒：否則需支付套餐全額零售價（最高$1,500）。',
+    },
+    {
+      id: 'source-6-child-a',
+      level: 3,
+      title: '證件提醒',
+      anchor: 'document-reminder',
+      body: '- 身份證護照原件隨身攜帶\n- 票券截圖離線保存',
+    },
+    {
+      id: 'source-6-child-b',
+      level: 3,
+      title: '家人分工',
+      anchor: 'family-roles',
+      body: '- 大件行李集中托運\n- 小孩用品放隨身小包',
+    },
+    {
+      id: 'source-6a',
+      level: 2,
+      title: '防暑降溫（全程適用）',
+      anchor: 'heat-prevention',
+      body: '- 攜帶防曬霜、遮陽帽、便攜小風扇、藿香正氣水\n- 12:00-15:00避免戶外暴走，安排室內景點或午休\n- 隨時補充水分，便利店買水方便',
+    },
+    {
+      id: 'source-6aa',
+      level: 2,
+      title: '老人小孩注意',
+      anchor: 'senior-kids-notes',
+      body: '- 洪崖洞內部人多擁擠，傍晚遠觀即可，不建議帶小孩進入\n- 山城步道從領事巷入口往下走，避免小孩爬坡太累\n- 三峽人家龍進溪步道平坦且樹蔭多，最適合小孩；巴王寨建議乘索道上山',
+    },
+    {
+      id: 'source-6b',
+      level: 2,
+      title: '三峽人家交通方案',
+      anchor: 'three-gorges-transport',
+      body: '💡 建議：方案A打車更靈活，適合6人家庭自主安排時間；方案B套票省心但需配合固定班次。可提前在攜程對比套票價格是否划算（單獨買門票180元/人+打車200元 vs 套票210元/人含車）',
     },
   ],
   createdAt: '2026-06-21T00:00:00.000Z',
@@ -278,11 +341,29 @@ assert.match(planningHtml, /注意事項/)
 assert.match(planningHtml, /Reminders/)
 assert.match(planningHtml, /提醒、取消政策與待確認項目集中放在這裡/)
 assert.match(planningHtml, /Day 1/)
+assert.match(planningHtml, /核心信息速覽/)
+assert.match(planningHtml, /氣象預報：7月2日到4日/)
 assert.match(planningHtml, /度假村官方網站/)
 assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuket/)
 assert.match(planningHtml, /最高\$1,500/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:resort-sites/)
 assert.match(planningHtml, /travel:202702-thailand-phuket:source:details/)
+assert.match(planningHtml, /防暑降溫（全程適用）/)
+assert.match(planningHtml, /藿香正氣水/)
+assert.match(planningHtml, /老人小孩注意/)
+assert.match(planningHtml, /山城步道從領事巷入口/)
+assert.match(planningHtml, /證件提醒/)
+assert.match(planningHtml, /票券截圖離線保存/)
+assert.match(planningHtml, /家人分工/)
+assert.match(planningHtml, /小孩用品放隨身小包/)
+assert.match(planningHtml, /三峽人家費用估算/)
+assert.match(planningHtml, /約1,260-1,640元/)
+assert.match(planningHtml, /宜昌段住宿與交通/)
+assert.match(planningHtml, /約1,466元/)
+assert.match(planningHtml, /機場→酒店交通/)
+assert.match(planningHtml, /地鐵3號線→2號線/)
+assert.match(planningHtml, /三峽人家交通方案/)
+assert.match(planningHtml, /套票210元\/人含車/)
 assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:notes/)
 assert.match(planningHtml, /入住安納塔拉/)
 assert.match(planningHtml, /data-source-level="1"/)
@@ -329,6 +410,25 @@ assert.match(planningHtml, /data-image-layout="intrinsic"/)
 assert.match(planningHtml, /https:\/\/cdn\.example\.com\/anantara-pool\.jpg/)
 assert.match(planningHtml, /min-\[560px\]:grid-cols-2/)
 assert.match(planningHtml, /min-\[560px\]:col-span-2/)
+assert.match(planningHtml, /grid gap-6 lg:grid-cols-2/)
+assert.match(planningHtml, /mt-5 grid gap-4 lg:grid-cols-2/)
+assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="core-summary"/)
+assert.match(planningHtml, /id="three-gorges-estimate"><h4/)
+assert.match(planningHtml, /id="yichang-lodging-transport"><h4/)
+assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="airport-hotel-transfer"/)
+assert.match(planningHtml, /id="airport-hotel-transfer"[\s\S]*?<ul class="grid gap-2 min-\[560px\]:col-span-2"/)
+assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="details"/)
+assert.match(planningHtml, /mt-5 grid gap-3 lg:grid-cols-2/)
+assert.match(planningHtml, /rounded-2xl border border-white\/10 bg-white\/\[0\.06\] p-4 " data-source-level="3" id="document-reminder"/)
+assert.match(planningHtml, /rounded-2xl border border-white\/10 bg-white\/\[0\.06\] p-4 " data-source-level="3" id="family-roles"/)
+assert.doesNotMatch(planningHtml, /id="document-reminder"[\s\S]*?min-\[560px\]:grid-cols-2[\s\S]*?id="family-roles"/)
+assert.match(planningHtml, /py-5 md:py-7 " data-source-level="2" id="heat-prevention"/)
+assert.match(planningHtml, /py-5 md:py-7 " data-source-level="2" id="senior-kids-notes"/)
+assert.doesNotMatch(planningHtml, /id="heat-prevention"[\s\S]*?min-\[560px\]:grid-cols-2[\s\S]*?id="senior-kids-notes"/)
+assert.match(planningHtml, /id="three-gorges-transport"><h4 class="text-\[22px\] font-semibold tracking-normal text-white"/)
+assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="three-gorges-transport"/)
+assert.match(planningHtml, /max-w-5xl border-l border-cyan-100\/20 pl-5/)
+assert.match(planningHtml, /max-w-5xl border-l border-cyan-800\/25 pl-5/)
 assert.match(planningHtml, /mx-auto mt-5 grid w-full gap-3 sm:grid-cols-2/)
 assert.match(planningHtml, /text-\[22px\] font-semibold tracking-normal text-slate-950/)
 assert.doesNotMatch(planningHtml, /border-t border-white\/10 py-5/)

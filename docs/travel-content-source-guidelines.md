@@ -67,6 +67,12 @@ YYYYMM-short-location-or-theme
 content-source/travels/[原始中文檔名].md
 ```
 
+規劃中旅遊可先複製並填寫：
+
+```text
+docs/templates/planning-travel-source-template.md
+```
+
 範例：
 
 ```text

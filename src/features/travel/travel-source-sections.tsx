@@ -101,13 +101,27 @@ export function findDailySourceSections(
   return result
 }
 
-export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'light' | 'dark' }) {
+export function SourceBody({
+  body,
+  layout = 'auto',
+  tone = 'light',
+}: {
+  body: string
+  layout?: 'auto' | 'single'
+  tone?: 'light' | 'dark'
+}) {
   const blocks = parseSourceBlocks(body)
   const mutedText = tone === 'dark' ? 'text-slate-300' : 'text-slate-600'
+  const layoutBlocks = layout === 'auto'
+    ? sourceBlockLayoutNodes(blocks)
+    : blocks.map((block) => ({ block, forceWide: false }))
+  const bodyGridClass = layout === 'auto' && layoutBlocks.some(({ forceWide }) => !forceWide) ? 'min-[560px]:grid-cols-2' : ''
 
   return (
-    <div className={`mt-4 grid gap-4 text-sm leading-7 min-[560px]:grid-cols-2 ${mutedText}`}>
-      {blocks.map((block, index) => {
+    <div className={`mt-4 grid gap-4 text-sm leading-7 ${bodyGridClass} ${mutedText}`}>
+      {layoutBlocks.map(({ block, forceWide }, index) => {
+        const spanClass = layout === 'auto' ? sourceBlockSpanClass(block, forceWide) : ''
+
         if (block.type === 'table') {
           const [header, ...rows] = block.rows
 
@@ -119,8 +133,8 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
             <div
               className={
                 tone === 'dark'
-                  ? 'overflow-x-auto rounded-2xl border border-cyan-100/15 bg-white/[0.06] shadow-sm shadow-slate-950/20 min-[560px]:col-span-2'
-                  : 'overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5 min-[560px]:col-span-2'
+                  ? `overflow-x-auto rounded-2xl border border-cyan-100/15 bg-white/[0.06] shadow-sm shadow-slate-950/20 ${spanClass}`
+                  : `overflow-x-auto rounded-2xl border border-cyan-100/70 bg-white/70 shadow-sm shadow-cyan-950/5 ${spanClass}`
               }
               key={`table-${index}`}
             >
@@ -164,7 +178,7 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
 
         if (block.type === 'list') {
           return (
-            <ul className="grid gap-2" key={`list-${index}`}>
+            <ul className={`grid gap-2 ${spanClass}`} key={`list-${index}`}>
               {block.items.map((item) => (
                 <li className="flex gap-2" key={item}>
                   <span
@@ -183,8 +197,8 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
             <blockquote
               className={
                 tone === 'dark'
-                  ? 'rounded-md border border-amber-100/20 bg-amber-100/10 px-4 py-3 text-amber-50'
-                  : 'rounded-md border border-amber-200/70 bg-amber-50/70 px-4 py-3 text-amber-950'
+                  ? `rounded-md border border-amber-100/20 bg-amber-100/10 px-4 py-3 text-amber-50 ${spanClass}`
+                  : `rounded-md border border-amber-200/70 bg-amber-50/70 px-4 py-3 text-amber-950 ${spanClass}`
               }
               key={`quote-${index}`}
             >
@@ -194,7 +208,7 @@ export function SourceBody({ body, tone = 'light' }: { body: string; tone?: 'lig
         }
 
         return (
-          <p className="whitespace-pre-wrap" key={`paragraph-${index}`}>
+          <p className={`whitespace-pre-wrap ${spanClass}`} key={`paragraph-${index}`}>
             {block.text}
           </p>
         )
@@ -216,8 +230,12 @@ function SourceGroupCard({
 }) {
   const groupAssociatedId = sourceSectionKey(projectSlug, group.anchor)
   const sectionNodes = nestSourceSections(group.sections)
+  const reminderGroup = isReminderGroup(group)
+  const layoutNodes = sourceSectionLayoutNodes(sectionNodes, {
+    orphanPlacement: reminderGroup ? 'first' : 'last',
+  })
 
-  if (isReminderGroup(group)) {
+  if (reminderGroup) {
     return (
       <article
         className="border-y border-slate-800 bg-slate-950 px-5 py-12 text-white shadow-2xl shadow-slate-950/20 md:px-8 md:py-16"
@@ -235,15 +253,16 @@ function SourceGroupCard({
           </header>
           <div className="grid gap-4">
             {group.intro && hasBody(group.intro) ? (
-              <div>
-                <SourceBody body={group.intro.body} tone="dark" />
+              <div className="max-w-5xl border-l border-cyan-100/20 pl-5">
+                <SourceBody body={group.intro.body} layout="single" tone="dark" />
                 <SourceSectionMediaRail section={group.intro} tone="dark" />
               </div>
             ) : null}
-            <div className="grid gap-6">
-              {sectionNodes.map((node) => (
+            <div className="grid gap-6 lg:grid-cols-2">
+              {layoutNodes.map(({ forceWide, node }) => (
                 <NestedSourceSection
                   key={node.section.id ?? node.section.anchor}
+                  forceWide={forceWide}
                   node={node}
                   projectSlug={projectSlug}
                   renderInteraction={renderInteraction}
@@ -279,8 +298,8 @@ function SourceGroupCard({
             {group.title}
           </h3>
           {group.intro && hasBody(group.intro) ? (
-            <div className="mt-5 max-w-3xl border-l border-cyan-800/25 pl-5">
-              <SourceBody body={group.intro.body} />
+            <div className="mt-5 max-w-5xl border-l border-cyan-800/25 pl-5">
+              <SourceBody body={group.intro.body} layout="single" />
               <SourceSectionMediaRail section={group.intro} />
             </div>
           ) : null}
@@ -294,10 +313,11 @@ function SourceGroupCard({
               })
             : null}
         </header>
-        <div className="mt-5 grid gap-4">
-          {sectionNodes.map((node) => (
+        <div className="mt-5 grid gap-4 lg:grid-cols-2">
+          {layoutNodes.map(({ forceWide, node }) => (
             <NestedSourceSection
               key={node.section.id ?? node.section.anchor}
+              forceWide={forceWide}
               node={node}
               projectSlug={projectSlug}
               renderInteraction={renderInteraction}
@@ -312,12 +332,14 @@ function SourceGroupCard({
 }
 
 function NestedSourceSection({
+  forceWide = false,
   node,
   projectSlug,
   renderInteraction,
   threads,
   tone = 'light',
 }: {
+  forceWide?: boolean
   node: SourceSectionNode
   projectSlug: string
   renderInteraction?: RenderInteraction
@@ -328,10 +350,15 @@ function NestedSourceSection({
   const daily = isDailySection(section)
   const dark = tone === 'dark'
   const associatedId = sourceSectionKey(projectSlug, section.anchor)
+  const spanClass = sourceSectionSpanClass(node, forceWide)
+  const bodyLayout = spanClass ? 'auto' : 'single'
+  const childLayoutNodes = node.children.length
+    ? sourceSectionLayoutNodes(nodesForSections(node.children))
+    : []
 
   return (
     <section
-      className={dark ? 'py-5 md:py-7' : 'py-5 md:py-7'}
+      className={`py-5 md:py-7 ${spanClass}`}
       data-source-level={section.level}
       id={section.anchor}
     >
@@ -342,42 +369,47 @@ function NestedSourceSection({
           {section.title}
         </h4>
       )}
-      <SourceBody body={section.body} tone={tone} />
+      <SourceBody body={section.body} layout={bodyLayout} tone={tone} />
       <SourceLinks section={section} tone={tone} />
       <SourceSectionMediaRail section={section} tone={tone} />
       {node.children.length ? (
-        <div className="mt-5 grid gap-3">
-          {node.children.map((child) => (
-            <section
-              className={
-                dark
-                  ? 'rounded-2xl border border-white/10 bg-white/[0.06] p-4'
-                  : 'rounded-2xl border border-cyan-100/80 bg-cyan-50/55 p-4'
-              }
-              data-source-level={child.level}
-              id={child.anchor}
-              key={child.id ?? child.anchor}
-            >
-              <h5 className={dark ? 'text-[22px] font-semibold tracking-normal text-white' : 'text-[22px] font-semibold tracking-normal text-slate-950'}>
-                {child.title}
-              </h5>
-              <SourceBody body={child.body} tone={tone} />
-              <SourceLinks section={child} tone={tone} />
-              <SourceSectionMediaRail section={child} tone={tone} />
-              {renderInteraction
-                && hasEnabledInteractions(interactionOptionsFor(child))
-                ? renderInteraction({
-                    className: dark
-                      ? 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300'
-                      : 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
-                    associatedId: sourceSectionKey(projectSlug, child.anchor),
-                    enabledInteractions: interactionOptionsFor(child),
-                    label: child.title,
-                    thread: threads[sourceSectionKey(projectSlug, child.anchor)],
-                  })
-                : null}
-            </section>
-          ))}
+        <div className="mt-5 grid gap-3 lg:grid-cols-2">
+          {childLayoutNodes.map(({ forceWide: forceWideChild, node: childNode }) => {
+            const child = childNode.section
+            const childSpanClass = sourceSectionSpanClass(childNode, forceWideChild)
+
+            return (
+              <section
+                className={
+                  dark
+                    ? `rounded-2xl border border-white/10 bg-white/[0.06] p-4 ${childSpanClass}`
+                    : `rounded-2xl border border-cyan-100/80 bg-cyan-50/55 p-4 ${childSpanClass}`
+                }
+                data-source-level={child.level}
+                id={child.anchor}
+                key={child.id ?? child.anchor}
+              >
+                <h5 className={dark ? 'text-[22px] font-semibold tracking-normal text-white' : 'text-[22px] font-semibold tracking-normal text-slate-950'}>
+                  {child.title}
+                </h5>
+                <SourceBody body={child.body} layout={childSpanClass ? 'auto' : 'single'} tone={tone} />
+                <SourceLinks section={child} tone={tone} />
+                <SourceSectionMediaRail section={child} tone={tone} />
+                {renderInteraction
+                  && hasEnabledInteractions(interactionOptionsFor(child))
+                  ? renderInteraction({
+                      className: dark
+                        ? 'rounded-2xl border-white/15 bg-white/10 px-4 pb-1 text-slate-300'
+                        : 'rounded-2xl border-white/50 bg-white/35 px-4 pb-1',
+                      associatedId: sourceSectionKey(projectSlug, child.anchor),
+                      enabledInteractions: interactionOptionsFor(child),
+                      label: child.title,
+                      thread: threads[sourceSectionKey(projectSlug, child.anchor)],
+                    })
+                  : null}
+              </section>
+            )
+          })}
         </div>
       ) : null}
       {renderInteraction
@@ -639,6 +671,13 @@ function nestSourceSections(sections: SourceSection[]): SourceSectionNode[] {
   return nodes
 }
 
+function nodesForSections(sections: SourceSection[]): SourceSectionNode[] {
+  return sections.map((section) => ({
+    section,
+    children: [],
+  }))
+}
+
 function mediaObjects(items: SourceSectionMedia[] | null | undefined): Media[] {
   return (items ?? []).filter((item): item is Media => Boolean(item && typeof item === 'object'))
 }
@@ -732,6 +771,166 @@ type SourceBlock =
   | { type: 'quote'; text: string }
   | { type: 'list'; items: string[] }
   | { type: 'table'; rows: string[][] }
+
+function sourceBlockSpanClass(block: SourceBlock, forceWide = false): string {
+  if (forceWide) {
+    return 'min-[560px]:col-span-2'
+  }
+
+  if (block.type === 'table') {
+    return 'min-[560px]:col-span-2'
+  }
+
+  if (block.type === 'list') {
+    return block.items.some(isWideSourceListItem) ? 'min-[560px]:col-span-2' : ''
+  }
+
+  return isWideSourceText(block.text) ? 'min-[560px]:col-span-2' : ''
+}
+
+function sourceBlockLayoutNodes(blocks: SourceBlock[]): Array<{
+  block: SourceBlock
+  forceWide: boolean
+}> {
+  const layout = blocks.map((block) => ({
+    block,
+    forceWide: false,
+  }))
+  let compactRun: number[] = []
+
+  const flushCompactRun = () => {
+    if (compactRun.length % 2 === 1) {
+      const orphanIndex = compactRun[compactRun.length - 1]
+
+      if (orphanIndex !== undefined) {
+        layout[orphanIndex]!.forceWide = true
+      }
+    }
+
+    compactRun = []
+  }
+
+  blocks.forEach((block, index) => {
+    if (sourceBlockSpanClass(block)) {
+      flushCompactRun()
+      return
+    }
+
+    compactRun.push(index)
+  })
+  flushCompactRun()
+
+  return layout
+}
+
+type CompactOrphanPlacement = 'first' | 'last'
+
+function sourceSectionLayoutNodes(
+  nodes: SourceSectionNode[],
+  {
+    orphanPlacement = 'last',
+  }: {
+    orphanPlacement?: CompactOrphanPlacement
+  } = {},
+): Array<{
+  forceWide: boolean
+  node: SourceSectionNode
+}> {
+  const layout = nodes.map((node) => ({
+    node,
+    forceWide: false,
+  }))
+  let compactRun: number[] = []
+
+  const flushCompactRun = () => {
+    if (compactRun.length % 2 === 1) {
+      const orphanIndex =
+        orphanPlacement === 'first'
+          ? compactRun[0]
+          : compactRun[compactRun.length - 1]
+
+      if (orphanIndex !== undefined) {
+        layout[orphanIndex]!.forceWide = true
+      }
+    }
+
+    compactRun = []
+  }
+
+  nodes.forEach((node, index) => {
+    if (isWideSourceSectionNode(node)) {
+      flushCompactRun()
+      return
+    }
+
+    compactRun.push(index)
+  })
+  flushCompactRun()
+
+  return layout
+}
+
+function sourceSectionSpanClass(node: SourceSectionNode, forceWide = false): string {
+  return forceWide || isWideSourceSectionNode(node) ? 'lg:col-span-2' : ''
+}
+
+function isWideSourceSectionNode(node: SourceSectionNode): boolean {
+  const { section } = node
+
+  if (isDailySection(section) || node.children.length || mediaObjects(section.mediaItems).length) {
+    return true
+  }
+
+  return parseSourceBlocks(section.body).some(isWideSourceBlock)
+}
+
+function isWideSourceBlock(block: SourceBlock): boolean {
+  if (block.type === 'table') {
+    return !isCompactTable(block.rows)
+  }
+
+  if (block.type === 'list') {
+    return block.items.some(isWideSourceListItem)
+  }
+
+  return isWideSourceText(block.text)
+}
+
+function isCompactTable(rows: string[][]): boolean {
+  if (!rows.length || rows.length > 6) {
+    return false
+  }
+
+  const columnCount = Math.max(...rows.map((row) => row.length))
+
+  if (columnCount > 2) {
+    return false
+  }
+
+  return rows.every((row) => row.every((cell) => isCompactTableCell(cell)))
+}
+
+function isCompactTableCell(cell: string): boolean {
+  const normalized = cell.replace(/\s+/g, ' ').trim()
+
+  return normalized.length <= 28 && !/https?:\/\/|；|;/.test(normalized)
+}
+
+function isWideSourceText(text: string): boolean {
+  const normalized = normalizeSourceText(text)
+
+  return normalized.length > 88 || /https?:\/\/| vs | vs\.|；|;/.test(normalized)
+}
+
+function isWideSourceListItem(text: string): boolean {
+  const normalized = normalizeSourceText(text)
+
+  return normalized.length > 72 || /https?:\/\/| vs | vs\./.test(normalized) || (normalized.length > 48 && /；|;/.test(normalized))
+}
+
+function normalizeSourceText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim()
+}
 
 function parseSourceBlocks(body: string): SourceBlock[] {
   const blocks: SourceBlock[] = []
