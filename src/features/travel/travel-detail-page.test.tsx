@@ -247,7 +247,7 @@ const planningProject: TravelProject = {
       level: 2,
       title: '老人小孩注意',
       anchor: 'senior-kids-notes',
-      body: '- 洪崖洞內部人多擁擠，傍晚遠觀即可，不建議帶小孩進入\n- 山城步道從領事巷入口往下走，避免小孩爬坡太累',
+      body: '- 洪崖洞內部人多擁擠，傍晚遠觀即可，不建議帶小孩進入\n- 山城步道從領事巷入口往下走，避免小孩爬坡太累\n- 三峽人家龍進溪步道平坦且樹蔭多，最適合小孩；巴王寨建議乘索道上山',
     },
     {
       id: 'source-6b',

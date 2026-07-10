@@ -775,7 +775,7 @@ function sourceBlockSpanClass(block: SourceBlock): string {
   }
 
   if (block.type === 'list') {
-    return block.items.some((item) => isWideSourceText(item)) ? 'min-[560px]:col-span-2' : ''
+    return block.items.some(isWideSourceListItem) ? 'min-[560px]:col-span-2' : ''
   }
 
   return isWideSourceText(block.text) ? 'min-[560px]:col-span-2' : ''
@@ -848,7 +848,7 @@ function isWideSourceBlock(block: SourceBlock): boolean {
   }
 
   if (block.type === 'list') {
-    return block.items.some((item) => isWideSourceText(item))
+    return block.items.some(isWideSourceListItem)
   }
 
   return isWideSourceText(block.text)
@@ -875,9 +875,19 @@ function isCompactTableCell(cell: string): boolean {
 }
 
 function isWideSourceText(text: string): boolean {
-  const normalized = text.replace(/\s+/g, ' ').trim()
+  const normalized = normalizeSourceText(text)
 
   return normalized.length > 88 || /https?:\/\/| vs | vs\.|；|;/.test(normalized)
+}
+
+function isWideSourceListItem(text: string): boolean {
+  const normalized = normalizeSourceText(text)
+
+  return normalized.length > 96 || /https?:\/\/| vs | vs\./.test(normalized)
+}
+
+function normalizeSourceText(text: string): string {
+  return text.replace(/\s+/g, ' ').trim()
 }
 
 function parseSourceBlocks(body: string): SourceBlock[] {
