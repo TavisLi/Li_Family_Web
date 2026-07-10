@@ -112,12 +112,15 @@ export function SourceBody({
 }) {
   const blocks = parseSourceBlocks(body)
   const mutedText = tone === 'dark' ? 'text-slate-300' : 'text-slate-600'
-  const bodyGridClass = layout === 'auto' ? 'min-[560px]:grid-cols-2' : ''
+  const layoutBlocks = layout === 'auto'
+    ? sourceBlockLayoutNodes(blocks)
+    : blocks.map((block) => ({ block, forceWide: false }))
+  const bodyGridClass = layout === 'auto' && layoutBlocks.some(({ forceWide }) => !forceWide) ? 'min-[560px]:grid-cols-2' : ''
 
   return (
     <div className={`mt-4 grid gap-4 text-sm leading-7 ${bodyGridClass} ${mutedText}`}>
-      {blocks.map((block, index) => {
-        const spanClass = layout === 'auto' ? sourceBlockSpanClass(block) : ''
+      {layoutBlocks.map(({ block, forceWide }, index) => {
+        const spanClass = layout === 'auto' ? sourceBlockSpanClass(block, forceWide) : ''
 
         if (block.type === 'table') {
           const [header, ...rows] = block.rows
@@ -769,7 +772,11 @@ type SourceBlock =
   | { type: 'list'; items: string[] }
   | { type: 'table'; rows: string[][] }
 
-function sourceBlockSpanClass(block: SourceBlock): string {
+function sourceBlockSpanClass(block: SourceBlock, forceWide = false): string {
+  if (forceWide) {
+    return 'min-[560px]:col-span-2'
+  }
+
   if (block.type === 'table') {
     return 'min-[560px]:col-span-2'
   }
@@ -779,6 +786,41 @@ function sourceBlockSpanClass(block: SourceBlock): string {
   }
 
   return isWideSourceText(block.text) ? 'min-[560px]:col-span-2' : ''
+}
+
+function sourceBlockLayoutNodes(blocks: SourceBlock[]): Array<{
+  block: SourceBlock
+  forceWide: boolean
+}> {
+  const layout = blocks.map((block) => ({
+    block,
+    forceWide: false,
+  }))
+  let compactRun: number[] = []
+
+  const flushCompactRun = () => {
+    if (compactRun.length % 2 === 1) {
+      const orphanIndex = compactRun[compactRun.length - 1]
+
+      if (orphanIndex !== undefined) {
+        layout[orphanIndex]!.forceWide = true
+      }
+    }
+
+    compactRun = []
+  }
+
+  blocks.forEach((block, index) => {
+    if (sourceBlockSpanClass(block)) {
+      flushCompactRun()
+      return
+    }
+
+    compactRun.push(index)
+  })
+  flushCompactRun()
+
+  return layout
 }
 
 type CompactOrphanPlacement = 'first' | 'last'
@@ -883,7 +925,7 @@ function isWideSourceText(text: string): boolean {
 function isWideSourceListItem(text: string): boolean {
   const normalized = normalizeSourceText(text)
 
-  return normalized.length > 96 || /https?:\/\/| vs | vs\./.test(normalized)
+  return normalized.length > 72 || /https?:\/\/| vs | vs\./.test(normalized) || (normalized.length > 48 && /；|;/.test(normalized))
 }
 
 function normalizeSourceText(text: string): string {

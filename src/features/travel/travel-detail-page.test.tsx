@@ -155,6 +155,13 @@ const planningProject: TravelProject = {
     {
       id: 'source-2',
       level: 2,
+      title: '👥 核心信息速覽',
+      anchor: 'core-summary',
+      body: '- 出行人：李天行、簡採涵、李若妍、黃鳳珠、李宇晴、李向紘（共6人，含兒童）\n- 時間：2026年7月1日-8日（8天7晚）\n- 行程概覽：重慶4天3晚（山城精華）→ 長江三峽游輪4天3晚 → 宜昌1天（三峽人家）→ 高鐵返漢\n- 氣象預報：7月2日到4日：重慶多雲到晴25-35°C；7月7日到8日：宜昌小雨23-35°C，上午/傍晚安排戶外，中午室內避暑；節奏適中，照顧老人小孩',
+    },
+    {
+      id: 'source-2a',
+      level: 2,
       title: '度假村官方網站',
       anchor: 'resort-sites',
       body: '安納塔拉度假會：https://www.anantara.com/en/vacation-club-phuket',
@@ -334,6 +341,8 @@ assert.match(planningHtml, /注意事項/)
 assert.match(planningHtml, /Reminders/)
 assert.match(planningHtml, /提醒、取消政策與待確認項目集中放在這裡/)
 assert.match(planningHtml, /Day 1/)
+assert.match(planningHtml, /核心信息速覽/)
+assert.match(planningHtml, /氣象預報：7月2日到4日/)
 assert.match(planningHtml, /度假村官方網站/)
 assert.match(planningHtml, /https:\/\/www\.anantara\.com\/en\/vacation-club-phuket/)
 assert.match(planningHtml, /最高\$1,500/)
@@ -403,9 +412,11 @@ assert.match(planningHtml, /min-\[560px\]:grid-cols-2/)
 assert.match(planningHtml, /min-\[560px\]:col-span-2/)
 assert.match(planningHtml, /grid gap-6 lg:grid-cols-2/)
 assert.match(planningHtml, /mt-5 grid gap-4 lg:grid-cols-2/)
+assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="core-summary"/)
 assert.match(planningHtml, /id="three-gorges-estimate"><h4/)
 assert.match(planningHtml, /id="yichang-lodging-transport"><h4/)
 assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="airport-hotel-transfer"/)
+assert.match(planningHtml, /id="airport-hotel-transfer"[\s\S]*?<ul class="grid gap-2 min-\[560px\]:col-span-2"/)
 assert.match(planningHtml, /py-5 md:py-7 lg:col-span-2" data-source-level="2" id="details"/)
 assert.match(planningHtml, /mt-5 grid gap-3 lg:grid-cols-2/)
 assert.match(planningHtml, /rounded-2xl border border-white\/10 bg-white\/\[0\.06\] p-4 " data-source-level="3" id="document-reminder"/)
