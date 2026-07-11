@@ -20,6 +20,15 @@ import { mediaIdsBySourcePath } from './seed-media-context'
 import { mediaRefreshRequestFromArgs } from './seed-media-repair'
 import { attachSourceSectionMediaIds } from './travel-section-media'
 import { uploadFilenameForSourcePath } from './seed-upload-name'
+import {
+  buildTravelProjection,
+  reconciliationModeFromArgs,
+  reconcileTravelSeed,
+  travelProjectionHash,
+  writePayloadTravelDraft,
+  type ReconciliationMode,
+  type TravelProjection,
+} from './travel-seed-reconciliation'
 
 interface SeedStats {
   created: number
@@ -49,11 +58,12 @@ async function run() {
   const phase9Only = process.argv.includes('--phase-9')
   const phase9ReadBack = process.argv.includes('--phase-9-read-back')
   const mediaRefreshRequest = mediaRefreshRequestFromArgs(process.argv)
+  const reconciliationMode = reconciliationModeFromArgs(process.argv)
 
   const seedContent = await buildSeedContent(projectRoot)
 
   if (dryRun) {
-    const report = await buildPayloadDryRun(payload, seedContent)
+    const report = await buildPayloadDryRun(payload, seedContent, reconciliationMode)
 
     console.log(
       JSON.stringify(
@@ -112,7 +122,7 @@ async function run() {
   if (phase9ReadBack) {
     await hydrateExistingMedia(payload, seedContent.media, context, stats)
     await seedMembers(payload, seedContent.members, context, stats)
-    await seedTravelProjects(payload, seedContent.travels, context, stats)
+    await seedTravelProjects(payload, seedContent.travels, context, stats, reconciliationMode)
     await seedHomeConfig(payload, context, stats)
 
     console.log('Phase 9 read-back content sync completed')
@@ -124,7 +134,7 @@ async function run() {
   await seedMembers(payload, seedContent.members, context, stats)
 
   if (phase9Only) {
-    await seedTravelProjects(payload, seedContent.travels, context, stats)
+    await seedTravelProjects(payload, seedContent.travels, context, stats, reconciliationMode)
     await seedHomeConfig(payload, context, stats)
 
     console.log('Phase 9 content seed completed')
@@ -134,7 +144,7 @@ async function run() {
 
   await seedBlogCategories(payload, seedContent.blogCategories, context, stats)
   await seedBlogPosts(payload, seedContent.blogPosts, context, stats)
-  await seedTravelProjects(payload, seedContent.travels, context, stats)
+  await seedTravelProjects(payload, seedContent.travels, context, stats, reconciliationMode)
   await seedPhase7DemoData(payload, context, stats)
   await seedHomeConfig(payload, context, stats)
 
@@ -561,6 +571,7 @@ async function seedTravelProjects(
   travels: TravelSeed[],
   context: SeedContext,
   stats: SeedStats,
+  mode: ReconciliationMode,
 ) {
   console.log(`Seeding ${travels.length} travel projects...`)
 
@@ -595,17 +606,94 @@ async function seedTravelProjects(
       const existingDoc = existing.docs[0]
 
       if (existingDoc) {
+        const source = buildTravelProjection(data as TravelProjection)
+        const current = buildTravelProjection(existingDoc as unknown as TravelProjection)
+        const metadata = travelSourceMetadata(existingDoc)
+        const plan = reconcileTravelSeed({
+          slug: travel.slug,
+          base: metadata?.baseProjection,
+          source,
+          current,
+          mode,
+        })
+        const nextMetadata = {
+          sourceFile: travel.externalDocIdentifier,
+          sourceHash: travelProjectionHash(source),
+          parserVersion: 'phase-16-v1',
+          baseProjection: source,
+          ...(plan.action === 'apply-source' ? { lastImportedAt: new Date().toISOString() } : {}),
+        }
+
+        if (plan.action === 'conflict') {
+          console.error(
+            `Travel reconciliation conflict (${travel.slug}): ${plan.conflicts.map((item) => item.field).join(', ')}`,
+          )
+
+          if (!Object.keys(plan.patch).length) {
+            stats.skipped += 1
+            continue
+          }
+
+          const updated = await payload.update({
+            collection: 'travel-projects',
+            id: existingDoc.id,
+            data: {
+              ...plan.patch,
+              sourceMetadata: {
+                ...nextMetadata,
+                lastImportedAt: new Date().toISOString(),
+                baseProjection: {
+                  ...(metadata?.baseProjection ?? {}),
+                  ...plan.patch,
+                },
+              },
+            },
+          })
+          context.travelBySlug.set(travel.slug, Number(updated.id))
+          stats.updated += 1
+          continue
+        }
+
+        if (mode === 'payload-wins' && process.argv.includes('--export-payload-drafts')) {
+          const draftPath = await writePayloadTravelDraft({
+            artifactRoot: path.join(projectRoot, 'docs/phase-artifacts/phase-16/exports'),
+            slug: travel.slug,
+            sourceFile: travel.externalDocIdentifier,
+            current,
+          })
+          console.log(`Payload reconciliation draft: ${draftPath}`)
+        }
+
+        if (plan.action === 'preserve-current' && metadata && mode === 'safe') {
+          stats.skipped += 1
+          context.travelBySlug.set(travel.slug, Number(existingDoc.id))
+          continue
+        }
+
         const updated = await payload.update({
           collection: 'travel-projects',
           id: existingDoc.id,
-          data,
+          data:
+            plan.action === 'apply-source'
+              ? { ...plan.patch, sourceMetadata: nextMetadata }
+              : { sourceMetadata: nextMetadata },
         })
         context.travelBySlug.set(travel.slug, Number(updated.id))
         stats.updated += 1
       } else {
+        const source = buildTravelProjection(data as TravelProjection)
         const created = await payload.create({
           collection: 'travel-projects',
-          data,
+          data: {
+            ...data,
+            sourceMetadata: {
+              sourceFile: travel.externalDocIdentifier,
+              sourceHash: travelProjectionHash(source),
+              parserVersion: 'phase-16-v1',
+              lastImportedAt: new Date().toISOString(),
+              baseProjection: source,
+            },
+          },
         })
         context.travelBySlug.set(travel.slug, Number(created.id))
         stats.created += 1
@@ -614,6 +702,25 @@ async function seedTravelProjects(
       stats.failed += 1
       console.error(`Failed to seed travel project: ${travel.slug}`, error)
     }
+  }
+}
+
+function travelSourceMetadata(value: unknown): { baseProjection?: TravelProjection } | undefined {
+  if (!value || typeof value !== 'object' || !('sourceMetadata' in value)) {
+    return undefined
+  }
+
+  const metadata = value.sourceMetadata
+  if (!metadata || typeof metadata !== 'object') {
+    return undefined
+  }
+
+  const baseProjection = 'baseProjection' in metadata ? metadata.baseProjection : undefined
+  return {
+    baseProjection:
+      baseProjection && typeof baseProjection === 'object' && !Array.isArray(baseProjection)
+        ? (baseProjection as TravelProjection)
+        : undefined,
   }
 }
 

@@ -72,6 +72,46 @@ export const TravelProjects: CollectionConfig = {
       },
     },
     {
+      name: 'sourceMetadata',
+      type: 'group',
+      required: false,
+      admin: {
+        description:
+          'Seed reconciliation metadata. Managed by the travel seed workflow; content editors should not change it manually.',
+      },
+      fields: [
+        {
+          name: 'sourceFile',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'sourceHash',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'parserVersion',
+          type: 'text',
+          required: false,
+        },
+        {
+          name: 'lastImportedAt',
+          type: 'date',
+          required: false,
+        },
+        {
+          name: 'baseProjection',
+          type: 'json',
+          required: false,
+          admin: {
+            description:
+              'Last accepted seed projection used as Base for three-way reconciliation.',
+          },
+        },
+      ],
+    },
+    {
       name: 'coverImage',
       type: 'relationship',
       relationTo: 'media',

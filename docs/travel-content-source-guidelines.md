@@ -282,6 +282,18 @@ Catalog parser 會驗證每個 source file 與 canonical slug 都只出現一次
 
 旅遊 Markdown 的 section contract 為：`航班信息`、`住宿安排`、`每日行程詳解`，以及可選的 `返程高鐵`、`游輪艙房分配`、`外部影片`。表格欄位可依行程而不同，但每個資料列必須維持可辨識的欄位順序；外部影片只接受 `youtube.com`、`youtu.be` 的 watch、shorts 或短網址。
 
+### Seed reconciliation contract
+
+完整旅行同步不再把 Markdown 單向覆蓋到 Payload。系統比較：
+
+- Base：上次接受的 seed projection。
+- Source：本次由 catalog、Markdown 與 media manifest 解析出的 projection。
+- Current：Payload published content。
+
+預設 safe mode 只套用「Source 有改、Current 沒改」的內容；Admin-only 修改會保留，Source 與 Current 同時改動則列為 conflict。先執行 `pnpm run seed:phase-9:dry-run`，確認 conflict 與 media projection 後才可申請 Production write。
+
+Payload-to-Markdown 只提供人工 reconciliation draft；不得自動覆蓋本目錄內的原始 Markdown。
+
 ---
 
 ## 9. 何時需要 Manifest
