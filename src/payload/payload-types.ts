@@ -328,6 +328,27 @@ export interface TravelProject {
    * Matches a file under content-source/travels for future seed import.
    */
   externalDocIdentifier?: string | null;
+  /**
+   * Seed reconciliation metadata. Managed by the travel seed workflow; content editors should not change it manually.
+   */
+  sourceMetadata?: {
+    sourceFile?: string | null;
+    sourceHash?: string | null;
+    parserVersion?: string | null;
+    lastImportedAt?: string | null;
+    /**
+     * Last accepted seed projection used as Base for three-way reconciliation.
+     */
+    baseProjection?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
   coverImage?: (number | null) | Media;
   galleryImages?: (number | Media)[] | null;
   /**
@@ -907,6 +928,15 @@ export interface TravelProjectsSelect<T extends boolean = true> {
   startDate?: T;
   endDate?: T;
   externalDocIdentifier?: T;
+  sourceMetadata?:
+    | T
+    | {
+        sourceFile?: T;
+        sourceHash?: T;
+        parserVersion?: T;
+        lastImportedAt?: T;
+        baseProjection?: T;
+      };
   coverImage?: T;
   galleryImages?: T;
   itineraryImages?: T;

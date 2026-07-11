@@ -23,7 +23,7 @@
 2. **`docs/` 與 `content-source/`**：旅行、素材等可重複同步內容的版本化來源；它們不會自動出現在網站上，必須經過 seed。
 3. **GitHub / Vercel**：程式碼、前台行為與部署設定的版本管理和發布管道。
 
-> 重要：已由 seed 管理的旅行資料，若只在 Admin 修改，下一次完整 seed 可能會以來源檔內容覆蓋它。重要旅行更新請一併更新來源 Markdown／素材，或在變更紀錄中明確標示為「僅後台維護」。
+> 重要：旅行 seed 使用 Base／Source／Current 三方 reconciliation。日常 Admin 修改不會被 safe mode 靜默覆蓋；若來源與 Admin 同時修改同一內容，必須先處理 conflict。
 
 ---
 
@@ -91,6 +91,7 @@ pnpm run seed:phase-9:dry-run
 
 - `seed:audit` 檢查 catalog、封面與結構化資料是否齊全。
 - `seed:phase-9:dry-run` 只讀取 Payload，列出 create／update 計畫，不會寫入資料。
+- travel action 會區分 `create`、`update`、`preserve`、`conflict`、`skip`；看到 `conflict` 時不可直接執行 safe write。
 - 將 dry-run 摘要、抽樣 document ID 與當前 Production URL 留在營運紀錄；不可記錄 credential。
 
 ### 4.3 Production 同步與驗收
@@ -108,6 +109,14 @@ pnpm run seed:phase-9:dry-run
 5. 實測 `/travel` 和 `/travel/[travel-slug]` 的桌機、手機、封面、照片牆與 YouTube 區塊。
 
 > Phase 9 seed 設計為 idempotent create/update，不應用來刪除 Production 資料。若需要清理歷史媒體，請另開明確範圍的盤點與核准流程。
+
+### 4.4 Travel reconciliation 模式
+
+- 預設 `pnpm run seed:phase-9` 為 `safe`：建立缺少項目、套用 non-conflicting source 更新、保留 Admin-only 修改、跳過 conflict。
+- `--source-wins`：只在審查 conflict report 且網站擁有者明確批准後使用；會用 Source 取代衝突的 Payload content。
+- `--payload-wins`：明確接受目前 Payload content。需要人工回填來源時，加上 `--export-payload-drafts`，草稿只會寫到 `docs/phase-artifacts/phase-16/exports/`，不會覆蓋 `content-source/travels/*.md`。
+- `--source-wins` 與 `--payload-wins` 不可同時使用。
+- 新 schema 部署順序固定為：審查 additive migration → 套用 migration → 執行 dry-run → 取得 Production write 批准；不可在 migration 尚未套用時直接執行新版 seed。
 
 ---
 
