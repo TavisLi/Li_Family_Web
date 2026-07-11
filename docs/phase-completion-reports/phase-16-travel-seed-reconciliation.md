@@ -7,7 +7,8 @@
 ## 分支與提交
 
 - Branch：`codex/phase-16-travel-seed-reconciliation`
-- Commit：完成提交後補記。
+- Implementation commit：`2d66210 Build Phase 16 travel seed reconciliation`。
+- Closeout commit：本報告狀態更新提交。
 - Pull Request：建立後補記。
 
 ## GitHub 與同步狀態
