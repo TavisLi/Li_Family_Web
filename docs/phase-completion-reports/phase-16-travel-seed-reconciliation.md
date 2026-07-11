@@ -9,13 +9,13 @@
 - Branch：`codex/phase-16-travel-seed-reconciliation`
 - Implementation commit：`2d66210 Build Phase 16 travel seed reconciliation`。
 - Closeout commit：本報告狀態更新提交。
-- Pull Request：建立後補記。
+- Pull Request：[PR #52 Phase 16 travel seed reconciliation](https://github.com/TavisLi/Li_Family_Web/pull/52)。
 
 ## GitHub 與同步狀態
 
 - 基底：`main` / `6ce74b8`，開工時與 `origin/main` 同步。
 - Issue：[Issue #50](https://github.com/TavisLi/Li_Family_Web/issues/50) 仍為 open；Phase 15 已交付 planning UI 與 Markdown template，本階段完成剩餘 seed/schema 安全層。
-- Branch push 與 PR 狀態：完成後補記。
+- Branch 已 push 至 `origin/codex/phase-16-travel-seed-reconciliation`，PR #52 已建立並等待 review／checks。
 
 ## 已交付內容
 
