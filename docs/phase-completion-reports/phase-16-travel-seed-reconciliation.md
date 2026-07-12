@@ -55,7 +55,7 @@
 - `docs/website-operations-sop.md`
 - `docs/travel-content-source-guidelines.md`
 - `docs/phase-preparation/phase-16-travel-seed-reconciliation.md`
-- `docs/design/travel/phase-16-travel-projects-table-schema-change.md`
+- `docs/data-models/travel-projects-schema.md`
 - `docs/adr/0006-seed-reconciliation-protects-published-content.md`
 
 ## TDD 行為覆蓋
@@ -101,7 +101,7 @@ pnpm run build
 - Controlled read-only fallback 已完成：6 users update、5 travel preserve、783 media skip、10 media create、0 media update、0 delete。
 - 10 筆 create 全部是 Tavis member assets，包含工作樹原有變更，故目前不批准全量 Production write。
 - Travel-only 正式 Production dry-run 已通過：0 users、0 member media、5 travel preserve、751 travel media skip、0 create／update／conflict／delete。
-- 詳細 schema 與後續計畫見 `docs/design/travel/phase-16-travel-projects-table-schema-change.md`。
+- 詳細 schema 與後續計畫見 `docs/data-models/travel-projects-schema.md`。
 
 ## Browser QA 範圍
 

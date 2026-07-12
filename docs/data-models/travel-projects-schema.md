@@ -1,4 +1,4 @@
-# Phase 16 TravelProjects Table Schema 變更說明
+# TravelProjects Schema 與 Phase 16 變更說明
 
 ## 文件目的
 
