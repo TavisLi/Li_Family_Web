@@ -12,7 +12,7 @@
 - Pull Request：[PR #52 Phase 16 travel seed reconciliation](https://github.com/TavisLi/Li_Family_Web/pull/52)。
 - Production closeout：[PR #53 Phase 16 production schema closeout](https://github.com/TavisLi/Li_Family_Web/pull/53)。
 - Baseline closeout：[PR #54 Record Phase 16 Production travel baseline](https://github.com/TavisLi/Li_Family_Web/pull/54)。
-- Read-back closeout：`codex/phase-16-readback-fix`（PR 待本次提交後建立）。
+- Read-back closeout：[PR #55 Complete Phase 16 Production travel read-back](https://github.com/TavisLi/Li_Family_Web/pull/55)，implementation commit `f878047`。
 
 ## GitHub 與同步狀態
 
