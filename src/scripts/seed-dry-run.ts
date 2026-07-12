@@ -38,15 +38,25 @@ export async function buildPayloadDryRun(
   payload: Payload,
   seedContent: SeedContent,
   mode: ReconciliationMode = 'safe',
+  onProgress?: (message: string) => void,
 ): Promise<{
   actions: DryRunAction[]
   summary: DryRunSummary
   deletionRisk: string
 }> {
   const actions: DryRunAction[] = []
-  // One catalog query avoids exhausting the constrained Production pooler with
-  // multiple large Payload joins while keeping the dry-run read-only.
-  const catalog = await readDryRunCatalog(payload)
+  // Small scoped catalog queries avoid exhausting the constrained Production
+  // pooler with one giant nested Payload join while keeping the dry-run read-only.
+  const travelOnly =
+    seedContent.members.length === 0 &&
+    seedContent.media.every((media) => media.ownerType === 'travel')
+  onProgress?.('catalog:start')
+  const catalog = await readDryRunCatalog(
+    payload,
+    travelOnly,
+    seedContent.media.map((media) => media.sourcePath),
+  )
+  onProgress?.('catalog:complete')
   const travelDocs: DryRunTravelRecord[] = []
   const travelMetadataBySlug = new Map(catalog.travels.map((travel) => [travel.slug, travel]))
 
@@ -62,6 +72,7 @@ export async function buildPayloadDryRun(
       continue
     }
 
+    onProgress?.(`travel:${travel.slug}:start`)
     const fullResult = await payload.find({
       collection: 'travel-projects',
       depth: 0,
@@ -73,6 +84,7 @@ export async function buildPayloadDryRun(
         },
       },
     })
+    onProgress?.(`travel:${travel.slug}:complete`)
     travelDocs.push(...fullResult.docs)
   }
   const userIdBySlug = new Map(catalog.users.map((user) => [user.slug, user.id]))
@@ -161,16 +173,26 @@ export async function buildPayloadDryRun(
   }
 }
 
-async function readDryRunCatalog(payload: Payload): Promise<{
+async function readDryRunCatalog(
+  payload: Payload,
+  travelOnly: boolean,
+  mediaSourcePaths: string[],
+): Promise<{
   users: DryRunUserRecord[]
   travels: DryRunTravelRecord[]
   media: DryRunMediaRecord[]
 }> {
+  const mediaScope = travelOnly
+    ? sql`media.source_path IN (
+        SELECT jsonb_array_elements_text(${JSON.stringify(mediaSourcePaths)}::jsonb)
+      )`
+    : sql`true`
   const result = await payload.db.drizzle.execute(sql`
     SELECT
       (
         SELECT COALESCE(json_agg(json_build_object('id', users.id, 'slug', users.slug)), '[]'::json)
         FROM users
+        WHERE ${travelOnly} = false
       ) AS users,
       (
         SELECT COALESCE(
@@ -191,47 +213,37 @@ async function readDryRunCatalog(payload: Payload): Promise<{
         )
         FROM travel_projects
       ) AS travels,
-      (
-        SELECT COALESCE(
-          json_agg(
-            json_build_object(
-              'id', media_catalog.id,
-              'type', media_catalog.type,
-              'sourcePath', media_catalog.source_path,
-              'altText', media_catalog.alt_text,
-              'tags', media_catalog.tags
-            )
-            ORDER BY media_catalog.id
-          ),
-          '[]'::json
-        )
-        FROM (
-          SELECT
-            media.id,
-            media.type,
-            media.source_path,
-            media_locales.alt_text,
-            COALESCE(
-              json_agg(
-                json_build_object('tag', media_tags_locales.tag)
-                ORDER BY media_tags._order
-              ) FILTER (WHERE media_tags_locales.tag IS NOT NULL),
-              '[]'::json
-            ) AS tags
-          FROM media
-          LEFT JOIN media_locales
-            ON media_locales._parent_id = media.id
-            AND media_locales._locale::text = 'zh-TW'
-          LEFT JOIN media_tags
-            ON media_tags._parent_id = media.id
-          LEFT JOIN media_tags_locales
-            ON media_tags_locales._parent_id = media_tags.id
-            AND media_tags_locales._locale::text = 'zh-TW'
-          GROUP BY media.id, media.type, media.source_path, media_locales.alt_text
-        ) AS media_catalog
-      ) AS media
+      '[]'::json AS media
+  `)
+  const mediaResult = await payload.db.drizzle.execute(sql`
+    SELECT
+      media.id,
+      media.type,
+      media.source_path,
+      media_locales.alt_text,
+      COALESCE(
+        json_agg(
+          json_build_object('tag', media_tags_locales.tag)
+          ORDER BY media_tags._order
+        ) FILTER (WHERE media_tags_locales.tag IS NOT NULL),
+        '[]'::json
+      ) AS tags
+    FROM media
+    LEFT JOIN media_locales
+      ON media_locales._parent_id = media.id
+      AND media_locales._locale::text = 'zh-TW'
+    LEFT JOIN media_tags
+      ON media_tags._parent_id = media.id
+    LEFT JOIN media_tags_locales
+      ON media_tags_locales._parent_id = media_tags.id
+      AND media_tags_locales._locale::text = 'zh-TW'
+    WHERE ${mediaScope}
+    GROUP BY media.id, media.type, media.source_path, media_locales.alt_text
+    ORDER BY media.id
   `)
   const rows = isRecord(result) && Array.isArray(result.rows) ? result.rows : []
+  const mediaRows =
+    isRecord(mediaResult) && Array.isArray(mediaResult.rows) ? mediaResult.rows : []
   const row = rows[0]
 
   if (!isRecord(row)) {
@@ -253,13 +265,12 @@ async function readDryRunCatalog(payload: Payload): Promise<{
             : [],
         )
       : [],
-    media: Array.isArray(row.media)
-      ? row.media.flatMap((media) => {
+    media: mediaRows.flatMap((media) => {
           if (
             !isRecord(media) ||
             typeof media.id !== 'number' ||
             (media.type !== 'photo' && media.type !== 'video') ||
-            typeof media.altText !== 'string'
+            typeof media.alt_text !== 'string'
           ) {
             return []
           }
@@ -267,16 +278,15 @@ async function readDryRunCatalog(payload: Payload): Promise<{
           return [{
             id: media.id,
             type: media.type,
-            altText: media.altText,
-            sourcePath: typeof media.sourcePath === 'string' ? media.sourcePath : null,
+            altText: media.alt_text,
+            sourcePath: typeof media.source_path === 'string' ? media.source_path : null,
             tags: Array.isArray(media.tags)
               ? media.tags.flatMap((tag) =>
                   isRecord(tag) && typeof tag.tag === 'string' ? [{ tag: tag.tag }] : [],
                 )
               : [],
           }]
-        })
-      : [],
+        }),
   }
 }
 
@@ -329,4 +339,11 @@ export function summarizeDryRunActions(actions: DryRunAction[]): DryRunSummary {
       deletes: 0,
     },
   )
+}
+
+export function sampleDryRunActions(actions: DryRunAction[], limit = 20) {
+  return actions.slice(0, limit).map((action) => ({
+    ...action,
+    conflicts: action.conflicts?.map(({ field, category }) => ({ field, category })),
+  }))
 }

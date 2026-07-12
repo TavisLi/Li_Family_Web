@@ -12,6 +12,7 @@
 - Pull Request：[PR #52 Phase 16 travel seed reconciliation](https://github.com/TavisLi/Li_Family_Web/pull/52)。
 - Production closeout：[PR #53 Phase 16 production schema closeout](https://github.com/TavisLi/Li_Family_Web/pull/53)。
 - Baseline closeout：[PR #54 Record Phase 16 Production travel baseline](https://github.com/TavisLi/Li_Family_Web/pull/54)。
+- Read-back closeout：`codex/phase-16-readback-fix`（PR 待本次提交後建立）。
 
 ## GitHub 與同步狀態
 
@@ -43,6 +44,12 @@
 7. 更新 travel content-source 與 website operations SOP，補上 dry-run、safe、resolution mode 與 migration 部署順序。
 8. 新增 travel-only dry-run／write scope，排除 Users、member media、blog 與 Home Config。
 9. ADR 0006 將 Base／Source／Current 提升為所有雙重編輯來源 published content 的一般安全原則。
+10. 完成 Production full-projection read-back 修復：
+   - travel-only catalog 以單次 metadata query 加 scoped media query 讀取，避免巨型巢狀聚合與 751 個 SQL placeholders。
+   - 只有已具 Base 的五筆 travel 才逐筆讀完整 projection，並加入 120 秒明確 timeout。
+   - Payload optional field 回讀的 `null` 與 Source 未提供欄位正規化為等價，移除表示層假差異。
+   - dry-run 樣本只顯示 conflict path/category，不輸出完整 Base／Source／Current Production payload。
+   - 新增 `pnpm run seed:travel:read-back` 唯讀診斷入口。
 
 ## 關鍵檔案
 
@@ -69,6 +76,8 @@
 - new travel → create。
 - source-wins 必須 explicit；兩種 resolution mode 不可同時指定。
 - projection 移除 Payload row ID、正規化日期與 relationship ID。
+- projection 將 optional `null` 與 omitted 欄位視為等價。
+- Admin 修改過的連結標籤仍被保留，不會因 null normalization 消失。
 - draft export 寫入 parser-excluded artifact，不寫入 content source。
 - dry-run summary 分開計算 create／update／skip／preserve／conflict／delete。
 
@@ -105,7 +114,10 @@ pnpm run build
 - 第一次 `seed:travel` 在 media skip 掃描階段被 pooler 提前中止；事後確認 baseline 0、published fingerprint 不變，沒有寫入。
 - 改用受控單一 transaction 建立 baseline：rows 5→5、Base 0→5、sourceFile 0→5，published fingerprint 維持 `1d8d9b5c…9815`。
 - 五筆 source hash 均為 64 字元、parser version 為 `phase-16-v1`、`lastImportedAt` 維持 NULL。
-- Baseline 後的 full-projection dry-run 仍受 Payload／pooler 提前中止；未來 content update 前必須先解決 read-back scalability，不能直接 write。
+- Baseline 後的 full-projection read-back 已成功完成：0 create、0 update、751 media skip、5 travel conflict、0 delete。
+- 五筆均維持 safe conflict，沒有 content mutation。`202702-thailand-phuket` 已精確定位到 `sourceSections[item-1c51hpg].links`，其中 Current 的人類可讀標籤屬於 Payload Admin 修改，必須保留。
+- 其餘部分 travel 的陣列差異目前仍保守報為整體 conflict；Phase 16 不自動合併不相交的 array edits，以免在未能證明安全時覆蓋 Current。
+- 後續兩次唯讀重跑分別遇到 pooler connection timeout 與 120 秒 timeout；依限次策略停止，沒有 mutation。第一次完整成功報告是本階段審查依據。
 - 詳細 schema 與後續計畫見 `docs/data-models/travel-projects-schema.md`。
 
 ## Browser QA 範圍
@@ -118,8 +130,9 @@ pnpm run build
 - legacy 第一次 safe seed 只建立 Base metadata，不把 Source 覆蓋到 Current；需在下一次 dry-run 檢視差異。
 - Payload draft 是 JSON projection 包在 Markdown artifact 中，供人工比較與回填，不保證重建原始 Markdown 排版。
 - Phase 16 不做 destructive schema cleanup；Issue #50 所述 drop redundant columns/data 仍需在 reconciliation 累積可信 evidence 後另開 migration phase。
+- Production pooler 延遲仍可能讓個別唯讀重跑 timeout；命令會明確失敗，不會無輸出提前退出，也不會因此轉入 write。
 - 工作樹中原有 Tavis member assets 變更未納入 Phase 16 commit。
 
 ## 下一階段準備度
 
-reconciliation seam、schema、travel-only scope 與五筆 Production baseline 已具備。下一步是改善已有 Base 時的 full-projection dry-run，取得成功的 preserve/conflict evidence；在此之前不執行新的 travel content write，也不建議 drop 欄位。
+Phase 16 所需的 reconciliation seam、schema、migration、travel-only scope、五筆 Production baseline、full-projection read-back 與 conflict evidence 均已具備。下一階段可人工處理已列出的 travel conflicts；任何 Production content write、array merge 或 destructive schema cleanup 都必須另行提出 dry-run evidence 與批准。

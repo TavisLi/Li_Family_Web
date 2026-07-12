@@ -20,6 +20,7 @@
     "seed:phase-9:dry-run": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/seed.ts --phase-9 --dry-run",
     "seed:travel": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/seed.ts --travel-only",
     "seed:travel:dry-run": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/seed.ts --travel-only --dry-run",
+    "seed:travel:read-back": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/travel-readback-probe.ts",
     "seed:travel:baseline:inspect": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/phase16-travel-baseline.ts inspect",
     "seed:travel:baseline:apply": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/phase16-travel-baseline.ts apply",
     "seed:travel:baseline:verify": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/phase16-travel-baseline.ts verify",

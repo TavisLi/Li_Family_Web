@@ -13,7 +13,7 @@ import {
   type MediaSeed,
   type TravelSeed,
 } from './seed-content'
-import { buildPayloadDryRun } from './seed-dry-run'
+import { buildPayloadDryRun, sampleDryRunActions } from './seed-dry-run'
 import { mediaRecordMatchesSeed, mediaSeedData } from './seed-media-compare'
 import { memberEnglishLocalizedData, memberLocalizedWriteOptions } from './seed-member-locale'
 import { mediaIdsBySourcePath } from './seed-media-context'
@@ -66,14 +66,18 @@ async function run() {
   const seedContent = travelOnly ? travelOnlySeedContent(fullSeedContent) : fullSeedContent
 
   if (dryRun) {
-    const report = await buildPayloadDryRun(payload, seedContent, reconciliationMode)
+    const report = await withTimeout(
+      buildPayloadDryRun(payload, seedContent, reconciliationMode),
+      120_000,
+      'Seed dry-run timed out after 120 seconds.',
+    )
 
     console.log(
       JSON.stringify(
         {
           summary: report.summary,
           deletionRisk: report.deletionRisk,
-          sampledActions: report.actions.slice(0, 20),
+          sampledActions: sampleDryRunActions(report.actions),
           totalActions: report.actions.length,
         },
         null,
@@ -163,6 +167,19 @@ async function run() {
   console.log('Seed completed')
   console.table(stats)
   process.exit(0)
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  let timeout: NodeJS.Timeout | undefined
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeout = setTimeout(() => reject(new Error(message)), timeoutMs)
+  })
+
+  try {
+    return await Promise.race([promise, timeoutPromise])
+  } finally {
+    if (timeout) clearTimeout(timeout)
+  }
 }
 
 async function hydrateExistingMedia(

@@ -179,7 +179,21 @@ pnpm run seed:travel:baseline:verify
 - `baseProjection` 已建立；
 - `lastImportedAt = NULL`，因為這次只建立 legacy baseline，沒有宣稱 Source 已覆蓋 Current。
 
-Baseline 後的正式 travel-only dry-run 在 Payload 讀取完整大型 travel projection 時仍受 pooler 提前中止。未來第一次真正 content update 前，必須先改善 full-projection read-back 並取得成功的 conflict report；不得因 baseline 已建立就直接執行下一次 write。
+Baseline 後已完成 full-projection read-back 修復。讀取流程先以小型 query 取得 travel metadata，再以 JSON array parameter 限定 751 筆 travel media，最後只對五筆已有 Base 的 travel 逐筆取得完整 projection；命令另有 120 秒 timeout，避免 pending database promise 讓 CLI 無報告退出。
+
+Payload 對 optional 欄位可能回傳明確 `null`，而 Markdown parser 對同一欄位可能直接省略。Phase 16 將這兩種「都沒有值」的表示正規化為等價；這不會忽略非空字串、數字、relationship 或 Admin 編輯文字。
+
+成功的 Production 唯讀報告如下：
+
+| Action | 數量 |
+| --- | ---: |
+| Travel conflict | 5 |
+| Travel media skip | 751 |
+| Create | 0 |
+| Update | 0 |
+| Delete | 0 |
+
+`202702-thailand-phuket` 的 `sourceSections[item-1c51hpg].links` 已確認包含 Payload Admin 將 raw URL 改為人類可讀標籤的 Current-only 編輯，因此 safe mode 保留 Current。其他部分陣列差異仍保守維持 conflict；本階段沒有在無法證明安全時自動合併或覆蓋。
 
 ## 建議執行計畫
 
@@ -196,7 +210,7 @@ Baseline 後的正式 travel-only dry-run 在 Payload 讀取完整大型 travel 
    - `lastImportedAt` 依實際決策保持正確語意；
    - baseline metadata 已完整建立。
 
-第二次 full-projection dry-run 仍受 pooler 阻擋；這是後續 content update 的 blocker，不是 baseline write 未完成。
+Full-projection read-back 已成功取得五筆 conflict evidence，read-back scalability blocker 已解除。Production pooler 仍可能造成個別重跑 timeout，因此後續 write 仍必須使用當次成功 dry-run 報告並另行批准，不能把歷史成功視為永久授權。
 
 ### 計畫 B：Tavis media 另案處理
 

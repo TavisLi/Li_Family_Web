@@ -269,7 +269,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function normalizeRecord(value: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(
     Object.entries(value)
-      .filter(([key, item]) => !ignoredProjectionKeys.has(key) && item !== undefined)
+      .filter(
+        ([key, item]) =>
+          !ignoredProjectionKeys.has(key) && item !== undefined && item !== null,
+      )
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([key, item]) => [key, normalizeValue(item, key)]),
   )
