@@ -19,6 +19,8 @@
 - 基底：`main` / `6ce74b8`，開工時與 `origin/main` 同步。
 - Issue：[Issue #50](https://github.com/TavisLi/Li_Family_Web/issues/50) 仍為 open；Phase 15 已交付 planning UI 與 Markdown template，本階段完成剩餘 seed/schema 安全層。
 - PR #52 checks 通過後已 merge；`main` merge commit 為 `a80e91c`。
+- PR #53、#54 與 #55 均已 merge；Phase 16 read-back 最終 merge commit 為 `91958d2`。
+- Issue #50 維持 open：Phase 16 已完成 additive schema 與 reconciliation 安全層；Issue 另列的 destructive redundant-column cleanup 與依新資料結構重整畫面不在本階段安全範圍，必須另案取得 evidence 與批准。
 
 ## 已交付內容
 
