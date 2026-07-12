@@ -119,6 +119,37 @@ assert.deepEqual(normalized, {
   sourceSections: [{ anchor: 'day-1', body: '行程' }],
 })
 assert.equal(travelProjectionHash(normalized), travelProjectionHash({ ...normalized }))
+
+assert.deepEqual(
+  buildTravelProjection({
+    flights: [{ airline: null, flightNumber: 'BR1' }],
+  }),
+  buildTravelProjection({
+    flights: [{ flightNumber: 'BR1' }],
+  }),
+)
+
+const adminLinkLabelPlan = reconcileTravelSeed({
+  slug: '202702-thailand-phuket',
+  base: {
+    sourceSections: [
+      { anchor: 'resources', links: [{ label: 'https://example.com', url: 'https://example.com' }] },
+    ],
+  },
+  source: {
+    sourceSections: [
+      { anchor: 'resources', links: [{ label: 'https://example.com', url: 'https://example.com' }] },
+    ],
+  },
+  current: {
+    sourceSections: [
+      { anchor: 'resources', links: [{ label: 'Admin 編輯標籤', url: 'https://example.com' }] },
+    ],
+  },
+})
+
+assert.equal(adminLinkLabelPlan.action, 'preserve-current')
+assert.deepEqual(adminLinkLabelPlan.patch, {})
 assert.equal(reconciliationModeFromArgs(['node', 'seed.ts']), 'safe')
 assert.equal(reconciliationModeFromArgs(['node', 'seed.ts', '--source-wins']), 'source-wins')
 assert.throws(

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 
-import { summarizeDryRunActions } from './seed-dry-run'
+import { sampleDryRunActions, summarizeDryRunActions } from './seed-dry-run'
 
 const summary = summarizeDryRunActions([
   { collection: 'users', key: 'tavis', action: 'update', existingId: 7 },
@@ -19,3 +19,35 @@ assert.deepEqual(summary, {
   conflicts: 1,
   deletes: 0,
 })
+
+assert.deepEqual(
+  sampleDryRunActions([
+    {
+      collection: 'travel-projects',
+      key: 'conflicted-travel',
+      action: 'conflict',
+      conflicts: [
+        {
+          field: 'sourceSections[resources].links',
+          category: 'faithful-source-projection',
+          base: [{ label: 'Base' }],
+          source: [{ label: 'Source' }],
+          current: [{ label: 'Admin' }],
+        },
+      ],
+    },
+  ]),
+  [
+    {
+      collection: 'travel-projects',
+      key: 'conflicted-travel',
+      action: 'conflict',
+      conflicts: [
+        {
+          field: 'sourceSections[resources].links',
+          category: 'faithful-source-projection',
+        },
+      ],
+    },
+  ],
+)
