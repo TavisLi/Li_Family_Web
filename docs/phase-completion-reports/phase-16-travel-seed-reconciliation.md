@@ -11,6 +11,7 @@
 - Closeout commit：本報告狀態更新提交。
 - Pull Request：[PR #52 Phase 16 travel seed reconciliation](https://github.com/TavisLi/Li_Family_Web/pull/52)。
 - Production closeout：[PR #53 Phase 16 production schema closeout](https://github.com/TavisLi/Li_Family_Web/pull/53)。
+- Baseline closeout：[PR #54 Record Phase 16 Production travel baseline](https://github.com/TavisLi/Li_Family_Web/pull/54)。
 
 ## GitHub 與同步狀態
 
