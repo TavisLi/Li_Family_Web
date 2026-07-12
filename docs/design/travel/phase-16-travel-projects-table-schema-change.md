@@ -111,7 +111,31 @@ Payload CLI 偵測到資料庫曾使用 dev mode 動態推 schema，並警告繼
 | `202607-chongqing-yangtze-river` | 3 | preserve |
 | `202702-thailand-phuket` | 7 | preserve |
 
-### 為什麼目前不批准 Production write
+### Travel-only dry-run
+
+為排除 Users 與 member media，Phase 16 production closeout 新增：
+
+```bash
+pnpm run seed:travel:dry-run
+pnpm run seed:travel
+```
+
+正式 Production travel-only dry-run 已成功：
+
+| Action | 數量 |
+| --- | ---: |
+| Users | 0 |
+| Member media | 0 |
+| Travel preserve | 5 |
+| Travel media skip | 751 |
+| Create | 0 |
+| Update | 0 |
+| Conflict | 0 |
+| Delete | 0 |
+
+這證明下一步若使用 travel-only safe write，不會進入 Users update 路徑，也不會處理 Tavis member assets。
+
+### 為什麼目前仍不批准 Production write
 
 全量 Phase 9 seed 同時包含 users、travel 與 media。Controlled dry-run 發現 10 筆 media create 全部屬於 Tavis member assets，其中包含工作樹原有、尚未納入 Phase 16 的圖片變更。
 
@@ -119,12 +143,12 @@ Payload CLI 偵測到資料庫曾使用 dev mode 動態推 schema，並警告繼
 
 ## 建議執行計畫
 
-### 計畫 A：先建立 travel baseline（建議）
+### 計畫 A：先建立 travel baseline（travel-only 入口已完成）
 
-1. 增加或使用 travel-only safe seed 入口，排除 users 與 member media mutation。
-2. 再跑 travel-only dry-run，預期五筆 travel 都是 `preserve`，且 users/media action 為 0。
+1. Travel-only safe seed 入口已完成，會排除 users、member media、blog 與 Home Config。
+2. Travel-only Production dry-run 已完成：五筆 travel preserve，751 travel media skip，其餘 action 為 0。
 3. 取得網站擁有者對「只寫入五筆 travel 的 source metadata」明確批准。
-4. 執行一次 safe baseline write。
+4. 執行一次 `pnpm run seed:travel` safe baseline write。
 5. 驗證：
    - row count 仍為 5；
    - published travel fields 未改；

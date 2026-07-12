@@ -40,6 +40,8 @@
 5. 新增 nullable `sourceMetadata`：source file、source hash、parser version、last imported time 與 Base projection。
 6. 生成 Payload types 與純 additive migration；UP 只新增五個 nullable columns，沒有 drop／rename／data rewrite。
 7. 更新 travel content-source 與 website operations SOP，補上 dry-run、safe、resolution mode 與 migration 部署順序。
+8. 新增 travel-only dry-run／write scope，排除 Users、member media、blog 與 Home Config。
+9. ADR 0006 將 Base／Source／Current 提升為所有雙重編輯來源 published content 的一般安全原則。
 
 ## 關鍵檔案
 
@@ -54,6 +56,7 @@
 - `docs/travel-content-source-guidelines.md`
 - `docs/phase-preparation/phase-16-travel-seed-reconciliation.md`
 - `docs/design/travel/phase-16-travel-projects-table-schema-change.md`
+- `docs/adr/0006-seed-reconciliation-protects-published-content.md`
 
 ## TDD 行為覆蓋
 
@@ -97,6 +100,7 @@ pnpm run build
 - 正式 dry-run 命令已越過 schema mismatch，但 Payload Local API 的大型 collection read／後續連線受到 Supabase pooler timeout 阻擋。
 - Controlled read-only fallback 已完成：6 users update、5 travel preserve、783 media skip、10 media create、0 media update、0 delete。
 - 10 筆 create 全部是 Tavis member assets，包含工作樹原有變更，故目前不批准全量 Production write。
+- Travel-only 正式 Production dry-run 已通過：0 users、0 member media、5 travel preserve、751 travel media skip、0 create／update／conflict／delete。
 - 詳細 schema 與後續計畫見 `docs/design/travel/phase-16-travel-projects-table-schema-change.md`。
 
 ## Browser QA 範圍
