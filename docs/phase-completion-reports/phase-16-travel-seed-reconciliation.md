@@ -13,13 +13,15 @@
 - Production closeout：[PR #53 Phase 16 production schema closeout](https://github.com/TavisLi/Li_Family_Web/pull/53)。
 - Baseline closeout：[PR #54 Record Phase 16 Production travel baseline](https://github.com/TavisLi/Li_Family_Web/pull/54)。
 - Read-back closeout：[PR #55 Complete Phase 16 Production travel read-back](https://github.com/TavisLi/Li_Family_Web/pull/55)，implementation commit `f878047`。
+- Final report closeout：[PR #56 Finalize Phase 16 completion status](https://github.com/TavisLi/Li_Family_Web/pull/56)，`main` merge commit `14dee66`。
 
 ## GitHub 與同步狀態
 
 - 基底：`main` / `6ce74b8`，開工時與 `origin/main` 同步。
 - Issue：[Issue #50](https://github.com/TavisLi/Li_Family_Web/issues/50) 仍為 open；Phase 15 已交付 planning UI 與 Markdown template，本階段完成剩餘 seed/schema 安全層。
 - PR #52 checks 通過後已 merge；`main` merge commit 為 `a80e91c`。
-- PR #53、#54 與 #55 均已 merge；Phase 16 read-back 最終 merge commit 為 `91958d2`。
+- PR #53、#54 與 #55 均已 merge；Phase 16 read-back merge commit 為 `91958d2`。
+- PR #56 已 merge；Phase 16 completion report 已同步到 `main` / `14dee66`。
 - Issue #50 維持 open：Phase 16 已完成 additive schema 與 reconciliation 安全層；Issue 另列的 destructive redundant-column cleanup 與依新資料結構重整畫面不在本階段安全範圍，必須另案取得 evidence 與批准。
 
 ## 已交付內容
@@ -137,4 +139,6 @@ pnpm run build
 
 ## 下一階段準備度
 
-Phase 16 所需的 reconciliation seam、schema、migration、travel-only scope、五筆 Production baseline、full-projection read-back 與 conflict evidence 均已具備。下一階段可人工處理已列出的 travel conflicts；任何 Production content write、array merge 或 destructive schema cleanup 都必須另行提出 dry-run evidence 與批准。
+Phase 16 所需的 reconciliation seam、schema、migration、travel-only scope、五筆 Production baseline、full-projection read-back 與 conflict evidence 均已具備。Phase 16 到此完成。
+
+Phase 17 應承接五筆 travel conflict 的人工決策、array-level 安全合併策略、以及 Issue #50 剩餘的 destructive schema cleanup readiness。任何 Production content write、array merge 或 destructive schema cleanup 都必須另行提出 dry-run evidence 與批准。
