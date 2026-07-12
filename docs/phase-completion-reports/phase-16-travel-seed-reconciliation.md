@@ -94,13 +94,17 @@ pnpm run build
 ## Dry-run 與 Production data 狀態
 
 - Production migration：已於 2026-07-11 套用並驗證；migration `20260711_141901`，batch 5。
-- Production seed write：**未執行**。
+- Production seed write：已於 2026-07-12 經明確批准，只建立 5 筆 travel reconciliation baseline metadata。
 - Migration 前後 `travel_projects` row count 均為 5；五個新欄位全部 nullable，既有五筆資料的 non-null count 全部為 0。
 - Payload CLI 因既有 dev-mode schema history 顯示 data-loss 警告，未確認；改用與 migration UP 完全相同的五條 additive SQL，在單一 transaction 內套用並記錄 migration。
 - 正式 dry-run 命令已越過 schema mismatch，但 Payload Local API 的大型 collection read／後續連線受到 Supabase pooler timeout 阻擋。
 - Controlled read-only fallback 已完成：6 users update、5 travel preserve、783 media skip、10 media create、0 media update、0 delete。
 - 10 筆 create 全部是 Tavis member assets，包含工作樹原有變更，故目前不批准全量 Production write。
 - Travel-only 正式 Production dry-run 已通過：0 users、0 member media、5 travel preserve、751 travel media skip、0 create／update／conflict／delete。
+- 第一次 `seed:travel` 在 media skip 掃描階段被 pooler 提前中止；事後確認 baseline 0、published fingerprint 不變，沒有寫入。
+- 改用受控單一 transaction 建立 baseline：rows 5→5、Base 0→5、sourceFile 0→5，published fingerprint 維持 `1d8d9b5c…9815`。
+- 五筆 source hash 均為 64 字元、parser version 為 `phase-16-v1`、`lastImportedAt` 維持 NULL。
+- Baseline 後的 full-projection dry-run 仍受 Payload／pooler 提前中止；未來 content update 前必須先解決 read-back scalability，不能直接 write。
 - 詳細 schema 與後續計畫見 `docs/data-models/travel-projects-schema.md`。
 
 ## Browser QA 範圍
@@ -117,4 +121,4 @@ pnpm run build
 
 ## 下一階段準備度
 
-reconciliation seam、schema 與 safe write 已具備。下一步應先提供 travel-only safe seed，排除 users/member media mutation，再經明確批准建立五筆 travel baseline。未取得 baseline 與下一輪 reconciliation evidence 前，不建議 drop 欄位。
+reconciliation seam、schema、travel-only scope 與五筆 Production baseline 已具備。下一步是改善已有 Base 時的 full-projection dry-run，取得成功的 preserve/conflict evidence；在此之前不執行新的 travel content write，也不建議 drop 欄位。

@@ -135,26 +135,68 @@ pnpm run seed:travel
 
 這證明下一步若使用 travel-only safe write，不會進入 Users update 路徑，也不會處理 Tavis member assets。
 
-### 為什麼目前仍不批准 Production write
+### 為什麼不批准全量 Production write
 
 全量 Phase 9 seed 同時包含 users、travel 與 media。Controlled dry-run 發現 10 筆 media create 全部屬於 Tavis member assets，其中包含工作樹原有、尚未納入 Phase 16 的圖片變更。
 
-若現在直接執行全量 seed，會把「建立 travel baseline」與「上傳／關聯 Tavis 圖片」混在一起，超出本次批准範圍。因此目前停在 dry-run review，不執行 Production write。
+若直接執行全量 seed，會把「建立 travel baseline」與「上傳／關聯 Tavis 圖片」混在一起，超出本次批准範圍。因此全量 write 未獲批准；後續只批准並執行 travel baseline metadata write。
+
+## Baseline Production write 結果
+
+網站擁有者於 2026-07-12 明確批准 travel-only Production write。
+
+第一次 `pnpm run seed:travel` 在開始逐筆檢查 751 個既有 travel media 後被 Supabase pooler 提前中止。事後驗證確認：
+
+- baseline 仍為 0；
+- source file metadata 仍為 0；
+- published-content fingerprint 未改；
+- 沒有 media 或 travel content write。
+
+為避免再次掃描已由 dry-run 證明全部為 skip 的 media，改用受控 baseline transaction：
+
+```bash
+pnpm run seed:travel:baseline:inspect
+pnpm run seed:travel:baseline:apply
+pnpm run seed:travel:baseline:verify
+```
+
+受控 script 使用與正式 seed 相同的 `buildSeedContent`、section media attachment、projection normalization 與 SHA-256 hash。它只更新五個 `source_metadata_*` columns；任何 slug 前置條件不符都會 rollback 整個 transaction。
+
+執行結果：
+
+| 驗證項目 | Before | After |
+| --- | ---: | ---: |
+| `travel_projects` rows | 5 | 5 |
+| `baseProjection` non-null | 0 | 5 |
+| `sourceFile` non-null | 0 | 5 |
+| Published fingerprint | `1d8d9b5c…9815` | `1d8d9b5c…9815` |
+
+每筆資料均符合：
+
+- `sourceFile` 對應正確 Markdown；
+- `sourceHash` 長度為 64；
+- `parserVersion = phase-16-v1`；
+- `baseProjection` 已建立；
+- `lastImportedAt = NULL`，因為這次只建立 legacy baseline，沒有宣稱 Source 已覆蓋 Current。
+
+Baseline 後的正式 travel-only dry-run 在 Payload 讀取完整大型 travel projection 時仍受 pooler 提前中止。未來第一次真正 content update 前，必須先改善 full-projection read-back 並取得成功的 conflict report；不得因 baseline 已建立就直接執行下一次 write。
 
 ## 建議執行計畫
 
-### 計畫 A：先建立 travel baseline（travel-only 入口已完成）
+### 計畫 A：Travel baseline（已完成）
 
 1. Travel-only safe seed 入口已完成，會排除 users、member media、blog 與 Home Config。
 2. Travel-only Production dry-run 已完成：五筆 travel preserve，751 travel media skip，其餘 action 為 0。
-3. 取得網站擁有者對「只寫入五筆 travel 的 source metadata」明確批准。
-4. 執行一次 `pnpm run seed:travel` safe baseline write。
-5. 驗證：
+3. 網站擁有者已明確批准只寫入五筆 travel source metadata。
+4. 受控 baseline transaction 已完成。
+5. 已驗證：
    - row count 仍為 5；
    - published travel fields 未改；
    - 五筆 `sourceFile/sourceHash/parserVersion/baseProjection` 已建立；
    - `lastImportedAt` 依實際決策保持正確語意；
-   - 第二次 dry-run 不再把 legacy 誤認為可覆蓋。
+   - baseline metadata 已完整建立。
+
+第二次 full-projection dry-run 仍受 pooler 阻擋；這是後續 content update 的 blocker，不是 baseline write 未完成。
 
 ### 計畫 B：Tavis media 另案處理
 
