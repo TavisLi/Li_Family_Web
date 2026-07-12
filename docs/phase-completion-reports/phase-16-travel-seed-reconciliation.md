@@ -10,12 +10,13 @@
 - Implementation commit：`2d66210 Build Phase 16 travel seed reconciliation`。
 - Closeout commit：本報告狀態更新提交。
 - Pull Request：[PR #52 Phase 16 travel seed reconciliation](https://github.com/TavisLi/Li_Family_Web/pull/52)。
+- Production closeout：[PR #53 Phase 16 production schema closeout](https://github.com/TavisLi/Li_Family_Web/pull/53)。
 
 ## GitHub 與同步狀態
 
 - 基底：`main` / `6ce74b8`，開工時與 `origin/main` 同步。
 - Issue：[Issue #50](https://github.com/TavisLi/Li_Family_Web/issues/50) 仍為 open；Phase 15 已交付 planning UI 與 Markdown template，本階段完成剩餘 seed/schema 安全層。
-- Branch 已 push 至 `origin/codex/phase-16-travel-seed-reconciliation`，PR #52 已建立並等待 review／checks。
+- PR #52 checks 通過後已 merge；`main` merge commit 為 `a80e91c`。
 
 ## 已交付內容
 
@@ -39,6 +40,8 @@
 5. 新增 nullable `sourceMetadata`：source file、source hash、parser version、last imported time 與 Base projection。
 6. 生成 Payload types 與純 additive migration；UP 只新增五個 nullable columns，沒有 drop／rename／data rewrite。
 7. 更新 travel content-source 與 website operations SOP，補上 dry-run、safe、resolution mode 與 migration 部署順序。
+8. 新增 travel-only dry-run／write scope，排除 Users、member media、blog 與 Home Config。
+9. ADR 0006 將 Base／Source／Current 提升為所有雙重編輯來源 published content 的一般安全原則。
 
 ## 關鍵檔案
 
@@ -52,6 +55,8 @@
 - `docs/website-operations-sop.md`
 - `docs/travel-content-source-guidelines.md`
 - `docs/phase-preparation/phase-16-travel-seed-reconciliation.md`
+- `docs/data-models/travel-projects-schema.md`
+- `docs/adr/0006-seed-reconciliation-protects-published-content.md`
 
 ## TDD 行為覆蓋
 
@@ -88,11 +93,15 @@ pnpm run build
 
 ## Dry-run 與 Production data 狀態
 
-- Production migration：**未執行**。
+- Production migration：已於 2026-07-11 套用並驗證；migration `20260711_141901`，batch 5。
 - Production seed write：**未執行**。
-- Production dry-run：已嘗試並成功連到 Payload，但 Production table 尚未套用本 PR 的 additive migration，因此查詢新 metadata columns 時以 `column ... does not exist` 停止。
-- 正確後續順序：PR review → 套用 additive migration → 重跑 dry-run → 審查 reconciliation report → 另行批准 Production write。
-- 本階段沒有以 schema push 或手寫 SQL 繞過 migration，也沒有模擬 Production 成功。
+- Migration 前後 `travel_projects` row count 均為 5；五個新欄位全部 nullable，既有五筆資料的 non-null count 全部為 0。
+- Payload CLI 因既有 dev-mode schema history 顯示 data-loss 警告，未確認；改用與 migration UP 完全相同的五條 additive SQL，在單一 transaction 內套用並記錄 migration。
+- 正式 dry-run 命令已越過 schema mismatch，但 Payload Local API 的大型 collection read／後續連線受到 Supabase pooler timeout 阻擋。
+- Controlled read-only fallback 已完成：6 users update、5 travel preserve、783 media skip、10 media create、0 media update、0 delete。
+- 10 筆 create 全部是 Tavis member assets，包含工作樹原有變更，故目前不批准全量 Production write。
+- Travel-only 正式 Production dry-run 已通過：0 users、0 member media、5 travel preserve、751 travel media skip、0 create／update／conflict／delete。
+- 詳細 schema 與後續計畫見 `docs/data-models/travel-projects-schema.md`。
 
 ## Browser QA 範圍
 
@@ -100,7 +109,7 @@ pnpm run build
 
 ## 已知限制與 blocker
 
-- 新版程式不可在 migration 尚未套用的 Production schema 上讀取 `TravelProjects`；這是 Payload schema-first 的正常部署順序要求。
+- Production schema 已與 `main` 的 `sourceMetadata` 定義一致。
 - legacy 第一次 safe seed 只建立 Base metadata，不把 Source 覆蓋到 Current；需在下一次 dry-run 檢視差異。
 - Payload draft 是 JSON projection 包在 Markdown artifact 中，供人工比較與回填，不保證重建原始 Markdown 排版。
 - Phase 16 不做 destructive schema cleanup；Issue #50 所述 drop redundant columns/data 仍需在 reconciliation 累積可信 evidence 後另開 migration phase。
@@ -108,4 +117,4 @@ pnpm run build
 
 ## 下一階段準備度
 
-reconciliation seam、Base metadata 與 safe write 已具備。PR merge 並套用 migration 後，可先取得五筆 travel project 的 legacy baseline dry-run／seed evidence，再決定是否進入 `TravelProjects` destructive cleanup。未取得該 evidence 前，不建議 drop 欄位。
+reconciliation seam、schema 與 safe write 已具備。下一步應先提供 travel-only safe seed，排除 users/member media mutation，再經明確批准建立五筆 travel baseline。未取得 baseline 與下一輪 reconciliation evidence 前，不建議 drop 欄位。

@@ -87,10 +87,12 @@
 pnpm run test:seed-content
 pnpm run seed:audit
 pnpm run seed:phase-9:dry-run
+pnpm run seed:travel:dry-run
 ```
 
 - `seed:audit` 檢查 catalog、封面與結構化資料是否齊全。
 - `seed:phase-9:dry-run` 只讀取 Payload，列出 create／update 計畫，不會寫入資料。
+- 只處理 travel baseline 或 travel content 時，必須使用 `seed:travel:dry-run`；它會排除 Users、member media、blog 與 Home Config。
 - travel action 會區分 `create`、`update`、`preserve`、`conflict`、`skip`；看到 `conflict` 時不可直接執行 safe write。
 - 將 dry-run 摘要、抽樣 document ID 與當前 Production URL 留在營運紀錄；不可記錄 credential。
 
@@ -112,7 +114,8 @@ pnpm run seed:phase-9:dry-run
 
 ### 4.4 Travel reconciliation 模式
 
-- 預設 `pnpm run seed:phase-9` 為 `safe`：建立缺少項目、套用 non-conflicting source 更新、保留 Admin-only 修改、跳過 conflict。
+- Travel 專用 Production write 使用 `pnpm run seed:travel`；預設為 `safe`，建立缺少項目、套用 non-conflicting source 更新、保留 Admin-only 修改、跳過 conflict。
+- 不得用全量 `seed:phase-9` 代替 travel-only baseline；在 Users reconciliation 尚未建立前，全量命令可能包含既有 Users update。
 - `--source-wins`：只在審查 conflict report 且網站擁有者明確批准後使用；會用 Source 取代衝突的 Payload content。
 - `--payload-wins`：明確接受目前 Payload content。需要人工回填來源時，加上 `--export-payload-drafts`，草稿只會寫到 `docs/phase-artifacts/phase-16/exports/`，不會覆蓋 `content-source/travels/*.md`。
 - `--source-wins` 與 `--payload-wins` 不可同時使用。

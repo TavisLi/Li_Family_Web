@@ -18,6 +18,7 @@ import { mediaRecordMatchesSeed, mediaSeedData } from './seed-media-compare'
 import { memberEnglishLocalizedData, memberLocalizedWriteOptions } from './seed-member-locale'
 import { mediaIdsBySourcePath } from './seed-media-context'
 import { mediaRefreshRequestFromArgs } from './seed-media-repair'
+import { travelOnlySeedContent } from './seed-scope'
 import { attachSourceSectionMediaIds } from './travel-section-media'
 import { uploadFilenameForSourcePath } from './seed-upload-name'
 import {
@@ -57,10 +58,12 @@ async function run() {
   const dryRun = process.argv.includes('--dry-run')
   const phase9Only = process.argv.includes('--phase-9')
   const phase9ReadBack = process.argv.includes('--phase-9-read-back')
+  const travelOnly = process.argv.includes('--travel-only')
   const mediaRefreshRequest = mediaRefreshRequestFromArgs(process.argv)
   const reconciliationMode = reconciliationModeFromArgs(process.argv)
 
-  const seedContent = await buildSeedContent(projectRoot)
+  const fullSeedContent = await buildSeedContent(projectRoot)
+  const seedContent = travelOnly ? travelOnlySeedContent(fullSeedContent) : fullSeedContent
 
   if (dryRun) {
     const report = await buildPayloadDryRun(payload, seedContent, reconciliationMode)
@@ -117,6 +120,15 @@ async function run() {
     console.log('Blog seed completed')
     console.table(stats)
     process.exit(0)
+  }
+
+  if (travelOnly) {
+    await seedMedia(payload, seedContent.media, context, stats)
+    await seedTravelProjects(payload, seedContent.travels, context, stats, reconciliationMode)
+
+    console.log('Travel-only seed completed')
+    console.table(stats)
+    return
   }
 
   if (phase9ReadBack) {
