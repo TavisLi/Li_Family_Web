@@ -1,8 +1,8 @@
-# TravelProjects Schema 與 Phase 16 變更說明
+# TravelProjects Schema、欄位定義與重構規劃
 
 ## 文件目的
 
-這份文件用白話說明 Phase 16 對 `travel_projects` table 做了什麼、為什麼需要這些欄位、現有旅行資料是否受影響，以及下一步應如何安全建立 reconciliation baseline。
+這份文件用白話說明 `travel_projects` table 的所有主要欄位、為什麼需要它們、前台與 seed 如何使用它們，以及 planning travel 的重構候選。Phase 17 只產出 readiness 與批准方案；取得網站擁有者同意前，不刪欄位、不搬資料、不執行 destructive migration。
 
 本次不是刪除舊欄位，也不是重做旅行資料表。它只是在每筆旅行旁邊增加一組「上次 seed 對照紀錄」，讓系統日後能判斷 Markdown 與 Payload Admin 分別改了什麼。
 
@@ -242,3 +242,94 @@ Full-projection read-back 已成功取得五筆 conflict evidence，read-back sc
 4. 部署不再查詢 `sourceMetadata` 的舊版程式。
 
 目前沒有 rollback 需要；Production schema 與已合併程式一致。
+
+## Phase 17 欄位級 schema cleanup readiness
+
+### Phase 17 補充後的 domain 結論
+
+網站擁有者已釐清：planning travel 是行前審核、修訂與家庭決策工作台；travel memory 是旅遊結束後的記錄、照片與分享作品。兩者沒有同一筆 record／同一頁面由 planning 切成 memory 的需求。Planning travel 在旅遊時間未過時顯示於「規劃中／Active Plans」，時間已過但仍保留原計畫時顯示於「過往規劃／Archived Plans」；後者不是 early `Pre-planning`，也不是 Travel Memory。
+
+這項補充推翻「planning／completed 只是同一 aggregate status」的原假設。Phase 17 的建議調整為：**建立獨立 `travel-plans` 與 `travel-memories` Payload collections**。兩者各自擁有不同且全域不衝突的 canonical slug；若 Memory 源自某個 Plan，以 optional `originPlan` relationship 保持追溯，不共用 route identity。
+
+現行前台用日期判斷 planning record 應放在「規劃中／Active Plans」或「過往規劃／Archived Plans」：日期已過就歸入 archive。依最新定義，這個判斷方向正確。若歸檔規則永遠只取決於日期，目標模型不應重複儲存一個會與 `endDate` 漂移的 stage；data layer 可回傳 derived `active`／`archived` presentation state。只有未來需要人工提前歸檔、延後歸檔或取消行程時，才增加 `archivedAt`／override reason。
+
+Phase 17 的建議不是立即拆 table，而是先把欄位分成四層：
+
+1. **Identity / publication**：route、狀態、日期、權限，必須保留。
+2. **Published view**：前台目前直接讀取的資料，未有替代 projection 前不得刪除。
+3. **Faithful source**：`sourceSections` 保留 Markdown 完整內容與 interaction anchors，是 planning 頁主要 renderer input。
+4. **Reconciliation metadata**：保護 Admin edits 的 Base evidence，不是前台內容，但在雙來源 workflow 存續期間必須保留。
+
+### 欄位清單與證據
+
+| 欄位 | Payload／seed 角色 | 前台讀取 | Production evidence | Phase 17 判定 |
+| --- | --- | --- | --- | --- |
+| `title`, `slug`, `status`, `isPrivate`, `startDate`, `endDate` | identity / publication | hero、route、排序、access | 五筆 record 的共用 identity | **必須保留** |
+| `externalDocIdentifier` | source file 對應與 hero fallback | hero 在 summary 空白時 fallback | seed catalog 與現有 records 使用 | **暫時保留**；未先將 source identity 完整收斂至 metadata 不得刪 |
+| `sourceMetadata` | Base／Source／Current reconciliation | 不直接顯示 | 五筆 Production Base 已建立 | **必須保留** |
+| `coverImage` | hero media | hero 直接讀取 | travel media pipeline 使用 | **必須保留** |
+| `galleryImages` | completed photo gallery | gallery renderer 讀取 | completed travel 在 scope 外 | **必須保留** |
+| `itineraryImages` | seed media projection | 現行 renderer 未直接讀取 | seed／baseline 仍建立 relationship | **可疑冗餘但缺 evidence**；需 non-null count 與 media ownership 審查 |
+| `members` | Payload user relationships | hero participant fallback | Admin 可編輯，並非 Markdown 可完整取代 | **必須保留** |
+| `summary` | hero 摘要 | hero 直接讀取 | published copy，可由 Admin 修正 | **必須保留** |
+| `party` | source participant projection | hero 直接讀取 | planning／completed 共用 | **必須保留** |
+| `flights`, `lodgings` | structured travel ledger | completed renderer 直接讀取；planning 主要由 source sections 呈現 | Phase 16 有 conflict，且 completed travel 在 scope 外 | **暫時保留**；不能由 planning-only migration 全域刪除 |
+| `dailyItinerary` | completed highlights 與 structured day projection | completed renderer 直接讀取 | 三筆 travel 有 conflict evidence | **必須保留**，直到 completed renderer 有等價替代 |
+| `railSegments`, `cabinAssignments` | structured source projection | 現行 Production renderer 未直接讀取 | parser 與 Payload Admin 支援，non-null count 尚未取得 | **可疑冗餘但缺 evidence** |
+| `foodRecommendations`, `costItems`, `optionalActivities` | planning structured extras | 元件存在但目前未接入主 planning route | parser／tests 使用，Production non-null count 未取得 | **可疑冗餘但缺 evidence**；先決定是否正式接回 UI |
+| `reminders` | structured reminder projection | 主 renderer 未直接讀取；相同內容可能在 source sections | parser／tests 使用，Production non-null count 未取得 | **schema-cleanup candidate**，但尚未批准 |
+| `sourceSections` | faithful Markdown projection、section media、互動設定與 anchor | planning 頁主要內容與 interaction IDs；completed 頁亦讀取 | 五筆皆有 conflict evidence | **必須保留** |
+| `externalVideos` | completed YouTube embeds | completed renderer 直接讀取 | completed travel 在 scope 外 | **必須保留** |
+
+### 為何建議拆成兩個 collections
+
+1. **內容形狀不同**：plan 需要議程、選項、提醒、互動與修訂；memory 需要敘事、照片、影片、心得與歷史 ledger。分拆可讓 Payload Admin 只顯示該 domain 真正需要的欄位。
+2. **生命週期不同**：active／archived 是 plan 的大廳呈現狀態；memory 不應參與，也不應由 plan 原地改 status 產生。
+3. **前台入口不同**：大廳分區、detail renderer 與使用者目的不同，沒有同頁切換需求。
+4. **資料治理更安全**：planning 的 Markdown reconciliation、Admin edits 與 conflict resolution 不必碰 completed memories；completed media／story schema 也不會把 planning table 撐成寬表。
+5. **刪除冗餘更可證明**：欄位是在新 collection 中按 domain 重新定義，而不是從共用表 drop 後賭另一種內容沒在使用。
+
+分拆的代價是 route resolver、跨 collection slug collision、首頁合併查詢與 migration 複雜度。這些代價可以由 `src/lib/data/travel.ts` 的聚合介面、catalog validation，以及 optional `originPlan` relationship 隱藏；不需要為只有五筆資料再增加一張抽象 parent table。依 ADR 0003，每個 record 的 canonical slug 分別擁有自己的 `/travel/[slug]` route 與 asset folder；例如由 Plan 建立 Memory 時必須核發新的 memory slug，不能讓兩筆 record 同時宣稱相同 slug。
+
+### 建議目標模型
+
+**`travel-plans`**
+
+- identity：title、slug、isPrivate、startDate、endDate。
+- archive presentation：預設由 `endDate` 推導 active／archived；若未來需要人工 override，再增加 nullable `archivedAt` 與原因。
+- collaboration：members、party、sourceSections、interaction settings。
+- planning projections：flights、rail segments、lodgings、daily itinerary、cost／food／optional activities／reminders，只保留經頁面或 Admin workflow 證明需要者。
+- reconciliation：externalDocIdentifier、sourceMetadata、media projection。
+
+**`travel-memories`**
+
+- identity：title、slug、isPrivate、travel dates。
+- optional traceability：`originPlan` relationship；建立 memory 時可連回原 plan，但不是原 record 改 status。
+- storytelling：summary／story、daily highlights、source sections（若 completed renderer 仍需要）。
+- media：cover、gallery、external videos；completed ledger 需要的 flights／lodgings可作 snapshot，而非 planning collaboration data。
+- 不包含 planning stage、planning interaction settings 或 planning reconciliation policy，除非另有 completed source import workflow。
+
+兩個 collections 的 slug 必須在 application catalog 層做跨 collection collision check；`/travel/[slug]` 可保持不變，由 data layer 先解析 plan 或 memory，前端 route 不直接呼叫 Payload。
+
+### 安全遷移順序
+
+1. 先新增兩個 collections 與 generated types，不刪舊 `TravelProjects`。
+2. 建立 read-only migration inventory：2 筆 planning、3 筆 completed，以及每個 array／media child table count。
+3. 先搬兩筆 planning 到 `travel-plans`，保存 slug、sourceMetadata、sourceSections anchors 與 interaction IDs；大廳繼續依 `endDate` 推導 active／archived，並把程式命名從模糊的 preliminary 改為 archived plan。
+4. 搬三筆 completed 到 `travel-memories`，驗證 gallery、highlights、ledger、videos 與 privacy。
+5. `src/lib/data/travel.ts` 暫時 dual-read，讓 `/travel`、`/travel/[slug]` 與首頁維持同一介面。
+6. Preview／Production read-back 證明五筆頁面內容與路由不變後，停止舊 collection 寫入。
+7. 另一次批准後才 drop 舊 collection／child tables；DOWN 必須能恢復舊 schema 與五筆 snapshot。
+
+### 建議批准範圍
+
+Phase 17 建議先批准下一個安全 slice，而不是直接批准 drop：
+
+1. 保留所有 shared／renderer-consumed fields。
+2. 對 `itineraryImages`、`railSegments`、`cabinAssignments`、`foodRecommendations`、`costItems`、`optionalActivities`、`reminders` 做 Production non-null count（read-only）。
+3. 核准 `travel-plans`／`travel-memories` 的 target schema，以及 archived plan 是否永遠採日期推導。
+4. 決定 `TravelPlanningExtras` 要正式接入 plan detail，或不帶入新 collection。
+5. 解決兩筆 planning travel 的 conflict register 後，再產出 data-copy migration approval note。
+6. migration approval note 必須包含 exact UP／DOWN、row count、每個 child table count、Preview 驗證、Production maintenance window 與 rollback。
+
+在上述 evidence 完成前，Issue #57 的 destructive migration 狀態為 **not ready**。這是 readiness 結論，不是 Phase 失敗：它避免以 planning 需求誤刪 completed travel 仍在使用的資料。

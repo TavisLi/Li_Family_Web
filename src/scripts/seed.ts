@@ -657,29 +657,10 @@ async function seedTravelProjects(
           console.error(
             `Travel reconciliation conflict (${travel.slug}): ${plan.conflicts.map((item) => item.field).join(', ')}`,
           )
-
-          if (!Object.keys(plan.patch).length) {
-            stats.skipped += 1
-            continue
-          }
-
-          const updated = await payload.update({
-            collection: 'travel-projects',
-            id: existingDoc.id,
-            data: {
-              ...plan.patch,
-              sourceMetadata: {
-                ...nextMetadata,
-                lastImportedAt: new Date().toISOString(),
-                baseProjection: {
-                  ...(metadata?.baseProjection ?? {}),
-                  ...plan.patch,
-                },
-              },
-            },
-          })
-          context.travelBySlug.set(travel.slug, Number(updated.id))
-          stats.updated += 1
+          // Phase 17 approval gate: a conflict plan is evidence only. Even a
+          // non-conflicting sibling patch must wait for an explicit resolution
+          // mode so Base and published Current cannot advance independently.
+          stats.skipped += 1
           continue
         }
 

@@ -11,7 +11,7 @@ export const metadata: Metadata = {
     canonical: '/travel',
   },
   title: 'Travel',
-  description: 'Web Li 家庭旅行索引廊道，收納規劃中行程與已完成回憶。',
+  description: 'Web Li 家庭旅行索引廊道，收納規劃中、過往規劃與旅行回憶。',
   openGraph: {
     images: [{ url: metadataImageUrl(null) }],
   },

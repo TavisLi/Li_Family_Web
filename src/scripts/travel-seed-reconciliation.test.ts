@@ -56,6 +56,151 @@ const partialSafePlan = reconcileTravelSeed({
 assert.equal(partialSafePlan.action, 'conflict')
 assert.deepEqual(partialSafePlan.patch, { status: 'completed' })
 
+const itemLevelFlightPlan = reconcileTravelSeed({
+  slug: '202607-chongqing-yangtze-river',
+  base: {
+    flights: [
+      { date: '7/1', flightNumber: 'MU3539', route: 'WUH→CKG', terminal: 'T3' },
+    ],
+  },
+  source: {
+    flights: [
+      { date: '7/1', flightNumber: 'MU3539', route: 'WUH→CKG', terminal: 'T2' },
+    ],
+  },
+  current: {
+    flights: [
+      {
+        date: '7/1',
+        flightNumber: 'MU3539',
+        route: 'WUH→CKG',
+        terminal: 'T3',
+        notes: 'Admin 補充轉機提醒',
+      },
+    ],
+  },
+})
+
+assert.equal(itemLevelFlightPlan.action, 'apply-source')
+assert.deepEqual(itemLevelFlightPlan.patch, {
+  flights: [
+    {
+      date: '7/1',
+      flightNumber: 'MU3539',
+      route: 'WUH→CKG',
+      terminal: 'T2',
+      notes: 'Admin 補充轉機提醒',
+    },
+  ],
+})
+
+const itemLevelDayPlan = reconcileTravelSeed({
+  slug: '202702-thailand-phuket',
+  base: { dailyItinerary: [{ day: 1, title: '抵達日', theme: 'Base' }] },
+  source: { dailyItinerary: [{ day: 1, title: '抵達日', theme: 'Source 主題' }] },
+  current: {
+    dailyItinerary: [{ day: 1, title: 'Admin 修正標題', theme: 'Base' }],
+  },
+})
+
+assert.equal(itemLevelDayPlan.action, 'apply-source')
+assert.deepEqual(itemLevelDayPlan.patch, {
+  dailyItinerary: [{ day: 1, title: 'Admin 修正標題', theme: 'Source 主題' }],
+})
+
+const itemLevelSectionPlan = reconcileTravelSeed({
+  slug: '202702-thailand-phuket',
+  base: { sourceSections: [{ anchor: 'day-1', title: 'Day 1', body: 'Base' }] },
+  source: { sourceSections: [{ anchor: 'day-1', title: 'Day 1', body: 'Source body' }] },
+  current: {
+    sourceSections: [
+      { anchor: 'day-1', title: 'Admin title', body: 'Base', enableComments: false },
+    ],
+  },
+})
+
+assert.equal(itemLevelSectionPlan.action, 'apply-source')
+assert.deepEqual(itemLevelSectionPlan.patch, {
+  sourceSections: [
+    { anchor: 'day-1', title: 'Admin title', body: 'Source body', enableComments: false },
+  ],
+})
+
+const itemLevelLodgingPlan = reconcileTravelSeed({
+  slug: '202702-thailand-phuket',
+  base: {
+    lodgings: [{ dateRange: '2/2-2/5', hotel: 'Anantara', city: 'Phuket' }],
+  },
+  source: {
+    lodgings: [
+      { dateRange: '2/2-2/5', hotel: 'Anantara', city: 'Phuket', roomType: 'Villa' },
+    ],
+  },
+  current: {
+    lodgings: [
+      { dateRange: '2/2-2/5', hotel: 'Anantara', city: 'Phuket', notes: 'Admin note' },
+    ],
+  },
+})
+
+assert.equal(itemLevelLodgingPlan.action, 'apply-source')
+
+const unmatchedArrayPlan = reconcileTravelSeed({
+  slug: '202702-thailand-phuket',
+  base: { flights: [{ flightNumber: 'TBD', route: 'TPE→HKT' }] },
+  source: { flights: [{ flightNumber: 'BR1', route: 'TPE→HKT' }] },
+  current: { flights: [{ flightNumber: 'TBD', route: 'TPE→HKT', notes: 'Admin note' }] },
+})
+
+assert.equal(unmatchedArrayPlan.action, 'conflict')
+assert.equal(unmatchedArrayPlan.conflicts[0]?.field, 'flights')
+
+const matchedArrayConflictPlan = reconcileTravelSeed({
+  slug: '202607-chongqing-yangtze-river',
+  base: {
+    flights: [{ date: '7/1', flightNumber: 'MU3539', route: 'WUH→CKG', terminal: 'T3' }],
+  },
+  source: {
+    flights: [{ date: '7/1', flightNumber: 'MU3539', route: 'WUH→CKG', terminal: 'T2' }],
+  },
+  current: {
+    flights: [{ date: '7/1', flightNumber: 'MU3539', route: 'WUH→CKG', terminal: 'T1' }],
+  },
+})
+
+assert.equal(matchedArrayConflictPlan.action, 'conflict')
+assert.equal(
+  matchedArrayConflictPlan.conflicts[0]?.field,
+  'flights[MU3539|7/1|WUH→CKG].terminal',
+)
+assert.deepEqual(matchedArrayConflictPlan.patch, {})
+
+const duplicateAnchorPlan = reconcileTravelSeed({
+  slug: '202702-thailand-phuket',
+  base: {
+    sourceSections: [
+      { anchor: 'duplicate', body: 'Base A' },
+      { anchor: 'duplicate', body: 'Base B' },
+    ],
+  },
+  source: {
+    sourceSections: [
+      { anchor: 'duplicate', body: 'Source A' },
+      { anchor: 'duplicate', body: 'Source B' },
+    ],
+  },
+  current: {
+    sourceSections: [
+      { anchor: 'duplicate', body: 'Current A' },
+      { anchor: 'duplicate', body: 'Current B' },
+    ],
+  },
+})
+
+assert.equal(duplicateAnchorPlan.action, 'conflict')
+assert.equal(duplicateAnchorPlan.conflicts.length, 1)
+assert.equal(duplicateAnchorPlan.conflicts[0]?.field, 'sourceSections')
+
 const sourceWinsPlan = reconcileTravelSeed({
   slug: '202702-thailand-phuket',
   base: { summary: 'Base' },
@@ -133,17 +278,17 @@ const adminLinkLabelPlan = reconcileTravelSeed({
   slug: '202702-thailand-phuket',
   base: {
     sourceSections: [
-      { anchor: 'resources', links: [{ label: 'https://example.com', url: 'https://example.com' }] },
+      { anchor: 'item-1c51hpg', links: [{ label: 'https://example.com', url: 'https://example.com' }] },
     ],
   },
   source: {
     sourceSections: [
-      { anchor: 'resources', links: [{ label: 'https://example.com', url: 'https://example.com' }] },
+      { anchor: 'item-1c51hpg', links: [{ label: 'https://example.com', url: 'https://example.com' }] },
     ],
   },
   current: {
     sourceSections: [
-      { anchor: 'resources', links: [{ label: 'Admin 編輯標籤', url: 'https://example.com' }] },
+      { anchor: 'item-1c51hpg', links: [{ label: 'Admin 編輯標籤', url: 'https://example.com' }] },
     ],
   },
 })

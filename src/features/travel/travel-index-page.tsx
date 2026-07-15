@@ -15,9 +15,9 @@ type TravelIndexPageProps = {
 export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIndexPageProps) {
   const featured = projects[0]
   const now = startOfDay(currentDate)
-  const planning = projects.filter((project) => project.status === 'planning' && !isPastPlanning(project, now))
-  const preliminary = projects.filter((project) => project.status === 'planning' && isPastPlanning(project, now))
-  const completed = projects.filter((project) => project.status === 'completed')
+  const planning = projects.filter((project) => project.status === 'planning' && !isArchivedTravelPlan(project, now))
+  const archivedPlans = projects.filter((project) => project.status === 'planning' && isArchivedTravelPlan(project, now))
+  const memories = projects.filter((project) => project.status === 'completed')
 
   return (
     <main className="overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#e8f3f1_48%,#f7efe5_100%)] text-slate-950">
@@ -78,18 +78,18 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
             text="即將發生或仍在決策中的行程，航班、住宿、提醒與每日節點都可進入討論。"
           />
           <CorridorNote
-            count={completed.length}
-            href="#travel-group-completed"
+            count={memories.length}
+            href="#travel-group-memories"
             icon={<CalendarDays className="size-5" aria-hidden="true" />}
-            title="已完成"
-            text="完成後的旅程轉成回憶檔案，保留照片、里程碑與當時留下的文字線索。"
+            title="旅行回憶"
+            text="旅遊結束後另外整理的回憶作品，保留照片、里程碑與分享文字。"
           />
           <CorridorNote
-            count={preliminary.length}
-            href="#travel-group-preliminary"
+            count={archivedPlans.length}
+            href="#travel-group-archived"
             icon={<Compass className="size-5" aria-hidden="true" />}
-            title="前期規劃"
-            text="規劃中但時間已過的旅程會先收在這裡，方便保留早期討論、待整理內容與後續復盤。"
+            title="過往規劃"
+            text="旅遊日期已過的原始計畫歸檔，保留當時的審核、修訂與家庭討論。"
           />
         </div>
       </section>
@@ -114,19 +114,19 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
               title="規劃中"
             />
             <TravelProjectGroup
-              empty="目前沒有公開的已完成旅程。"
+              empty="目前沒有公開的旅行回憶。"
               icon={<CalendarDays className="size-5" aria-hidden="true" />}
-              id="travel-group-completed"
-              projects={completed}
-              title="已完成"
+              id="travel-group-memories"
+              projects={memories}
+              title="旅行回憶"
             />
             <TravelProjectGroup
-              empty="目前沒有過期的前期規劃旅程。"
+              empty="目前沒有已歸檔的過往規劃。"
               icon={<Compass className="size-5" aria-hidden="true" />}
-              id="travel-group-preliminary"
-              projects={preliminary}
-              statusLabelOverride="前期規劃"
-              title="前期規劃"
+              id="travel-group-archived"
+              projects={archivedPlans}
+              statusLabelOverride="過往規劃"
+              title="過往規劃"
             />
           </div>
         </div>
@@ -271,18 +271,18 @@ function formatDateRange(project: TravelProject) {
 }
 
 function groupDescription(title: string) {
-  if (title === '前期規劃') {
-    return '規劃中但日期已過的行程會先收在這裡，保留討論脈絡。'
+  if (title === '過往規劃') {
+    return '旅遊日期已過的計畫會歸檔在這裡，保留原始討論脈絡。'
   }
 
   if (title === '規劃中') {
     return '即將發生或仍在決策中的旅行作戰室。'
   }
 
-  return '已完成的家庭旅程與照片記憶。'
+  return '旅遊結束後另外整理的家庭記錄、照片與分享。'
 }
 
-function isPastPlanning(project: TravelProject, currentDate: Date) {
+function isArchivedTravelPlan(project: TravelProject, currentDate: Date) {
   return new Date(project.endDate) < currentDate
 }
 

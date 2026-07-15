@@ -6,12 +6,25 @@ import { getPayload } from 'payload'
 import { buildSeedContent } from './seed-content'
 import { buildPayloadDryRun } from './seed-dry-run'
 import { travelOnlySeedContent } from './seed-scope'
+import {
+  buildTravelConflictRegister,
+  writeTravelConflictRegister,
+} from './travel-conflict-register'
 
 async function run() {
   const timeout = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error('TRAVEL_READBACK_TIMEOUT')), 120_000)
   })
   const report = await Promise.race([readback(), timeout])
+  const conflictRegister = buildTravelConflictRegister(report.actions, {
+    '202702-thailand-phuket:sourceSections[item-1c51hpg].links': 'payload-wins',
+  })
+  const artifactPath = process.argv.includes('--write-conflict-register')
+    ? await writeTravelConflictRegister({
+        artifactRoot: path.join(process.cwd(), 'docs/phase-artifacts/phase-17'),
+        entries: conflictRegister,
+      })
+    : undefined
 
   console.log(
     JSON.stringify(
@@ -30,6 +43,8 @@ async function run() {
             })),
           })),
         totalActions: report.actions.length,
+        conflictRegister,
+        artifactPath,
       },
       null,
       2,
