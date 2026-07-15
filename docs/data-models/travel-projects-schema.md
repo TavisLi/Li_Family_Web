@@ -346,3 +346,17 @@ Phase 17 建議先批准下一個安全 slice，而不是直接批准 drop：
 - drop／rename／rewrite `travel_projects`。
 
 舊 `TravelProjects` 仍是目前 runtime source。下一個可逆步驟是 Production read-only inventory 與 copy dry-run；完成逐欄 mapping evidence 後，再請網站擁有者批准 data-copy write。
+
+## Phase 17 Production inventory 結果
+
+2026-07-15 已完成 Production 唯讀 inventory 與 copy-readiness artifact，確認 2 筆 Plans（1 active、1 archived）、3 筆 Memories，且目標三張主表尚未套用。三筆 Memories 的 schema 已依真實非空欄位補強，因此 Memory domain 不再以刪除詳細 ledger／daily itinerary 換取表面上的 schema 精簡。
+
+目前 data-copy write 仍為 **blocked**：
+
+- additive migrations 尚未套用；
+- 12 筆 Media、2 筆 TimelineEvents、1 筆 HomeConfig 仍引用舊 collection；
+- 兩筆 Plans 的結構化規劃欄位尚未完成 conflict／等價性決策。
+
+最新 Production read-back 已將五筆粗粒度 conflict 收斂為兩筆 Current-only Admin edits；但 lossless copy readiness 經第二輪審查修正為 0 ready／5 blocked。三筆 Memories 仍需保存 legacy `sourceSections` 的 level／display／interaction metadata；五筆舊 `sourceMetadata.baseProjection` 也不能原樣冒充新 schema 的 reconciliation Base。建議 Plan 與 Memory 都使用 nullable migration snapshot 保存 legacy Current／Base evidence，再用目標 transformer 重建新的 Base，而不是把所有舊寬表欄位重新變成正式 domain fields。
+
+詳細 evidence：`docs/phase-artifacts/phase-17/travel-collection-copy-readiness.md`。在上述三類 blocker 歸零前，Issue #57 不進入 destructive migration。

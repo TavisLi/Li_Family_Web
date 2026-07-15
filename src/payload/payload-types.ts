@@ -714,12 +714,30 @@ export interface TravelMemory {
    */
   originPlan?: (number | null) | TravelPlan;
   galleryImages?: (number | Media)[] | null;
+  itineraryImages?: (number | Media)[] | null;
   dailyHighlights?:
     | {
         day?: number | null;
         date?: string | null;
+        dateLabel?: string | null;
         title: string;
+        theme?: string | null;
         story?: string | null;
+        segments?:
+          | {
+              time?: string | null;
+              activity: string;
+              transport?: string | null;
+              notes?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        meals?: {
+          breakfast?: string | null;
+          lunch?: string | null;
+          dinner?: string | null;
+        };
+        lodging?: string | null;
         mediaItems?: (number | Media)[] | null;
         id?: string | null;
       }[]
@@ -728,11 +746,14 @@ export interface TravelMemory {
     flights?:
       | {
           date?: string | null;
+          dateLabel?: string | null;
           airline?: string | null;
           flightNumber?: string | null;
           route?: string | null;
+          passengers?: string | null;
           departureTime?: string | null;
           arrivalTime?: string | null;
+          terminal?: string | null;
           notes?: string | null;
           id?: string | null;
         }[]
@@ -741,8 +762,14 @@ export interface TravelMemory {
       | {
           startDate?: string | null;
           endDate?: string | null;
+          dateRange?: string | null;
           hotel: string;
           city?: string | null;
+          address?: string | null;
+          roomType?: string | null;
+          bookingChannel?: string | null;
+          price?: string | null;
+          highlights?: string | null;
           notes?: string | null;
           id?: string | null;
         }[]
@@ -769,6 +796,18 @@ export interface TravelMemory {
     | {
         title?: string | null;
         url: string;
+        id?: string | null;
+      }[]
+    | null;
+  reminders?:
+    | {
+        category: string;
+        items?:
+          | {
+              text: string;
+              id?: string | null;
+            }[]
+          | null;
         id?: string | null;
       }[]
     | null;
@@ -950,10 +989,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'travel-memories';
         value: number | TravelMemory;
-      } | null)
-    | ({
-        relationTo: 'travel-route-identities';
-        value: number | TravelRouteIdentity;
       } | null)
     | ({
         relationTo: 'travel-projects';
@@ -1247,13 +1282,33 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
       };
   originPlan?: T;
   galleryImages?: T;
+  itineraryImages?: T;
   dailyHighlights?:
     | T
     | {
         day?: T;
         date?: T;
+        dateLabel?: T;
         title?: T;
+        theme?: T;
         story?: T;
+        segments?:
+          | T
+          | {
+              time?: T;
+              activity?: T;
+              transport?: T;
+              notes?: T;
+              id?: T;
+            };
+        meals?:
+          | T
+          | {
+              breakfast?: T;
+              lunch?: T;
+              dinner?: T;
+            };
+        lodging?: T;
         mediaItems?: T;
         id?: T;
       };
@@ -1264,11 +1319,14 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
           | T
           | {
               date?: T;
+              dateLabel?: T;
               airline?: T;
               flightNumber?: T;
               route?: T;
+              passengers?: T;
               departureTime?: T;
               arrivalTime?: T;
+              terminal?: T;
               notes?: T;
               id?: T;
             };
@@ -1277,8 +1335,14 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
           | {
               startDate?: T;
               endDate?: T;
+              dateRange?: T;
               hotel?: T;
               city?: T;
+              address?: T;
+              roomType?: T;
+              bookingChannel?: T;
+              price?: T;
+              highlights?: T;
               notes?: T;
               id?: T;
             };
@@ -1305,6 +1369,18 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
     | {
         title?: T;
         url?: T;
+        id?: T;
+      };
+  reminders?:
+    | T
+    | {
+        category?: T;
+        items?:
+          | T
+          | {
+              text?: T;
+              id?: T;
+            };
         id?: T;
       };
   sourceMetadata?:

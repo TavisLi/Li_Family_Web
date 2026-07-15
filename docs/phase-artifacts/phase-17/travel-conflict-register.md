@@ -1,35 +1,44 @@
 # Phase 17 Travel Conflict Register
 
-## 證據狀態
+## 最新證據狀態
 
-- 基準：Phase 16 首次成功的 Production travel-only full-projection read-back。
-- 基準結果：0 create、0 update、751 travel media skip、5 travel conflict、0 delete。
-- Phase 17 於 2026-07-12 重跑 `seed:travel:read-back`，在 120 秒後 timeout；沒有任何 Production mutation。
-- 成功基準為保護 Production 內容而只保存欄位路徑與 category，沒有把完整 Payload 值寫入 Git。下列 Source／Current 摘要因此以欄位形狀與已驗證的編輯語意呈現，不偽造未保存的文字內容。
+- 2026-07-15 已成功重跑 Production 唯讀 `pnpm run seed:travel:read-back`。
+- 結果：0 create、0 update、754 skip、2 conflict、0 delete。
+- 三筆 completed travel 已與 Source 收斂，不再是 conflict；目前只剩兩筆 planning travel。
+- 兩筆 conflict 的 `sourceChangedPaths` 均為空，差異都來自 Current-only Payload Admin edits。
+- 本文件只記錄決策證據，不批准任何 Production write、migration execution 或 runtime cutover。
 
-## 每筆 travel 決策
+## 兩筆 planning conflict
 
-| Slug | Field path | Category | Source 摘要 | Current 摘要 | 建議決策 | 風險 |
-| --- | --- | --- | --- | --- | --- | --- |
-| `201307-hainan` | `sourceSections` | faithful-source-projection | Markdown parser 產生的完整 section array | Payload published section array；與 Base／Source 存在 array-level 差異 | `manual-merge`，completed travel 不在 Issue #57 cleanup 範圍 | 無 stable item evidence 前接受 Source 可能改寫歷史內容或 interaction anchor |
-| `202308-east-australia` | `sourceSections` | faithful-source-projection | Markdown parser 產生的完整 section array | Payload published section array；與 Base／Source 存在 array-level 差異 | `manual-merge`，completed travel 不在 Issue #57 cleanup 範圍 | 同上；不得因 planning schema cleanup 觸碰 completed travel |
-| `202602-thailand-phuket` | `dailyItinerary`、`sourceSections` | structured-display / faithful-source | Source 的 day 與 section projections | Current 的 day 與 section projections；兩個 parent arrays 均有差異 | `manual-merge`，completed travel 保留 Current | 本 Issue 不涵蓋 completed travel；只允許繼續做唯讀 evidence |
-| `202607-chongqing-yangtze-river` | `flights`、`lodgings`、`dailyItinerary`、`sourceSections` | structured-display / faithful-source | Source 的 planning structured arrays | Payload published planning arrays；差異尚未取得 owner 決策 | `manual-merge`；先以 stable item diff 降低假 conflict | 四個 arrays 同時覆寫會影響已上線 planning 頁內容；不得 source-wins |
-| `202702-thailand-phuket` | `dailyItinerary` | structured-display-projection | Source day projection | Payload published day projection | `manual-merge` | 未取得 item-level evidence 前不自動選邊 |
-| `202702-thailand-phuket` | `sourceSections[item-1c51hpg].links` | faithful-source-projection | raw URL 作為 link label | Admin 已將 raw URL 改為人類可讀 label | `payload-wins` | 接受 Source 會明確回退已發布的人工整理 |
+| Slug | Field path | Base → Source | Base → Current | 判定 | 建議決策 |
+| --- | --- | --- | --- | --- | --- |
+| `202607-chongqing-yangtze-river` | `lodgings` | 無變更 | 8 個 item-level paths：city、roomType、address | Source 未變，Current 增加結構化住宿資訊；不是雙邊衝突 | `payload-wins`：copy 時完整保留 Current lodging projection |
+| `202702-thailand-phuket` | `sourceSections[item-1c51hpg].links` | 無變更 | 2 個 label paths | Current 把 raw URL label 改為「安納塔拉度假會」「萬豪度假會」 | `payload-wins`：保留人類可讀 label |
 
-## Resolution plan
+完整 Source／Current 摘要見機器產生的 `travel-conflict-register.generated.md`；該檔只含截短摘要，不是 write payload。機器檔的保守 resolver 仍把重慶標為 `manual-merge`，因為 resolver 不會自動把 structured-display conflict 升級成 `payload-wins`；本文件依額外的 item-level evidence（`sourceChangedPaths = []`、只有 Current paths）提出 owner approval 建議，尚未宣稱已獲批准或可執行 write。
 
-1. `202702-thailand-phuket` 的 link labels 固定為 `payload-wins` fixture；safe mode 必須保留 Current。
-2. `flights` 只在 `flightNumber + date + route` 三者完整且唯一時做 item-level diff。
-3. `lodgings` 只在 `dateRange + hotel + city` 三者完整且唯一時做 item-level diff。
-4. `dailyItinerary` 只在正整數 `day` 唯一時做 item-level diff。
-5. `sourceSections` 只在 `anchor` 完整且唯一時做 item-level diff。
-6. 任一 stable key 缺失、重複、或 Base／Source／Current 無法一對一配對時，保留 parent array conflict。
-7. 本 artifact 不批准 `payload-wins` write、`source-wins` write、Production content mutation 或 destructive migration。
+## 為何重慶仍阻擋 Plan copy
+
+內容選邊已可判定為保留 Current，但新 `travel-plans` schema 目前刻意沒有複製舊表的 flights、lodgings、daily itinerary 與其他寬表欄位。若直接只搬 `planningSections`，仍會遺失 Current-only lodging edits 與其他尚未證明可丟棄的結構化資料。
+
+因此 blocker 已從「人工內容衝突」轉為「目標 schema 的 lossless preservation policy」。這不是可以用 `source-wins` 或忽略未接 UI 欄位解決的問題。
+
+## 建議的 lossless migration policy
+
+建議在 `travel-plans` 與 `travel-memories` 都增加一個僅供遷移追溯的 nullable snapshot group，保存：
+
+- `legacyTravelProjectId`
+- 舊 record 的完整 Current structured projection，包括 Memory legacy section metadata
+- 舊 `sourceMetadata`／Base evidence（封存用途，不直接作為新 schema 的 reconciliation Base）
+- `migratedAt`
+- migration schema version
+
+正式 UI 仍只使用乾淨的 Plan／Memory domain fields；snapshot 不作為前台 renderer input。新 collection 的 reconciliation Base 必須由 target transformer 重新產生。等 Preview／Production read-back 證明新模型完整，且逐欄確認不再需要 rollback 後，才另案取得 destructive approval 移除 snapshot。
+
+這比把所有 legacy arrays 重新加入正式 Plan schema 更能維持 domain 邊界，也比直接捨棄欄位安全。它仍是新的 schema／copy policy，必須由網站擁有者另行批准後才能實作或寫入資料。
 
 ## Owner approval queue
 
-- 可直接確認：保留 `202702-thailand-phuket` 人類可讀 link labels。
-- 仍需內容 owner 審查：兩筆 planning travel 的 `dailyItinerary`，以及重慶的 flights／lodgings／sourceSections。
-- 不在 Issue #57：三筆 completed travel 只保留 evidence，不納入 planning table destructive cleanup。
+1. 批准兩筆 planning travel 的 conflict resolution 均採 `payload-wins`。
+2. 批准以 nullable legacy snapshot 實現 lossless Plan／Memory copy；或指定要把哪些 legacy fields 正式納入各自的 domain schema。
+3. additive migrations 套用、data-copy write、relationship cutover 各自仍需獨立批准。

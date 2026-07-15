@@ -26,6 +26,8 @@ assert.ok(!planFieldNames.includes('storySections'))
 
 assert.ok(memoryFieldNames.includes('originPlan'))
 assert.ok(memoryFieldNames.includes('storySections'))
+assert.ok(memoryFieldNames.includes('itineraryImages'))
+assert.ok(memoryFieldNames.includes('reminders'))
 assert.ok(!memoryFieldNames.includes('status'))
 assert.ok(!memoryFieldNames.includes('planningSections'))
 

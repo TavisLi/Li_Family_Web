@@ -60,7 +60,7 @@ Plan 的旅遊日期經過後，仍是同一筆 Plan，只會由大廳從「規�
 | `flights`, `lodgings` | 先由 `planningSections` 承接；是否另建結構化欄位須由兩筆 Plan 的實際 UI 證明 | `travelLedger` snapshot |
 | `dailyItinerary` | 先映射成 itinerary-day planning sections | `dailyHighlights` |
 | `externalVideos` | 不搬 | `externalVideos` |
-| `sourceMetadata` | 原樣保留 Base evidence | 原樣保留，待 completed importer policy 確認 |
+| `sourceMetadata` | 舊值封存為 migration evidence；以 Plan transformer 重建新 Base／hash | 舊值封存為 migration evidence；以 Memory transformer 重建新 Base／hash |
 | `status` | 不搬；Plan 類型由 collection 表示 | 不搬；Memory 類型由 collection 表示 |
 
 `railSegments`、`cabinAssignments`、`foodRecommendations`、`costItems`、`optionalActivities`、`reminders`、`itineraryImages` 不做猜測式搬移。先以 Production read-only inventory 與 renderer usage 決定映射到 section、保留結構化欄位或淘汰。
@@ -74,6 +74,31 @@ Plan 的旅遊日期經過後，仍是同一筆 Plan，只會由大廳從「規�
 5. **Dual-read**：只在 `src/lib/data/travel.ts` 聚合新舊來源，驗證 `/travel`、detail、首頁與 privacy。
 6. **Cutover**：read-back、Preview 與 Production browser QA 通過後停止舊表寫入。
 7. **Cleanup**：另一次 destructive approval 後才刪除 `travel-projects` 與未採用欄位。
+
+## Production 唯讀 Inventory（2026-07-15）
+
+已執行 `pnpm run seed:travel:copy-readiness:artifact`。命令只使用 Payload `find` 與 Postgres `SELECT`，沒有 migration、create、update 或 delete。
+
+確認結果：
+
+- 舊 `travel_projects`：5 筆。
+- 目標分類：2 筆 Plans（1 active、1 archived）與 3 筆 Memories。
+- `travel_plans`、`travel_memories`、`travel_route_identities` 尚未存在，row count 視為 0。
+- 12 筆 Media 仍引用 `202607-chongqing-yangtze-river`。
+- 2 筆 TimelineEvents 分別引用 `201307-hainan` 與 `202308-east-australia`。
+- HomeConfig featured travel 引用 `202607-chongqing-yangtze-river`。
+
+欄位 inventory 證明三筆 completed records 的 `itineraryImages`、`reminders`、航班 passengers、住宿 dateRange／roomType／address／booking channel／price／highlights，以及每日行程 segments／meals／lodging 都是 Memory domain 的實際資料，不應因拆表而遺失。因此已補強 `travel-memories` schema，保留 legacy date labels 與完整 ledger／daily highlight 結構；對應 migration `20260715_094310_phase_17_expand_travel_memory_preservation` 仍為 additive-only，尚未執行。
+
+兩筆 Plans 的結構化 flights／lodgings／daily itinerary／planning extras 仍維持 blocker。前台目前以 source sections 為主要 renderer，但 Phase 16 conflict evidence 顯示 Current 與 Source 並非完全等價；在完成 payload-wins／source-wins／manual-merge 決策前，不以「前台未直接讀取」推論可以刪除。
+
+最新 read-back 已把 conflict 收斂為兩筆 Current-only Admin edits：重慶的 `lodgings` 與普吉島的 link labels，兩者都建議採 `payload-wins`。第二輪審查確認三筆 Memories 的 legacy `sourceSections` metadata，以及五筆舊 `sourceMetadata.baseProjection`，都尚未有 lossless target policy；因此目前是 0 ready／5 blocked，而不是只阻擋兩筆 Plans。建議在 Plan 與 Memory 都增加 nullable migration snapshot，讓正式 domain schema 保持乾淨，同時保存舊 Current structured projection／Base evidence供驗證與 rollback；詳見 `travel-conflict-register.md`。
+
+完整逐筆 paths 見 `docs/phase-artifacts/phase-17/travel-collection-copy-readiness.md`。
+
+### Relationship cutover 決策
+
+Media、TimelineEvents 與 HomeConfig 不應繼續只指向 `travel-projects`。在 dual-read slice，這三個 relationship 應改為 polymorphic relation，允許 `travel-plans`／`travel-memories`；資料 copy 必須以舊 related travel 的 status 決定新的 `relationTo`，並在 read-back 驗證 12／2／1 筆引用完整保留。這項變更與 data copy 綁定，不提前修改目前 runtime schema。
 
 ## 本切片界線
 
