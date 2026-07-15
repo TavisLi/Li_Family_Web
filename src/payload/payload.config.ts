@@ -13,7 +13,10 @@ import { Comments } from './collections/Comments'
 import { Media } from './collections/Media'
 import { Posts } from './collections/Posts'
 import { TimelineEvents } from './collections/TimelineEvents'
+import { TravelMemories } from './collections/TravelMemories'
+import { TravelPlans } from './collections/TravelPlans'
 import { TravelProjects } from './collections/TravelProjects'
+import { TravelRouteIdentities } from './collections/TravelRouteIdentities'
 import { Users } from './collections/Users'
 import { WrappedSnapshots } from './collections/WrappedSnapshots'
 import { HomeConfig } from './globals/HomeConfig'
@@ -47,6 +50,9 @@ export default buildConfig({
     Users,
     Categories,
     Posts,
+    TravelPlans,
+    TravelMemories,
+    TravelRouteIdentities,
     TravelProjects,
     TimelineEvents,
     BucketItems,

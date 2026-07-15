@@ -70,6 +70,9 @@ export interface Config {
     users: User;
     categories: Category;
     posts: Post;
+    'travel-plans': TravelPlan;
+    'travel-memories': TravelMemory;
+    'travel-route-identities': TravelRouteIdentity;
     'travel-projects': TravelProject;
     'timeline-events': TimelineEvent;
     'bucket-items': BucketItem;
@@ -81,11 +84,18 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    'travel-plans': {
+      memories: 'travel-memories';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    'travel-plans': TravelPlansSelect<false> | TravelPlansSelect<true>;
+    'travel-memories': TravelMemoriesSelect<false> | TravelMemoriesSelect<true>;
+    'travel-route-identities': TravelRouteIdentitiesSelect<false> | TravelRouteIdentitiesSelect<true>;
     'travel-projects': TravelProjectsSelect<false> | TravelProjectsSelect<true>;
     'timeline-events': TimelineEventsSelect<false> | TimelineEventsSelect<true>;
     'bucket-items': BucketItemsSelect<false> | BucketItemsSelect<true>;
@@ -584,6 +594,232 @@ export interface Post {
   createdAt: string;
 }
 /**
+ * Planning workspaces. The end date controls Active Plans versus Archived Plans in the lobby.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-plans".
+ */
+export interface TravelPlan {
+  id: number;
+  title: string;
+  /**
+   * Canonical travel identity. It must not collide with a slug in the other travel collection.
+   */
+  slug: string;
+  isPrivate?: boolean | null;
+  startDate: string;
+  /**
+   * The lobby derives Active Plans or Archived Plans from this date.
+   */
+  endDate: string;
+  summary?: string | null;
+  coverImage?: (number | null) | Media;
+  members?: (number | User)[] | null;
+  guestParticipants?:
+    | {
+        name: string;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  planningSections?:
+    | {
+        kind: 'overview' | 'transport' | 'lodging' | 'itinerary-day' | 'decision' | 'budget' | 'reminder' | 'freeform';
+        level: number;
+        title: string;
+        /**
+         * Stable section identity used by reconciliation and deep links.
+         */
+        anchor: string;
+        displayDay?: number | null;
+        date?: string | null;
+        subtitle?: string | null;
+        body: string;
+        links?:
+          | {
+              label?: string | null;
+              url: string;
+              id?: string | null;
+            }[]
+          | null;
+        mediaItems?: (number | Media)[] | null;
+        interactions?: {
+          commentsEnabled?: boolean | null;
+          votingEnabled?: boolean | null;
+        };
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Virtual reverse link; the relationship is stored only on the memory.
+   */
+  memories?: {
+    docs?: (number | TravelMemory)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Seed reconciliation metadata. Managed by the travel seed workflow; editors should not change it manually.
+   */
+  sourceMetadata?: {
+    sourceFile?: string | null;
+    sourceHash?: string | null;
+    parserVersion?: string | null;
+    lastImportedAt?: string | null;
+    /**
+     * Last accepted seed projection used as Base for three-way reconciliation.
+     */
+    baseProjection?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Post-travel records, stories, photos, and sharing.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-memories".
+ */
+export interface TravelMemory {
+  id: number;
+  title: string;
+  /**
+   * Canonical travel identity. It must not collide with a slug in the other travel collection.
+   */
+  slug: string;
+  isPrivate?: boolean | null;
+  startDate: string;
+  endDate: string;
+  summary?: string | null;
+  coverImage?: (number | null) | Media;
+  participants?: (number | User)[] | null;
+  guestParticipants?:
+    | {
+        name: string;
+        note?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Optional provenance link. Creating a memory never changes or removes its source plan.
+   */
+  originPlan?: (number | null) | TravelPlan;
+  galleryImages?: (number | Media)[] | null;
+  dailyHighlights?:
+    | {
+        day?: number | null;
+        date?: string | null;
+        title: string;
+        story?: string | null;
+        mediaItems?: (number | Media)[] | null;
+        id?: string | null;
+      }[]
+    | null;
+  travelLedger?: {
+    flights?:
+      | {
+          date?: string | null;
+          airline?: string | null;
+          flightNumber?: string | null;
+          route?: string | null;
+          departureTime?: string | null;
+          arrivalTime?: string | null;
+          notes?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    lodgings?:
+      | {
+          startDate?: string | null;
+          endDate?: string | null;
+          hotel: string;
+          city?: string | null;
+          notes?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  storySections?:
+    | {
+        kind: 'overview' | 'day' | 'reflection' | 'food' | 'freeform';
+        title: string;
+        anchor: string;
+        body: string;
+        links?:
+          | {
+              label?: string | null;
+              url: string;
+              id?: string | null;
+            }[]
+          | null;
+        mediaItems?: (number | Media)[] | null;
+        id?: string | null;
+      }[]
+    | null;
+  externalVideos?:
+    | {
+        title?: string | null;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Seed reconciliation metadata. Managed by the travel seed workflow; editors should not change it manually.
+   */
+  sourceMetadata?: {
+    sourceFile?: string | null;
+    sourceHash?: string | null;
+    parserVersion?: string | null;
+    lastImportedAt?: string | null;
+    /**
+     * Last accepted seed projection used as Base for three-way reconciliation.
+     */
+    baseProjection?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Internal registry enforcing one canonical route owner across travel collections.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-route-identities".
+ */
+export interface TravelRouteIdentity {
+  id: number;
+  slug: string;
+  ownerKey: string;
+  owner:
+    | {
+        relationTo: 'travel-plans';
+        value: number | TravelPlan;
+      }
+    | {
+        relationTo: 'travel-memories';
+        value: number | TravelMemory;
+      };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "timeline-events".
  */
@@ -706,6 +942,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: number | Post;
+      } | null)
+    | ({
+        relationTo: 'travel-plans';
+        value: number | TravelPlan;
+      } | null)
+    | ({
+        relationTo: 'travel-memories';
+        value: number | TravelMemory;
+      } | null)
+    | ({
+        relationTo: 'travel-route-identities';
+        value: number | TravelRouteIdentity;
       } | null)
     | ({
         relationTo: 'travel-projects';
@@ -913,6 +1161,173 @@ export interface PostsSelect<T extends boolean = true> {
         tag?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-plans_select".
+ */
+export interface TravelPlansSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  isPrivate?: T;
+  startDate?: T;
+  endDate?: T;
+  summary?: T;
+  coverImage?: T;
+  members?: T;
+  guestParticipants?:
+    | T
+    | {
+        name?: T;
+        note?: T;
+        id?: T;
+      };
+  planningSections?:
+    | T
+    | {
+        kind?: T;
+        level?: T;
+        title?: T;
+        anchor?: T;
+        displayDay?: T;
+        date?: T;
+        subtitle?: T;
+        body?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              id?: T;
+            };
+        mediaItems?: T;
+        interactions?:
+          | T
+          | {
+              commentsEnabled?: T;
+              votingEnabled?: T;
+            };
+        id?: T;
+      };
+  memories?: T;
+  sourceMetadata?:
+    | T
+    | {
+        sourceFile?: T;
+        sourceHash?: T;
+        parserVersion?: T;
+        lastImportedAt?: T;
+        baseProjection?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-memories_select".
+ */
+export interface TravelMemoriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  isPrivate?: T;
+  startDate?: T;
+  endDate?: T;
+  summary?: T;
+  coverImage?: T;
+  participants?: T;
+  guestParticipants?:
+    | T
+    | {
+        name?: T;
+        note?: T;
+        id?: T;
+      };
+  originPlan?: T;
+  galleryImages?: T;
+  dailyHighlights?:
+    | T
+    | {
+        day?: T;
+        date?: T;
+        title?: T;
+        story?: T;
+        mediaItems?: T;
+        id?: T;
+      };
+  travelLedger?:
+    | T
+    | {
+        flights?:
+          | T
+          | {
+              date?: T;
+              airline?: T;
+              flightNumber?: T;
+              route?: T;
+              departureTime?: T;
+              arrivalTime?: T;
+              notes?: T;
+              id?: T;
+            };
+        lodgings?:
+          | T
+          | {
+              startDate?: T;
+              endDate?: T;
+              hotel?: T;
+              city?: T;
+              notes?: T;
+              id?: T;
+            };
+      };
+  storySections?:
+    | T
+    | {
+        kind?: T;
+        title?: T;
+        anchor?: T;
+        body?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              url?: T;
+              id?: T;
+            };
+        mediaItems?: T;
+        id?: T;
+      };
+  externalVideos?:
+    | T
+    | {
+        title?: T;
+        url?: T;
+        id?: T;
+      };
+  sourceMetadata?:
+    | T
+    | {
+        sourceFile?: T;
+        sourceHash?: T;
+        parserVersion?: T;
+        lastImportedAt?: T;
+        baseProjection?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-route-identities_select".
+ */
+export interface TravelRouteIdentitiesSelect<T extends boolean = true> {
+  slug?: T;
+  ownerKey?: T;
+  owner?: T;
   updatedAt?: T;
   createdAt?: T;
 }

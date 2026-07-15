@@ -333,3 +333,16 @@ Phase 17 建議先批准下一個安全 slice，而不是直接批准 drop：
 6. migration approval note 必須包含 exact UP／DOWN、row count、每個 child table count、Preview 驗證、Production maintenance window 與 rollback。
 
 在上述 evidence 完成前，Issue #57 的 destructive migration 狀態為 **not ready**。這是 readiness 結論，不是 Phase 失敗：它避免以 planning 需求誤刪 completed travel 仍在使用的資料。
+
+## Phase 17 已批准的 additive collection slice
+
+網站擁有者已批准獨立 `travel-plans`／`travel-memories` 目標模型。第一個安全切片已完成 schema code、generated types 與 additive migration 草稿；詳細欄位與搬移矩陣見 `docs/phase-artifacts/phase-17/travel-collection-split-plan.md`。
+
+這項批准只涵蓋新增空 collections 與 migration readiness，不等於批准：
+
+- Preview／Production migration 執行；
+- 五筆舊資料 copy；
+- 前台或 seed 切換到新 collections；
+- drop／rename／rewrite `travel_projects`。
+
+舊 `TravelProjects` 仍是目前 runtime source。下一個可逆步驟是 Production read-only inventory 與 copy dry-run；完成逐欄 mapping evidence 後，再請網站擁有者批准 data-copy write。

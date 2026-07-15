@@ -6,6 +6,7 @@ import { ArrowRight, CalendarDays, Compass, MapPin, Plane } from 'lucide-react'
 import { ImageFallback } from '@/components/ui/image-fallback'
 import { PayloadImage } from '@/components/ui/payload-image'
 import type { TravelProject } from '@/payload/payload-types'
+import { classifyTravelPlan } from '@/lib/travel-domain'
 
 type TravelIndexPageProps = {
   currentDate?: Date | string
@@ -14,9 +15,13 @@ type TravelIndexPageProps = {
 
 export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIndexPageProps) {
   const featured = projects[0]
-  const now = startOfDay(currentDate)
-  const planning = projects.filter((project) => project.status === 'planning' && !isArchivedTravelPlan(project, now))
-  const archivedPlans = projects.filter((project) => project.status === 'planning' && isArchivedTravelPlan(project, now))
+  const now = new Date(currentDate)
+  const planning = projects.filter(
+    (project) => project.status === 'planning' && classifyTravelPlan(project.endDate, now) === 'active',
+  )
+  const archivedPlans = projects.filter(
+    (project) => project.status === 'planning' && classifyTravelPlan(project.endDate, now) === 'archived',
+  )
   const memories = projects.filter((project) => project.status === 'completed')
 
   return (
@@ -280,14 +285,4 @@ function groupDescription(title: string) {
   }
 
   return '旅遊結束後另外整理的家庭記錄、照片與分享。'
-}
-
-function isArchivedTravelPlan(project: TravelProject, currentDate: Date) {
-  return new Date(project.endDate) < currentDate
-}
-
-function startOfDay(value: Date | string) {
-  const date = typeof value === 'string' ? new Date(value) : value
-
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
 }
