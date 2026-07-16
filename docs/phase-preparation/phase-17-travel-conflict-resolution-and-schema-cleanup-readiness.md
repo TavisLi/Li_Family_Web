@@ -22,7 +22,10 @@ Phase 17 的核心不是立即刪除欄位，也不是用 Markdown 覆蓋 Payloa
 - 重慶 Planning 的 legacy `lodgings` 等 structured arrays 已批准為 `drop-as-redundant`，不搬入新 Plan；正式 planning 內容以 `planningSections` 為準。
 - 2027 普吉島 link labels 採 `payload-wins`；Current 的人類可讀 label 進入新 record，Source raw label 留在重建的 Base。
 - 舊 `sourceMetadata/Base` 只留在 `travel_projects` 作 migration evidence；新 Plan Base/hash 由目標 transformer 重建，不在新 collections 增加 persistent legacy snapshot。
-- 2026-07-16 Production 唯讀 readiness 已提升為五筆 records 全部 ready：2 筆 Plans 與 3 筆 Memories 都完成逐欄 transformer。整體 write 仍 blocked，因為四份 target migrations 尚未執行，且 legacy relationships 尚未 cutover；目前仍未批准 data copy 或舊表 cleanup。
+- 2026-07-16 Production 唯讀 readiness 已提升為五筆 records 全部 ready：2 筆 Plans 與 3 筆 Memories 都完成逐欄 transformer。
+- migration／data-copy 執行包已完成：第五份 additive migration 新增 Media、TimelineEvents、HomeConfig 的 polymorphic 影子關聯；copy 會在單一 transaction 內寫入 5 筆 target records 與 12／2／1 筆影子關聯。舊關聯與舊表保留，runtime 暫不切換。
+- disposable PostgreSQL 17 本地演練已完成：五份 migrations、synthetic 5-record copy、完整內容／slug／逐 owner relationship verify 全部通過；第一次刻意保留的 Media locale 缺陷也證明 transaction 能完整 rollback，修正後才成功 commit。
+- 整體 Production write 仍 blocked，因為五份 target migrations 尚未執行，且 migration／data-copy 尚未取得個別 Production 批准。執行與 rollback 規則見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md`。
 
 本文件以下 PRD 保留 Phase 17 開始時的問題背景與安全要求；最新逐欄決策以 `docs/phase-artifacts/phase-17/`、`docs/data-models/travel-projects-schema.md` 與 ADR 0007 為準。
 

@@ -72,7 +72,7 @@ Planning records 的 `galleryImages`、`itineraryImages`、`flights`、`railSegm
 1. **Additive schema（本切片）**：註冊兩個空 collection、生成型別與 additive migration；舊 runtime 不變。
 2. **Inventory**：唯讀確認 2 筆 Plan、3 筆 Memory 及所有 child／relationship non-null counts。
 3. **Copy dry-run**：產生逐 slug mapping report；不寫資料。
-4. **Copy write**：取得獨立批准後，以 transaction 寫入新 collections；舊表不刪。
+4. **Copy write**：取得獨立批准後，以單一 Payload request transaction 寫入新 collections 與影子 relationships；舊表與舊 relationships 不刪。
 5. **Dual-read**：只在 `src/lib/data/travel.ts` 聚合新舊來源，驗證 `/travel`、detail、首頁與 privacy。
 6. **Cutover**：read-back、Preview 與 Production browser QA 通過後停止舊表寫入。
 7. **Cleanup**：另一次 destructive approval 後才刪除 `travel-projects` 與未採用欄位。
@@ -100,7 +100,9 @@ Planning records 的 `galleryImages`、`itineraryImages`、`flights`、`railSegm
 
 ### Relationship cutover 決策
 
-Media、TimelineEvents 與 HomeConfig 不應繼續只指向 `travel-projects`。在 dual-read slice，這三個 relationship 應改為 polymorphic relation，允許 `travel-plans`／`travel-memories`；資料 copy 必須以舊 related travel 的 status 決定新的 `relationTo`，並在 read-back 驗證 12／2／1 筆引用完整保留。這項變更與 data copy 綁定，不提前修改目前 runtime schema。
+Media、TimelineEvents 與 HomeConfig 不應永久只指向 `travel-projects`。已採 additive shadow-field 策略：新增 `relatedTravelRecord`／`featuredTravelRecord` polymorphic relationships，允許 `travel-plans`／`travel-memories`；舊欄位繼續供目前 runtime 使用。資料 copy 以舊 related travel 的 status 決定新的 `relationTo`，並在 read-back 驗證 12／2／1 筆引用完整保留。這讓 schema 與 data 可以先準備完成，而不會讓網站在 runtime cutover 前讀不到內容。
+
+對應 migration 為 `20260716_094718_phase_17_add_travel_cutover_relationships`。它只新增 relationship table／columns／indexes／foreign keys；DOWN 在影子 relationship 非空時會拒絕，避免 copy 後誤回退造成資料遺失。
 
 ## 本切片界線
 
@@ -108,6 +110,6 @@ Media、TimelineEvents 與 HomeConfig 不應繼續只指向 `travel-projects`。
 
 這份 migration **尚未執行於 Preview 或 Production**。DOWN 會刪除本次新建表，只能作為尚未存放正式資料時的 rollback；有資料後不可把 DOWN 當一般清理工具。
 
-後續 migrations `20260716_045235_phase_17_align_travel_plan_sections` 與 `20260716_091228_phase_17_align_travel_memory_sections` 會把尚為空表的 Plan／Memory section schema 收斂成正式 contract：移除沒有 evidence 的 speculative `kind`，新增 legacy section 實際需要的 level、localized display labels 及獨立 interaction flags。兩份 migration 都含 DROP，但只作用於前面 migrations 剛建立且尚未 copy 資料的新 tables；UP 與 DOWN 都會先檢查各自 target／version 主表必須為空，否則直接拒絕執行，且不讀寫或刪除 `travel_projects`。四份 Phase 17 migrations 必須按順序並在任何 data copy 前執行，且目前尚未取得執行批准。
+後續 migrations `20260716_045235_phase_17_align_travel_plan_sections` 與 `20260716_091228_phase_17_align_travel_memory_sections` 會把尚為空表的 Plan／Memory section schema 收斂成正式 contract：移除沒有 evidence 的 speculative `kind`，新增 legacy section 實際需要的 level、localized display labels 及獨立 interaction flags。兩份 migration 都含 DROP，但只作用於前面 migrations 剛建立且尚未 copy 資料的新 tables；UP 與 DOWN 都會先檢查各自 target／version 主表必須為空，否則直接拒絕執行，且不讀寫或刪除 `travel_projects`。五份 Phase 17 migrations 必須按順序並在任何 data copy 前執行，且目前尚未取得 Production 執行批准。完整命令、approval fingerprint、transaction、verify 與 rollback 見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md`。
 
 readiness CLI 只解析 travel catalog 與 travel Markdown，不會載入 profiles、member media 或 Blogger archive；任何 planning slug 找不到 matching Source 時，一律標記 record-level blocked，不允許略過 Base／Source／Current 證據檢查。

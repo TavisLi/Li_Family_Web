@@ -338,24 +338,26 @@ Phase 17 建議先批准下一個安全 slice，而不是直接批准 drop：
 
 網站擁有者已批准獨立 `travel-plans`／`travel-memories` 目標模型。第一個安全切片已完成 schema code、generated types 與 additive migration 草稿；詳細欄位與搬移矩陣見 `docs/phase-artifacts/phase-17/travel-collection-split-plan.md`。
 
-這項批准只涵蓋新增空 collections 與 migration readiness，不等於批准：
+這項批准目前涵蓋新增空 collections、polymorphic 影子 relationships 與 migration／data-copy 執行包準備，不等於批准：
 
 - Preview／Production migration 執行；
 - 五筆舊資料 copy；
 - 前台或 seed 切換到新 collections；
 - drop／rename／rewrite `travel_projects`。
 
-舊 `TravelProjects` 仍是目前 runtime source。下一個可逆步驟是 Production read-only inventory 與 copy dry-run；完成逐欄 mapping evidence 後，再請網站擁有者批准 data-copy write。
+舊 `TravelProjects` 仍是目前 runtime source。Production read-only inventory、逐欄 copy mapping 與 gated CLI 已完成；下一個需另行批准的步驟是在 Preview database clone 演練五份 migrations 與 transactional copy，通過後才評估 Production migration／data-copy。
 
 ## Phase 17 Production inventory 結果
 
 2026-07-15 已完成 Production 唯讀 inventory 與 copy-readiness artifact，確認 2 筆 Plans（1 active、1 archived）、3 筆 Memories，且目標三張主表尚未套用。三筆 Memories 的 schema 已依真實非空欄位補強，因此 Memory domain 不再以刪除詳細 ledger／daily itinerary 換取表面上的 schema 精簡。
 
-目前 data-copy write 仍為 **blocked**：
+目前 Production data-copy write 仍為 **blocked**：
 
-- Phase 17 target migrations 尚未套用；
-- 12 筆 Media、2 筆 TimelineEvents、1 筆 HomeConfig 仍引用舊 collection；
+- 五份 Phase 17 target／relationship migrations 尚未套用；
+- Production migration 與 data-copy 尚未取得個別批准。
 
-最新 Production read-back 已將五筆粗粒度 conflict 收斂為兩筆 Current-only Admin edits。網站擁有者確認 planning renderer 以 source sections 為正式內容，因此重慶 `lodgings` 定案為 `drop-as-redundant`，普吉島 link labels 採 `payload-wins`。2026-07-16 最新 dry-run 為 5 ready／0 blocked：兩筆 Plans 與三筆 Memories 都已完成 lossless mapping 與各自的新 Base/hash transformer；Memory section 也已承接 level、display labels、links、media 與獨立 interaction flags。新 collections 不增加 persistent snapshot，舊表保留至 read-back、relationship cutover、觀察期與備份完成後才清除。
+最新 Production read-back 已將五筆粗粒度 conflict 收斂為兩筆 Current-only Admin edits。網站擁有者確認 planning renderer 以 source sections 為正式內容，因此重慶 `lodgings` 定案為 `drop-as-redundant`，普吉島 link labels 採 `payload-wins`。2026-07-16 最新 dry-run 為 5 ready／0 blocked：兩筆 Plans 與三筆 Memories 都已完成 lossless mapping 與各自的新 Base/hash transformer；Memory section 也已承接 level、display labels、links、media 與獨立 interaction flags。Media 12、TimelineEvents 2、HomeConfig 1 的舊關聯不再視為 unresolved blocker，而是已納入同一 transaction 的明確 copy workload：新影子欄位會寫入 polymorphic target，舊欄位仍保留供 runtime 使用。新 collections 不增加 persistent snapshot，舊表保留至 read-back、relationship cutover、觀察期與備份完成後才清除。
 
-詳細 evidence：`docs/phase-artifacts/phase-17/travel-collection-copy-readiness.md`。在上述三類 blocker 歸零前，Issue #57 不進入 destructive migration。
+詳細 evidence：`docs/phase-artifacts/phase-17/travel-collection-copy-readiness.md`；完整執行與 rollback 見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md`。五份 migrations、copy、verify、runtime cutover 與觀察期實際完成前，Issue #57 不進入 destructive cleanup。
+
+2026-07-16 已在 disposable PostgreSQL 17 完成 schema-only Production shape 的本地演練：五份 Phase 17 migrations 全數成功，synthetic 5-record copy 產生 2 Plans／3 Memories／5 route identities，並逐筆驗證 12／2／1 relationship owners 與完整雙語內容。此結果證明執行包可運行，但不取代 Preview／Production 的獨立批准與 read-back。

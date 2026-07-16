@@ -1,6 +1,6 @@
 # Phase 17 Travel Collection Copy Readiness
 
-產生時間：2026-07-16T09:32:02.719Z
+產生時間：2026-07-16T10:01:03.843Z
 
 **Data-copy write readiness：BLOCKED**
 
@@ -33,7 +33,6 @@
 ## Global blockers
 
 - `migration-not-applied`：Phase 17 target collection migrations 尚未完整套用。
-- `legacy-references`：Media、TimelineEvents 或 HomeConfig 仍引用 travel-projects，需要 cutover policy。
 
 ## 非空欄位使用數
 

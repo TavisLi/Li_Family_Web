@@ -12,6 +12,7 @@ Travel Plan 是審核與修訂未來旅程的互動工作區，Travel Memory 則
 - Memory 擁有獨立 canonical slug，也可在沒有 Plan 的情況下存在。Plan 與 Memory 不得宣稱同一個 route identity。
 - Planning 正式內容以有順序的 `planningSections` 保存；舊 planning flights、lodgings、itinerary 與 extras 不會只因曾存在於共用 schema 就自動搬入。
 - Runtime cutover 必須透過 data layer 聚合兩個 collections、保留跨 collection relationships，並在 copy、read-back、cutover、觀察期與備份完成前保留 legacy `travel_projects` tables 作 rollback evidence。
+- Media、TimelineEvents 與 HomeConfig 先新增 polymorphic shadow relationships；data-copy 填入新關聯但保留 legacy relationship 欄位，直到 runtime cutover 與觀察期完成。這是過渡期相容策略，不是永久保存兩套關聯。
 - 本決策不批准 Preview／Production migrations、data copy、relationship cutover 或 destructive cleanup；這些動作仍須分別過閘。
 
 ## 曾考慮的方案

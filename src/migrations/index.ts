@@ -10,6 +10,7 @@ import * as migration_20260715_073322_phase_17_add_travel_collections from './20
 import * as migration_20260715_094310_phase_17_expand_travel_memory_preservation from './20260715_094310_phase_17_expand_travel_memory_preservation';
 import * as migration_20260716_045235_phase_17_align_travel_plan_sections from './20260716_045235_phase_17_align_travel_plan_sections';
 import * as migration_20260716_091228_phase_17_align_travel_memory_sections from './20260716_091228_phase_17_align_travel_memory_sections';
+import * as migration_20260716_094718_phase_17_add_travel_cutover_relationships from './20260716_094718_phase_17_add_travel_cutover_relationships';
 
 export const migrations = [
   {
@@ -71,5 +72,10 @@ export const migrations = [
     up: migration_20260716_091228_phase_17_align_travel_memory_sections.up,
     down: migration_20260716_091228_phase_17_align_travel_memory_sections.down,
     name: '20260716_091228_phase_17_align_travel_memory_sections',
+  },
+  {
+    up: migration_20260716_094718_phase_17_add_travel_cutover_relationships.up,
+    down: migration_20260716_094718_phase_17_add_travel_cutover_relationships.down,
+    name: '20260716_094718_phase_17_add_travel_cutover_relationships'
   },
 ];

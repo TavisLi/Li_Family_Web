@@ -284,6 +284,18 @@ export interface Media {
     | null;
   relatedMembers?: (number | User)[] | null;
   relatedTravel?: (number | null) | TravelProject;
+  /**
+   * Phase 17 cutover field. Keep relatedTravel until the legacy collection is retired.
+   */
+  relatedTravelRecord?:
+    | ({
+        relationTo: 'travel-plans';
+        value: number | TravelPlan;
+      } | null)
+    | ({
+        relationTo: 'travel-memories';
+        value: number | TravelMemory;
+      } | null);
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -545,55 +557,6 @@ export interface TravelProject {
   createdAt: string;
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
- */
-export interface Category {
-  id: number;
-  title: string;
-  slug: string;
-  description?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "posts".
- */
-export interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  author: number | User;
-  categories?: (number | Category)[] | null;
-  isPrivate?: boolean | null;
-  publishedDate: string;
-  coverImage?: (number | null) | Media;
-  content: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
-        [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  };
-  tags?:
-    | {
-        tag: string;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * Planning workspaces. The end date controls Active Plans versus Archived Plans in the lobby.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -845,6 +808,55 @@ export interface TravelMemory {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  title: string;
+  slug: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "posts".
+ */
+export interface Post {
+  id: number;
+  title: string;
+  slug: string;
+  author: number | User;
+  categories?: (number | Category)[] | null;
+  isPrivate?: boolean | null;
+  publishedDate: string;
+  coverImage?: (number | null) | Media;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  tags?:
+    | {
+        tag: string;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * Internal registry enforcing one canonical route owner across travel collections.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -880,6 +892,18 @@ export interface TimelineEvent {
   description?: string | null;
   images?: (number | Media)[] | null;
   relatedTravel?: (number | null) | TravelProject;
+  /**
+   * Phase 17 cutover field. Keep relatedTravel until the legacy collection is retired.
+   */
+  relatedTravelRecord?:
+    | ({
+        relationTo: 'travel-plans';
+        value: number | TravelPlan;
+      } | null)
+    | ({
+        relationTo: 'travel-memories';
+        value: number | TravelMemory;
+      } | null);
   relatedPost?: (number | null) | Post;
   relatedMembers?: (number | User)[] | null;
   sourceType: 'manual' | 'bucket-item' | 'travel' | 'post';
@@ -1619,6 +1643,7 @@ export interface TimelineEventsSelect<T extends boolean = true> {
   description?: T;
   images?: T;
   relatedTravel?: T;
+  relatedTravelRecord?: T;
   relatedPost?: T;
   relatedMembers?: T;
   sourceType?: T;
@@ -1707,6 +1732,7 @@ export interface MediaSelect<T extends boolean = true> {
       };
   relatedMembers?: T;
   relatedTravel?: T;
+  relatedTravelRecord?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1824,6 +1850,18 @@ export interface HomeConfig {
   heroSubtitle?: string | null;
   heroBackground?: (number | null) | Media;
   featuredTravel?: (number | null) | TravelProject;
+  /**
+   * Phase 17 cutover field. Keep featuredTravel until the legacy collection is retired.
+   */
+  featuredTravelRecord?:
+    | ({
+        relationTo: 'travel-plans';
+        value: number | TravelPlan;
+      } | null)
+    | ({
+        relationTo: 'travel-memories';
+        value: number | TravelMemory;
+      } | null);
   announcement?: string | null;
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -1858,6 +1896,7 @@ export interface HomeConfigSelect<T extends boolean = true> {
   heroSubtitle?: T;
   heroBackground?: T;
   featuredTravel?: T;
+  featuredTravelRecord?: T;
   announcement?: T;
   updatedAt?: T;
   createdAt?: T;

@@ -36,6 +36,16 @@ export const HomeConfig: GlobalConfig = {
       required: false,
     },
     {
+      name: 'featuredTravelRecord',
+      type: 'relationship',
+      relationTo: ['travel-plans', 'travel-memories'],
+      required: false,
+      admin: {
+        description:
+          'Phase 17 cutover field. Keep featuredTravel until the legacy collection is retired.',
+      },
+    },
+    {
       name: 'announcement',
       type: 'textarea',
       required: false,

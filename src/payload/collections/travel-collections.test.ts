@@ -5,6 +5,9 @@ import type { Field } from 'payload'
 import { TravelMemories } from './TravelMemories'
 import { TravelPlans } from './TravelPlans'
 import { TravelRouteIdentities } from './TravelRouteIdentities'
+import { Media } from './Media'
+import { TimelineEvents } from './TimelineEvents'
+import { HomeConfig } from '../globals/HomeConfig'
 import { normalizeTravelSlug, validateTravelSlug } from './travel-shared-fields'
 
 function fieldNames(fields: Field[]) {
@@ -134,3 +137,22 @@ const sourceMetadata = TravelPlans.fields.find(
 )
 assert.ok(sourceMetadata && sourceMetadata.type === 'group')
 assert.equal(sourceMetadata.admin?.readOnly, true)
+
+for (const [fields, name] of [
+  [Media.fields, 'relatedTravelRecord'],
+  [TimelineEvents.fields, 'relatedTravelRecord'],
+] as const) {
+  const relationship = namedField(fields, name)
+  assert.ok(relationship && relationship.type === 'relationship')
+  assert.deepEqual(relationship.relationTo, ['travel-plans', 'travel-memories'])
+  assert.equal(relationship.required, false)
+}
+
+const featuredTravelRecord = namedField(HomeConfig.fields, 'featuredTravelRecord')
+assert.ok(featuredTravelRecord && featuredTravelRecord.type === 'relationship')
+assert.deepEqual(featuredTravelRecord.relationTo, ['travel-plans', 'travel-memories'])
+assert.equal(featuredTravelRecord.required, false)
+
+assert.ok(namedField(Media.fields, 'relatedTravel'))
+assert.ok(namedField(TimelineEvents.fields, 'relatedTravel'))
+assert.ok(namedField(HomeConfig.fields, 'featuredTravel'))

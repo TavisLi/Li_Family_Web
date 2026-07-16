@@ -55,7 +55,7 @@ export type TravelCopyEnvironmentInventory = {
 }
 
 export type TravelCopyGlobalBlocker = {
-  code: 'legacy-references' | 'migration-not-applied' | 'target-not-empty'
+  code: 'migration-not-applied' | 'target-not-empty'
   reason: string
 }
 
@@ -436,18 +436,6 @@ export function buildTravelCollectionCopyReadiness(
     globalBlockers.push({
       code: 'migration-not-applied',
       reason: 'Phase 17 target collection migrations 尚未完整套用。',
-    })
-  }
-
-  const referenceCount = Object.values(environment.references).reduce(
-    (total, count) => total + count,
-    0,
-  )
-  if (referenceCount > 0) {
-    globalBlockers.push({
-      code: 'legacy-references',
-      reason:
-        'Media、TimelineEvents 或 HomeConfig 仍引用 travel-projects，需要 cutover policy。',
     })
   }
 

@@ -606,7 +606,7 @@ assert.deepEqual(report.summary, {
   blocked: 0,
 })
 assert.ok(report.globalBlockers.some((blocker) => blocker.code === 'migration-not-applied'))
-assert.ok(report.globalBlockers.some((blocker) => blocker.code === 'legacy-references'))
+assert.equal(report.globalBlockers.length, 1)
 assert.equal(report.fieldUsage.flights, 2)
 assert.equal(report.fieldUsage.sourceSections, 3)
 assert.equal(report.fieldUsage.galleryImages, 1)
