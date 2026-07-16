@@ -4,14 +4,27 @@
 
 **Phase 名稱**：Phase-17 Travel Conflict Resolution and Schema Cleanup Readiness  
 **準備日期**：2026-07-12  
+**決策更新**：2026-07-16
 **建議工作分支**：`codex/phase-17-travel-conflict-resolution`  
 **建議基底**：從最新 `main` 開新分支。  
-**主要對應議題**：Issue #50「旅行：Travel Project 計劃中項目Table Schema 重構」  
+**主要對應議題**：Issue #50「旅行：Travel Project 計劃中項目Table Schema 重構」與 Issue #57「旅行：Travel Project 規畫中/前期規劃旅遊項目Table Schema 重構」
 **前置條件**：Phase 16 已完成 Base／Source／Current reconciliation、Travel-only Production baseline、full-projection read-back 與 ADR 0006。
 
 Phase 17 的核心不是立即刪除欄位，也不是用 Markdown 覆蓋 Payload Admin。它要先把 Phase 16 找出的五筆 travel conflict 變成可審查、可批准、可回溯的內容決策，並產出 destructive schema cleanup 是否可以進場的證據。
 
 白話來說，Phase 16 已經裝上「不會亂覆蓋 Current」的安全煞車；Phase 17 要做的是逐筆判斷「哪些 Current 是 Admin 想保留的修改、哪些 Source 應該被接受、哪些差異只是 parser 或 array 表示造成的噪音」，再決定是否有足夠依據清理舊欄位。
+
+### 2026-07-16 已批准決策與目前狀態
+
+- 網站擁有者確認 Planning 與 Travel Memory 是不同性質的內容，不存在同一筆 record 或同一頁面由 planning 切換成 completed 的需求。
+- 目標架構採獨立 `travel-plans` 與 `travel-memories` collections；正式理由與後果記錄於 ADR 0007。
+- Plan 的大廳呈現名稱採「規劃中／Active Plans」與「過往規劃／Archived Plans」，由 `endDate` 推導；不使用容易被理解為早期規劃階段的 `Pre-planning`。
+- 重慶 Planning 的 legacy `lodgings` 等 structured arrays 已批准為 `drop-as-redundant`，不搬入新 Plan；正式 planning 內容以 `planningSections` 為準。
+- 2027 普吉島 link labels 採 `payload-wins`；Current 的人類可讀 label 進入新 record，Source raw label 留在重建的 Base。
+- 舊 `sourceMetadata/Base` 只留在 `travel_projects` 作 migration evidence；新 Plan Base/hash 由目標 transformer 重建，不在新 collections 增加 persistent legacy snapshot。
+- 2026-07-16 Production 唯讀 readiness 為 2 筆 Plans ready、3 筆 Memories blocked。整體 write 仍 blocked，尚未批准或執行 target migrations、data copy、relationship cutover、舊表 cleanup。
+
+本文件以下 PRD 保留 Phase 17 開始時的問題背景與安全要求；最新逐欄決策以 `docs/phase-artifacts/phase-17/`、`docs/data-models/travel-projects-schema.md` 與 ADR 0007 為準。
 
 ---
 
@@ -139,6 +152,7 @@ Phase 17 建立一個 Travel conflict resolution workflow：
 - `docs/adr/0001-runtime-content-records-are-payload-owned.md`
 - `docs/adr/0003-travel-slugs-own-source-and-asset-identity.md`
 - `docs/adr/0006-seed-reconciliation-protects-published-content.md`
+- `docs/adr/0007-travel-plans-and-memories-are-separate-records.md`
 - `docs/phase-completion-reports/phase-16-travel-seed-reconciliation.md`
 - `docs/data-models/travel-projects-schema.md`
 - `docs/website-operations-sop.md`
@@ -204,4 +218,6 @@ Phase 17 可視為完成，需同時滿足：
 - 若沒有 Production write，completion report 明確寫出「readiness only」。
 - 若有 Production write，必須附當次 dry-run evidence、批准範圍、write 結果與 read-back。
 - Schema cleanup candidates 有欄位級 evidence；未獲 destructive migration 批准前不得 drop／rename／rewrite。
+- 獨立 Plan／Memory collection 決策、Archived Plans 命名與 rollback policy 已同步至 ADR、領域詞彙、schema 文件與 travel catalog 文件。
+- Issue #50 與 #57 的完成範圍必須以實際 migration／copy／cutover 狀態判斷；readiness 完成不等於可以提前關閉 issue。
 - 分支已 push，PR 已建立，Vercel／CI 狀態或 blocker 已記錄在 completion report。

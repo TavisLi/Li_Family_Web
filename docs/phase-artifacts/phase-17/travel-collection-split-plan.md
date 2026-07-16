@@ -1,5 +1,7 @@
 # Phase 17：Travel Plans／Travel Memories Collection Split
 
+正式架構決策見 `docs/adr/0007-travel-plans-and-memories-are-separate-records.md`；本文件保存 Phase 17 的欄位 contract、搬移矩陣與執行證據。
+
 ## 決策
 
 `planning` 與 `completed` 不再視為同一筆 TravelProject 的兩個狀態。目標模型拆成：

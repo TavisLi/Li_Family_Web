@@ -71,11 +71,11 @@ The complete set of travel projects declared in `docs/travel-projects.md` and th
 _Avoid_: selected trips, gallery list
 
 **Travel project**:
-One family journey with a stable identity, schedule, people, content, media, and either planning or completed status.
-_Avoid_: trip page, itinerary file
+The umbrella catalog concept for one family journey. Its planning workspace and post-trip memory are separate records with separate lifecycles, not statuses of one persisted record.
+_Avoid_: shared Plan/Memory record, status-switching trip page, itinerary file
 
 **Planning travel**:
-A travel-planning workspace used to review, revise, and decide a future journey. It belongs to the planning domain and does not become completed travel by switching the same record's status.
+A travel-planning workspace used to review, revise, and decide a future journey. It belongs to the planning domain and does not become a Travel Memory by switching the same record's status.
 _Avoid_: draft page, incomplete completed travel, future completed travel
 
 **Planning section**:
@@ -83,16 +83,16 @@ The ordered, anchor-addressable unit of planning content that preserves its disp
 _Avoid_: source section number, legacy structured projection, itinerary row
 
 **Travel planning stage**:
-The lobby presentation state of a planning travel: active planning while its travel time has not passed, or archived planning after its travel time has passed. Archived planning remains the original plan record and does not become completed travel.
+The lobby presentation state of a planning travel: active planning while its travel time has not passed, or archived planning after its travel time has passed. Archived planning remains the original Plan record and does not become a Travel Memory.
 _Avoid_: early idea stage, completed status, completed memory
 
 **Archived travel plan**:
 A planning travel whose travel time has passed and which is retained as a historical plan archive. The travel lobby labels this section `過往規劃` / `Archived Plans`; the state may be derived from the travel end date when no manual archive override is required.
-_Avoid_: pre-planning idea, completed travel, travel memory
+_Avoid_: pre-planning idea, completed status, travel memory
 
-**Completed travel**:
-A travel-memory record created for post-trip documentation, photographs, reflection, and sharing. It may reference an originating planning travel but is a separate content record and page experience.
-_Avoid_: archived planning travel, planning status, historical page
+**Travel memory**:
+A post-trip record for documentation, photographs, reflection, and sharing. It may reference an originating planning travel but owns a separate identity and page experience.
+_Avoid_: completed status, archived planning travel, historical plan
 
 **Canonical travel slug**:
 The stable identifier shared by a travel project's route, source mapping, and travel-specific asset folder.

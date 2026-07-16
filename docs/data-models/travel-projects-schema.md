@@ -247,7 +247,7 @@ Full-projection read-back 已成功取得五筆 conflict evidence，read-back sc
 
 ### Phase 17 補充後的 domain 結論
 
-網站擁有者已釐清：planning travel 是行前審核、修訂與家庭決策工作台；travel memory 是旅遊結束後的記錄、照片與分享作品。兩者沒有同一筆 record／同一頁面由 planning 切成 memory 的需求。Planning travel 在旅遊時間未過時顯示於「規劃中／Active Plans」，時間已過但仍保留原計畫時顯示於「過往規劃／Archived Plans」；後者不是 early `Pre-planning`，也不是 Travel Memory。
+網站擁有者已釐清：planning travel 是行前審核、修訂與家庭決策工作台；travel memory 是旅遊結束後的記錄、照片與分享作品。兩者沒有同一筆 record／同一頁面由 planning 切成 memory 的需求。Planning travel 在旅遊時間未過時顯示於「規劃中／Active Plans」，時間已過但仍保留原計畫時顯示於「過往規劃／Archived Plans」；後者不是 early `Pre-planning`，也不是 Travel Memory。正式架構決策見 `docs/adr/0007-travel-plans-and-memories-are-separate-records.md`。
 
 這項補充推翻「planning／completed 只是同一 aggregate status」的原假設。Phase 17 的建議調整為：**建立獨立 `travel-plans` 與 `travel-memories` Payload collections**。兩者各自擁有不同且全域不衝突的 canonical slug；若 Memory 源自某個 Plan，以 optional `originPlan` relationship 保持追溯，不共用 route identity。
 
