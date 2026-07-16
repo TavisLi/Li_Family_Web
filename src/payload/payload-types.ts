@@ -624,16 +624,15 @@ export interface TravelPlan {
     | null;
   planningSections?:
     | {
-        kind: 'overview' | 'transport' | 'lodging' | 'itinerary-day' | 'decision' | 'budget' | 'reminder' | 'freeform';
         level: number;
         title: string;
         /**
          * Stable section identity used by reconciliation and deep links.
          */
         anchor: string;
-        displayDay?: number | null;
-        date?: string | null;
-        subtitle?: string | null;
+        displayDay?: string | null;
+        displayDate?: string | null;
+        displaySubtitle?: string | null;
         body: string;
         links?:
           | {
@@ -645,7 +644,8 @@ export interface TravelPlan {
         mediaItems?: (number | Media)[] | null;
         interactions?: {
           commentsEnabled?: boolean | null;
-          votingEnabled?: boolean | null;
+          thumbsUpEnabled?: boolean | null;
+          thumbsDownEnabled?: boolean | null;
         };
         id?: string | null;
       }[]
@@ -1222,13 +1222,12 @@ export interface TravelPlansSelect<T extends boolean = true> {
   planningSections?:
     | T
     | {
-        kind?: T;
         level?: T;
         title?: T;
         anchor?: T;
         displayDay?: T;
-        date?: T;
-        subtitle?: T;
+        displayDate?: T;
+        displaySubtitle?: T;
         body?: T;
         links?:
           | T
@@ -1242,7 +1241,8 @@ export interface TravelPlansSelect<T extends boolean = true> {
           | T
           | {
               commentsEnabled?: T;
-              votingEnabled?: T;
+              thumbsUpEnabled?: T;
+              thumbsDownEnabled?: T;
             };
         id?: T;
       };

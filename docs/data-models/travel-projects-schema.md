@@ -298,7 +298,7 @@ Phase 17 的建議不是立即拆 table，而是先把欄位分成四層：
 - identity：title、slug、isPrivate、startDate、endDate。
 - archive presentation：預設由 `endDate` 推導 active／archived；若未來需要人工 override，再增加 nullable `archivedAt` 與原因。
 - collaboration：members、party、sourceSections、interaction settings。
-- planning projections：flights、rail segments、lodgings、daily itinerary、cost／food／optional activities／reminders，只保留經頁面或 Admin workflow 證明需要者。
+- planning content：以 `planningSections` 作唯一正式內容單位；舊 flights、rail、lodgings、daily itinerary 與 planning extras 不搬移。
 - reconciliation：externalDocIdentifier、sourceMetadata、media projection。
 
 **`travel-memories`**
@@ -315,11 +315,11 @@ Phase 17 的建議不是立即拆 table，而是先把欄位分成四層：
 
 1. 先新增兩個 collections 與 generated types，不刪舊 `TravelProjects`。
 2. 建立 read-only migration inventory：2 筆 planning、3 筆 completed，以及每個 array／media child table count。
-3. 先搬兩筆 planning 到 `travel-plans`，保存 slug、sourceMetadata、sourceSections anchors 與 interaction IDs；大廳繼續依 `endDate` 推導 active／archived，並把程式命名從模糊的 preliminary 改為 archived plan。
+3. 先搬兩筆 planning 到 `travel-plans`，保存 slug、完整 planning sections 與 Current-only link labels，並由 transformer 重建新的 sourceMetadata Base／hash；大廳繼續依 `endDate` 推導 active／archived。
 4. 搬三筆 completed 到 `travel-memories`，驗證 gallery、highlights、ledger、videos 與 privacy。
 5. `src/lib/data/travel.ts` 暫時 dual-read，讓 `/travel`、`/travel/[slug]` 與首頁維持同一介面。
 6. Preview／Production read-back 證明五筆頁面內容與路由不變後，停止舊 collection 寫入。
-7. 另一次批准後才 drop 舊 collection／child tables；DOWN 必須能恢復舊 schema 與五筆 snapshot。
+7. 另一次批准後才 drop 舊 collection／child tables；在此之前舊表本身就是 rollback source，且必須先完成資料庫備份。
 
 ### 建議批准範圍
 
@@ -353,10 +353,10 @@ Phase 17 建議先批准下一個安全 slice，而不是直接批准 drop：
 
 目前 data-copy write 仍為 **blocked**：
 
-- additive migrations 尚未套用；
+- Phase 17 target migrations 尚未套用；
 - 12 筆 Media、2 筆 TimelineEvents、1 筆 HomeConfig 仍引用舊 collection；
-- 兩筆 Plans 的結構化規劃欄位尚未完成 conflict／等價性決策。
+- 三筆 Memories 的 legacy sections／Base 尚未完成 target transformer。
 
-最新 Production read-back 已將五筆粗粒度 conflict 收斂為兩筆 Current-only Admin edits；但 lossless copy readiness 經第二輪審查修正為 0 ready／5 blocked。三筆 Memories 仍需保存 legacy `sourceSections` 的 level／display／interaction metadata；五筆舊 `sourceMetadata.baseProjection` 也不能原樣冒充新 schema 的 reconciliation Base。建議 Plan 與 Memory 都使用 nullable migration snapshot 保存 legacy Current／Base evidence，再用目標 transformer 重建新的 Base，而不是把所有舊寬表欄位重新變成正式 domain fields。
+最新 Production read-back 已將五筆粗粒度 conflict 收斂為兩筆 Current-only Admin edits。網站擁有者確認 planning renderer 以 source sections 為正式內容，因此重慶 `lodgings` 定案為 `drop-as-redundant`，普吉島 link labels 採 `payload-wins`。2026-07-16 最新 dry-run 為 2 ready／3 blocked：兩筆 Plans 已完成 lossless section mapping 與新 Base/hash transformer；三筆 Memories 仍需保存 legacy section metadata並建立各自 transformer。新 collections 不增加 persistent snapshot，舊表保留至 read-back、relationship cutover、觀察期與備份完成後才清除。
 
 詳細 evidence：`docs/phase-artifacts/phase-17/travel-collection-copy-readiness.md`。在上述三類 blocker 歸零前，Issue #57 不進入 destructive migration。

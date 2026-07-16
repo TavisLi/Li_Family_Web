@@ -12,33 +12,31 @@
 
 | Slug | Field path | Base → Source | Base → Current | 判定 | 建議決策 |
 | --- | --- | --- | --- | --- | --- |
-| `202607-chongqing-yangtze-river` | `lodgings` | 無變更 | 8 個 item-level paths：city、roomType、address | Source 未變，Current 增加結構化住宿資訊；不是雙邊衝突 | `payload-wins`：copy 時完整保留 Current lodging projection |
-| `202702-thailand-phuket` | `sourceSections[item-1c51hpg].links` | 無變更 | 2 個 label paths | Current 把 raw URL label 改為「安納塔拉度假會」「萬豪度假會」 | `payload-wins`：保留人類可讀 label |
+| `202607-chongqing-yangtze-river` | `lodgings` | 無變更 | 8 個 item-level paths：city、roomType、address | Planning 頁不讀取此 projection；住宿畫面來自 Source Section「住宿安排」 | `drop-as-redundant`：不搬入新 Plan schema |
+| `202702-thailand-phuket` | `sourceSections[item-1c51hpg].links` | 無變更 | 2 個 label paths | Current 把 raw URL label 改為「安納塔拉度假會」「萬豪度假會」 | 已批准 `payload-wins`：保留人類可讀 label |
 
-完整 Source／Current 摘要見機器產生的 `travel-conflict-register.generated.md`；該檔只含截短摘要，不是 write payload。機器檔的保守 resolver 仍把重慶標為 `manual-merge`，因為 resolver 不會自動把 structured-display conflict 升級成 `payload-wins`；本文件依額外的 item-level evidence（`sourceChangedPaths = []`、只有 Current paths）提出 owner approval 建議，尚未宣稱已獲批准或可執行 write。
+完整 Source／Current 摘要見機器產生的 `travel-conflict-register.generated.md`；該檔只含截短摘要，不是 write payload。機器檔仍保守保留歷史 conflict classification；本文件記錄網站擁有者後續批准的 domain 決策。這些決策只解除 record mapping blocker，不批准 Production write。
 
-## 為何重慶仍阻擋 Plan copy
+## 為何重慶不再阻擋 Plan copy
 
-內容選邊已可判定為保留 Current，但新 `travel-plans` schema 目前刻意沒有複製舊表的 flights、lodgings、daily itinerary 與其他寬表欄位。若直接只搬 `planningSections`，仍會遺失 Current-only lodging edits 與其他尚未證明可丟棄的結構化資料。
+程式證據確認 Planning view 只渲染 `sourceSections`；`lodgings`、`flights`、`dailyItinerary` 與 planning extras 沒有接入 Planning view。舊 seed 從同一份 Markdown 再解析這些 arrays，形成重複 projection。網站擁有者已批准不把它們搬入新 Plan schema；住宿正式內容以 `planningSections` 中的「住宿安排」section 為準。
 
-因此 blocker 已從「人工內容衝突」轉為「目標 schema 的 lossless preservation policy」。這不是可以用 `source-wins` 或忽略未接 UI 欄位解決的問題。
+新的 Plan transformer 保留 section level、localized display labels、body、links、media，以及獨立 comment／thumb-up／thumb-down 設定。普吉島 Current link labels 進入新 record；新 Base 仍保存 Source 的 raw labels，因此未來 reconciliation 能辨認 Current-only override。
 
-## 建議的 lossless migration policy
+## 已批准的 migration rollback policy
 
-建議在 `travel-plans` 與 `travel-memories` 都增加一個僅供遷移追溯的 nullable snapshot group，保存：
+新 collections **不增加 persistent legacy snapshot**。遷移期間由完整舊 `travel_projects` table 作 rollback source：
 
-- `legacyTravelProjectId`
-- 舊 record 的完整 Current structured projection，包括 Memory legacy section metadata
-- 舊 `sourceMetadata`／Base evidence（封存用途，不直接作為新 schema 的 reconciliation Base）
-- `migratedAt`
-- migration schema version
+- 新舊 collections 並存，舊表先保持可讀且不刪除。
+- 新 Plan 只搬正式 domain fields；approved redundant projections 留在舊表。
+- 舊 Base 留在舊表作 migration evidence；新 Base 由 Plan transformer 重建。
+- Preview／Production read-back、relationship cutover、觀察期與資料庫備份完成後，才另案批准 drop 舊表及 child tables。
 
-正式 UI 仍只使用乾淨的 Plan／Memory domain fields；snapshot 不作為前台 renderer input。新 collection 的 reconciliation Base 必須由 target transformer 重新產生。等 Preview／Production read-back 證明新模型完整，且逐欄確認不再需要 rollback 後，才另案取得 destructive approval 移除 snapshot。
+2026-07-16 Production 唯讀 mapping dry-run 已確認兩筆 Plans 都是 record-level ready：重慶為 archived、普吉島為 active；整體 data-copy write 仍因 migrations 未套用、三筆 Memories 未完成 mapping，以及 legacy relationships 尚未 cutover 而維持 BLOCKED。
 
-這比把所有 legacy arrays 重新加入正式 Plan schema 更能維持 domain 邊界，也比直接捨棄欄位安全。它仍是新的 schema／copy policy，必須由網站擁有者另行批准後才能實作或寫入資料。
+## 尚未批准
 
-## Owner approval queue
-
-1. 批准兩筆 planning travel 的 conflict resolution 均採 `payload-wins`。
-2. 批准以 nullable legacy snapshot 實現 lossless Plan／Memory copy；或指定要把哪些 legacy fields 正式納入各自的 domain schema。
-3. additive migrations 套用、data-copy write、relationship cutover 各自仍需獨立批准。
+1. Preview／Production migration execution。
+2. 兩筆 Plan 的 data-copy write。
+3. Media／TimelineEvents／HomeConfig relationship cutover。
+4. 舊 `travel_projects`／child tables destructive cleanup。

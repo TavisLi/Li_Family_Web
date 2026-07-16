@@ -1,5 +1,11 @@
 import { classifyTravelPlan, type TravelPlanPresentation } from '@/lib/travel-domain'
 import type { TravelProject } from '@/payload/payload-types'
+import type { TravelSeed } from './seed-content'
+import {
+  buildTravelProjection,
+  travelProjectionHash,
+  type TravelProjection,
+} from './travel-seed-reconciliation'
 
 export type TravelCopyBlocker = {
   sourcePath: string
@@ -94,7 +100,7 @@ const inventoryFields = [
 
 export type TravelCopyInventoryField = (typeof inventoryFields)[number]
 
-const planUnsupportedFields: (keyof TravelProject)[] = [
+const planApprovedDropFields = [
   'galleryImages',
   'itineraryImages',
   'flights',
@@ -107,7 +113,7 @@ const planUnsupportedFields: (keyof TravelProject)[] = [
   'optionalActivities',
   'reminders',
   'externalVideos',
-]
+] as const satisfies readonly (keyof TravelProject)[]
 
 const memoryUnsupportedFields: (keyof TravelProject)[] = [
   'railSegments',
@@ -120,6 +126,7 @@ const memoryUnsupportedFields: (keyof TravelProject)[] = [
 export function assessTravelProjectCopy(
   project: TravelProject,
   currentDate: Date = new Date(),
+  source?: TravelSeed,
 ): TravelProjectCopyAssessment {
   const blockers: TravelCopyBlocker[] = []
   const warnings: TravelCopyWarning[] = []
@@ -133,16 +140,28 @@ export function assessTravelProjectCopy(
     { sourcePath: 'coverImage', targetPath: 'coverImage' },
   ]
 
-  if (hasValue(project.sourceMetadata)) {
-    blockers.push({
-      sourcePath: 'sourceMetadata',
-      reason:
-        '舊 Base projection 使用 TravelProjects schema；必須封存為 migration evidence，並以目標 transformer 重建新的 Base／hash。',
-    })
-  }
-
   if (project.status === 'planning') {
-    addUnsupportedFieldBlockers(project, planUnsupportedFields, blockers, 'Plan')
+    addApprovedDropWarnings(project, planApprovedDropFields, warnings)
+
+    if (!source) {
+      blockers.push({
+        sourcePath: 'sourceMetadata',
+        reason: '找不到與 Plan slug 對應的即時 Source；不能完成 Base／Source／Current 證據檢查。',
+      })
+    } else {
+      try {
+        buildTravelPlanCopyDraft(project, source)
+        mappings.push({
+          sourcePath: 'sourceMetadata.baseProjection',
+          targetPath: 'sourceMetadata (rebuilt Plan Base/hash)',
+        })
+      } catch (error) {
+        blockers.push({
+          sourcePath: 'sourceMetadata',
+          reason: error instanceof Error ? error.message : '無法重建 Plan Base／hash。',
+        })
+      }
+    }
 
     if (project.members?.length) {
       mappings.push({ sourcePath: 'members', targetPath: 'members' })
@@ -153,32 +172,15 @@ export function assessTravelProjectCopy(
 
     if (project.sourceSections?.length) {
       mappings.push({ sourcePath: 'sourceSections', targetPath: 'planningSections' })
-
-      project.sourceSections.forEach((section, index) => {
-        for (const field of ['displayDay', 'displayDate', 'displaySubtitle'] as const) {
-          if (hasValue(section[field])) {
-            blockers.push({
-              sourcePath: `sourceSections[${index}].${field}`,
-              reason:
-                '舊 localized text 與目標 Plan 欄位型別／名稱不同，尚未定義可逆 transformer。',
-            })
-          }
-        }
-
-        if (
-          typeof section.enableThumbsUp === 'boolean' &&
-          typeof section.enableThumbsDown === 'boolean' &&
-          section.enableThumbsUp !== section.enableThumbsDown
-        ) {
-          blockers.push({
-            sourcePath: `sourceSections[${index}].interactions`,
-            reason:
-              '目標 Plan 只有一個 voting 開關，無法保留不同的 thumb-up／thumb-down 設定。',
-          })
-        }
-      })
     }
   } else {
+    if (hasValue(project.sourceMetadata)) {
+      blockers.push({
+        sourcePath: 'sourceMetadata',
+        reason:
+          '舊 Base projection 使用 TravelProjects schema；必須留在舊表作 migration evidence，並以目標 transformer 重建新的 Base／hash。',
+      })
+    }
     addUnsupportedFieldBlockers(project, memoryUnsupportedFields, blockers, 'Memory')
     mappings.push(
       { sourcePath: 'members', targetPath: 'participants' },
@@ -201,7 +203,7 @@ export function assessTravelProjectCopy(
       blockers.push({
         sourcePath: 'sourceSections',
         reason:
-          'Memory storySections 尚未承接 legacy level、display labels 與 interaction settings；需要 legacy snapshot 或逐欄 transformer。',
+          'Memory storySections 尚未承接 legacy level、display labels 與 interaction settings；舊表須繼續保留，直到完成逐欄 transformer。',
       })
     }
   }
@@ -219,18 +221,213 @@ export function assessTravelProjectCopy(
   }
 }
 
+type PlanningSectionCopy = {
+  level: number
+  title: unknown
+  anchor: string
+  displayDay?: unknown
+  displayDate?: unknown
+  displaySubtitle?: unknown
+  body: unknown
+  links?: { label?: unknown; url: string }[]
+  mediaItems?: unknown[]
+  interactions: {
+    commentsEnabled: boolean
+    thumbsUpEnabled: boolean
+    thumbsDownEnabled: boolean
+  }
+}
+
+type TravelPlanProjection = TravelProjection & {
+  slug: string
+  planningSections?: PlanningSectionCopy[]
+}
+
+export type TravelPlanCopyDraft = {
+  data: TravelPlanProjection & {
+    sourceMetadata: {
+      sourceFile: string
+      sourceHash: string
+      parserVersion: 'phase-17-plan-v1'
+      baseProjection: TravelPlanProjection
+    }
+  }
+  baseProjection: TravelPlanProjection
+  expectedSourceHash: string
+}
+
+export function buildTravelPlanCopyDraft(
+  project: TravelProject,
+  source: TravelSeed,
+): TravelPlanCopyDraft {
+  if (project.status !== 'planning') {
+    throw new Error('Travel Plan copy draft requires a planning TravelProject.')
+  }
+
+  const legacyBase = project.sourceMetadata?.baseProjection
+  if (!isRecord(legacyBase)) {
+    throw new Error('舊 Plan 缺少可轉換的 Base projection。')
+  }
+
+  const sourceFile = project.sourceMetadata?.sourceFile ?? project.externalDocIdentifier
+  if (!sourceFile) {
+    throw new Error('舊 Plan 缺少 source file identity。')
+  }
+
+  const currentProjection = buildPlanProjection(project as unknown as Record<string, unknown>)
+  const baseProjection = buildTravelProjection(
+    buildPlanProjection(legacyBase),
+  ) as TravelPlanProjection
+
+  if (source.slug !== project.slug) {
+    throw new Error('Plan Source slug 與 Payload Current 不一致。')
+  }
+  if (source.externalDocIdentifier !== sourceFile) {
+    throw new Error('Plan Source file identity 與舊 migration evidence 不一致。')
+  }
+
+  const liveSourceProjection = buildTravelProjection(
+    buildPlanProjection(source as unknown as Record<string, unknown>),
+  ) as TravelPlanProjection
+  if (
+    JSON.stringify(comparablePlanSource(baseProjection)) !==
+    JSON.stringify(comparablePlanSource(liveSourceProjection))
+  ) {
+    throw new Error('Plan Source 已相對舊 Base 改變；必須先重新執行 reconciliation。')
+  }
+  const expectedSourceHash = travelProjectionHash(baseProjection)
+
+  return {
+    data: {
+      ...currentProjection,
+      sourceMetadata: {
+        sourceFile,
+        sourceHash: expectedSourceHash,
+        parserVersion: 'phase-17-plan-v1',
+        baseProjection,
+      },
+    },
+    baseProjection,
+    expectedSourceHash,
+  }
+}
+
+function comparablePlanSource(projection: TravelPlanProjection): TravelProjection {
+  const comparable: TravelProjection = {}
+  for (const field of [
+    'title',
+    'slug',
+    'isPrivate',
+    'startDate',
+    'endDate',
+    'summary',
+    'guestParticipants',
+  ]) {
+    if (hasValue(projection[field]) || typeof projection[field] === 'boolean') {
+      comparable[field] = projection[field]
+    }
+  }
+
+  if (projection.planningSections) {
+    comparable.planningSections = projection.planningSections.map(
+      ({ mediaItems: _mediaItems, ...section }) => section,
+    )
+  }
+
+  return buildTravelProjection(comparable)
+}
+
+function buildPlanProjection(value: Record<string, unknown>): TravelPlanProjection {
+  if (typeof value.slug !== 'string' || !value.slug) {
+    throw new Error('舊 Plan 缺少 canonical slug。')
+  }
+
+  const projection: TravelPlanProjection = { slug: value.slug }
+  for (const field of [
+    'title',
+    'isPrivate',
+    'startDate',
+    'endDate',
+    'summary',
+    'coverImage',
+    'members',
+    '_status',
+  ] as const) {
+    if (hasValue(value[field]) || typeof value[field] === 'boolean') {
+      projection[field] = value[field]
+    }
+  }
+
+  if (Array.isArray(value.party) && value.party.length) {
+    projection.guestParticipants = value.party.flatMap((participant) => {
+      if (!isRecord(participant) || typeof participant.name !== 'string') return []
+      return [{ name: participant.name, note: participant.note }]
+    })
+  }
+
+  if (Array.isArray(value.sourceSections) && value.sourceSections.length) {
+    projection.planningSections = value.sourceSections.map(mapPlanningSection)
+  }
+
+  return projection
+}
+
+function mapPlanningSection(section: unknown): PlanningSectionCopy {
+  if (
+    !isRecord(section) ||
+    typeof section.level !== 'number' ||
+    typeof section.anchor !== 'string' ||
+    !hasValue(section.title) ||
+    !hasValue(section.body)
+  ) {
+    throw new Error('舊 Plan 含有無法轉換的 source section。')
+  }
+
+  const mapped: PlanningSectionCopy = {
+    level: section.level,
+    title: section.title,
+    anchor: section.anchor,
+    body: section.body,
+    interactions: {
+      commentsEnabled: section.enableComments !== false,
+      thumbsUpEnabled: section.enableThumbsUp !== false,
+      thumbsDownEnabled: section.enableThumbsDown !== false,
+    },
+  }
+
+  for (const field of ['displayDay', 'displayDate', 'displaySubtitle'] as const) {
+    if (hasValue(section[field])) mapped[field] = section[field]
+  }
+
+  if (Array.isArray(section.links) && section.links.length) {
+    mapped.links = section.links.flatMap((link) => {
+      if (!isRecord(link) || typeof link.url !== 'string') return []
+      return [{ label: link.label, url: link.url }]
+    })
+  }
+
+  if (Array.isArray(section.mediaItems) && section.mediaItems.length) {
+    mapped.mediaItems = section.mediaItems
+  }
+
+  return mapped
+}
+
 export function buildTravelCollectionCopyReadiness(
   projects: TravelProject[],
   environment: TravelCopyEnvironmentInventory,
   currentDate: Date = new Date(),
+  sourceBySlug: ReadonlyMap<string, TravelSeed>,
 ): TravelCollectionCopyReadiness {
-  const assessments = projects.map((project) => assessTravelProjectCopy(project, currentDate))
+  const assessments = projects.map((project) =>
+    assessTravelProjectCopy(project, currentDate, sourceBySlug.get(project.slug)),
+  )
   const globalBlockers: TravelCopyGlobalBlocker[] = []
 
   if (!environment.migrationApplied) {
     globalBlockers.push({
       code: 'migration-not-applied',
-      reason: 'Additive travel collection migration 尚未套用。',
+      reason: 'Phase 17 target collection migrations 尚未完整套用。',
     })
   }
 
@@ -309,7 +506,7 @@ export function renderTravelCollectionCopyReadinessMarkdown(
     '',
     '## Environment',
     '',
-    `- Additive migration applied：${report.environment.migrationApplied ? 'yes' : 'no'}`,
+    `- Target migrations applied：${report.environment.migrationApplied ? 'yes' : 'no'}`,
     `- Target rows：plans ${report.environment.targetRows.travelPlans}／memories ${report.environment.targetRows.travelMemories}／route identities ${report.environment.targetRows.travelRouteIdentities}`,
     `- Legacy references：media ${report.environment.references.media}／timeline events ${report.environment.references.timelineEvents}／featured travel ${report.environment.references.featuredTravel}`,
     '',
@@ -407,6 +604,22 @@ function addUnsupportedFieldBlockers(
   }
 }
 
+function addApprovedDropWarnings(
+  project: TravelProject,
+  fields: readonly (keyof TravelProject)[],
+  warnings: TravelCopyWarning[],
+) {
+  for (const field of fields) {
+    if (hasValue(project[field])) {
+      warnings.push({
+        sourcePath: field,
+        reason:
+          '網站擁有者已批准的冗餘 planning projection；內容以 planningSections 為準，不搬入新 Plan schema。',
+      })
+    }
+  }
+}
+
 function hasValue(value: unknown): boolean {
   if (value === null || value === undefined || value === '') return false
   if (Array.isArray(value)) return value.some(hasValue)
@@ -416,4 +629,8 @@ function hasValue(value: unknown): boolean {
 
 function escapeMarkdown(value: string): string {
   return value.replaceAll('|', '\\|').replaceAll('\n', ' ')
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }

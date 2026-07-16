@@ -3,6 +3,7 @@ import { createRequire } from 'node:module'
 import path from 'node:path'
 
 import { getPayload } from 'payload'
+import { buildTravelSeedContent } from './seed-content'
 
 import {
   buildTravelCollectionCopyReadiness,
@@ -101,9 +102,14 @@ async function collectReadiness(databaseUri: string) {
     sort: 'id',
   })
   const environment = await readEnvironmentInventory(databaseUri)
+  const sourceBySlug = new Map(
+    (await buildTravelSeedContent(process.cwd())).map((travel) => [travel.slug, travel]),
+  )
   return buildTravelCollectionCopyReadiness(
     result.docs as unknown as Parameters<typeof buildTravelCollectionCopyReadiness>[0],
     environment,
+    new Date(),
+    sourceBySlug,
   )
 }
 
@@ -145,7 +151,8 @@ async function readEnvironmentInventory(
       from payload_migrations
       where name in (
         '20260715_073322_phase_17_add_travel_collections',
-        '20260715_094310_phase_17_expand_travel_memory_preservation'
+        '20260715_094310_phase_17_expand_travel_memory_preservation',
+        '20260716_045235_phase_17_align_travel_plan_sections'
       )
     `)
     const appliedMigrations = new Set(migrationsResult.rows.map((row) => row.name))
@@ -182,7 +189,8 @@ async function readEnvironmentInventory(
           tables.travel_memories &&
           tables.travel_route_identities &&
           appliedMigrations.has('20260715_073322_phase_17_add_travel_collections') &&
-          appliedMigrations.has('20260715_094310_phase_17_expand_travel_memory_preservation'),
+          appliedMigrations.has('20260715_094310_phase_17_expand_travel_memory_preservation') &&
+          appliedMigrations.has('20260716_045235_phase_17_align_travel_plan_sections'),
       ),
       targetRows: {
         travelMemories,

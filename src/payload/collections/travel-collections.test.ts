@@ -11,6 +11,10 @@ function fieldNames(fields: Field[]) {
   return fields.flatMap((field) => ('name' in field && typeof field.name === 'string' ? [field.name] : []))
 }
 
+function namedField(fields: Field[], name: string) {
+  return fields.find((field) => 'name' in field && field.name === name)
+}
+
 const planFieldNames = fieldNames(TravelPlans.fields)
 const memoryFieldNames = fieldNames(TravelMemories.fields)
 
@@ -23,6 +27,40 @@ assert.ok(planFieldNames.includes('planningSections'))
 assert.ok(planFieldNames.includes('memories'))
 assert.ok(!planFieldNames.includes('status'))
 assert.ok(!planFieldNames.includes('storySections'))
+
+const planningSections = namedField(TravelPlans.fields, 'planningSections')
+assert.ok(planningSections && planningSections.type === 'array')
+const planningSectionFields = planningSections.fields
+assert.ok(!fieldNames(planningSectionFields).includes('kind'))
+assert.deepEqual(
+  fieldNames(planningSectionFields),
+  [
+    'level',
+    'title',
+    'anchor',
+    'displayDay',
+    'displayDate',
+    'displaySubtitle',
+    'body',
+    'links',
+    'mediaItems',
+    'interactions',
+  ],
+)
+
+for (const name of ['displayDay', 'displayDate', 'displaySubtitle']) {
+  const field = namedField(planningSectionFields, name)
+  assert.ok(field && field.type === 'text')
+  assert.equal(field.localized, true)
+}
+
+const interactions = namedField(planningSectionFields, 'interactions')
+assert.ok(interactions && interactions.type === 'group')
+assert.deepEqual(fieldNames(interactions.fields), [
+  'commentsEnabled',
+  'thumbsUpEnabled',
+  'thumbsDownEnabled',
+])
 
 assert.ok(memoryFieldNames.includes('originPlan'))
 assert.ok(memoryFieldNames.includes('storySections'))

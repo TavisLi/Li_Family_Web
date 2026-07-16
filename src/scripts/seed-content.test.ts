@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url'
 
 import {
   buildSeedContent,
+  buildTravelSeedContent,
   parseBloggerSeedSource,
   parseFamilyMembersConfig,
   parseResumeMarkdown,
@@ -154,9 +155,14 @@ async function main() {
   )
 
   const seedContent = await buildSeedContent(projectRoot)
+  const travelOnlySeedContent = await buildTravelSeedContent(projectRoot)
 
   assert.deepEqual(
     seedContent.travels.map((travel) => travel.slug).sort(),
+    catalog.map((entry) => entry.slug).sort(),
+  )
+  assert.deepEqual(
+    travelOnlySeedContent.map((travel) => travel.slug).sort(),
     catalog.map((entry) => entry.slug).sort(),
   )
   assert.equal(

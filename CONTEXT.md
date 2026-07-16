@@ -78,6 +78,10 @@ _Avoid_: trip page, itinerary file
 A travel-planning workspace used to review, revise, and decide a future journey. It belongs to the planning domain and does not become completed travel by switching the same record's status.
 _Avoid_: draft page, incomplete completed travel, future completed travel
 
+**Planning section**:
+The ordered, anchor-addressable unit of planning content that preserves its display labels, body, links, media, and independent comment, thumb-up, and thumb-down settings. It is the canonical content unit of a planning travel; derived flight, lodging, and itinerary projections are not automatically part of the planning domain.
+_Avoid_: source section number, legacy structured projection, itinerary row
+
 **Travel planning stage**:
 The lobby presentation state of a planning travel: active planning while its travel time has not passed, or archived planning after its travel time has passed. Archived planning remains the original plan record and does not become completed travel.
 _Avoid_: early idea stage, completed status, completed memory

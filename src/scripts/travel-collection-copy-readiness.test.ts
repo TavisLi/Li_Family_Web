@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 
 import type { TravelProject } from '@/payload/payload-types'
+import type { TravelSeed } from './seed-content'
 import {
   assessTravelProjectCopy,
+  buildTravelPlanCopyDraft,
   buildTravelCollectionCopyReadiness,
   renderTravelCollectionCopyReadinessMarkdown,
 } from './travel-collection-copy-readiness'
@@ -21,26 +23,135 @@ const archivedPlan: TravelProject = {
       route: 'TPE-CKG',
     },
   ],
+  lodgings: [
+    {
+      hotel: '首象酒店',
+      city: '重慶',
+      roomType: '霧隱大床房',
+      dateRange: '7/1~7/3',
+    },
+  ],
+  sourceSections: [
+    {
+      level: 2,
+      title: '住宿安排',
+      anchor: 'lodging',
+      displayDay: 'Day 1',
+      displayDate: '2026年7月1日（三）',
+      displaySubtitle: '入住日',
+      body: '| 日期 | 酒店 |\n| --- | --- |\n| 7/1~7/3 | 首象酒店 |',
+      enableComments: true,
+      enableThumbsUp: true,
+      enableThumbsDown: false,
+    },
+  ],
   sourceMetadata: {
     sourceFile: 'content-source/travels/202607-chongqing-yangtze-river.md',
     sourceHash: 'legacy-hash',
     parserVersion: 'phase-16-v1',
-    baseProjection: { slug: '202607-chongqing-yangtze-river' },
+    baseProjection: {
+      title: '重慶長江三峽過往規劃',
+      slug: '202607-chongqing-yangtze-river',
+      status: 'planning',
+      isPrivate: true,
+      startDate: '2026-07-01',
+      endDate: '2026-07-08',
+      flights: [{ flightNumber: 'CA001', route: 'TPE-CKG' }],
+      lodgings: [{ hotel: '首象酒店', dateRange: '7/1~7/3' }],
+      sourceSections: [
+        {
+          level: 2,
+          title: '住宿安排',
+          anchor: 'lodging',
+          displayDay: 'Day 1',
+          displayDate: '2026年7月1日（三）',
+          displaySubtitle: '入住日',
+          body: '| 日期 | 酒店 |\n| --- | --- |\n| 7/1~7/3 | 首象酒店 |',
+          enableComments: true,
+          enableThumbsUp: true,
+          enableThumbsDown: true,
+        },
+      ],
+    },
   },
   createdAt: '2026-06-01T00:00:00.000Z',
   updatedAt: '2026-07-01T00:00:00.000Z',
 }
 
+const archivedSource: TravelSeed = {
+  slug: archivedPlan.slug,
+  title: archivedPlan.title,
+  status: 'planning',
+  isPrivate: true,
+  startDate: '2026-07-01',
+  endDate: '2026-07-08',
+  externalDocIdentifier: 'content-source/travels/202607-chongqing-yangtze-river.md',
+  flights: [{ flightNumber: 'CA001', route: 'TPE-CKG' }],
+  lodgings: [{ hotel: '首象酒店', dateRange: '7/1~7/3' }],
+  sourceSections: [
+    {
+      level: 2,
+      title: '住宿安排',
+      anchor: 'lodging',
+      displayDay: 'Day 1',
+      displayDate: '2026年7月1日（三）',
+      displaySubtitle: '入住日',
+      body: '| 日期 | 酒店 |\n| --- | --- |\n| 7/1~7/3 | 首象酒店 |',
+      enableComments: true,
+      enableThumbsUp: true,
+      enableThumbsDown: true,
+    },
+  ],
+}
+
 const assessment = assessTravelProjectCopy(
   archivedPlan,
   new Date('2026-08-01T00:00:00.000Z'),
+  archivedSource,
 )
 
 assert.equal(assessment.targetCollection, 'travel-plans')
 assert.equal(assessment.planPresentation, 'archived')
-assert.equal(assessment.readiness, 'blocked')
-assert.ok(assessment.blockers.some((blocker) => blocker.sourcePath === 'flights'))
-assert.ok(assessment.blockers.some((blocker) => blocker.sourcePath === 'sourceMetadata'))
+assert.equal(assessment.readiness, 'ready')
+assert.ok(!assessment.blockers.some((blocker) => blocker.sourcePath === 'lodgings'))
+assert.ok(
+  assessment.warnings.some(
+    (warning) => warning.sourcePath === 'lodgings' && /已批准的冗餘/.test(warning.reason),
+  ),
+)
+
+const archivedDraft = buildTravelPlanCopyDraft(archivedPlan, archivedSource)
+assert.equal(archivedDraft.data.slug, '202607-chongqing-yangtze-river')
+assert.equal(archivedDraft.data.planningSections?.[0]?.displayDay, 'Day 1')
+assert.equal(archivedDraft.data.planningSections?.[0]?.displayDate, '2026年7月1日（三）')
+assert.equal(archivedDraft.data.planningSections?.[0]?.displaySubtitle, '入住日')
+assert.deepEqual(archivedDraft.data.planningSections?.[0]?.interactions, {
+  commentsEnabled: true,
+  thumbsUpEnabled: true,
+  thumbsDownEnabled: false,
+})
+assert.ok(!('lodgings' in archivedDraft.data))
+assert.ok(!('flights' in archivedDraft.data))
+assert.ok(!('status' in archivedDraft.data))
+assert.equal(archivedDraft.data.sourceMetadata.parserVersion, 'phase-17-plan-v1')
+assert.equal(
+  archivedDraft.data.sourceMetadata.sourceHash,
+  archivedDraft.expectedSourceHash,
+)
+assert.ok(!('lodgings' in archivedDraft.baseProjection))
+
+assert.doesNotThrow(() => buildTravelPlanCopyDraft(archivedPlan, archivedSource))
+assert.throws(
+  () =>
+    buildTravelPlanCopyDraft(archivedPlan, {
+      ...archivedSource,
+      sourceSections: archivedSource.sourceSections?.map((section) => ({
+        ...section,
+        body: `${section.body}\nSource changed`,
+      })),
+    }),
+  /必須先重新執行 reconciliation/,
+)
 
 const interactionMismatchPlan: TravelProject = {
   ...archivedPlan,
@@ -70,8 +181,92 @@ assert.ok(
 )
 assert.ok(
   interactionAssessment.blockers.some(
-    (blocker) => blocker.sourcePath === 'sourceSections[0].interactions',
+    (blocker) => blocker.sourcePath === 'sourceMetadata' && /Source/.test(blocker.reason),
   ),
+)
+
+const phuketPlan: TravelProject = {
+  ...interactionMismatchPlan,
+  sourceSections: [
+    {
+      level: 2,
+      title: '度假村官方網站',
+      anchor: 'item-1c51hpg',
+      body: '住宿官網',
+      links: [
+        {
+          label: '安納塔拉度假會',
+          url: 'https://www.anantara.com/en/vacation-club-phuket',
+        },
+      ],
+      enableComments: true,
+      enableThumbsUp: true,
+      enableThumbsDown: true,
+    },
+  ],
+  sourceMetadata: {
+    ...interactionMismatchPlan.sourceMetadata,
+    sourceFile: '202702泰國普吉島7日.md',
+    baseProjection: {
+      title: interactionMismatchPlan.title,
+      slug: interactionMismatchPlan.slug,
+      isPrivate: true,
+      startDate: interactionMismatchPlan.startDate,
+      endDate: interactionMismatchPlan.endDate,
+      sourceSections: [
+        {
+          level: 2,
+          title: '度假村官方網站',
+          anchor: 'item-1c51hpg',
+          body: '住宿官網',
+          links: [
+            {
+              label: 'https://www.anantara.com/en/vacation-club-phuket',
+              url: 'https://www.anantara.com/en/vacation-club-phuket',
+            },
+          ],
+          enableComments: true,
+          enableThumbsUp: true,
+          enableThumbsDown: true,
+        },
+      ],
+    },
+  },
+}
+const phuketSource: TravelSeed = {
+  slug: phuketPlan.slug,
+  title: phuketPlan.title,
+  status: 'planning',
+  isPrivate: true,
+  startDate: phuketPlan.startDate,
+  endDate: phuketPlan.endDate,
+  externalDocIdentifier: '202702泰國普吉島7日.md',
+  sourceSections: [
+    {
+      level: 2,
+      title: '度假村官方網站',
+      anchor: 'item-1c51hpg',
+      body: '住宿官網',
+      links: [
+        {
+          label: 'https://www.anantara.com/en/vacation-club-phuket',
+          url: 'https://www.anantara.com/en/vacation-club-phuket',
+        },
+      ],
+      enableComments: true,
+      enableThumbsUp: true,
+      enableThumbsDown: true,
+    },
+  ],
+}
+const phuketDraft = buildTravelPlanCopyDraft(phuketPlan, phuketSource)
+assert.equal(
+  phuketDraft.data.planningSections?.[0]?.links?.[0]?.label,
+  '安納塔拉度假會',
+)
+assert.equal(
+  phuketDraft.baseProjection.planningSections?.[0]?.links?.[0]?.label,
+  'https://www.anantara.com/en/vacation-club-phuket',
 )
 
 const completedMemory: TravelProject = {
@@ -142,7 +337,7 @@ assert.ok(
 )
 
 const report = buildTravelCollectionCopyReadiness(
-  [archivedPlan, interactionMismatchPlan, completedMemory],
+  [archivedPlan, phuketPlan, completedMemory],
   {
     migrationApplied: false,
     targetRows: {
@@ -165,6 +360,10 @@ const report = buildTravelCollectionCopyReadiness(
     ],
   },
   new Date('2026-08-01T00:00:00.000Z'),
+  new Map([
+    [archivedSource.slug, archivedSource],
+    [phuketSource.slug, phuketSource],
+  ]),
 )
 
 assert.deepEqual(report.summary, {
@@ -173,13 +372,13 @@ assert.deepEqual(report.summary, {
   activePlans: 0,
   archivedPlans: 2,
   memories: 1,
-  ready: 0,
-  blocked: 3,
+  ready: 2,
+  blocked: 1,
 })
 assert.ok(report.globalBlockers.some((blocker) => blocker.code === 'migration-not-applied'))
 assert.ok(report.globalBlockers.some((blocker) => blocker.code === 'legacy-references'))
 assert.equal(report.fieldUsage.flights, 2)
-assert.equal(report.fieldUsage.sourceSections, 2)
+assert.equal(report.fieldUsage.sourceSections, 3)
 assert.equal(report.fieldUsage.galleryImages, 1)
 
 const markdown = renderTravelCollectionCopyReadinessMarkdown(report)
@@ -192,7 +391,16 @@ assert.match(markdown, /202308-east-australia.*12.*2.*1/)
 
 const allLocalesNullPlan: TravelProject = {
   ...archivedPlan,
-  sourceMetadata: undefined,
+  sourceMetadata: {
+    sourceFile: 'content-source/travels/test.md',
+    baseProjection: {
+      title: '測試',
+      slug: '202607-chongqing-yangtze-river',
+      isPrivate: true,
+      startDate: '2026-07-01',
+      endDate: '2026-07-08',
+    },
+  },
   flights: [],
   sourceSections: [
     {
@@ -206,5 +414,17 @@ const allLocalesNullPlan: TravelProject = {
     },
   ],
 }
-const allLocalesNullAssessment = assessTravelProjectCopy(allLocalesNullPlan)
+const allLocalesNullAssessment = assessTravelProjectCopy(
+  allLocalesNullPlan,
+  new Date(),
+  {
+    slug: allLocalesNullPlan.slug,
+    title: '測試',
+    status: 'planning',
+    isPrivate: true,
+    startDate: '2026-07-01',
+    endDate: '2026-07-08',
+    externalDocIdentifier: 'content-source/travels/test.md',
+  },
+)
 assert.equal(allLocalesNullAssessment.readiness, 'ready')
