@@ -777,9 +777,12 @@ export interface TravelMemory {
   };
   storySections?:
     | {
-        kind: 'overview' | 'day' | 'reflection' | 'food' | 'freeform';
+        level: number;
         title: string;
         anchor: string;
+        displayDay?: string | null;
+        displayDate?: string | null;
+        displaySubtitle?: string | null;
         body: string;
         links?:
           | {
@@ -789,6 +792,11 @@ export interface TravelMemory {
             }[]
           | null;
         mediaItems?: (number | Media)[] | null;
+        interactions?: {
+          commentsEnabled?: boolean | null;
+          thumbsUpEnabled?: boolean | null;
+          thumbsDownEnabled?: boolean | null;
+        };
         id?: string | null;
       }[]
     | null;
@@ -1350,9 +1358,12 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
   storySections?:
     | T
     | {
-        kind?: T;
+        level?: T;
         title?: T;
         anchor?: T;
+        displayDay?: T;
+        displayDate?: T;
+        displaySubtitle?: T;
         body?: T;
         links?:
           | T
@@ -1362,6 +1373,13 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
               id?: T;
             };
         mediaItems?: T;
+        interactions?:
+          | T
+          | {
+              commentsEnabled?: T;
+              thumbsUpEnabled?: T;
+              thumbsDownEnabled?: T;
+            };
         id?: T;
       };
   externalVideos?:

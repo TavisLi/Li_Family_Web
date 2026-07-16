@@ -355,8 +355,7 @@ Phase 17 建議先批准下一個安全 slice，而不是直接批准 drop：
 
 - Phase 17 target migrations 尚未套用；
 - 12 筆 Media、2 筆 TimelineEvents、1 筆 HomeConfig 仍引用舊 collection；
-- 三筆 Memories 的 legacy sections／Base 尚未完成 target transformer。
 
-最新 Production read-back 已將五筆粗粒度 conflict 收斂為兩筆 Current-only Admin edits。網站擁有者確認 planning renderer 以 source sections 為正式內容，因此重慶 `lodgings` 定案為 `drop-as-redundant`，普吉島 link labels 採 `payload-wins`。2026-07-16 最新 dry-run 為 2 ready／3 blocked：兩筆 Plans 已完成 lossless section mapping 與新 Base/hash transformer；三筆 Memories 仍需保存 legacy section metadata並建立各自 transformer。新 collections 不增加 persistent snapshot，舊表保留至 read-back、relationship cutover、觀察期與備份完成後才清除。
+最新 Production read-back 已將五筆粗粒度 conflict 收斂為兩筆 Current-only Admin edits。網站擁有者確認 planning renderer 以 source sections 為正式內容，因此重慶 `lodgings` 定案為 `drop-as-redundant`，普吉島 link labels 採 `payload-wins`。2026-07-16 最新 dry-run 為 5 ready／0 blocked：兩筆 Plans 與三筆 Memories 都已完成 lossless mapping 與各自的新 Base/hash transformer；Memory section 也已承接 level、display labels、links、media 與獨立 interaction flags。新 collections 不增加 persistent snapshot，舊表保留至 read-back、relationship cutover、觀察期與備份完成後才清除。
 
 詳細 evidence：`docs/phase-artifacts/phase-17/travel-collection-copy-readiness.md`。在上述三類 blocker 歸零前，Issue #57 不進入 destructive migration。

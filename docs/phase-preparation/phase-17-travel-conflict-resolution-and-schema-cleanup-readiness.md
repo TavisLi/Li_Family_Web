@@ -22,7 +22,7 @@ Phase 17 的核心不是立即刪除欄位，也不是用 Markdown 覆蓋 Payloa
 - 重慶 Planning 的 legacy `lodgings` 等 structured arrays 已批准為 `drop-as-redundant`，不搬入新 Plan；正式 planning 內容以 `planningSections` 為準。
 - 2027 普吉島 link labels 採 `payload-wins`；Current 的人類可讀 label 進入新 record，Source raw label 留在重建的 Base。
 - 舊 `sourceMetadata/Base` 只留在 `travel_projects` 作 migration evidence；新 Plan Base/hash 由目標 transformer 重建，不在新 collections 增加 persistent legacy snapshot。
-- 2026-07-16 Production 唯讀 readiness 為 2 筆 Plans ready、3 筆 Memories blocked。整體 write 仍 blocked，尚未批准或執行 target migrations、data copy、relationship cutover、舊表 cleanup。
+- 2026-07-16 Production 唯讀 readiness 已提升為五筆 records 全部 ready：2 筆 Plans 與 3 筆 Memories 都完成逐欄 transformer。整體 write 仍 blocked，因為四份 target migrations 尚未執行，且 legacy relationships 尚未 cutover；目前仍未批准 data copy 或舊表 cleanup。
 
 本文件以下 PRD 保留 Phase 17 開始時的問題背景與安全要求；最新逐欄決策以 `docs/phase-artifacts/phase-17/`、`docs/data-models/travel-projects-schema.md` 與 ADR 0007 為準。
 

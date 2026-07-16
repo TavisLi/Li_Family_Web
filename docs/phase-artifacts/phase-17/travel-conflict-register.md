@@ -32,7 +32,7 @@
 - 舊 Base 留在舊表作 migration evidence；新 Base 由 Plan transformer 重建。
 - Preview／Production read-back、relationship cutover、觀察期與資料庫備份完成後，才另案批准 drop 舊表及 child tables。
 
-2026-07-16 Production 唯讀 mapping dry-run 已確認兩筆 Plans 都是 record-level ready：重慶為 archived、普吉島為 active；整體 data-copy write 仍因 migrations 未套用、三筆 Memories 未完成 mapping，以及 legacy relationships 尚未 cutover 而維持 BLOCKED。
+2026-07-16 Production 唯讀 mapping dry-run 已確認五筆 records 都是 record-level ready：兩筆 Plans 分別為 archived／active，三筆 Memories 也已完成 lossless mapping 與新 Base/hash transformer。整體 data-copy write 仍因四份 target migrations 未套用，以及 legacy relationships 尚未 cutover 而維持 BLOCKED。
 
 ## 尚未批准
 

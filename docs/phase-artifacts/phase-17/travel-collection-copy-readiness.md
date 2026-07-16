@@ -1,6 +1,6 @@
 # Phase 17 Travel Collection Copy Readiness
 
-產生時間：2026-07-16T05:11:53.312Z
+產生時間：2026-07-16T09:32:02.719Z
 
 **Data-copy write readiness：BLOCKED**
 
@@ -13,8 +13,8 @@
 | Active Plans | 1 |
 | Archived Plans | 1 |
 | Travel Memories | 3 |
-| Record-level ready | 2 |
-| Record-level blocked | 3 |
+| Record-level ready | 5 |
+| Record-level blocked | 0 |
 
 ## Environment
 
@@ -62,23 +62,71 @@
 
 | Slug | Target | Plan 顯示 | Readiness | Blockers |
 | --- | --- | --- | --- | ---: |
-| `201307-hainan` | `travel-memories` | — | blocked | 2 |
-| `202308-east-australia` | `travel-memories` | — | blocked | 2 |
+| `201307-hainan` | `travel-memories` | — | ready | 0 |
+| `202308-east-australia` | `travel-memories` | — | ready | 0 |
 | `202607-chongqing-yangtze-river` | `travel-plans` | archived | ready | 0 |
-| `202602-thailand-phuket` | `travel-memories` | — | blocked | 2 |
+| `202602-thailand-phuket` | `travel-memories` | — | ready | 0 |
 | `202702-thailand-phuket` | `travel-plans` | active | ready | 0 |
 
 ## Record blockers
 
 ### 201307-hainan
 
-- `sourceMetadata`：舊 Base projection 使用 TravelProjects schema；必須留在舊表作 migration evidence，並以目標 transformer 重建新的 Base／hash。
-- `sourceSections`：Memory storySections 尚未承接 legacy level、display labels 與 interaction settings；舊表須繼續保留，直到完成逐欄 transformer。
+- 無 record-level blocker。
+
+Mappings：
+- `title` → `title`
+- `slug` → `slug`
+- `isPrivate` → `isPrivate`
+- `startDate` → `startDate`
+- `endDate` → `endDate`
+- `summary` → `summary`
+- `coverImage` → `coverImage`
+- `sourceMetadata.baseProjection` → `sourceMetadata (rebuilt Memory Base/hash)`
+- `members` → `participants`
+- `party` → `guestParticipants`
+- `galleryImages` → `galleryImages`
+- `itineraryImages` → `itineraryImages`
+- `flights` → `travelLedger.flights`
+- `flights[].date` → `travelLedger.flights[].dateLabel`
+- `flights[].passengers` → `travelLedger.flights[].passengers`
+- `flights[].terminal` → `travelLedger.flights[].terminal`
+- `lodgings` → `travelLedger.lodgings`
+- `lodgings[].dateRange` → `travelLedger.lodgings[].dateRange`
+- `dailyItinerary` → `dailyHighlights`
+- `dailyItinerary[].date` → `dailyHighlights[].dateLabel`
+- `sourceSections` → `storySections`
+- `externalVideos` → `externalVideos`
+- `reminders` → `reminders`
 
 ### 202308-east-australia
 
-- `sourceMetadata`：舊 Base projection 使用 TravelProjects schema；必須留在舊表作 migration evidence，並以目標 transformer 重建新的 Base／hash。
-- `sourceSections`：Memory storySections 尚未承接 legacy level、display labels 與 interaction settings；舊表須繼續保留，直到完成逐欄 transformer。
+- 無 record-level blocker。
+
+Mappings：
+- `title` → `title`
+- `slug` → `slug`
+- `isPrivate` → `isPrivate`
+- `startDate` → `startDate`
+- `endDate` → `endDate`
+- `summary` → `summary`
+- `coverImage` → `coverImage`
+- `sourceMetadata.baseProjection` → `sourceMetadata (rebuilt Memory Base/hash)`
+- `members` → `participants`
+- `party` → `guestParticipants`
+- `galleryImages` → `galleryImages`
+- `itineraryImages` → `itineraryImages`
+- `flights` → `travelLedger.flights`
+- `flights[].date` → `travelLedger.flights[].dateLabel`
+- `flights[].passengers` → `travelLedger.flights[].passengers`
+- `flights[].terminal` → `travelLedger.flights[].terminal`
+- `lodgings` → `travelLedger.lodgings`
+- `lodgings[].dateRange` → `travelLedger.lodgings[].dateRange`
+- `dailyItinerary` → `dailyHighlights`
+- `dailyItinerary[].date` → `dailyHighlights[].dateLabel`
+- `sourceSections` → `storySections`
+- `externalVideos` → `externalVideos`
+- `reminders` → `reminders`
 
 ### 202607-chongqing-yangtze-river
 
@@ -97,10 +145,46 @@ Warnings：
 - `optionalActivities`：網站擁有者已批准的冗餘 planning projection；內容以 planningSections 為準，不搬入新 Plan schema。
 - `reminders`：網站擁有者已批准的冗餘 planning projection；內容以 planningSections 為準，不搬入新 Plan schema。
 
+Mappings：
+- `title` → `title`
+- `slug` → `slug`
+- `isPrivate` → `isPrivate`
+- `startDate` → `startDate`
+- `endDate` → `endDate`
+- `summary` → `summary`
+- `coverImage` → `coverImage`
+- `sourceMetadata.baseProjection` → `sourceMetadata (rebuilt Plan Base/hash)`
+- `party` → `guestParticipants`
+- `sourceSections` → `planningSections`
+
 ### 202602-thailand-phuket
 
-- `sourceMetadata`：舊 Base projection 使用 TravelProjects schema；必須留在舊表作 migration evidence，並以目標 transformer 重建新的 Base／hash。
-- `sourceSections`：Memory storySections 尚未承接 legacy level、display labels 與 interaction settings；舊表須繼續保留，直到完成逐欄 transformer。
+- 無 record-level blocker。
+
+Mappings：
+- `title` → `title`
+- `slug` → `slug`
+- `isPrivate` → `isPrivate`
+- `startDate` → `startDate`
+- `endDate` → `endDate`
+- `summary` → `summary`
+- `coverImage` → `coverImage`
+- `sourceMetadata.baseProjection` → `sourceMetadata (rebuilt Memory Base/hash)`
+- `members` → `participants`
+- `party` → `guestParticipants`
+- `galleryImages` → `galleryImages`
+- `itineraryImages` → `itineraryImages`
+- `flights` → `travelLedger.flights`
+- `flights[].date` → `travelLedger.flights[].dateLabel`
+- `flights[].passengers` → `travelLedger.flights[].passengers`
+- `flights[].terminal` → `travelLedger.flights[].terminal`
+- `lodgings` → `travelLedger.lodgings`
+- `lodgings[].dateRange` → `travelLedger.lodgings[].dateRange`
+- `dailyItinerary` → `dailyHighlights`
+- `dailyItinerary[].date` → `dailyHighlights[].dateLabel`
+- `sourceSections` → `storySections`
+- `externalVideos` → `externalVideos`
+- `reminders` → `reminders`
 
 ### 202702-thailand-phuket
 
@@ -114,6 +198,18 @@ Warnings：
 - `dailyItinerary`：網站擁有者已批准的冗餘 planning projection；內容以 planningSections 為準，不搬入新 Plan schema。
 - `optionalActivities`：網站擁有者已批准的冗餘 planning projection；內容以 planningSections 為準，不搬入新 Plan schema。
 - `reminders`：網站擁有者已批准的冗餘 planning projection；內容以 planningSections 為準，不搬入新 Plan schema。
+
+Mappings：
+- `title` → `title`
+- `slug` → `slug`
+- `isPrivate` → `isPrivate`
+- `startDate` → `startDate`
+- `endDate` → `endDate`
+- `summary` → `summary`
+- `coverImage` → `coverImage`
+- `sourceMetadata.baseProjection` → `sourceMetadata (rebuilt Plan Base/hash)`
+- `party` → `guestParticipants`
+- `sourceSections` → `planningSections`
 
 ## 結論
 

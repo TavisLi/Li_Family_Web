@@ -1,6 +1,7 @@
 import { classifyTravelPlan, type TravelPlanPresentation } from '@/lib/travel-domain'
 import type { TravelProject } from '@/payload/payload-types'
 import type { TravelSeed } from './seed-content'
+import { buildTravelMemoryCopyDraft } from './travel-memory-copy-transformer'
 import {
   buildTravelProjection,
   travelProjectionHash,
@@ -174,12 +175,24 @@ export function assessTravelProjectCopy(
       mappings.push({ sourcePath: 'sourceSections', targetPath: 'planningSections' })
     }
   } else {
-    if (hasValue(project.sourceMetadata)) {
+    if (!source) {
       blockers.push({
         sourcePath: 'sourceMetadata',
-        reason:
-          '舊 Base projection 使用 TravelProjects schema；必須留在舊表作 migration evidence，並以目標 transformer 重建新的 Base／hash。',
+        reason: '找不到與 Memory slug 對應的即時 Source；不能完成 Base／Source／Current 證據檢查。',
       })
+    } else {
+      try {
+        buildTravelMemoryCopyDraft(project, source)
+        mappings.push({
+          sourcePath: 'sourceMetadata.baseProjection',
+          targetPath: 'sourceMetadata (rebuilt Memory Base/hash)',
+        })
+      } catch (error) {
+        blockers.push({
+          sourcePath: 'sourceMetadata',
+          reason: error instanceof Error ? error.message : '無法重建 Memory Base／hash。',
+        })
+      }
     }
     addUnsupportedFieldBlockers(project, memoryUnsupportedFields, blockers, 'Memory')
     mappings.push(
@@ -195,17 +208,11 @@ export function assessTravelProjectCopy(
       { sourcePath: 'lodgings[].dateRange', targetPath: 'travelLedger.lodgings[].dateRange' },
       { sourcePath: 'dailyItinerary', targetPath: 'dailyHighlights' },
       { sourcePath: 'dailyItinerary[].date', targetPath: 'dailyHighlights[].dateLabel' },
+      { sourcePath: 'sourceSections', targetPath: 'storySections' },
       { sourcePath: 'externalVideos', targetPath: 'externalVideos' },
       { sourcePath: 'reminders', targetPath: 'reminders' },
     )
 
-    if (project.sourceSections?.length) {
-      blockers.push({
-        sourcePath: 'sourceSections',
-        reason:
-          'Memory storySections 尚未承接 legacy level、display labels 與 interaction settings；舊表須繼續保留，直到完成逐欄 transformer。',
-      })
-    }
   }
 
   return {
@@ -360,13 +367,14 @@ function buildPlanProjection(value: Record<string, unknown>): TravelPlanProjecti
 
   if (Array.isArray(value.party) && value.party.length) {
     projection.guestParticipants = value.party.flatMap((participant) => {
-      if (!isRecord(participant) || typeof participant.name !== 'string') return []
+      if (!isRecord(participant) || !hasValue(participant.name)) return []
       return [{ name: participant.name, note: participant.note }]
     })
   }
 
   if (Array.isArray(value.sourceSections) && value.sourceSections.length) {
     projection.planningSections = value.sourceSections.map(mapPlanningSection)
+    assertUniqueAnchors(projection.planningSections, 'Plan')
   }
 
   return projection
@@ -575,6 +583,16 @@ export function renderTravelCollectionCopyReadinessMarkdown(
             ),
           ]
         : []),
+      ...(project.mappings.length
+        ? [
+            '',
+            'Mappings：',
+            ...project.mappings.map(
+              (mapping) =>
+                '- `' + mapping.sourcePath + '` → `' + mapping.targetPath + '`',
+            ),
+          ]
+        : []),
       '',
     ]),
     '## 結論',
@@ -633,4 +651,17 @@ function escapeMarkdown(value: string): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function assertUniqueAnchors(
+  sections: readonly { anchor: string }[],
+  targetLabel: 'Memory' | 'Plan',
+) {
+  const anchors = new Set<string>()
+  for (const section of sections) {
+    if (anchors.has(section.anchor)) {
+      throw new Error(`${targetLabel} sections 含有重複 anchor：${section.anchor}。`)
+    }
+    anchors.add(section.anchor)
+  }
 }

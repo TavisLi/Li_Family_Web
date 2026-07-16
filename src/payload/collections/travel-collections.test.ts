@@ -69,6 +69,37 @@ assert.ok(memoryFieldNames.includes('reminders'))
 assert.ok(!memoryFieldNames.includes('status'))
 assert.ok(!memoryFieldNames.includes('planningSections'))
 
+const storySections = namedField(TravelMemories.fields, 'storySections')
+assert.ok(storySections && storySections.type === 'array')
+const storySectionFields = storySections.fields
+assert.deepEqual(
+  fieldNames(storySectionFields),
+  [
+    'level',
+    'title',
+    'anchor',
+    'displayDay',
+    'displayDate',
+    'displaySubtitle',
+    'body',
+    'links',
+    'mediaItems',
+    'interactions',
+  ],
+)
+for (const name of ['displayDay', 'displayDate', 'displaySubtitle']) {
+  const field = namedField(storySectionFields, name)
+  assert.ok(field && field.type === 'text')
+  assert.equal(field.localized, true)
+}
+const storyInteractions = namedField(storySectionFields, 'interactions')
+assert.ok(storyInteractions && storyInteractions.type === 'group')
+assert.deepEqual(fieldNames(storyInteractions.fields), [
+  'commentsEnabled',
+  'thumbsUpEnabled',
+  'thumbsDownEnabled',
+])
+
 const originPlan = TravelMemories.fields.find(
   (field) => 'name' in field && field.name === 'originPlan',
 )

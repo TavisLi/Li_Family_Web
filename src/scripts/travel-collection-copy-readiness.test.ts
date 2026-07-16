@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 
 import type { TravelProject } from '@/payload/payload-types'
 import type { TravelSeed } from './seed-content'
+import { buildTravelMemoryCopyDraft } from './travel-memory-copy-transformer'
 import {
   assessTravelProjectCopy,
   buildTravelPlanCopyDraft,
@@ -279,33 +280,158 @@ const completedMemory: TravelProject = {
   members: [11],
   party: [{ name: '家人' }],
   galleryImages: [101],
+  itineraryImages: [102],
   flights: [
     {
+      date: '2023年8月1日',
+      airline: '中華航空',
       flightNumber: 'CI057',
       route: 'TPE-MEL',
+      passengers: '全家',
       terminal: 'T2',
     },
   ],
+  lodgings: [
+    {
+      dateRange: '8/1~8/3',
+      hotel: '墨爾本酒店',
+      city: '墨爾本',
+      roomType: '家庭房',
+    },
+  ],
+  dailyItinerary: [
+    {
+      day: 1,
+      date: '2023年8月1日',
+      title: '抵達墨爾本',
+      theme: '城市初見',
+      segments: [{ time: '09:00', activity: '抵達機場', transport: '接駁車' }],
+      meals: { dinner: '市區晚餐' },
+      lodging: '墨爾本酒店',
+    },
+  ],
+  reminders: [{ category: '返程', items: [{ text: '確認行李' }] }],
   externalVideos: [{ title: '旅行影片', youtubeUrl: 'https://youtu.be/example' }],
   sourceSections: [
     {
       level: 2,
       title: '第一天',
       anchor: 'day-1',
+      displayDay: 'Day 1',
+      displayDate: '2023年8月1日（二）',
+      displaySubtitle: '抵達日',
       body: '抵達墨爾本。',
       enableComments: true,
       enableThumbsUp: true,
-      enableThumbsDown: true,
+      enableThumbsDown: false,
     },
   ],
   sourceMetadata: {
     sourceFile: 'content-source/travels/202308-east-australia.md',
     sourceHash: 'legacy-hash',
     parserVersion: 'phase-16-v1',
-    baseProjection: { slug: '202308-east-australia' },
+    baseProjection: {
+      title: '東澳全覽9日',
+      slug: '202308-east-australia',
+      status: 'completed',
+      isPrivate: false,
+      startDate: '2023-08-01',
+      endDate: '2023-08-09',
+      flights: [
+        {
+          date: '2023年8月1日',
+          flightNumber: 'CI057',
+          route: 'TPE-MEL',
+          passengers: '全家',
+          terminal: 'T2',
+        },
+      ],
+      lodgings: [
+        {
+          dateRange: '8/1~8/3',
+          hotel: '墨爾本酒店',
+          city: '墨爾本',
+          roomType: '家庭房',
+        },
+      ],
+      dailyItinerary: [
+        {
+          day: 1,
+          date: '2023年8月1日',
+          title: '抵達墨爾本',
+          theme: '城市初見',
+          segments: [{ time: '09:00', activity: '抵達機場', transport: '接駁車' }],
+          meals: { dinner: '市區晚餐' },
+          lodging: '墨爾本酒店',
+        },
+      ],
+      reminders: [{ category: '返程', items: [{ text: '確認行李' }] }],
+      sourceSections: [
+        {
+          level: 2,
+          title: '第一天',
+          anchor: 'day-1',
+          displayDay: 'Day 1',
+          displayDate: '2023年8月1日（二）',
+          displaySubtitle: '抵達日',
+          body: '抵達墨爾本。',
+          enableComments: true,
+          enableThumbsUp: true,
+          enableThumbsDown: false,
+        },
+      ],
+      externalVideos: [{ title: '旅行影片', youtubeUrl: 'https://youtu.be/example' }],
+    },
   },
   createdAt: '2023-07-01T00:00:00.000Z',
   updatedAt: '2023-08-20T00:00:00.000Z',
+}
+
+const completedSource: TravelSeed = {
+  slug: completedMemory.slug,
+  title: completedMemory.title,
+  status: 'completed',
+  isPrivate: false,
+  startDate: '2023-08-01',
+  endDate: '2023-08-09',
+  externalDocIdentifier: 'content-source/travels/202308-east-australia.md',
+  flights: [
+    {
+      date: '2023年8月1日',
+      flightNumber: 'CI057',
+      route: 'TPE-MEL',
+      passengers: '全家',
+      terminal: 'T2',
+    },
+  ],
+  lodgings: [{ dateRange: '8/1~8/3', hotel: '墨爾本酒店', city: '墨爾本', roomType: '家庭房' }],
+  dailyItinerary: [
+    {
+      day: 1,
+      date: '2023年8月1日',
+      title: '抵達墨爾本',
+      theme: '城市初見',
+      segments: [{ time: '09:00', activity: '抵達機場', transport: '接駁車' }],
+      meals: { dinner: '市區晚餐' },
+      lodging: '墨爾本酒店',
+    },
+  ],
+  reminders: [{ category: '返程', items: [{ text: '確認行李' }] }],
+  sourceSections: [
+    {
+      level: 2,
+      title: '第一天',
+      anchor: 'day-1',
+      displayDay: 'Day 1',
+      displayDate: '2023年8月1日（二）',
+      displaySubtitle: '抵達日',
+      body: '抵達墨爾本。',
+      enableComments: true,
+      enableThumbsUp: true,
+      enableThumbsDown: false,
+    },
+  ],
+  externalVideos: [{ title: '旅行影片', youtubeUrl: 'https://youtu.be/example' }],
 }
 
 const memoryAssessment = assessTravelProjectCopy(completedMemory)
@@ -316,17 +442,120 @@ assert.ok(
     (mapping) => mapping.sourcePath === 'members' && mapping.targetPath === 'participants',
   ),
 )
+
+const readyMemoryAssessment = assessTravelProjectCopy(
+  completedMemory,
+  new Date(),
+  completedSource,
+)
+assert.equal(readyMemoryAssessment.readiness, 'ready')
+assert.equal(readyMemoryAssessment.blockers.length, 0)
+assert.ok(
+  readyMemoryAssessment.mappings.some(
+    (mapping) =>
+      mapping.sourcePath === 'sourceSections' && mapping.targetPath === 'storySections',
+  ),
+)
+
+const memoryDraft = buildTravelMemoryCopyDraft(completedMemory, completedSource)
+assert.equal(memoryDraft.data.travelLedger?.flights?.[0]?.dateLabel, '2023年8月1日')
+assert.equal(memoryDraft.data.travelLedger?.flights?.[0]?.airline, '中華航空')
+assert.equal(memoryDraft.data.travelLedger?.flights?.[0]?.terminal, 'T2')
+assert.equal(memoryDraft.data.travelLedger?.lodgings?.[0]?.dateRange, '8/1~8/3')
+assert.equal(memoryDraft.data.dailyHighlights?.[0]?.theme, '城市初見')
+assert.equal(memoryDraft.data.dailyHighlights?.[0]?.segments?.[0]?.transport, '接駁車')
+assert.equal(memoryDraft.data.storySections?.[0]?.displaySubtitle, '抵達日')
+assert.deepEqual(memoryDraft.data.storySections?.[0]?.interactions, {
+  commentsEnabled: true,
+  thumbsUpEnabled: true,
+  thumbsDownEnabled: false,
+})
+assert.equal(memoryDraft.data.externalVideos?.[0]?.url, 'https://youtu.be/example')
+assert.equal(memoryDraft.data.sourceMetadata.parserVersion, 'phase-17-memory-v1')
+assert.ok(!('status' in memoryDraft.data))
+assert.throws(
+  () =>
+    buildTravelMemoryCopyDraft(completedMemory, {
+      ...completedSource,
+      sourceSections: completedSource.sourceSections?.map((section) => ({
+        ...section,
+        body: `${section.body}\nSource changed`,
+      })),
+    }),
+  /必須先重新執行 reconciliation/,
+)
+
+const localizedMemory: TravelProject = {
+  ...completedMemory,
+  party: [
+    {
+      name: { 'zh-TW': '家人', en: 'Family' } as unknown as string,
+      note: { 'zh-TW': '同行者', en: null } as unknown as string,
+    },
+  ],
+  dailyItinerary: [
+    {
+      ...completedMemory.dailyItinerary![0]!,
+      title: { 'zh-TW': '抵達墨爾本', en: null } as unknown as string,
+      segments: [
+        {
+          activity: { 'zh-TW': '抵達機場', en: null } as unknown as string,
+        },
+      ],
+    },
+  ],
+  reminders: [
+    {
+      category: { 'zh-TW': '返程', en: null } as unknown as string,
+      items: [{ text: { 'zh-TW': '確認行李', en: null } as unknown as string }],
+    },
+  ],
+}
+const localizedMemoryDraft = buildTravelMemoryCopyDraft(localizedMemory, completedSource)
+assert.deepEqual(localizedMemoryDraft.data.dailyHighlights?.[0]?.title, {
+  'zh-TW': '抵達墨爾本',
+  en: null,
+})
+assert.deepEqual(localizedMemoryDraft.data.reminders, [
+  {
+    category: { 'zh-TW': '返程', en: null },
+    items: [{ text: { 'zh-TW': '確認行李', en: null } }],
+  },
+])
+assert.deepEqual(localizedMemoryDraft.data.guestParticipants, [
+  {
+    name: { 'zh-TW': '家人', en: 'Family' },
+    note: { 'zh-TW': '同行者', en: null },
+  },
+])
+assert.throws(
+  () =>
+    buildTravelMemoryCopyDraft(completedMemory, {
+      ...completedSource,
+      optionalActivities: [{ name: '尚未承接的活動' }],
+    }),
+  /尚未承接的欄位：optionalActivities/,
+)
+assert.throws(
+  () =>
+    buildTravelMemoryCopyDraft(
+      {
+        ...completedMemory,
+        sourceSections: [
+          completedMemory.sourceSections![0]!,
+          { ...completedMemory.sourceSections![0]!, title: '重複段落' },
+        ],
+      },
+      completedSource,
+    ),
+  /重複 anchor：day-1/,
+)
 assert.ok(
   memoryAssessment.mappings.some(
     (mapping) => mapping.sourcePath === 'externalVideos' && mapping.targetPath === 'externalVideos',
   ),
 )
 assert.equal(memoryAssessment.readiness, 'blocked')
-assert.ok(
-  memoryAssessment.blockers.some(
-    (blocker) => blocker.sourcePath === 'sourceSections',
-  ),
-)
 assert.ok(memoryAssessment.blockers.some((blocker) => blocker.sourcePath === 'sourceMetadata'))
 assert.ok(
   memoryAssessment.mappings.some(
@@ -363,6 +592,7 @@ const report = buildTravelCollectionCopyReadiness(
   new Map([
     [archivedSource.slug, archivedSource],
     [phuketSource.slug, phuketSource],
+    [completedSource.slug, completedSource],
   ]),
 )
 
@@ -372,8 +602,8 @@ assert.deepEqual(report.summary, {
   activePlans: 0,
   archivedPlans: 2,
   memories: 1,
-  ready: 2,
-  blocked: 1,
+  ready: 3,
+  blocked: 0,
 })
 assert.ok(report.globalBlockers.some((blocker) => blocker.code === 'migration-not-applied'))
 assert.ok(report.globalBlockers.some((blocker) => blocker.code === 'legacy-references'))
@@ -386,6 +616,7 @@ assert.match(markdown, /# Phase 17 Travel Collection Copy Readiness/)
 assert.match(markdown, /202607-chongqing-yangtze-river/)
 assert.match(markdown, /migration-not-applied/)
 assert.match(markdown, /`flights`/)
+assert.match(markdown, /`sourceSections` → `storySections`/)
 assert.doesNotMatch(markdown, /比較兩個航班方案/)
 assert.match(markdown, /202308-east-australia.*12.*2.*1/)
 

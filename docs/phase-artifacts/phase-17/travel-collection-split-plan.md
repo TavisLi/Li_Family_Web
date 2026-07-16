@@ -57,7 +57,7 @@ Plan 的旅遊日期經過後，仍是同一筆 Plan，只會由大廳從「規�
 | --- | --- | --- |
 | identity、privacy、dates、summary、cover | 搬到 Plan 共用欄位 | 搬到 Memory 共用欄位 |
 | `members`, `party` | `members`, `guestParticipants` | `participants`, `guestParticipants` |
-| `sourceSections` | `planningSections`；保留 level、anchor、display labels、body、links、media 與三種 interaction settings | `storySections`／`dailyHighlights`；需逐筆 mapping review |
+| `sourceSections` | `planningSections`；保留 level、anchor、display labels、body、links、media 與三種 interaction settings | `storySections`；同樣保留完整 section metadata；結構化每日資料另由 `dailyItinerary` 搬入 `dailyHighlights` |
 | `galleryImages` | 預設不搬，除非 inventory 證明 Plan 頁使用 | `galleryImages` |
 | `flights`, `lodgings` | 不搬 legacy arrays；正式內容已在 `planningSections`，未來是否另建結構化欄位另案決定 | `travelLedger` snapshot |
 | `dailyItinerary` | 不搬 legacy array；每日內容由 `planningSections` 保存 | `dailyHighlights` |
@@ -94,7 +94,7 @@ Planning records 的 `galleryImages`、`itineraryImages`、`flights`、`railSegm
 
 程式審查確認 Planning view 只渲染 source sections。網站擁有者已批准舊 structured arrays 為冗餘 planning projections，不搬入新 Plan；重慶 lodging conflict 因此定案為 `drop-as-redundant`。普吉島 link labels 採 `payload-wins`，保留 Payload Current 的人類可讀名稱。
 
-2026-07-16 Production 唯讀 mapping dry-run 結果為 2 ready／3 blocked：兩筆 Plans 均已通過 record-level mapping；三筆 Memories 仍待逐欄 transformer。新 collections 不加入 persistent snapshot，遷移期間以完整舊表作 rollback；新 Plan Base 由 target transformer 重新建立。
+2026-07-16 Production 唯讀 mapping dry-run 結果為 5 ready／0 blocked：兩筆 Plans 與三筆 Memories 都已通過 record-level mapping。Memory transformer 會完整保留 gallery、itinerary images、daily highlights、flight／lodging ledger、reminders、external videos，以及 source section 的 level、display labels、links、media 與三種 interaction settings。新 collections 不加入 persistent snapshot，遷移期間以完整舊表作 rollback；Plan 與 Memory 的新 Base/hash 都由各自 target transformer 重新建立。
 
 完整逐筆 paths 見 `docs/phase-artifacts/phase-17/travel-collection-copy-readiness.md`。
 
@@ -108,6 +108,6 @@ Media、TimelineEvents 與 HomeConfig 不應繼續只指向 `travel-projects`。
 
 這份 migration **尚未執行於 Preview 或 Production**。DOWN 會刪除本次新建表，只能作為尚未存放正式資料時的 rollback；有資料後不可把 DOWN 當一般清理工具。
 
-後續 migration `20260716_045235_phase_17_align_travel_plan_sections` 會把尚為空表的 Plan section schema 收斂成正式 contract：移除 speculative `kind`、numeric date fields 與合併 voting flag，新增 localized display labels 及獨立 thumb flags。它含 DROP，但只作用於前一份 migration 剛建立且尚未 copy 資料的新 tables；UP 與 DOWN 都會先檢查 Plan／version 主表必須為空，否則直接拒絕執行，且不讀寫或刪除 `travel_projects`。三份 Phase 17 migrations 必須按順序並在任何 data copy 前執行，且目前尚未取得執行批准。
+後續 migrations `20260716_045235_phase_17_align_travel_plan_sections` 與 `20260716_091228_phase_17_align_travel_memory_sections` 會把尚為空表的 Plan／Memory section schema 收斂成正式 contract：移除沒有 evidence 的 speculative `kind`，新增 legacy section 實際需要的 level、localized display labels 及獨立 interaction flags。兩份 migration 都含 DROP，但只作用於前面 migrations 剛建立且尚未 copy 資料的新 tables；UP 與 DOWN 都會先檢查各自 target／version 主表必須為空，否則直接拒絕執行，且不讀寫或刪除 `travel_projects`。四份 Phase 17 migrations 必須按順序並在任何 data copy 前執行，且目前尚未取得執行批准。
 
 readiness CLI 只解析 travel catalog 與 travel Markdown，不會載入 profiles、member media 或 Blogger archive；任何 planning slug 找不到 matching Source 時，一律標記 record-level blocked，不允許略過 Base／Source／Current 證據檢查。
