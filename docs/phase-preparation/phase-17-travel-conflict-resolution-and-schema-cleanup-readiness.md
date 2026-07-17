@@ -25,7 +25,7 @@ Phase 17 的核心不是立即刪除欄位，也不是用 Markdown 覆蓋 Payloa
 - 2026-07-16 Production 唯讀 readiness 已提升為五筆 records 全部 ready：2 筆 Plans 與 3 筆 Memories 都完成逐欄 transformer。
 - migration／data-copy 執行包已完成：第五份 additive migration 新增 Media、TimelineEvents、HomeConfig 的 polymorphic 影子關聯；copy 會在單一 transaction 內寫入 5 筆 target records 與 12／2／1 筆影子關聯。舊關聯與舊表保留，runtime 暫不切換。
 - disposable PostgreSQL 17 本地演練已完成：五份 migrations、synthetic 5-record copy、完整內容／slug／逐 owner relationship verify 全部通過；第一次刻意保留的 Media locale 缺陷也證明 transaction 能完整 rollback，修正後才成功 commit。
-- 2026-07-17 已取得 migration／data-copy 個別 Production 執行批准；migration 前 inspect 通過，但 Payload 因既有 `payload_migrations` 的 `dev/-1` record 顯示 data-loss 警告，operator 依本文件停止條件選擇 `no`。五份 target migrations、data-copy 與 verify 均尚未執行，Production 未因本輪改變；若改採 controlled migration transaction，需另行完成執行包與批准。完整證據見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md`。
+- 2026-07-17 已取得 migration／data-copy 個別 Production 執行批准；Payload CLI 因既有 `payload_migrations` 的 `dev/-1` record 顯示 data-loss 警告後已選擇 `no`。網站擁有者隨後另行批准保留 `dev/-1` 的 controlled migration transaction；executor、partial-schema 拒絕測試、PostgreSQL 17 單一 transaction migration/read-back，以及後續完整 data-copy/verify 均已在 disposable 本地庫通過。Production 尚未因本輪改變，必須以 commit 固定後的新 inspect/token 才可執行。完整證據見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md`。
 
 本文件以下 PRD 保留 Phase 17 開始時的問題背景與安全要求；最新逐欄決策以 `docs/phase-artifacts/phase-17/`、`docs/data-models/travel-projects-schema.md` 與 ADR 0007 為準。
 

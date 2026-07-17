@@ -1,7 +1,7 @@
 # Phase 17 Travel Migration／Data-copy 執行與批准包
 
 更新日期：2026-07-17
-目前狀態：**Production migration 與 data-copy 已取得執行批准；migration 因 Payload dev-schema data-loss 警告中止，Production 尚未變更。**
+目前狀態：**controlled migration 與 data-copy 已取得 Production 執行批准；controlled executor 本地全流程通過，Production 尚待最新 inspect 後執行。**
 
 ## 白話摘要
 
@@ -56,6 +56,7 @@ fingerprint 不是永久密碼。它綁定 database identity、copy CLI／execut
 
 ```bash
 pnpm run seed:travel:copy inspect
+pnpm run seed:travel:migrate-controlled inspect
 ```
 
 必須確認：
@@ -64,16 +65,24 @@ pnpm run seed:travel:copy inspect
 - target row counts 全為 0
 - shadow relationship counts 全為 0
 - 輸出的 projects、舊關聯數量與批准內容一致
+- controlled inspect 的完整 migration history 必須仍為凍結的 8 筆，包含但不刪除 `dev/-1`
+- 三個 target 主表、`home_config_rels` 與六個 target relationship columns 必須全部不存在
 
-### 2. 套用 additive migrations
+### 2. 套用 controlled additive migrations
 
-此步驟會修改 database schema，必須另外取得 Production migration 批准後才能執行：
+Payload CLI 因既有 `dev/-1` 會顯示 data-loss 警告，因此不得確認該提示。本包改用已另行批准的 controlled executor，只執行五份已審查 `up()`，並在同一個 transaction 寫入五筆 batch 6 migration records：
 
 ```bash
-pnpm exec payload migrate
+TRAVEL_MIGRATION_TARGET_CONFIRM=<controlled inspect 的 database fingerprint> \
+  TRAVEL_MIGRATION_WRITE_CONFIRM=<controlled inspect 的 approval fingerprint> \
+  pnpm run seed:travel:migrate-controlled apply -- --allow-write
+
+TRAVEL_MIGRATION_TARGET_CONFIRM=<同一 database fingerprint> \
+  TRAVEL_MIGRATION_WRITE_CONFIRM=<同一 approval fingerprint> \
+  pnpm run seed:travel:migrate-controlled verify
 ```
 
-完成後重新執行 `inspect`；必須確認 5 份 migrations 都已 applied，target 仍為空，fingerprint 與批准時相符。
+executor 會先鎖住 migration history 與 legacy travel/reference tables，再於 transaction 內重讀並重算 token。migration 檔案、implementation、history、inventory 或 target schema 任一漂移都會拒絕；`dev/-1` 不修改。完成後再執行 copy `inspect`，必須確認 5 份 migrations 都已 applied，target／shadow rows 仍為空。
 
 ### 3. Transactional data-copy
 
@@ -154,7 +163,11 @@ CLI 會 rollback 同一個 request transaction。停止後重新執行 `inspect`
 - 受控重試連線成功，但 Payload 偵測到 Production `payload_migrations` 仍有 `name = dev, batch = -1`，顯示繼續會造成 data loss 的警告；operator 依停止條件選擇 `no`。
 - 後續唯讀 transaction 確認 migration history 共 8 筆，其中 `dev/-1` 建於 2026-06-12；五份 Phase 17 migration 仍未套用。
 - 因 migration 未執行，data-copy 與 verify 未啟動；Production schema 與資料均未因本輪改變。
-- 若要改採「只執行五份已審查 UP、在同一 transaction 寫入 migration records」的 controlled migration 方法，必須先補齊 executor、local rehearsal 與另一個明確批准；不可把原本對 Payload CLI 的批准默認延伸成繞過警告。
+- 網站擁有者已另行批准「只執行五份已審查 UP、在同一 transaction 寫入 migration records，保留 `dev/-1`」的 controlled migration 方法。
+- controlled executor 已完成：approval token 綁定 database identity、完整 8-row baseline history、五份 migration TS/JSON hashes、executor implementation、5／12／2／1 inventory，以及 target tables／relationship columns absence。
+- disposable PostgreSQL 17 最終演練通過：刻意建立 `home_config_rels` partial-schema marker 時 inspect 正確拒絕；清除 marker 後，以 token `phase-17-migrate:55991d35a293d234` 完成單一 transaction，五份 records 均為 batch 6，`dev/-1` 與 legacy inventory 不變，十個 target schema markers 全部 read-back 成功。
+- 同一 disposable database 接續完成 Payload full fixture 與 data-copy：copy token `phase-17-copy:d172dfc164aa59e0`，2 Plans／3 Memories／5 route identities、完整雙語 nested content 與 12／2／1 shadow relationship owner mappings 全部 verify 通過。
+- 上述兩個 token 只屬於本地 database；不得用於 Production。Production 必須在 executor commit 固定後重新 inspect 取得新 token。
 
 ## 仍未批准的事項
 
