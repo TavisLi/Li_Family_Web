@@ -1,7 +1,7 @@
 # Phase 17 Travel Migration／Data-copy 執行與批准包
 
-更新日期：2026-07-16
-目前狀態：**執行包已備妥；Production migration 與 data-copy 尚未批准、尚未執行。**
+更新日期：2026-07-17
+目前狀態：**Production migration 與 data-copy 已取得執行批准；migration 因 Payload dev-schema data-loss 警告中止，Production 尚未變更。**
 
 ## 白話摘要
 
@@ -145,13 +145,22 @@ CLI 會 rollback 同一個 request transaction。停止後重新執行 `inspect`
 
 本地真實 database 演練已完成，但 synthetic fixture 不是 Production rows。Production 執行前仍建議在可丟棄的 Preview database clone 再完成一次相同 `migrate → inspect → apply → verify` 演練；這項建議不等於本輪已批准 Preview 或 Production write。
 
-## 本輪不批准的事項
+## 2026-07-17 Production 執行紀錄
 
-- Production `payload migrate`
-- Production `seed:travel:copy apply`
+- 網站擁有者已明確批准執行五份 Production migrations、5-record transactional data-copy 與 read-back／verify。
+- 最新執行版本：commit `1600106`；database fingerprint：`db:f186aaf5a523`；approval token：`phase-17-copy:db8e773f288fd2dc`。
+- migration 前 Production inspect 通過：2 Plans／3 Memories、0 record blockers、所有 target／shadow rows 為 0，legacy references 為 Media 12／TimelineEvents 2／HomeConfig 1，且缺少的 migration 恰好為本包五份。
+- 第一次 `pnpm exec payload migrate` 在第一個唯讀 migration-table query 遇到 Supabase pooler connection timeout，尚未開始 migration。
+- 受控重試連線成功，但 Payload 偵測到 Production `payload_migrations` 仍有 `name = dev, batch = -1`，顯示繼續會造成 data loss 的警告；operator 依停止條件選擇 `no`。
+- 後續唯讀 transaction 確認 migration history 共 8 筆，其中 `dev/-1` 建於 2026-06-12；五份 Phase 17 migration 仍未套用。
+- 因 migration 未執行，data-copy 與 verify 未啟動；Production schema 與資料均未因本輪改變。
+- 若要改採「只執行五份已審查 UP、在同一 transaction 寫入 migration records」的 controlled migration 方法，必須先補齊 executor、local rehearsal 與另一個明確批准；不可把原本對 Payload CLI 的批准默認延伸成繞過警告。
+
+## 仍未批准的事項
+
 - runtime dual-read／cutover
 - 清空或刪除 `travel-projects`
 - 刪除舊 relationship 欄位
 - Issue #50／#57 關閉
 
-上述每一項都要依實際完成狀態另行批准；「執行包準備完成」不等於「Production migration 已批准」。
+上述事項都要依實際完成狀態另行批准；本輪 migration／data-copy 的執行批准，不代表可以越過 data-loss 警告或擴大到 runtime／destructive cleanup。
