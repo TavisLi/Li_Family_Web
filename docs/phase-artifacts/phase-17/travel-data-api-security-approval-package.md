@@ -1,7 +1,7 @@
 # Phase 17 Travel Data API Security Migration 批准包
 
 更新日期：2026-07-17
-目前狀態：**additive security migration、controlled executor 與本地負向測試已完成；Production 尚未套用，runtime 尚未 cutover。**
+目前狀態：**Production security migration、獨立 verify 與 Payload owner read-back 已完成；runtime 尚未 cutover。**
 
 ## 白話摘要
 
@@ -61,7 +61,7 @@ controlled apply 完成後：
 
 ## Production 執行條件
 
-目前只批准建立與本地演練，**尚未批准 Production apply**。若要執行：
+Production 已依下列受控流程執行完成；命令保留作為稽核格式，不得使用歷史 token 重跑：
 
 ```bash
 pnpm run seed:travel:secure-data-api inspect
@@ -73,16 +73,23 @@ TRAVEL_SECURITY_TARGET_CONFIRM=<同次 inspect 的 database fingerprint> \
 pnpm run seed:travel:secure-data-api verify
 ```
 
-Production apply 後必須取得與本地相同的 70/70、0/70、16/16 negative-test 結果，並再次執行 Payload server-side read verification。任何表缺失、migration record 已存在、token 不符、SQLSTATE 不是 `42501` 或 Payload owner 讀取失敗都必須停止，不得進入 runtime cutover。
+## 2026-07-17 Production 執行紀錄
+
+- fresh inspect：database fingerprint `db:f186aaf5a523`、implementation fingerprint `impl:be80a5e2b1af`；70/70 tables 存在、RLS 0/70、anon/authenticated 均為 70/70 有 table privileges，migration record 不存在。
+- controlled apply 使用同次 inspect token，在單一 transaction 內完成 70 張表 RLS、grants revoke、batch 7 migration record 與 commit 前 16 組 savepoint negative tests；明確回傳 `committed: true`。
+- commit 後獨立重新連線 verify：RLS 70/70、anon 有 privileges 0/70、authenticated 有 privileges 0/70；兩角色各 8 組 SELECT／INSERT／UPDATE／DELETE 全部回傳 SQLSTATE `42501`。
+- Payload Local API owner read-back：legacy `travel-projects` 5、`travel-plans` 2、`travel-memories` 3、`travel-route-identities` 5。
+- migration history：`20260717_121714_phase_17_secure_travel_data_api` 為 batch 7；既有 `dev/-1` record 保留。
+- 正式站 HTTP smoke：`/`、`/travel`、`/family/login` 均回傳 200，未出現 runtime 500。
+- 本輪沒有 runtime code cutover、資料 copy、舊表／欄位刪除或其他 Production mutation。
 
 ## Runtime cutover 評估
 
-安全 migration 本身已達到可送 Production 批准的程度，但 runtime cutover 仍是 **not ready**：
+security blocker 已解除，但 runtime cutover 仍是 **not ready**：
 
-- Production 尚未套用本 security migration。
 - `src/lib/data/travel.ts` 仍只讀 `travel-projects`。
 - `src/lib/data/home.ts` 仍以 `travel-projects` 解析 featured travel。
 - 新 polymorphic relationship fields 尚未接到 runtime data layer。
 - 尚未完成新 collections 的 route/browser QA、Preview 驗證與 rollback observation window。
 
-因此下一個合理決策點是「是否批准 Production security migration」，不是「是否立即 cutover」。security verify 通過後，才能另開 runtime data-layer cutover 實作與 QA；舊表／舊欄位清理仍是最後的 destructive phase。
+因此下一個合理工作是 runtime data-layer cutover 實作與 Preview／browser QA，而不是刪除舊表。舊表／舊欄位清理仍是最後的 destructive phase，必須等待 cutover、觀察期與獨立批准。

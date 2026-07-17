@@ -251,7 +251,7 @@ Production `payload_migrations` 保留歷史 `dev/-1` record，Payload CLI 因�
 
 Production 後置安全檢查確認上述新 travel 主表與 relationship tables 尚未啟用 RLS，而 `anon`／`authenticated` 具有 public schema usage 與 table DML privileges。Data API 是否實際暴露仍取決於 Supabase project setting；無論目前是否可由 API 存取，runtime cutover 前都必須另案設計 Payload direct-DB role 與 Data API roles 的 grants／RLS policies，產生 additive security migration 並完成 anon/authenticated negative tests。本次 migration／copy 批准不包含權限變更。
 
-2026-07-17 已完成上述 security 設計與本地驗證：70 張 Phase 17 新表／shared relationship tables 採 RLS deny-by-default，並撤銷 `anon`／`authenticated` 全部 table privileges；不建立 allow policy、不使用 FORCE RLS，也不變更 `service_role` 或全域 default privileges。disposable PostgreSQL 17 演練為 70/70 RLS enabled、兩角色 0/70 有 privileges、16/16 SELECT／INSERT／UPDATE／DELETE 負向測試均回傳 `42501`，Payload／DB owner 正向存取通過。Production 目前只完成唯讀 baseline，security migration 尚未套用；完整批准條件見 `docs/phase-artifacts/phase-17/travel-data-api-security-approval-package.md`。
+2026-07-17 已完成上述 security 設計、本地驗證與 Production 執行：70 張 Phase 17 新表／shared relationship tables 採 RLS deny-by-default，並撤銷 `anon`／`authenticated` 全部 table privileges；不建立 allow policy、不使用 FORCE RLS，也不變更 `service_role` 或全域 default privileges。Production batch 7 migration 已 commit；獨立 verify 為 70/70 RLS enabled、兩角色 0/70 有 privileges、16/16 SELECT／INSERT／UPDATE／DELETE 負向測試均回傳 `42501`。Payload owner read-back 維持 legacy 5、Plans 2、Memories 3、Route identities 5，既有 `dev/-1` record 保留。完整證據見 `docs/phase-artifacts/phase-17/travel-data-api-security-approval-package.md`。
 
 ### Phase 17 補充後的 domain 結論
 
