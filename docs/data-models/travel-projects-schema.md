@@ -249,6 +249,8 @@ Full-projection read-back 已成功取得五筆 conflict evidence，read-back sc
 
 Production `payload_migrations` 保留歷史 `dev/-1` record，Payload CLI 因此顯示 data-loss 警告；依停止條件未確認。網站擁有者另行批准 controlled executor：不刪除或修改 `dev/-1`，只在單一 transaction 執行五份已審查 Phase 17 `up()`，並把五筆 migration records 寫為 batch 6。executor 綁定完整 baseline history、migration／implementation hashes、5／12／2／1 legacy inventory 與 target schema absence；transaction 內鎖表後重讀，任一漂移即 rollback。disposable PostgreSQL 17 的 partial-schema 拒絕、migration read-back 與後續完整 data-copy verify 均通過；2026-07-17 Production controlled migration 與 copy 亦已完成，現有 Plans 2、Memories 3、Route identities 5、shadow relationships 12／2／1，完整內容與 legacy read-back 通過。runtime 尚未 cutover，舊表與舊欄位仍保留。
 
+Production 後置安全檢查確認上述新 travel 主表與 relationship tables 尚未啟用 RLS，而 `anon`／`authenticated` 具有 public schema usage 與 table DML privileges。Data API 是否實際暴露仍取決於 Supabase project setting；無論目前是否可由 API 存取，runtime cutover 前都必須另案設計 Payload direct-DB role 與 Data API roles 的 grants／RLS policies，產生 additive security migration 並完成 anon/authenticated negative tests。本次 migration／copy 批准不包含權限變更。
+
 ### Phase 17 補充後的 domain 結論
 
 網站擁有者已釐清：planning travel 是行前審核、修訂與家庭決策工作台；travel memory 是旅遊結束後的記錄、照片與分享作品。兩者沒有同一筆 record／同一頁面由 planning 切成 memory 的需求。Planning travel 在旅遊時間未過時顯示於「規劃中／Active Plans」，時間已過但仍保留原計畫時顯示於「過往規劃／Archived Plans」；後者不是 early `Pre-planning`，也不是 Travel Memory。正式架構決策見 `docs/adr/0007-travel-plans-and-memories-are-separate-records.md`。

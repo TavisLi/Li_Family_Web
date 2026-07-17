@@ -1,7 +1,7 @@
 # Phase 17 Travel Migration／Data-copy 執行與批准包
 
 更新日期：2026-07-17
-目前狀態：**Production controlled migration、5-record data-copy 與完整 read-back 已完成；legacy runtime 保留，尚未 cutover。**
+目前狀態：**Production controlled migration、5-record data-copy 與完整 read-back 已完成；legacy runtime 保留，RLS blocker 未處理前不得 cutover。**
 
 ## 白話摘要
 
@@ -175,10 +175,12 @@ CLI 會 rollback 同一個 request transaction。停止後重新執行 `inspect`
 - Production 完整 verify 通過：Plans 2、Memories 3、Route identities 5；五個 slugs、完整雙語／nested content，以及每筆 shadow relationship owner ID／target collection／target slug 全部與批准 manifest 相符；legacy relationship counts 仍為 12／2／1。
 - 既有 `seed:travel:read-back` 通過：3 筆 skip、2 筆原有 conflict、0 creates／updates／deletes。兩筆 conflict 仍是已批准的重慶 redundant `lodgings` 與 2027 普吉島 payload-wins link labels，證明 legacy reconciliation evidence 未被 copy 改寫。
 - Supabase pooler 在部分 Payload 初始化／verify 嘗試出現 connection timeout；所有寫入都只在取得完整 token 後執行一次，未重跑 apply。Production copy transaction 約需數分鐘，但 `pg_stat_activity` 顯示持續前進且無 lock wait，最後明確回傳 `committed: true`。
+- Production 後置安全檢查發現：`travel_plans`、`travel_memories`、`travel_route_identities`、`home_config_rels`、`media_rels`、`timeline_events_rels` 均為 `RLS=false`，且 `anon`／`authenticated` 對 `public` schema 有 USAGE，對抽查的 `travel_plans` 具有 SELECT／INSERT／UPDATE／DELETE。是否由 Data API 實際暴露仍取決於 Supabase 專案設定，但 runtime cutover 前必須另行完成 RLS／grant policy 設計、migration 與驗證；本輪未獲批准，不直接修改權限。
 
 ## 仍未批准的事項
 
 - runtime dual-read／cutover
+- RLS／Data API grants 變更
 - 清空或刪除 `travel-projects`
 - 刪除舊 relationship 欄位
 - Issue #50／#57 關閉
