@@ -247,7 +247,7 @@ Full-projection read-back 已成功取得五筆 conflict evidence，read-back sc
 
 ### Controlled migration 執行決策（2026-07-17）
 
-Production `payload_migrations` 保留歷史 `dev/-1` record，Payload CLI 因此顯示 data-loss 警告；依停止條件不得確認。網站擁有者已另行批准 controlled executor：不刪除或修改 `dev/-1`，只在單一 transaction 執行五份已審查 Phase 17 `up()`，並把五筆 migration records 寫為 batch 6。executor 會綁定完整 baseline history、migration／implementation hashes、5／12／2／1 legacy inventory 與 target schema absence；transaction 內鎖表後重讀，任一漂移即 rollback。disposable PostgreSQL 17 的 partial-schema 拒絕、migration read-back 與後續完整 data-copy verify 均已通過；Production 仍須使用最新 inspect token。
+Production `payload_migrations` 保留歷史 `dev/-1` record，Payload CLI 因此顯示 data-loss 警告；依停止條件未確認。網站擁有者另行批准 controlled executor：不刪除或修改 `dev/-1`，只在單一 transaction 執行五份已審查 Phase 17 `up()`，並把五筆 migration records 寫為 batch 6。executor 綁定完整 baseline history、migration／implementation hashes、5／12／2／1 legacy inventory 與 target schema absence；transaction 內鎖表後重讀，任一漂移即 rollback。disposable PostgreSQL 17 的 partial-schema 拒絕、migration read-back 與後續完整 data-copy verify 均通過；2026-07-17 Production controlled migration 與 copy 亦已完成，現有 Plans 2、Memories 3、Route identities 5、shadow relationships 12／2／1，完整內容與 legacy read-back 通過。runtime 尚未 cutover，舊表與舊欄位仍保留。
 
 ### Phase 17 補充後的 domain 結論
 

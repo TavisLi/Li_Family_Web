@@ -1,7 +1,7 @@
 # Phase 17 Travel Migration／Data-copy 執行與批准包
 
 更新日期：2026-07-17
-目前狀態：**controlled migration 與 data-copy 已取得 Production 執行批准；controlled executor 本地全流程通過，Production 尚待最新 inspect 後執行。**
+目前狀態：**Production controlled migration、5-record data-copy 與完整 read-back 已完成；legacy runtime 保留，尚未 cutover。**
 
 ## 白話摘要
 
@@ -157,7 +157,7 @@ CLI 會 rollback 同一個 request transaction。停止後重新執行 `inspect`
 ## 2026-07-17 Production 執行紀錄
 
 - 網站擁有者已明確批准執行五份 Production migrations、5-record transactional data-copy 與 read-back／verify。
-- 最新執行版本：commit `1600106`；database fingerprint：`db:f186aaf5a523`；approval token：`phase-17-copy:db8e773f288fd2dc`。
+- 初始 copy 執行包版本：commit `1600106`；最終 controlled executor 版本：commit `458210b`；database fingerprint：`db:f186aaf5a523`。
 - migration 前 Production inspect 通過：2 Plans／3 Memories、0 record blockers、所有 target／shadow rows 為 0，legacy references 為 Media 12／TimelineEvents 2／HomeConfig 1，且缺少的 migration 恰好為本包五份。
 - 第一次 `pnpm exec payload migrate` 在第一個唯讀 migration-table query 遇到 Supabase pooler connection timeout，尚未開始 migration。
 - 受控重試連線成功，但 Payload 偵測到 Production `payload_migrations` 仍有 `name = dev, batch = -1`，顯示繼續會造成 data loss 的警告；operator 依停止條件選擇 `no`。
@@ -168,6 +168,13 @@ CLI 會 rollback 同一個 request transaction。停止後重新執行 `inspect`
 - disposable PostgreSQL 17 最終演練通過：刻意建立 `home_config_rels` partial-schema marker 時 inspect 正確拒絕；清除 marker 後，以 token `phase-17-migrate:55991d35a293d234` 完成單一 transaction，五份 records 均為 batch 6，`dev/-1` 與 legacy inventory 不變，十個 target schema markers 全部 read-back 成功。
 - 同一 disposable database 接續完成 Payload full fixture 與 data-copy：copy token `phase-17-copy:d172dfc164aa59e0`，2 Plans／3 Memories／5 route identities、完整雙語 nested content 與 12／2／1 shadow relationship owner mappings 全部 verify 通過。
 - 上述兩個 token 只屬於本地 database；不得用於 Production。Production 必須在 executor commit 固定後重新 inspect 取得新 token。
+- commit `458210b` 後的 Production controlled inspect 通過：完整 8-row baseline history、`dev/-1`、5／12／2／1 inventory 與十個 target schema markers absence 全部吻合；批准 token 為 `phase-17-migrate:b85a3a68559928aa`。
+- Production controlled migration 已以單一 transaction commit：五份已審查 `up()` 與五筆 batch 6 migration records 一起完成；read-back 確認 `dev/-1` 未修改、十個 schema markers 全部存在、legacy inventory 維持 5／12／2／1。
+- migration 後 copy inspect 再次確認五份 migrations 全 applied、2 Plans／3 Memories 全部 0 blockers、target／shadow rows 仍為 0；Production copy token 為 `phase-17-copy:db8e773f288fd2dc`。
+- Production data-copy 已以單一 transaction commit：copied 5，shadow references 為 Media 12／TimelineEvents 2／HomeConfig 1。
+- Production 完整 verify 通過：Plans 2、Memories 3、Route identities 5；五個 slugs、完整雙語／nested content，以及每筆 shadow relationship owner ID／target collection／target slug 全部與批准 manifest 相符；legacy relationship counts 仍為 12／2／1。
+- 既有 `seed:travel:read-back` 通過：3 筆 skip、2 筆原有 conflict、0 creates／updates／deletes。兩筆 conflict 仍是已批准的重慶 redundant `lodgings` 與 2027 普吉島 payload-wins link labels，證明 legacy reconciliation evidence 未被 copy 改寫。
+- Supabase pooler 在部分 Payload 初始化／verify 嘗試出現 connection timeout；所有寫入都只在取得完整 token 後執行一次，未重跑 apply。Production copy transaction 約需數分鐘，但 `pg_stat_activity` 顯示持續前進且無 lock wait，最後明確回傳 `committed: true`。
 
 ## 仍未批准的事項
 
