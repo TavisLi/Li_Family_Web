@@ -1,7 +1,7 @@
 # Phase 17 Travel Migration／Data-copy 執行與批准包
 
 更新日期：2026-07-17
-目前狀態：**Production controlled migration、5-record data-copy 與完整 read-back 已完成；legacy runtime 保留，RLS blocker 未處理前不得 cutover。**
+目前狀態：**Production controlled migration、5-record data-copy 與完整 read-back 已完成；legacy runtime 保留。RLS／grants migration 已完成本地演練，Production 尚未套用。**
 
 ## 白話摘要
 
@@ -180,7 +180,7 @@ CLI 會 rollback 同一個 request transaction。停止後重新執行 `inspect`
 ## 仍未批准的事項
 
 - runtime dual-read／cutover
-- RLS／Data API grants 變更
+- Production RLS／Data API grants migration（本地執行包已完成，等待另行批准）
 - 清空或刪除 `travel-projects`
 - 刪除舊 relationship 欄位
 - Issue #50／#57 關閉
