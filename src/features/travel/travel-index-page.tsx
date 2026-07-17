@@ -5,12 +5,12 @@ import { ArrowRight, CalendarDays, Compass, MapPin, Plane } from 'lucide-react'
 
 import { ImageFallback } from '@/components/ui/image-fallback'
 import { PayloadImage } from '@/components/ui/payload-image'
-import type { TravelProject } from '@/payload/payload-types'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import { classifyTravelPlan } from '@/lib/travel-domain'
 
 type TravelIndexPageProps = {
   currentDate?: Date | string
-  projects: TravelProject[]
+  projects: TravelRuntimeRecord[]
 }
 
 export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIndexPageProps) {
@@ -151,7 +151,7 @@ function TravelProjectGroup({
   empty: string
   icon: ReactNode
   id: string
-  projects: TravelProject[]
+  projects: TravelRuntimeRecord[]
   statusLabelOverride?: string
   title: string
 }) {
@@ -189,7 +189,7 @@ function TravelProjectRow({
   project,
   statusLabelOverride,
 }: {
-  project: TravelProject
+  project: TravelRuntimeRecord
   statusLabelOverride?: string
 }) {
   return (
@@ -267,11 +267,11 @@ function CorridorNote({
   )
 }
 
-function statusLabel(status: TravelProject['status']) {
+function statusLabel(status: TravelRuntimeRecord['status']) {
   return status === 'planning' ? '規劃中' : '已完成'
 }
 
-function formatDateRange(project: TravelProject) {
+function formatDateRange(project: TravelRuntimeRecord) {
   return `${project.startDate.slice(0, 10)} - ${project.endDate.slice(0, 10)}`
 }
 

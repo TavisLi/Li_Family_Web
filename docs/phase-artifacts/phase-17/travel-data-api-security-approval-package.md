@@ -1,7 +1,7 @@
 # Phase 17 Travel Data API Security Migration 批准包
 
 更新日期：2026-07-17
-目前狀態：**Production security migration、獨立 verify 與 Payload owner read-back 已完成；runtime 尚未 cutover。**
+目前狀態：**Production security migration、獨立 verify 與 Payload owner read-back 已完成；runtime cutover 已在本地實作及驗證，尚未 deploy。**
 
 ## 白話摘要
 
@@ -85,11 +85,12 @@ pnpm run seed:travel:secure-data-api verify
 
 ## Runtime cutover 評估
 
-security blocker 已解除，但 runtime cutover 仍是 **not ready**：
+security blocker 已解除，本地 runtime cutover 實作與驗證已完成：
 
-- `src/lib/data/travel.ts` 仍只讀 `travel-projects`。
-- `src/lib/data/home.ts` 仍以 `travel-projects` 解析 featured travel。
-- 新 polymorphic relationship fields 尚未接到 runtime data layer。
-- 尚未完成新 collections 的 route/browser QA、Preview 驗證與 rollback observation window。
+- `src/lib/data/travel.ts` 已停止查詢 `travel-projects`，改讀 `travel-plans` 與 `travel-memories`，再轉為共用 runtime view model。
+- `src/lib/data/home.ts` 已改用新 `featuredTravelRecord`；以 collection + id 做套用目前 session access rules 的精確查詢，不直接信任 global relationship depth，也不受首頁列表筆數限制。
+- 新 collection 查詢採依序執行，避免本地 browser rehearsal 實際重現的 Supabase pooler connection timeout。
+- Phase 17／16／9 tests、TypeScript 與 Node 20.20.2 Production build 通過。
+- 公開訪客 `/travel` 與首頁 browser smoke 通過，family-only records 未出現在頁面；Production owner 唯讀 adapter probe 確認 2 Plans／3 Memories 皆能完整轉換。
 
-因此下一個合理工作是 runtime data-layer cutover 實作與 Preview／browser QA，而不是刪除舊表。舊表／舊欄位清理仍是最後的 destructive phase，必須等待 cutover、觀察期與獨立批准。
+這些證據只代表目前 branch 可進入 Preview／deploy gate，**不代表 Production runtime 已切換**。仍需完成 family-mode Preview／browser QA、部署與 rollback observation window。舊表／舊欄位清理仍是最後的 destructive phase，必須等待正式 cutover、觀察期與獨立批准。

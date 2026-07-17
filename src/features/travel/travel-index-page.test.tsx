@@ -4,6 +4,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 import type { Media, TravelProject } from '@/payload/payload-types'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import { TravelIndexPage } from './travel-index-page'
 
 const coverImage: Media = {
@@ -71,7 +72,7 @@ const projects: TravelProject[] = [
 const html = renderToStaticMarkup(
   createElement(TravelIndexPage, {
     currentDate: '2026-08-01T00:00:00.000Z',
-    projects,
+    projects: projects.map(runtimeProject),
   }),
 )
 
@@ -93,6 +94,19 @@ assert.match(html, /\/travel\/202607-chongqing-yangtze-river/)
 assert.match(html, /旅遊日期已過的計畫會歸檔在這裡/)
 assert.doesNotMatch(html, /前期規劃|preliminary/i)
 assert.match(html, /object-cover transition duration-500 group-hover:scale-105/)
+
+function runtimeProject(project: TravelProject): TravelRuntimeRecord {
+  const isPlan = project.status === 'planning'
+
+  return {
+    ...project,
+    id: `${isPlan ? 'travel-plans' : 'travel-memories'}:${project.id}`,
+    sourceId: project.id,
+    collection: isPlan ? 'travel-plans' : 'travel-memories',
+    kind: isPlan ? 'plan' : 'memory',
+    status: project.status,
+  } as TravelRuntimeRecord
+}
 assert.doesNotMatch(html, /object-contain transition duration-500 group-hover:scale-105/)
 assert.match(html, /bg-gradient-to-r from-slate-950 via-sky-800 to-cyan-600 bg-clip-text/)
 assert.doesNotMatch(html, /from-slate-950 via-cyan-950 to-amber-900 px-5 py-8 text-white/)

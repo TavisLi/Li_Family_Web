@@ -1,6 +1,12 @@
 import 'server-only'
 
-import type { Comment, TravelProject } from '@/payload/payload-types'
+import type { Comment, HomeConfig, User } from '@/payload/payload-types'
+import {
+  mergeTravelRuntimeRecords,
+  resolveTravelRuntimeRelationship,
+  toTravelRuntimeRecord,
+  type TravelRuntimeRecord,
+} from '@/lib/travel-runtime'
 import { getCurrentUser, userReq } from './auth'
 import { getPayloadClient } from './payload'
 
@@ -38,11 +44,22 @@ export type TravelInteractionResult =
       message: string
     }
 
-export async function getFeaturedTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelProject[]> {
+export async function getFeaturedTravelProjects(
+  limit = DEFAULT_LIMIT,
+  currentUser?: User | null,
+): Promise<TravelRuntimeRecord[]> {
   const payload = await getPayloadClient()
-  const user = await getCurrentUser()
-  const result = await payload.find({
-    collection: 'travel-projects',
+  const user = currentUser === undefined ? await getCurrentUser() : currentUser
+  const plans = await payload.find({
+    collection: 'travel-plans',
+    depth: 1,
+    limit,
+    overrideAccess: false,
+    sort: '-startDate',
+    ...userReq(user),
+  })
+  const memories = await payload.find({
+    collection: 'travel-memories',
     depth: 1,
     limit,
     overrideAccess: false,
@@ -50,29 +67,72 @@ export async function getFeaturedTravelProjects(limit = DEFAULT_LIMIT): Promise<
     ...userReq(user),
   })
 
-  return result.docs
+  return mergeTravelRuntimeRecords(plans.docs, memories.docs, limit)
 }
 
-export async function getTravelProjects(limit = TRAVEL_LIMIT): Promise<TravelProject[]> {
+export async function getTravelProjects(limit = TRAVEL_LIMIT): Promise<TravelRuntimeRecord[]> {
+  return getFeaturedTravelProjects(limit)
+}
+
+export async function getTravelRecordByRelationship(
+  relationship: HomeConfig['featuredTravelRecord'],
+  currentUser?: User | null,
+): Promise<TravelRuntimeRecord | null> {
+  if (!relationship) return null
+
   const payload = await getPayloadClient()
-  const user = await getCurrentUser()
+  const user = currentUser === undefined ? await getCurrentUser() : currentUser
+  const sourceId =
+    typeof relationship.value === 'object' ? relationship.value.id : relationship.value
+
+  if (relationship.relationTo === 'travel-plans') {
+    const result = await payload.find({
+      collection: 'travel-plans',
+      depth: 1,
+      limit: 1,
+      overrideAccess: false,
+      where: {
+        id: {
+          equals: sourceId,
+        },
+      },
+      ...userReq(user),
+    })
+    const record = result.docs[0]
+
+    return record
+      ? resolveTravelRuntimeRelationship(relationship, [
+          toTravelRuntimeRecord('travel-plans', record),
+        ])
+      : null
+  }
+
   const result = await payload.find({
-    collection: 'travel-projects',
+    collection: 'travel-memories',
     depth: 1,
-    limit,
+    limit: 1,
     overrideAccess: false,
-    sort: '-startDate',
+    where: {
+      id: {
+        equals: sourceId,
+      },
+    },
     ...userReq(user),
   })
+  const record = result.docs[0]
 
-  return result.docs
+  return record
+    ? resolveTravelRuntimeRelationship(relationship, [
+        toTravelRuntimeRecord('travel-memories', record),
+      ])
+    : null
 }
 
-export async function getTravelProjectBySlug(slug: string): Promise<TravelProject | null> {
+export async function getTravelProjectBySlug(slug: string): Promise<TravelRuntimeRecord | null> {
   const payload = await getPayloadClient()
   const user = await getCurrentUser()
-  const result = await payload.find({
-    collection: 'travel-projects',
+  const plans = await payload.find({
+    collection: 'travel-plans',
     depth: 1,
     limit: 1,
     overrideAccess: false,
@@ -83,8 +143,27 @@ export async function getTravelProjectBySlug(slug: string): Promise<TravelProjec
     },
     ...userReq(user),
   })
+  const memories = plans.docs[0]
+    ? null
+    : await payload.find({
+        collection: 'travel-memories',
+        depth: 1,
+        limit: 1,
+        overrideAccess: false,
+        where: {
+          slug: {
+            equals: slug,
+          },
+        },
+        ...userReq(user),
+      })
 
-  return result.docs[0] ?? null
+  if (plans.docs[0]) return toTravelRuntimeRecord('travel-plans', plans.docs[0])
+  if (memories?.docs[0]) {
+    return toTravelRuntimeRecord('travel-memories', memories.docs[0])
+  }
+
+  return null
 }
 
 export async function getTravelInteractionThread(

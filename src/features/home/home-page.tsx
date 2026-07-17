@@ -18,13 +18,13 @@ import { PayloadImage } from '@/components/ui/payload-image'
 import type { FamilySession } from '@/lib/data/auth'
 import type { WrappedHomeCta } from '@/lib/data/wrapped'
 import { getMediaUrl } from '@/lib/media'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import type {
   BucketItem,
   HomeConfig,
   Media,
   Post,
   TimelineEvent,
-  TravelProject,
   User,
 } from '@/payload/payload-types'
 import { HomeBucketQuickView } from './home-bucket-quick-view'
@@ -32,11 +32,12 @@ import { HomeBucketQuickView } from './home-bucket-quick-view'
 type HomePageViewProps = {
   bucketItems: BucketItem[]
   familySession: FamilySession
+  featuredTravel: TravelRuntimeRecord | null
   homeConfig: HomeConfig
   members: User[]
   posts: Post[]
   timelineEvent: TimelineEvent | null
-  travelProjects: TravelProject[]
+  travelProjects: TravelRuntimeRecord[]
   wrappedCta: WrappedHomeCta
 }
 
@@ -65,17 +66,18 @@ function memberImage(member: User) {
   return member.cardImage ?? member.avatar ?? member.heroImage
 }
 
-function travelTone(project: TravelProject): MemberTone {
+function travelTone(project: TravelRuntimeRecord): MemberTone {
   return project.status === 'planning' ? 'travel' : 'lynn'
 }
 
-function formatTravelDate(project: TravelProject) {
+function formatTravelDate(project: TravelRuntimeRecord) {
   return `${project.startDate} - ${project.endDate}`
 }
 
 export function HomePageView({
   bucketItems,
   familySession,
+  featuredTravel,
   homeConfig,
   members,
   posts,
@@ -83,8 +85,6 @@ export function HomePageView({
   travelProjects,
   wrappedCta,
 }: HomePageViewProps) {
-  const featuredTravel =
-    typeof homeConfig.featuredTravel === 'object' ? homeConfig.featuredTravel : travelProjects[0]
   const heroHasImage = Boolean(getMediaUrl(homeConfig.heroBackground))
   const modeLabel = familySession.isFamilyMode
     ? `${familySession.displayName} 的家人模式`

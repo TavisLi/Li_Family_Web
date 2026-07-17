@@ -73,8 +73,8 @@ Planning records 的 `galleryImages`、`itineraryImages`、`flights`、`railSegm
 2. **Inventory**：唯讀確認 2 筆 Plan、3 筆 Memory 及所有 child／relationship non-null counts。
 3. **Copy dry-run**：產生逐 slug mapping report；不寫資料。
 4. **Copy write**：取得獨立批准後，以單一 Payload request transaction 寫入新 collections 與影子 relationships；舊表與舊 relationships 不刪。
-5. **Dual-read**：只在 `src/lib/data/travel.ts` 聚合新舊來源，驗證 `/travel`、detail、首頁與 privacy。
-6. **Cutover**：read-back、Preview 與 Production browser QA 通過後停止舊表寫入。
+5. **Runtime adapter（本地已完成）**：`src/lib/data/travel.ts` 只聚合兩個新 collection，轉成既有 UI 可用的共用 view model；不再 dual-read 舊表，避免同一 slug 有兩個 runtime authority。rollback 依靠尚未刪除的舊資料與回退 deploy，而不是在同一 request 混讀新舊 records。
+6. **Cutover deploy**：本地 tests／build／public browser smoke 已通過；family-mode Preview／browser QA 與 deploy 後觀察通過後，正式站才算停止使用舊表。
 7. **Cleanup**：另一次 destructive approval 後才刪除 `travel-projects` 與未採用欄位。
 
 ## Production 唯讀 Inventory（2026-07-15）
@@ -104,12 +104,22 @@ Media、TimelineEvents 與 HomeConfig 不應永久只指向 `travel-projects`。
 
 對應 migration 為 `20260716_094718_phase_17_add_travel_cutover_relationships`。它只新增 relationship table／columns／indexes／foreign keys；DOWN 在影子 relationship 非空時會拒絕，避免 copy 後誤回退造成資料遺失。
 
+### Runtime adapter 實作結果（2026-07-17）
+
+- `src/lib/travel-runtime.ts` 定義 Plan／Memory 共用 view model，保留既有頁面所需的日期、參與者、sections、Memory gallery、daily highlights、ledger 與 external videos。
+- list 與 detail data functions 已停止查詢 `travel-projects`；Plan 與 Memory 依 access rules 分別讀取後再依 `startDate` 合併排序。
+- HomeConfig 的 `featuredTravelRecord` 以 collection + id 做獨立精確查詢，並套用相同 session access rules；不受首頁最近 6 筆列表限制，也不直接信任 global relationship depth，避免洩露 family-only title／slug。
+- Memory 的 optional `originPlan` 會在共用 view model 保留為 `travel-plans` collection + source id；若日後要顯示 Plan 內容，仍須另做 access-controlled lookup。
+- 兩個 collection 依序查詢；公開訪客 browser rehearsal 曾在平行查詢時重現 Supabase pooler timeout，改為依序後 `/travel` 與首頁均正常。
+- Production owner 唯讀 adapter probe 確認 2 Plans／3 Memories 均可轉換；公開訪客只得到 0 筆 family-only travel，符合 access policy。
+- 本地 `test:phase-17`、`test:phase-16`、`test:phase-9`、`pnpm tsc --noEmit` 與 Node 20.20.2 `pnpm run build` 通過。本地程式尚未 deploy，family-mode Preview／browser QA 與 deploy 後 observation 尚未完成。
+
 ## 本切片界線
 
 已產生 migration `20260715_073322_phase_17_add_travel_collections`。UP 只建立新 collection／version／child／route registry tables、indexes、foreign keys，並替 Payload lock relation 增加兩個欄位；沒有 drop、rename、資料 copy 或 `travel_projects` mutation。人工審查另修正 generated DOWN 的相依順序：先移除 lock-table foreign keys／indexes／columns，再 drop 新 tables，避免 `CASCADE` 後重複刪除 constraint。
 
-這份 migration **尚未執行於 Preview 或 Production**。DOWN 會刪除本次新建表，只能作為尚未存放正式資料時的 rollback；有資料後不可把 DOWN 當一般清理工具。
+這份 migration 已於 2026-07-17 透過受控 executor 在 Production 執行，並與其餘四份已審查 migration 一起記錄為 batch 6；Production target tables 現已存放正式資料。DOWN 會刪除新表，**不得再當一般 rollback 或清理工具**，任何 destructive 操作都需要新的明確批准。
 
-後續 migrations `20260716_045235_phase_17_align_travel_plan_sections` 與 `20260716_091228_phase_17_align_travel_memory_sections` 會把尚為空表的 Plan／Memory section schema 收斂成正式 contract：移除沒有 evidence 的 speculative `kind`，新增 legacy section 實際需要的 level、localized display labels 及獨立 interaction flags。兩份 migration 都含 DROP，但只作用於前面 migrations 剛建立且尚未 copy 資料的新 tables；UP 與 DOWN 都會先檢查各自 target／version 主表必須為空，否則直接拒絕執行，且不讀寫或刪除 `travel_projects`。五份 Phase 17 migrations 必須按順序並在任何 data copy 前執行，且目前尚未取得 Production 執行批准。完整命令、approval fingerprint、transaction、verify 與 rollback 見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md`。
+後續 migrations `20260716_045235_phase_17_align_travel_plan_sections` 與 `20260716_091228_phase_17_align_travel_memory_sections` 已在 data copy 前把當時仍為空表的 Plan／Memory section schema 收斂成正式 contract：移除沒有 evidence 的 speculative `kind`，新增 legacy section 實際需要的 level、localized display labels 及獨立 interaction flags。兩份 migration 的空表防線在 Production 執行時均通過；五份 migrations、data copy 與 read-back 現已完成。完整命令、approval fingerprint、transaction、verify 與 rollback 證據見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md`。
 
 readiness CLI 只解析 travel catalog 與 travel Markdown，不會載入 profiles、member media 或 Blogger archive；任何 planning slug 找不到 matching Source 時，一律標記 record-level blocked，不允許略過 Base／Source／Current 證據檢查。

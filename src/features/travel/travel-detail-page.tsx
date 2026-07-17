@@ -7,7 +7,7 @@ import {
 
 import { PayloadImage } from '@/components/ui/payload-image'
 import type { TravelInteractionThread } from '@/lib/data/travel'
-import type { TravelProject } from '@/payload/payload-types'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import { CompletedTravelLedger } from './completed-travel-ledger'
 import { TravelPhotoGalleryPreview } from './travel-photo-gallery'
 import {
@@ -19,7 +19,7 @@ import { TravelInteractionPanel } from './travel-interaction-panel'
 import { toYouTubeEmbedUrl } from './youtube'
 
 type TravelDetailPageProps = {
-  project: TravelProject
+  project: TravelRuntimeRecord
   threads: Record<string, TravelInteractionThread>
 }
 
@@ -39,7 +39,7 @@ export function TravelDetailPage({ project, threads }: TravelDetailPageProps) {
   )
 }
 
-export function travelInteractionIds(project: TravelProject): string[] {
+export function travelInteractionIds(project: TravelRuntimeRecord): string[] {
   if (project.status !== 'planning') {
     return []
   }
@@ -52,7 +52,7 @@ export function travelInteractionIds(project: TravelProject): string[] {
   return sourceIds
 }
 
-function TravelHero({ project }: { project: TravelProject }) {
+function TravelHero({ project }: { project: TravelRuntimeRecord }) {
   const participants = participantNames(project)
 
   return (
@@ -66,7 +66,9 @@ function TravelHero({ project }: { project: TravelProject }) {
           </p>
           <TravelTitle title={project.title} />
           <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600 md:text-lg">
-            {project.summary || project.externalDocIdentifier || '旅行內容已由 Payload TravelProjects 建立。'}
+            {project.summary ||
+              project.externalDocIdentifier ||
+              '旅行內容已由 Payload 旅遊資料建立。'}
           </p>
           <div className="mt-7 flex flex-wrap gap-2 text-sm font-medium text-slate-600">
             {participants.length ? (
@@ -160,19 +162,19 @@ function PlanningTravelView({
   project,
   threads,
 }: {
-  project: TravelProject
+  project: TravelRuntimeRecord
   threads: Record<string, TravelInteractionThread>
 }) {
   return (
-      <TravelSourceSections
-        project={project}
-        renderInteraction={renderTravelInteraction}
-        threads={threads}
-      />
+    <TravelSourceSections
+      project={project}
+      renderInteraction={renderTravelInteraction}
+      threads={threads}
+    />
   )
 }
 
-function CompletedTravelView({ project }: { project: TravelProject }) {
+function CompletedTravelView({ project }: { project: TravelRuntimeRecord }) {
   const highlights = (project.dailyItinerary ?? []).slice(0, 6)
 
   return (
@@ -304,7 +306,7 @@ function VideoPlaceholder({ title }: { title: string }) {
   )
 }
 
-function participantNames(project: TravelProject): string[] {
+function participantNames(project: TravelRuntimeRecord): string[] {
   const party = (project.party ?? []).map((person) => person.name)
   const members = (project.members ?? []).map((member) =>
     typeof member === 'number' ? null : member.displayName,
@@ -313,11 +315,11 @@ function participantNames(project: TravelProject): string[] {
   return [...party, ...members.filter((member): member is string => Boolean(member))].slice(0, 8)
 }
 
-function statusLabel(status: TravelProject['status']) {
+function statusLabel(status: TravelRuntimeRecord['status']) {
   return status === 'planning' ? '規劃中' : '已完成'
 }
 
-function formatDateRange(project: TravelProject) {
+function formatDateRange(project: TravelRuntimeRecord) {
   return `${project.startDate.slice(0, 10)} - ${project.endDate.slice(0, 10)}`
 }
 
