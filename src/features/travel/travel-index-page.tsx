@@ -157,7 +157,11 @@ function TravelProjectGroup({
   title: string
 }) {
   return (
-    <section aria-labelledby={`${id}-heading`} className="scroll-mt-24 grid gap-3" id={id}>
+    <section
+      aria-labelledby={`${id}-heading`}
+      className="scroll-mt-24 grid gap-3 rounded-lg transition-shadow duration-300 target:ring-2 target:ring-cyan-600/60 target:ring-offset-4 target:ring-offset-cyan-50/50"
+      id={id}
+    >
       <div className="rounded-lg border border-white/60 bg-gradient-to-r from-white/75 via-cyan-50/80 to-amber-50/80 p-4 shadow-sm shadow-slate-900/5">
         <div className="flex items-center gap-3">
         <div className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm shadow-slate-900/15">
@@ -243,7 +247,7 @@ function CorridorNote({
   text: string
 }) {
   return (
-    <Link
+    <a
       className="group grid min-h-[12rem] gap-5 rounded-lg border border-white/65 bg-white/45 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/60"
       href={href}
     >
@@ -265,7 +269,7 @@ function CorridorNote({
         前往區塊
         <ArrowRight className="size-4" aria-hidden="true" />
       </span>
-    </Link>
+    </a>
   )
 }
 
