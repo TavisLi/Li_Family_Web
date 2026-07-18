@@ -132,7 +132,7 @@ export function HomePageView({
               </Button>
               {featuredTravel ? (
                 <Button asChild className="rounded-md bg-white/55" variant="outline">
-                  <Link href={`/travel/${featuredTravel.slug}`}>
+                  <Link href={`/travel/${featuredTravel.slug}`} prefetch={false}>
                     近期足跡
                     <Plane className="size-4" aria-hidden="true" />
                   </Link>
@@ -245,6 +245,7 @@ export function HomePageView({
                     className="grid gap-4 rounded-lg border border-white/10 bg-white/[0.06] p-3 backdrop-blur-md transition hover:bg-white/[0.1] md:grid-cols-[13rem_1fr]"
                     href={`/travel/${project.slug}`}
                     key={project.id}
+                    prefetch={false}
                   >
                     <PayloadImage
                       className="aspect-[4/3] rounded-md"

@@ -113,6 +113,7 @@ Media、TimelineEvents 與 HomeConfig 不應永久只指向 `travel-projects`。
 - 兩個 collection 依序查詢；公開訪客 browser rehearsal 曾在平行查詢時重現 Supabase pooler timeout，改為依序後 `/travel` 與首頁均正常。
 - Production owner 唯讀 adapter probe 確認 2 Plans／3 Memories 均可轉換；公開訪客只得到 0 筆 family-only travel，符合 access policy。
 - 本地 `test:phase-17`、`test:phase-16`、`test:phase-9`、`pnpm tsc --noEmit` 與 Node 20.20.2 `pnpm run build` 通過。本地程式尚未 deploy，family-mode Preview／browser QA 與 deploy 後 observation 尚未完成。
+- 2026-07-18 family-mode Chrome QA 發現 detail navigation 會被多 section comments 平行查詢及 Next.js 自動預取所有 detail routes 塞滿小型 database pool。runtime 已改為單一 comments batch query＋target 分組，首頁與旅遊大廳的 detail links 停用自動 prefetch；Planning／Memory 點擊均已完成 HTTP 200，不再出現原本的 70–95 秒 pool timeout。此修正仍只存在本地 branch。
 
 ## 本切片界線
 

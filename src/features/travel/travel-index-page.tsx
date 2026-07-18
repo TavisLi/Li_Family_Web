@@ -44,6 +44,7 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
           <Link
             className="group relative block overflow-hidden rounded-lg border border-white/55 bg-white/40 shadow-2xl shadow-slate-900/10 backdrop-blur-xl"
             href={`/travel/${featured.slug}`}
+            prefetch={false}
           >
             <PayloadImage
               className="aspect-[4/3] rounded-none"
@@ -196,6 +197,7 @@ function TravelProjectRow({
     <Link
       className="group grid gap-5 py-6 transition hover:bg-white/35 md:grid-cols-[10rem_1fr_auto]"
       href={`/travel/${project.slug}`}
+      prefetch={false}
     >
       <PayloadImage
         className="aspect-[16/10] rounded-md"

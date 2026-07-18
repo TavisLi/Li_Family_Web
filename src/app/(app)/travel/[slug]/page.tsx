@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { TravelDetailPage, travelInteractionIds } from '@/features/travel/travel-detail-page'
 import {
-  getTravelInteractionThread,
+  getTravelInteractionThreads,
   getTravelProjectBySlug,
 } from '@/lib/data/travel'
 import { getMediaUrl } from '@/lib/media'
@@ -58,12 +58,7 @@ export default async function TravelPage({ params }: TravelPageProps) {
     notFound()
   }
 
-  const threadEntries = await Promise.all(
-    travelInteractionIds(project).map(async (associatedId) => [
-      associatedId,
-      await getTravelInteractionThread(associatedId),
-    ] as const),
-  )
+  const threads = await getTravelInteractionThreads(travelInteractionIds(project))
 
-  return <TravelDetailPage project={project} threads={Object.fromEntries(threadEntries)} />
+  return <TravelDetailPage project={project} threads={threads} />
 }

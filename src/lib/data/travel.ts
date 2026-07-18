@@ -1,38 +1,28 @@
 import 'server-only'
 
-import type { Comment, HomeConfig, User } from '@/payload/payload-types'
+import type { HomeConfig, User } from '@/payload/payload-types'
 import {
   mergeTravelRuntimeRecords,
   resolveTravelRuntimeRelationship,
   toTravelRuntimeRecord,
   type TravelRuntimeRecord,
 } from '@/lib/travel-runtime'
+import {
+  buildTravelInteractionThreads,
+  type TravelInteractionThread,
+  type TravelReaction,
+} from '@/lib/travel-interactions'
 import { getCurrentUser, userReq } from './auth'
 import { getPayloadClient } from './payload'
 
 const DEFAULT_LIMIT = 6
 const TRAVEL_LIMIT = 24
 
-export type TravelReaction = 'up' | 'down'
-
-export type TravelCommentSummary = {
-  id: number
-  associatedId: string
-  authorName: string
-  commentText: string | null
-  reaction: TravelReaction | null
-  createdAt: string
-}
-
-export type TravelInteractionThread = {
-  associatedId: string
-  locked: boolean
-  comments: TravelCommentSummary[]
-  reactions: {
-    up: number
-    down: number
-  }
-}
+export type {
+  TravelCommentSummary,
+  TravelInteractionThread,
+  TravelReaction,
+} from '@/lib/travel-interactions'
 
 export type TravelInteractionResult =
   | {
@@ -169,18 +159,29 @@ export async function getTravelProjectBySlug(slug: string): Promise<TravelRuntim
 export async function getTravelInteractionThread(
   associatedId: string,
 ): Promise<TravelInteractionThread> {
+  const threads = await getTravelInteractionThreads([associatedId])
+
+  return threads[associatedId]
+}
+
+export async function getTravelInteractionThreads(
+  associatedIds: string[],
+): Promise<Record<string, TravelInteractionThread>> {
+  const uniqueIds = [...new Set(associatedIds)]
+  if (uniqueIds.length === 0) return {}
+
   const user = await getCurrentUser()
 
   if (!user) {
-    return emptyThread(associatedId, true)
+    return buildTravelInteractionThreads(uniqueIds, [], true)
   }
 
   const payload = await getPayloadClient()
   const result = await payload.find({
     collection: 'comments',
     depth: 1,
-    limit: 100,
     overrideAccess: false,
+    pagination: false,
     req: {
       user,
     },
@@ -194,14 +195,14 @@ export async function getTravelInteractionThread(
         },
         {
           associatedId: {
-            equals: associatedId,
+            in: uniqueIds,
           },
         },
       ],
     },
   })
 
-  return summarizeComments(associatedId, result.docs)
+  return buildTravelInteractionThreads(uniqueIds, result.docs)
 }
 
 export async function submitTravelInteraction(input: {
@@ -248,54 +249,4 @@ export async function submitTravelInteraction(input: {
     status: 'ok',
     thread: await getTravelInteractionThread(input.associatedId),
   }
-}
-
-function emptyThread(associatedId: string, locked: boolean): TravelInteractionThread {
-  return {
-    associatedId,
-    locked,
-    comments: [],
-    reactions: {
-      up: 0,
-      down: 0,
-    },
-  }
-}
-
-function summarizeComments(
-  associatedId: string,
-  comments: Comment[],
-): TravelInteractionThread {
-  return comments.reduce<TravelInteractionThread>((thread, comment) => {
-    const reaction = normalizeReaction(comment.reaction)
-
-    if (reaction) {
-      thread.reactions[reaction] += 1
-    }
-
-    if (comment.commentText?.trim()) {
-      thread.comments.push({
-        id: comment.id,
-        associatedId,
-        authorName: authorName(comment.user),
-        commentText: comment.commentText,
-        reaction,
-        createdAt: comment.createdAt,
-      })
-    }
-
-    return thread
-  }, emptyThread(associatedId, false))
-}
-
-function normalizeReaction(reaction: Comment['reaction']): TravelReaction | null {
-  return reaction === 'up' || reaction === 'down' ? reaction : null
-}
-
-function authorName(user: Comment['user']): string {
-  if (typeof user === 'number') {
-    return '家人'
-  }
-
-  return user.displayName || user.email || '家人'
 }
