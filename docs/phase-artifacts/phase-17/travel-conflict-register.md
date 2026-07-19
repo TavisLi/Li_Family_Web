@@ -4,11 +4,21 @@
 
 - 2026-07-15 已成功重跑 Production 唯讀 `pnpm run seed:travel:read-back`。
 - 結果：0 create、0 update、754 skip、2 conflict、0 delete。
-- 三筆 completed travel 已與 Source 收斂，不再是 conflict；目前只剩兩筆 planning travel。
+- 三筆 completed travel 已與 Source 收斂，不再是 active conflict；仍在下表保留逐 slug 的最終處置軌跡。
 - 兩筆 conflict 的 `sourceChangedPaths` 均為空，差異都來自 Current-only Payload Admin edits。
 - 本文件只記錄決策證據，不批准任何 Production write、migration execution 或 runtime cutover。
 
-## 兩筆 planning conflict
+## 五筆 travel 的最終處置軌跡
+
+| Slug | Field／category | Source／Current 摘要 | 最終判定 | 建議／批准決策 |
+| --- | --- | --- | --- | --- |
+| `201307-hainan` | 無 active field／`none` | 最新 read-back 為 Source = Current；沒有待處理差異 | migration transformer 可 lossless 搬入 Memory | `converged-no-write`：不再修改舊 Current，搬入 `travel-memories` |
+| `202308-east-australia` | 無 active field／`none` | 最新 read-back 為 Source = Current；沒有待處理差異 | migration transformer 可 lossless 搬入 Memory | `converged-no-write`：不再修改舊 Current，搬入 `travel-memories` |
+| `202602-thailand-phuket` | 無 active field／`none` | 最新 read-back 為 Source = Current；沒有待處理差異 | migration transformer 可 lossless 搬入 Memory | `converged-no-write`：不再修改舊 Current，搬入 `travel-memories` |
+| `202607-chongqing-yangtze-river` | `lodgings`／`structured-display-projection` | Source 沒有新增變更；Current-only 保留 city、roomType、address | Planning 正式內容由 `planningSections` 擁有 | `drop-as-redundant`：不搬 legacy `lodgings`，保留舊表作 migration evidence |
+| `202702-thailand-phuket` | `sourceSections[item-1c51hpg].links`／`faithful-source-projection` | Source 保留 raw URL labels；Current-only 是 Admin 人類可讀 labels | Payload Admin 的人類可讀標籤必須保留 | `payload-wins`：Current labels 搬入新 Plan；Source raw labels 留在新 Base |
+
+## 兩筆仍有差異的 planning evidence
 
 | Slug | Field path | Base → Source | Base → Current | 判定 | 建議決策 |
 | --- | --- | --- | --- | --- | --- |
@@ -32,11 +42,10 @@
 - 舊 Base 留在舊表作 migration evidence；新 Base 由 Plan transformer 重建。
 - Preview／Production read-back、relationship cutover、觀察期與資料庫備份完成後，才另案批准 drop 舊表及 child tables。
 
-2026-07-16 Production 唯讀 mapping dry-run 已確認五筆 records 都是 record-level ready：兩筆 Plans 分別為 archived／active，三筆 Memories 也已完成 lossless mapping 與新 Base/hash transformer。整體 data-copy write 仍因四份 target migrations 未套用，以及 legacy relationships 尚未 cutover 而維持 BLOCKED。
+2026-07-16 Production 唯讀 mapping dry-run 已確認五筆 records 都是 record-level ready：兩筆 Plans 分別為 archived／active，三筆 Memories 也已完成 lossless mapping 與新 Base/hash transformer。2026-07-17 已完成五份 additive migrations、5-record copy、12／2／1 shadow relationship copy、完整 read-back 與 70-table security migration；舊表仍保留作 rollback evidence。
 
-## 尚未批准
+## 目前仍未完成／需另案批准
 
-1. Preview／Production migration execution。
-2. 兩筆 Plan 的 data-copy write。
-3. Media／TimelineEvents／HomeConfig relationship cutover。
-4. 舊 `travel_projects`／child tables destructive cleanup。
+1. runtime cutover branch 的 Preview／Production deploy 與觀察期。
+2. 舊 `travel_projects`、child tables 與舊 relationship 欄位的 destructive cleanup。
+3. Issue #50／#57 關閉；必須依 deploy、觀察與 cleanup 的實際結果判斷。

@@ -30,6 +30,7 @@ export type TravelReconciliationPlan = {
 }
 
 const ignoredProjectionKeys = new Set([
+  'collection',
   'createdAt',
   'id',
   'sourceMetadata',
@@ -66,7 +67,7 @@ export function classifyTravelField(field: string): TravelFieldCategory {
     return 'media-projection'
   }
 
-  if (root === 'sourceSections') {
+  if (['planningSections', 'sourceSections', 'storySections'].includes(root ?? '')) {
     return 'faithful-source-projection'
   }
 
@@ -261,14 +262,18 @@ function stableArrayIdentity(
     return (item) => compositeIdentity(item, ['flightNumber', 'date', 'route'])
   }
 
-  if (field === 'dailyItinerary') {
+  if (field === 'dailyHighlights' || field === 'dailyItinerary') {
     return (item) =>
       typeof item.day === 'number' && Number.isInteger(item.day) && item.day > 0
         ? `day-${item.day}`
         : undefined
   }
 
-  if (field === 'sourceSections') {
+  if (
+    field === 'planningSections' ||
+    field === 'sourceSections' ||
+    field === 'storySections'
+  ) {
     return (item) =>
       typeof item.anchor === 'string' && item.anchor.trim() ? item.anchor : undefined
   }

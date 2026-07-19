@@ -25,7 +25,12 @@ export function buildTravelConflictRegister(
   decisionOverrides: Record<string, TravelConflictDecision> = {},
 ): TravelConflictRegisterEntry[] {
   return actions.flatMap((action) => {
-    if (action.collection !== 'travel-projects' || action.action !== 'conflict') return []
+    if (
+      !['travel-memories', 'travel-plans', 'travel-projects'].includes(action.collection) ||
+      action.action !== 'conflict'
+    ) {
+      return []
+    }
 
     return (action.conflicts ?? []).map((conflict) => {
       const key = `${action.key}:${conflict.field}`

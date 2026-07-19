@@ -281,9 +281,9 @@ export function buildTravelPlanCopyDraft(
     throw new Error('舊 Plan 缺少 source file identity。')
   }
 
-  const currentProjection = buildPlanProjection(project as unknown as Record<string, unknown>)
+  const currentProjection = buildTravelPlanProjection(project as unknown as Record<string, unknown>)
   const baseProjection = buildTravelProjection(
-    buildPlanProjection(legacyBase),
+    buildTravelPlanProjection(legacyBase),
   ) as TravelPlanProjection
 
   if (source.slug !== project.slug) {
@@ -294,7 +294,7 @@ export function buildTravelPlanCopyDraft(
   }
 
   const liveSourceProjection = buildTravelProjection(
-    buildPlanProjection(source as unknown as Record<string, unknown>),
+    buildTravelPlanProjection(source as unknown as Record<string, unknown>),
   ) as TravelPlanProjection
   if (
     JSON.stringify(comparablePlanSource(baseProjection)) !==
@@ -344,7 +344,7 @@ function comparablePlanSource(projection: TravelPlanProjection): TravelProjectio
   return buildTravelProjection(comparable)
 }
 
-function buildPlanProjection(value: Record<string, unknown>): TravelPlanProjection {
+export function buildTravelPlanProjection(value: Record<string, unknown>): TravelPlanProjection {
   if (typeof value.slug !== 'string' || !value.slug) {
     throw new Error('舊 Plan 缺少 canonical slug。')
   }

@@ -1,31 +1,17 @@
 import type {
   HomeConfig,
-  Media,
   TravelMemory,
   TravelPlan,
-  User,
 } from '@/payload/payload-types'
 
-export type TravelRuntimeSection = {
-  level: number
-  title: string
-  anchor: string
-  displayDay?: string | null
-  displayDate?: string | null
-  displaySubtitle?: string | null
-  body: string
-  links?:
-    | {
-        label: string
-        url: string
-        id?: string | null
-      }[]
-    | null
-  mediaItems?: (number | Media)[] | null
+type TravelPlanSection = NonNullable<TravelPlan['planningSections']>[number]
+type TravelSectionLink = NonNullable<TravelPlanSection['links']>[number]
+
+export type TravelRuntimeSection = Omit<TravelPlanSection, 'interactions' | 'links'> & {
+  links?: (Omit<TravelSectionLink, 'label'> & { label: string })[] | null
   enableComments?: boolean | null
   enableThumbsUp?: boolean | null
   enableThumbsDown?: boolean | null
-  id?: string | null
 }
 
 type TravelRuntimeDailyHighlight = Omit<
@@ -45,42 +31,34 @@ type TravelRuntimeLodging = NonNullable<
   dateRange?: string | null
 }
 
-type TravelRuntimeBase = {
+type TravelRuntimeVideo = Omit<
+  NonNullable<TravelMemory['externalVideos']>[number],
+  'title' | 'url'
+> & {
+  title: string
+  youtubeUrl: string
+}
+
+type TravelRuntimeBase = Pick<
+  TravelPlan,
+  'coverImage' | 'endDate' | 'isPrivate' | 'slug' | 'startDate' | 'summary' | 'title'
+> & {
   id: string
   sourceId: number
-  title: string
-  slug: string
-  isPrivate?: boolean | null
-  startDate: string
-  endDate: string
-  summary?: string | null
   externalDocIdentifier?: string | null
   originPlan?: {
     collection: 'travel-plans'
     sourceId: number
   } | null
-  coverImage?: (number | null) | Media
-  members?: (number | User)[] | null
-  party?:
-    | {
-        name: string
-        note?: string | null
-        id?: string | null
-      }[]
-    | null
+  members?: TravelMemory['participants'] | TravelPlan['members']
+  party?: TravelMemory['guestParticipants'] | TravelPlan['guestParticipants']
   sourceSections?: TravelRuntimeSection[] | null
-  galleryImages?: (number | Media)[] | null
-  itineraryImages?: (number | Media)[] | null
+  galleryImages?: TravelMemory['galleryImages']
+  itineraryImages?: TravelMemory['itineraryImages']
   dailyItinerary?: TravelRuntimeDailyHighlight[] | null
   flights?: TravelRuntimeFlight[] | null
   lodgings?: TravelRuntimeLodging[] | null
-  externalVideos?:
-    | {
-        title: string
-        youtubeUrl: string
-        id?: string | null
-      }[]
-    | null
+  externalVideos?: TravelRuntimeVideo[] | null
 }
 
 export type TravelRuntimeRecord = TravelRuntimeBase &

@@ -2,9 +2,9 @@
 
 ## 文件目的
 
-這份文件用白話說明 `travel_projects` table 的所有主要欄位、為什麼需要它們、前台與 seed 如何使用它們，以及 planning travel 的重構候選。Phase 17 只產出 readiness 與批准方案；取得網站擁有者同意前，不刪欄位、不搬資料、不執行 destructive migration。
+這份文件用白話記錄 legacy `travel_projects` 的 Base／Source／Current 安全層，以及 Phase 17 拆分後 `travel-plans`／`travel-memories` 的欄位、遷移與 runtime 設計。歷史章節保留 Phase 16 的決策脈絡；目前正式目標模型以本文件後段、ADR 0007 與 `travel-collection-split-plan.md` 為準。
 
-本次不是刪除舊欄位，也不是重做旅行資料表。它只是在每筆旅行旁邊增加一組「上次 seed 對照紀錄」，讓系統日後能判斷 Markdown 與 Payload Admin 分別改了什麼。
+目前 Production 已完成 additive collections、五筆資料 copy、影子 relationships 與 RLS／grants security migration；本地 runtime 與 seed／dry-run 已切換到新 collections。舊表尚未刪除，作為 deploy 觀察期的 rollback evidence；任何 destructive cleanup 仍需另案批准。
 
 ## 變更前的問題
 

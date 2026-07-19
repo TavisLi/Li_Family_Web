@@ -7,7 +7,7 @@ import { buildTravelConflictRegister, writeTravelConflictRegister } from './trav
 
 const entries = buildTravelConflictRegister([
   {
-    collection: 'travel-projects',
+    collection: 'travel-plans',
     key: '202702-thailand-phuket',
     action: 'conflict',
     conflicts: [

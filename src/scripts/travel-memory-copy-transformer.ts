@@ -98,12 +98,12 @@ export function buildTravelMemoryCopyDraft(
   assertNoUnsupportedMemoryFields(legacyBase, 'Base')
   assertNoUnsupportedMemoryFields(source as unknown as Record<string, unknown>, 'Source')
 
-  const currentProjection = buildMemoryProjection(project as unknown as Record<string, unknown>)
+  const currentProjection = buildTravelMemoryProjection(project as unknown as Record<string, unknown>)
   const baseProjection = buildTravelProjection(
-    buildMemoryProjection(legacyBase),
+    buildTravelMemoryProjection(legacyBase),
   ) as MemoryProjection
   const liveSourceProjection = buildTravelProjection(
-    buildMemoryProjection(source as unknown as Record<string, unknown>),
+    buildTravelMemoryProjection(source as unknown as Record<string, unknown>),
   ) as MemoryProjection
 
   if (
@@ -129,7 +129,7 @@ export function buildTravelMemoryCopyDraft(
   }
 }
 
-function buildMemoryProjection(value: Record<string, unknown>): MemoryProjection {
+export function buildTravelMemoryProjection(value: Record<string, unknown>): MemoryProjection {
   if (typeof value.slug !== 'string' || !value.slug) {
     throw new Error('舊 Memory 缺少 canonical slug。')
   }

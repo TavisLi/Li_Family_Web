@@ -126,6 +126,21 @@ assert.deepEqual(itemLevelSectionPlan.patch, {
   ],
 })
 
+const itemLevelPlanningSectionPlan = reconcileTravelSeed({
+  slug: '202702-thailand-phuket',
+  base: { planningSections: [{ anchor: 'hotel', title: '住宿', body: 'Base' }] },
+  source: { planningSections: [{ anchor: 'hotel', title: '住宿', body: 'Source body' }] },
+  current: {
+    planningSections: [{ anchor: 'hotel', title: 'Admin 住宿標題', body: 'Base' }],
+  },
+})
+
+assert.equal(itemLevelPlanningSectionPlan.action, 'apply-source')
+assert.deepEqual(itemLevelPlanningSectionPlan.patch, {
+  planningSections: [{ anchor: 'hotel', title: 'Admin 住宿標題', body: 'Source body' }],
+})
+assert.equal(classifyTravelField('planningSections[hotel].body'), 'faithful-source-projection')
+
 const itemLevelLodgingPlan = reconcileTravelSeed({
   slug: '202702-thailand-phuket',
   base: {
