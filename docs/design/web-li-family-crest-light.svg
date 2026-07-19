@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <title>Web Li light family crest</title>
+  <rect width="32" height="32" rx="7" fill="#f4efe3" />
+  <circle cx="16" cy="16" r="11.4" fill="#fbf8f0" stroke="#a88950" stroke-width="0.9" />
+  <circle cx="16" cy="16" r="9.65" fill="none" stroke="#cdbd9d" stroke-width="0.45" />
+  <g fill="#a88950">
+    <path d="M13.55 4.9Q16 1.95 18.45 4.9Q16 4.25 13.55 4.9Z" />
+    <path d="M27.1 13.55Q30.05 16 27.1 18.45Q27.75 16 27.1 13.55Z" />
+    <path d="M18.45 27.1Q16 30.05 13.55 27.1Q16 27.75 18.45 27.1Z" />
+    <path d="M4.9 18.45Q1.95 16 4.9 13.55Q4.25 16 4.9 18.45Z" />
+    <circle cx="16" cy="5.85" r="0.48" />
+    <circle cx="23.18" cy="8.82" r="0.48" />
+    <circle cx="26.15" cy="16" r="0.48" />
+    <circle cx="23.18" cy="23.18" r="0.48" />
+    <circle cx="16" cy="26.15" r="0.48" />
+    <circle cx="8.82" cy="23.18" r="0.48" />
+    <circle cx="5.85" cy="16" r="0.48" />
+    <circle cx="8.82" cy="8.82" r="0.48" />
+  </g>
+  <text
+    x="16"
+    y="23"
+    fill="#2b2118"
+    font-family="Songti SC, Noto Serif TC, PMingLiU, SimSun, serif"
+    font-size="20.5"
+    font-weight="600"
+    text-anchor="middle"
+  >李</text>
+</svg>

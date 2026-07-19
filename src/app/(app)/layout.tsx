@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 
@@ -37,11 +38,31 @@ export default async function AppLayout({ children }: AppLayoutProps) {
       <body>
         <div className="min-h-screen bg-slate-50 text-slate-950">
           <header className="sticky top-0 z-30 border-b border-white/50 bg-white/60 backdrop-blur-xl">
-            <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-5">
-              <Link className="text-sm font-semibold tracking-normal text-slate-950" href="/">
-                Li Family
+            <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-3 sm:px-5">
+              <Link
+                aria-label="Web Li 首頁"
+                className="group flex shrink-0 items-center gap-2"
+                href="/"
+              >
+                <Image
+                  alt=""
+                  aria-hidden="true"
+                  className="size-7 rounded-lg shadow-[0_0_0_1px_rgba(148,120,68,0.16)] transition-transform duration-300 group-hover:scale-[1.03] sm:size-8"
+                  height={32}
+                  priority
+                  src="/brand/web-li-family-crest-light.png"
+                  width={32}
+                />
+                <span aria-hidden="true" className="hidden leading-none sm:block">
+                  <span className="block font-serif text-[15px] font-semibold tracking-[0.02em] text-slate-950">
+                    Li Family
+                  </span>
+                  <span className="mt-0.5 block text-[8px] font-semibold uppercase tracking-[0.22em] text-[#9a7a41]">
+                    Web Li
+                  </span>
+                </span>
               </Link>
-              <div className="flex items-center gap-4 text-sm text-slate-600">
+              <div className="flex items-center gap-2 text-sm text-slate-600 sm:gap-4">
                 <Link className="transition-colors hover:text-slate-950" href="/">
                   大廳
                 </Link>

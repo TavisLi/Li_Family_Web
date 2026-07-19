@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Web Li 小篆李家家徽深色提案</title>
+  <rect width="64" height="64" rx="14" fill="#100e0b" />
+  <rect x="10.5" y="7.5" width="43" height="49" rx="4" fill="#17130e" stroke="#b8995d" stroke-width="1.4" />
+  <rect x="13" y="10" width="38" height="44" rx="2.5" fill="none" stroke="#806a43" stroke-width="0.55" />
+  <g fill="none" stroke="#e4ce9a" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8">
+    <path d="M21.5 16.5Q32 13 42.5 16.5" />
+    <path d="M32 12.5v12" />
+    <path d="M32 17.5Q27 22.5 21.5 24.5" />
+    <path d="M32 17.5Q37 22.5 42.5 24.5" />
+    <path d="M24 27Q32 24.8 40 27Q36 29.5 32 32v2" />
+    <path d="M21.5 32Q32 30 42.5 32" />
+    <path d="M32 36.5v2" />
+    <path d="M21.5 41Q32 35.5 42.5 41Q42.8 44 40.5 45" />
+    <path d="M21.5 41Q21.2 44 23.5 45" />
+    <path d="M25 44Q32 42.5 39 44" />
+    <path d="M35.5 44Q31 46 28.5 48Q34.5 49 33 52.5Q32.5 54 30 55" />
+    <path d="M29.5 47.5Q26.5 50 23.5 51.5" />
+    <path d="M31 49.5Q27 53 24.5 54.5" />
+    <path d="M33.5 47Q37 49 40.5 49.5" />
+    <path d="M33 51Q37 53 40 54.5" />
+  </g>
+</svg>
