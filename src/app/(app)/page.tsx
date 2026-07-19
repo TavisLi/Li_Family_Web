@@ -29,6 +29,7 @@ export default async function HomePage() {
   const {
     bucketItems,
     familySession,
+    featuredTravel,
     homeConfig,
     members,
     posts,
@@ -41,6 +42,7 @@ export default async function HomePage() {
     <HomePageView
       bucketItems={bucketItems}
       familySession={familySession}
+      featuredTravel={featuredTravel}
       homeConfig={homeConfig}
       members={members}
       posts={posts}

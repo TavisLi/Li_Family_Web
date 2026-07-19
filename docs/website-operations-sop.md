@@ -91,8 +91,8 @@ pnpm run seed:travel:dry-run
 ```
 
 - `seed:audit` 檢查 catalog、封面與結構化資料是否齊全。
-- `seed:phase-9:dry-run` 只讀取 Payload，列出 create／update 計畫，不會寫入資料。
-- 只處理 travel baseline 或 travel content 時，必須使用 `seed:travel:dry-run`；它會排除 Users、member media、blog 與 Home Config。
+- `seed:phase-9:dry-run` 只讀取 Payload，列出全站 create／update 計畫，不會寫入資料。
+- 只處理 travel baseline 或 travel content 時，必須使用 `seed:travel:dry-run`；它會排除 Users、member media、blog 與 Home Config，並依 catalog 狀態把規劃中項目導向 `travel-plans`、已完成項目導向 `travel-memories`。
 - travel action 會區分 `create`、`update`、`preserve`、`conflict`、`skip`；看到 `conflict` 時不可直接執行 safe write。
 - 將 dry-run 摘要、抽樣 document ID 與當前 Production URL 留在營運紀錄；不可記錄 credential。
 
@@ -102,11 +102,11 @@ pnpm run seed:travel:dry-run
 2. 在受保護的 Production environment 執行：
 
    ```bash
-   pnpm run seed:phase-9
-   pnpm run seed:phase-9:dry-run
+   pnpm run seed:travel
+   pnpm run seed:travel:dry-run
    ```
 
-3. 第二次 dry-run 是 read-back；確認預期資料已識別為 update，且沒有意外 delete。
+3. 第二次 dry-run 是 read-back；已收斂資料應為 `skip`，保留的 Admin-only 修改應為 `preserve`，並確認沒有非預期 `update` 或 delete。
 4. 在 Payload Admin 抽查標題語系、關聯圖片、公開 R2 URL 與 itinerary 資料。
 5. 實測 `/travel` 和 `/travel/[travel-slug]` 的桌機、手機、封面、照片牆與 YouTube 區塊。
 
@@ -114,7 +114,7 @@ pnpm run seed:travel:dry-run
 
 ### 4.4 Travel reconciliation 模式
 
-- Travel 專用 Production write 使用 `pnpm run seed:travel`；預設為 `safe`，建立缺少項目、套用 non-conflicting source 更新、保留 Admin-only 修改、跳過 conflict。
+- Travel 專用 Production write 使用 `pnpm run seed:travel`；預設為 `safe`，建立缺少項目、套用 non-conflicting source 更新、保留 Admin-only 修改、跳過 conflict。它只寫入 `travel-plans`／`travel-memories`，不再建立或更新 legacy `travel-projects`。
 - 不得用全量 `seed:phase-9` 代替 travel-only baseline；在 Users reconciliation 尚未建立前，全量命令可能包含既有 Users update。
 - `--source-wins`：只在審查 conflict report 且網站擁有者明確批准後使用；會用 Source 取代衝突的 Payload content。
 - `--payload-wins`：明確接受目前 Payload content。需要人工回填來源時，加上 `--export-payload-drafts`，草稿只會寫到 `docs/phase-artifacts/phase-16/exports/`，不會覆蓋 `content-source/travels/*.md`。

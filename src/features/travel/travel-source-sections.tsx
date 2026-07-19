@@ -4,10 +4,11 @@ import { Image as ImageIcon, Video } from 'lucide-react'
 
 import type { TravelInteractionThread } from '@/lib/data/travel'
 import { PayloadImage } from '@/components/ui/payload-image'
-import type { Media, TravelProject } from '@/payload/payload-types'
+import type { TravelRuntimeRecord, TravelRuntimeSection } from '@/lib/travel-runtime'
+import type { Media } from '@/payload/payload-types'
 import { toYouTubeEmbedUrl } from './youtube'
 
-type SourceSection = NonNullable<TravelProject['sourceSections']>[number]
+type SourceSection = TravelRuntimeSection
 type SourceSectionMedia = NonNullable<SourceSection['mediaItems']>[number]
 
 const SOURCE_SECTION_BOUNDARY_BODY = '__SECTION_BOUNDARY__'
@@ -43,7 +44,7 @@ export function TravelSourceSections({
   renderInteraction,
   threads = {},
 }: {
-  project: TravelProject
+  project: TravelRuntimeRecord
   renderInteraction?: RenderInteraction
   threads?: Record<string, TravelInteractionThread>
 }) {
@@ -71,7 +72,7 @@ export function TravelSourceSections({
 }
 
 export function findDailySourceSections(
-  sections: NonNullable<TravelProject['sourceSections']>,
+  sections: TravelRuntimeSection[],
   day: number,
 ): SourceSection[] {
   const groups = groupSourceSections(sections)

@@ -1,12 +1,21 @@
-import type { HomeConfig, Post, TravelProject, User } from '@/payload/payload-types'
-import type { BucketItem } from '@/payload/payload-types'
+import type {
+  BucketItem,
+  HomeConfig,
+  Post,
+  TimelineEvent,
+  User,
+} from '@/payload/payload-types'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import type { FamilySession } from './auth'
 import { getFamilySession, userReq } from './auth'
 import { getBucketQuickView } from './bucket-list'
 import { getPayloadClient } from './payload'
 import { getTimelineHomeWidget } from './timeline'
+import {
+  getFeaturedTravelProjects as getFeaturedTravelRecords,
+  getTravelRecordByRelationship,
+} from './travel'
 import { getWrappedHomeCta, type WrappedHomeCta } from './wrapped'
-import type { TimelineEvent } from '@/payload/payload-types'
 
 const DEFAULT_LIMIT = 6
 
@@ -14,7 +23,8 @@ export type HomePageData = {
   homeConfig: HomeConfig
   members: User[]
   posts: Post[]
-  travelProjects: TravelProject[]
+  featuredTravel: TravelRuntimeRecord | null
+  travelProjects: TravelRuntimeRecord[]
   familySession: FamilySession
   timelineEvent: TimelineEvent | null
   bucketItems: BucketItem[]
@@ -45,21 +55,11 @@ export async function getFamilyMembers(limit = DEFAULT_LIMIT): Promise<User[]> {
 export async function getFeaturedTravelProjects(
   limit = DEFAULT_LIMIT,
   session?: FamilySession,
-): Promise<TravelProject[]> {
-  const payload = await getPayloadClient()
-  const result = await payload.find({
-    collection: 'travel-projects',
-    depth: 1,
-    limit,
-    overrideAccess: false,
-    sort: '-startDate',
-    ...userReq(session?.user ?? null),
-  })
-
-  return result.docs
+): Promise<TravelRuntimeRecord[]> {
+  return getFeaturedTravelRecords(limit, session?.user ?? null)
 }
 
-export async function getTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelProject[]> {
+export async function getTravelProjects(limit = DEFAULT_LIMIT): Promise<TravelRuntimeRecord[]> {
   return getFeaturedTravelProjects(limit)
 }
 
@@ -102,6 +102,13 @@ export async function getHomeData(): Promise<HomePageData> {
   const timelineEvent = await getTimelineHomeWidget(familySession)
   const bucketItems = await getBucketQuickView(familySession)
   const wrappedCta = await getWrappedHomeCta(familySession)
+  const featuredTravel =
+    (await getTravelRecordByRelationship(
+      homeConfig.featuredTravelRecord,
+      familySession.user,
+    )) ??
+    travelProjects[0] ??
+    null
 
   return {
     familySession,
@@ -111,6 +118,7 @@ export async function getHomeData(): Promise<HomePageData> {
     travelProjects,
     timelineEvent,
     bucketItems,
+    featuredTravel,
     wrappedCta,
   }
 }

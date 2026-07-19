@@ -4,6 +4,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 import type { Media, TravelProject } from '@/payload/payload-types'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import { TravelIndexPage } from './travel-index-page'
 
 const coverImage: Media = {
@@ -23,7 +24,7 @@ const coverImage: Media = {
 const projects: TravelProject[] = [
   {
     id: 3,
-    title: '重慶長江三峽前期規劃',
+    title: '重慶長江三峽過往規劃',
     slug: '202607-chongqing-yangtze-river',
     status: 'planning',
     isPrivate: false,
@@ -71,27 +72,42 @@ const projects: TravelProject[] = [
 const html = renderToStaticMarkup(
   createElement(TravelIndexPage, {
     currentDate: '2026-08-01T00:00:00.000Z',
-    projects,
+    projects: projects.map(runtimeProject),
   }),
 )
 
-assert.match(html, /前期規劃/)
+assert.match(html, /過往規劃/)
 assert.match(html, /規劃中/)
-assert.match(html, /已完成/)
+assert.match(html, /旅行回憶/)
 assert.match(html, /href="#travel-group-planning"/)
-assert.match(html, /href="#travel-group-completed"/)
-assert.match(html, /href="#travel-group-preliminary"/)
+assert.match(html, /href="#travel-group-memories"/)
+assert.match(html, /href="#travel-group-archived"/)
 assert.match(html, /id="travel-group-planning"/)
-assert.match(html, /id="travel-group-completed"/)
-assert.match(html, /id="travel-group-preliminary"/)
+assert.match(html, /id="travel-group-memories"/)
+assert.match(html, /id="travel-group-archived"/)
+assert.equal((html.match(/target:ring-2/g) ?? []).length, 3)
 assert.match(html, />1<\/span>/)
 assert.match(html, /text-4xl font-semibold leading-none tracking-normal text-slate-700\/75 md:text-5xl/)
 assert.doesNotMatch(html, /rounded-full border border-slate-200 bg-white\/75/)
 assert.match(html, /\/travel\/202702-thailand-phuket/)
 assert.match(html, /\/travel\/202308-east-australia/)
 assert.match(html, /\/travel\/202607-chongqing-yangtze-river/)
-assert.match(html, /規劃中但日期已過的行程會先收在這裡/)
+assert.match(html, /旅遊日期已過的計畫會歸檔在這裡/)
+assert.doesNotMatch(html, /前期規劃|preliminary/i)
 assert.match(html, /object-cover transition duration-500 group-hover:scale-105/)
+
+function runtimeProject(project: TravelProject): TravelRuntimeRecord {
+  const isPlan = project.status === 'planning'
+
+  return {
+    ...project,
+    id: `${isPlan ? 'travel-plans' : 'travel-memories'}:${project.id}`,
+    sourceId: project.id,
+    collection: isPlan ? 'travel-plans' : 'travel-memories',
+    kind: isPlan ? 'plan' : 'memory',
+    status: project.status,
+  } as TravelRuntimeRecord
+}
 assert.doesNotMatch(html, /object-contain transition duration-500 group-hover:scale-105/)
 assert.match(html, /bg-gradient-to-r from-slate-950 via-sky-800 to-cyan-600 bg-clip-text/)
 assert.doesNotMatch(html, /from-slate-950 via-cyan-950 to-amber-900 px-5 py-8 text-white/)

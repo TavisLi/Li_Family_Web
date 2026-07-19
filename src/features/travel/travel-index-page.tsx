@@ -5,19 +5,24 @@ import { ArrowRight, CalendarDays, Compass, MapPin, Plane } from 'lucide-react'
 
 import { ImageFallback } from '@/components/ui/image-fallback'
 import { PayloadImage } from '@/components/ui/payload-image'
-import type { TravelProject } from '@/payload/payload-types'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
+import { classifyTravelPlan } from '@/lib/travel-domain'
 
 type TravelIndexPageProps = {
   currentDate?: Date | string
-  projects: TravelProject[]
+  projects: TravelRuntimeRecord[]
 }
 
 export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIndexPageProps) {
   const featured = projects[0]
-  const now = startOfDay(currentDate)
-  const planning = projects.filter((project) => project.status === 'planning' && !isPastPlanning(project, now))
-  const preliminary = projects.filter((project) => project.status === 'planning' && isPastPlanning(project, now))
-  const completed = projects.filter((project) => project.status === 'completed')
+  const now = new Date(currentDate)
+  const planning = projects.filter(
+    (project) => project.status === 'planning' && classifyTravelPlan(project.endDate, now) === 'active',
+  )
+  const archivedPlans = projects.filter(
+    (project) => project.status === 'planning' && classifyTravelPlan(project.endDate, now) === 'archived',
+  )
+  const memories = projects.filter((project) => project.status === 'completed')
 
   return (
     <main className="overflow-hidden bg-[linear-gradient(135deg,#f8fafc_0%,#e8f3f1_48%,#f7efe5_100%)] text-slate-950">
@@ -39,6 +44,7 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
           <Link
             className="group relative block overflow-hidden rounded-lg border border-white/55 bg-white/40 shadow-2xl shadow-slate-900/10 backdrop-blur-xl"
             href={`/travel/${featured.slug}`}
+            prefetch={false}
           >
             <PayloadImage
               className="aspect-[4/3] rounded-none"
@@ -78,18 +84,18 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
             text="即將發生或仍在決策中的行程，航班、住宿、提醒與每日節點都可進入討論。"
           />
           <CorridorNote
-            count={completed.length}
-            href="#travel-group-completed"
+            count={memories.length}
+            href="#travel-group-memories"
             icon={<CalendarDays className="size-5" aria-hidden="true" />}
-            title="已完成"
-            text="完成後的旅程轉成回憶檔案，保留照片、里程碑與當時留下的文字線索。"
+            title="旅行回憶"
+            text="旅遊結束後另外整理的回憶作品，保留照片、里程碑與分享文字。"
           />
           <CorridorNote
-            count={preliminary.length}
-            href="#travel-group-preliminary"
+            count={archivedPlans.length}
+            href="#travel-group-archived"
             icon={<Compass className="size-5" aria-hidden="true" />}
-            title="前期規劃"
-            text="規劃中但時間已過的旅程會先收在這裡，方便保留早期討論、待整理內容與後續復盤。"
+            title="過往規劃"
+            text="旅遊日期已過的原始計畫歸檔，保留當時的審核、修訂與家庭討論。"
           />
         </div>
       </section>
@@ -114,19 +120,19 @@ export function TravelIndexPage({ currentDate = new Date(), projects }: TravelIn
               title="規劃中"
             />
             <TravelProjectGroup
-              empty="目前沒有公開的已完成旅程。"
+              empty="目前沒有公開的旅行回憶。"
               icon={<CalendarDays className="size-5" aria-hidden="true" />}
-              id="travel-group-completed"
-              projects={completed}
-              title="已完成"
+              id="travel-group-memories"
+              projects={memories}
+              title="旅行回憶"
             />
             <TravelProjectGroup
-              empty="目前沒有過期的前期規劃旅程。"
+              empty="目前沒有已歸檔的過往規劃。"
               icon={<Compass className="size-5" aria-hidden="true" />}
-              id="travel-group-preliminary"
-              projects={preliminary}
-              statusLabelOverride="前期規劃"
-              title="前期規劃"
+              id="travel-group-archived"
+              projects={archivedPlans}
+              statusLabelOverride="過往規劃"
+              title="過往規劃"
             />
           </div>
         </div>
@@ -146,12 +152,16 @@ function TravelProjectGroup({
   empty: string
   icon: ReactNode
   id: string
-  projects: TravelProject[]
+  projects: TravelRuntimeRecord[]
   statusLabelOverride?: string
   title: string
 }) {
   return (
-    <section aria-labelledby={`${id}-heading`} className="scroll-mt-24 grid gap-3" id={id}>
+    <section
+      aria-labelledby={`${id}-heading`}
+      className="scroll-mt-24 grid gap-3 rounded-lg transition-shadow duration-300 target:ring-2 target:ring-cyan-600/60 target:ring-offset-4 target:ring-offset-cyan-50/50"
+      id={id}
+    >
       <div className="rounded-lg border border-white/60 bg-gradient-to-r from-white/75 via-cyan-50/80 to-amber-50/80 p-4 shadow-sm shadow-slate-900/5">
         <div className="flex items-center gap-3">
         <div className="flex size-11 items-center justify-center rounded-xl bg-slate-950 text-white shadow-sm shadow-slate-900/15">
@@ -184,13 +194,14 @@ function TravelProjectRow({
   project,
   statusLabelOverride,
 }: {
-  project: TravelProject
+  project: TravelRuntimeRecord
   statusLabelOverride?: string
 }) {
   return (
     <Link
       className="group grid gap-5 py-6 transition hover:bg-white/35 md:grid-cols-[10rem_1fr_auto]"
       href={`/travel/${project.slug}`}
+      prefetch={false}
     >
       <PayloadImage
         className="aspect-[16/10] rounded-md"
@@ -236,7 +247,7 @@ function CorridorNote({
   text: string
 }) {
   return (
-    <Link
+    <a
       className="group grid min-h-[12rem] gap-5 rounded-lg border border-white/65 bg-white/45 p-5 shadow-sm shadow-slate-900/5 backdrop-blur-xl transition hover:-translate-y-1 hover:bg-white/60"
       href={href}
     >
@@ -258,36 +269,26 @@ function CorridorNote({
         前往區塊
         <ArrowRight className="size-4" aria-hidden="true" />
       </span>
-    </Link>
+    </a>
   )
 }
 
-function statusLabel(status: TravelProject['status']) {
+function statusLabel(status: TravelRuntimeRecord['status']) {
   return status === 'planning' ? '規劃中' : '已完成'
 }
 
-function formatDateRange(project: TravelProject) {
+function formatDateRange(project: TravelRuntimeRecord) {
   return `${project.startDate.slice(0, 10)} - ${project.endDate.slice(0, 10)}`
 }
 
 function groupDescription(title: string) {
-  if (title === '前期規劃') {
-    return '規劃中但日期已過的行程會先收在這裡，保留討論脈絡。'
+  if (title === '過往規劃') {
+    return '旅遊日期已過的計畫會歸檔在這裡，保留原始討論脈絡。'
   }
 
   if (title === '規劃中') {
     return '即將發生或仍在決策中的旅行作戰室。'
   }
 
-  return '已完成的家庭旅程與照片記憶。'
-}
-
-function isPastPlanning(project: TravelProject, currentDate: Date) {
-  return new Date(project.endDate) < currentDate
-}
-
-function startOfDay(value: Date | string) {
-  const date = typeof value === 'string' ? new Date(value) : value
-
-  return new Date(date.getFullYear(), date.getMonth(), date.getDate())
+  return '旅遊結束後另外整理的家庭記錄、照片與分享。'
 }

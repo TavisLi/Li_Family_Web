@@ -7,6 +7,14 @@
 - **獨立網頁**：每一個旅遊項目須有獨立的一個以上的網頁呈現
  - **數據源**：位於 `content-source/travels/` 目錄下
 
+## 旅遊領域與大廳分類
+
+- `travel-plans` 與 `travel-memories` 是兩種獨立內容，不是同一筆資料的 planning／completed 狀態切換；正式決策見 `docs/adr/0007-travel-plans-and-memories-are-separate-records.md`。
+- Plan 在旅遊日期未過時顯示於「規劃中／Active Plans」，日期已過後顯示於「過往規劃／Archived Plans」；兩者仍是同一筆 Plan。
+- 不使用 `Pre-planning`，因為它容易被理解為更早期的規劃階段，而不是已過旅遊日期的計畫封存。
+- Travel Memory 是獨立的行後記錄與分享作品，可選擇連回原 Plan，但必須擁有不同的 canonical slug。
+- Phase 17 已在 Production 完成五份 additive migrations、5-record transactional copy、RLS／grants security migration 與完整 read-back；Media、TimelineEvents、HomeConfig 的新 polymorphic 影子關聯已填入。70 張 Phase 17／relationship tables 已啟用 RLS，anon/authenticated table privileges 已撤銷。本地 runtime data layer 已改讀 `travel-plans`／`travel-memories` 並通過測試、build、公開訪客 browser smoke 與 Production owner read-back；尚未 deploy，所以正式站仍使用舊 runtime。舊 records／關聯繼續保留作 rollback，destructive cleanup 尚未批准。詳見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md` 與 `docs/phase-artifacts/phase-17/travel-data-api-security-approval-package.md`。
+
 ## 規劃中的旅遊項目信息：著重於行程規劃的互動
 
 - **頁面風格**：按不同項目行程內容設計合適的頁面風格。

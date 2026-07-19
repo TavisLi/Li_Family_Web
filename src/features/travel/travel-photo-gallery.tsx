@@ -4,10 +4,11 @@ import { Images } from 'lucide-react'
 
 import { ImageFallback } from '@/components/ui/image-fallback'
 import { PayloadImage } from '@/components/ui/payload-image'
-import type { Media, TravelProject } from '@/payload/payload-types'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
+import type { Media } from '@/payload/payload-types'
 
 type TravelPhotoGalleryProps = {
-  project: TravelProject
+  project: TravelRuntimeRecord
 }
 
 export function TravelPhotoGalleryPreview({ project }: TravelPhotoGalleryProps) {
@@ -120,6 +121,6 @@ function galleryTileClass(index: number, count: number): string {
   return ''
 }
 
-function mediaObjects(media: TravelProject['galleryImages']): Media[] {
+function mediaObjects(media: TravelRuntimeRecord['galleryImages']): Media[] {
   return (media ?? []).filter((item): item is Media => typeof item === 'object')
 }

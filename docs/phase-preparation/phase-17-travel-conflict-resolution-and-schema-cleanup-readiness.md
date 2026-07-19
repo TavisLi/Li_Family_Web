@@ -4,14 +4,37 @@
 
 **Phase 名稱**：Phase-17 Travel Conflict Resolution and Schema Cleanup Readiness  
 **準備日期**：2026-07-12  
+**決策更新**：2026-07-17
 **建議工作分支**：`codex/phase-17-travel-conflict-resolution`  
 **建議基底**：從最新 `main` 開新分支。  
-**主要對應議題**：Issue #50「旅行：Travel Project 計劃中項目Table Schema 重構」  
+**主要對應議題**：Issue #50「旅行：Travel Project 計劃中項目Table Schema 重構」與 Issue #57「旅行：Travel Project 規畫中/前期規劃旅遊項目Table Schema 重構」
 **前置條件**：Phase 16 已完成 Base／Source／Current reconciliation、Travel-only Production baseline、full-projection read-back 與 ADR 0006。
 
 Phase 17 的核心不是立即刪除欄位，也不是用 Markdown 覆蓋 Payload Admin。它要先把 Phase 16 找出的五筆 travel conflict 變成可審查、可批准、可回溯的內容決策，並產出 destructive schema cleanup 是否可以進場的證據。
 
 白話來說，Phase 16 已經裝上「不會亂覆蓋 Current」的安全煞車；Phase 17 要做的是逐筆判斷「哪些 Current 是 Admin 想保留的修改、哪些 Source 應該被接受、哪些差異只是 parser 或 array 表示造成的噪音」，再決定是否有足夠依據清理舊欄位。
+
+### 2026-07-16 已批准決策與目前狀態
+
+- 網站擁有者確認 Planning 與 Travel Memory 是不同性質的內容，不存在同一筆 record 或同一頁面由 planning 切換成 completed 的需求。
+- 目標架構採獨立 `travel-plans` 與 `travel-memories` collections；正式理由與後果記錄於 ADR 0007。
+- Plan 的大廳呈現名稱採「規劃中／Active Plans」與「過往規劃／Archived Plans」，由 `endDate` 推導；不使用容易被理解為早期規劃階段的 `Pre-planning`。
+- 重慶 Planning 的 legacy `lodgings` 等 structured arrays 已批准為 `drop-as-redundant`，不搬入新 Plan；正式 planning 內容以 `planningSections` 為準。
+- 2027 普吉島 link labels 採 `payload-wins`；Current 的人類可讀 label 進入新 record，Source raw label 留在重建的 Base。
+- 舊 `sourceMetadata/Base` 只留在 `travel_projects` 作 migration evidence；新 Plan Base/hash 由目標 transformer 重建，不在新 collections 增加 persistent legacy snapshot。
+- 2026-07-16 Production 唯讀 readiness 已提升為五筆 records 全部 ready：2 筆 Plans 與 3 筆 Memories 都完成逐欄 transformer。
+- migration／data-copy 執行包已完成：第五份 additive migration 新增 Media、TimelineEvents、HomeConfig 的 polymorphic 影子關聯；copy 會在單一 transaction 內寫入 5 筆 target records 與 12／2／1 筆影子關聯。舊關聯與舊表保留，runtime 暫不切換。
+- disposable PostgreSQL 17 本地演練已完成：五份 migrations、synthetic 5-record copy、完整內容／slug／逐 owner relationship verify 全部通過；第一次刻意保留的 Media locale 缺陷也證明 transaction 能完整 rollback，修正後才成功 commit。
+- 2026-07-17 已完成 Production controlled migration、5-record data-copy 與完整 read-back。Payload CLI 的 `dev/-1` data-loss 警告未被確認；另行批准的 executor 保留 `dev/-1`，只在單一 transaction 執行五份已審查 UP 並寫入 batch 6 records。Production 現有 Plans 2、Memories 3、Route identities 5 與 12／2／1 shadow relationships，完整雙語/nested content 與逐 owner mappings 均通過；舊 collection、舊 relationships 與既有兩筆 conflict evidence 保留。後置安全檢查確認新 travel tables／relationships 目前未啟用 RLS，且 Data API roles 具有 public schema/DML privileges；是否實際經 API 暴露仍取決於 Supabase 設定，但另案完成 RLS／grant policy 前不得 runtime cutover。完整證據見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md`。
+- 2026-07-17 已建立涵蓋 70 張 Phase 17／relationship tables 的 additive RLS／grants migration 與 approval-gated executor。本地 PostgreSQL 17 演練確認 70/70 RLS enabled、anon/authenticated table privileges 皆為 0，兩角色共 16 組負向測試全為 SQLSTATE `42501`，Payload／DB owner 正向讀寫不受影響。Production 唯讀 inspect 確認現況仍為 0/70 RLS、兩角色皆 70/70 有 privileges；本輪未套用 Production，詳見 `docs/phase-artifacts/phase-17/travel-data-api-security-approval-package.md`。
+- 2026-07-17 網站擁有者批准並完成 Production security migration：batch 7 record 與 70-table RLS/grants change 在單一 transaction commit；獨立 verify 為 RLS 70/70、anon/authenticated privileges 均 0/70、16/16 negative tests 回傳 `42501`。Payload owner read-back 維持 legacy 5、Plans 2、Memories 3、Route identities 5，`dev/-1` 保留。security blocker 已解除，但 runtime data layer 尚未 cutover。
+- 2026-07-17 本地 runtime data layer 已改為只讀 `travel-plans`／`travel-memories`，透過共用 view model 維持既有首頁、大廳與 detail component contract；HomeConfig 改讀 `featuredTravelRecord`，且只可解析目前 session 已通過 access control 的 record。兩個 collection 採依序查詢，避免 Supabase 小連線池同時取用兩條連線造成逾時。Phase 17／16／9 tests、TypeScript 與 Node 20.20.2 Production build 均通過；公開訪客 browser smoke 未洩露 family-only travel，Production owner read-back 確認 2 Plans／3 Memories 可完整轉換。這是尚未 deploy 的本地 cutover，正式站仍使用舊 runtime；family-mode Preview／browser QA、deploy 與觀察期仍是下一道 gate，舊表／舊關聯不得清理。
+- 2026-07-18 family-mode Chrome QA 重現 detail navigation 需等待 70–95 秒並出現 Supabase pool timeout。根因有兩層：planning page 對每個 interaction target 執行平行 comments query，以及旅遊大廳／首頁的 Next.js Links 自動預取所有重型 detail routes。已在本地改為一次批次 comments query 後依 `associatedId` 分組，並對 travel detail links 設定 `prefetch={false}`；Planning 與 Memory 實際點擊分別約 7.2／10.2 秒完成 HTTP 200，內容與互動區正常。修正尚未 deploy，沒有 Production data mutation。
+- 2026-07-18 後續 family-mode Chrome QA 確認旅遊大廳上方三張分類卡片的既定用途是同頁區塊導航，三個 target IDs 與捲動落點均存在；但 Next.js Link 接管與缺乏落點回饋，讓操作感受近似「沒有反應」。本地已將三張卡片改為原生頁內連結，並為命中的規劃中／旅行回憶／過往規劃區塊加入清楚的 target 外框；未新增分類頁面，也沒有 Production data mutation。
+- 2026-07-19 網站擁有者完成本機 family-mode 人工審核並確認沒有問題。送 PR 前的雙軸 review 另發現 seed／dry-run 尚指向 legacy `travel-projects`；本地已補上共用 `buildTravelSeedTarget` seam，planning source 寫入 `travel-plans`、completed source 寫入 `travel-memories`，並同步 Phase 7 TimelineEvents 使用 polymorphic `relatedTravelRecord`。測試只使用 in-memory adapter，未執行 Production seed 或 data mutation。
+- 2026-07-19 新 seed seam 的第一次 Production 唯讀 dry-run 成功讀取新 collections：0 create、0 update、751 media skip、5 safe conflicts、0 delete，證明不再查寫 legacy collection。五筆 conflict 暴露 copy Base 保留雙語物件、而 dry-run Source／Current 使用 `zh-TW` 字串的表示差異；本地已在比較前 materialize Base locale，並把 `planningSections`／`storySections`／`dailyHighlights` 納入 stable item reconciliation。修正後兩次重跑都在 Payload 初始化前遇到 Supabase pooler connection timeout，故沒有宣稱取得修正後 Production read-back；依限次策略停止，沒有 write 或 data mutation。
+
+本文件以下 PRD 保留 Phase 17 開始時的問題背景與安全要求；最新逐欄決策以 `docs/phase-artifacts/phase-17/`、`docs/data-models/travel-projects-schema.md` 與 ADR 0007 為準。
 
 ---
 
@@ -139,6 +162,7 @@ Phase 17 建立一個 Travel conflict resolution workflow：
 - `docs/adr/0001-runtime-content-records-are-payload-owned.md`
 - `docs/adr/0003-travel-slugs-own-source-and-asset-identity.md`
 - `docs/adr/0006-seed-reconciliation-protects-published-content.md`
+- `docs/adr/0007-travel-plans-and-memories-are-separate-records.md`
 - `docs/phase-completion-reports/phase-16-travel-seed-reconciliation.md`
 - `docs/data-models/travel-projects-schema.md`
 - `docs/website-operations-sop.md`
@@ -204,4 +228,6 @@ Phase 17 可視為完成，需同時滿足：
 - 若沒有 Production write，completion report 明確寫出「readiness only」。
 - 若有 Production write，必須附當次 dry-run evidence、批准範圍、write 結果與 read-back。
 - Schema cleanup candidates 有欄位級 evidence；未獲 destructive migration 批准前不得 drop／rename／rewrite。
+- 獨立 Plan／Memory collection 決策、Archived Plans 命名與 rollback policy 已同步至 ADR、領域詞彙、schema 文件與 travel catalog 文件。
+- Issue #50 與 #57 的完成範圍必須以實際 migration／copy／cutover 狀態判斷；readiness 完成不等於可以提前關閉 issue。
 - 分支已 push，PR 已建立，Vercel／CI 狀態或 blocker 已記錄在 completion report。

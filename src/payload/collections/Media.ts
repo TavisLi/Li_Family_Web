@@ -88,6 +88,16 @@ export const Media: CollectionConfig = {
       relationTo: 'travel-projects',
       required: false,
     },
+    {
+      name: 'relatedTravelRecord',
+      type: 'relationship',
+      relationTo: ['travel-plans', 'travel-memories'],
+      required: false,
+      admin: {
+        description:
+          'Phase 17 cutover field. Keep relatedTravel until the legacy collection is retired.',
+      },
+    },
   ],
   upload: {
     staticDir: 'media',

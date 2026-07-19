@@ -669,6 +669,16 @@ export async function buildSeedContent(projectRoot: string): Promise<SeedContent
   }
 }
 
+export async function buildTravelSeedContent(projectRoot: string): Promise<TravelSeed[]> {
+  const travelDirectory = path.join(projectRoot, 'content-source/travels')
+  const catalog = await parseTravelCatalog(
+    path.join(projectRoot, 'docs/travel-projects.md'),
+    travelDirectory,
+  )
+
+  return parseTravelDirectory(travelDirectory, catalog)
+}
+
 export async function parseBloggerTakeoutArchive(
   archivePath: string,
   options: {

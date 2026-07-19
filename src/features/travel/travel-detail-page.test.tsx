@@ -4,6 +4,7 @@ import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
 import type { Media, TravelProject } from '@/payload/payload-types'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import { CompletedTravelLedger } from './completed-travel-ledger'
 import { TravelPhotoGalleryPreview } from './travel-photo-gallery'
 import { TravelPlanningExtras } from './travel-planning-extras'
@@ -65,7 +66,9 @@ const completedProject: TravelProject = {
   updatedAt: '2026-06-21T00:00:00.000Z',
 }
 
-const html = renderToStaticMarkup(createElement(CompletedTravelLedger, { project: completedProject }))
+const html = renderToStaticMarkup(
+  createElement(CompletedTravelLedger, { project: runtimeProject(completedProject) }),
+)
 
 assert.match(html, /旅程資料簿/)
 assert.match(html, /BR211/)
@@ -320,7 +323,7 @@ planningProject.sourceSections?.push(
 
 const planningHtml = renderToStaticMarkup(
   createElement(TravelSourceSections, {
-    project: planningProject,
+    project: runtimeProject(planningProject),
     renderInteraction: ({ associatedId, label }) =>
       createElement('div', {
         'data-associated-id': associatedId,
@@ -435,12 +438,25 @@ assert.doesNotMatch(planningHtml, /border-t border-white\/10 py-5/)
 
 const completedGalleryHtml = renderToStaticMarkup(
   createElement(TravelPhotoGalleryPreview, {
-    project: {
+    project: runtimeProject({
       ...completedProject,
       galleryImages: galleryPhotos,
-    } as TravelProject,
+    } as TravelProject),
   }),
 )
 
 assert.match(completedGalleryHtml, /Show all photos/)
 assert.match(completedGalleryHtml, /\/travel\/202602-thailand-phuket\/photos/)
+
+function runtimeProject(project: TravelProject): TravelRuntimeRecord {
+  const isPlan = project.status === 'planning'
+
+  return {
+    ...project,
+    id: `${isPlan ? 'travel-plans' : 'travel-memories'}:${project.id}`,
+    sourceId: project.id,
+    collection: isPlan ? 'travel-plans' : 'travel-memories',
+    kind: isPlan ? 'plan' : 'memory',
+    status: project.status,
+  } as TravelRuntimeRecord
+}

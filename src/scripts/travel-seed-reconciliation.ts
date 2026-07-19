@@ -30,6 +30,7 @@ export type TravelReconciliationPlan = {
 }
 
 const ignoredProjectionKeys = new Set([
+  'collection',
   'createdAt',
   'id',
   'sourceMetadata',
@@ -66,7 +67,7 @@ export function classifyTravelField(field: string): TravelFieldCategory {
     return 'media-projection'
   }
 
-  if (root === 'sourceSections') {
+  if (['planningSections', 'sourceSections', 'storySections'].includes(root ?? '')) {
     return 'faithful-source-projection'
   }
 
@@ -164,7 +165,21 @@ export function reconcileTravelSeed(input: {
       } else if (mode === 'payload-wins') {
         currentOnlyChanges += 1
       } else {
-        conflicts.push(...describeConflicts(field, base, source, current))
+        const arrayPlan = reconcileStableArray(field, base, source, current)
+
+        if (arrayPlan) {
+          conflicts.push(...arrayPlan.conflicts)
+          if (arrayPlan.sourceChanged && !arrayPlan.conflicts.length) {
+            patch[field] = arrayPlan.value
+          }
+          if (arrayPlan.currentChanged) currentOnlyChanges += 1
+        } else if (stableArrayIdentity(field)) {
+          // A supported array without complete unique identities is unsafe to
+          // decompose. Keep the full parent conflict for owner review.
+          conflicts.push({ field, category: classifyTravelField(field), base, source, current })
+        } else {
+          conflicts.push(...describeConflicts(field, base, source, current))
+        }
       }
     }
   }
@@ -186,6 +201,162 @@ export function reconcileTravelSeed(input: {
   }
 
   return { slug: input.slug, action: 'skip', patch, conflicts }
+}
+
+type StableArrayPlan = {
+  value: unknown[]
+  conflicts: ReconciliationConflict[]
+  sourceChanged: boolean
+  currentChanged: boolean
+}
+
+type StableRecordPlan = Omit<StableArrayPlan, 'value'> & {
+  value: Record<string, unknown>
+}
+
+function reconcileStableArray(
+  field: string,
+  base: unknown,
+  source: unknown,
+  current: unknown,
+): StableArrayPlan | undefined {
+  const identity = stableArrayIdentity(field)
+  if (!identity || !Array.isArray(base) || !Array.isArray(source) || !Array.isArray(current)) {
+    return undefined
+  }
+
+  const baseItems = recordsByStableIdentity(base, identity)
+  const sourceItems = recordsByStableIdentity(source, identity)
+  const currentItems = recordsByStableIdentity(current, identity)
+  if (!baseItems || !sourceItems || !currentItems) return undefined
+
+  const value: unknown[] = []
+  const conflicts: ReconciliationConflict[] = []
+  let sourceChanged = false
+  let currentChanged = false
+
+  // Preserve the published Current ordering when a safe item-level patch is built.
+  for (const key of orderedStableKeys(currentItems, sourceItems, baseItems)) {
+    const baseItem = baseItems.get(key)
+    const sourceItem = sourceItems.get(key)
+    const currentItem = currentItems.get(key)
+
+    if (!baseItem || !sourceItem || !currentItem) {
+      return undefined
+    }
+
+    const merged = mergeStableRecord(`${field}[${key}]`, baseItem, sourceItem, currentItem)
+    value.push(merged.value)
+    conflicts.push(...merged.conflicts)
+    sourceChanged ||= merged.sourceChanged
+    currentChanged ||= merged.currentChanged
+  }
+
+  return { value, conflicts, sourceChanged, currentChanged }
+}
+
+function stableArrayIdentity(
+  field: string,
+): ((item: Record<string, unknown>) => string | undefined) | undefined {
+  if (field === 'flights') {
+    return (item) => compositeIdentity(item, ['flightNumber', 'date', 'route'])
+  }
+
+  if (field === 'dailyHighlights' || field === 'dailyItinerary') {
+    return (item) =>
+      typeof item.day === 'number' && Number.isInteger(item.day) && item.day > 0
+        ? `day-${item.day}`
+        : undefined
+  }
+
+  if (
+    field === 'planningSections' ||
+    field === 'sourceSections' ||
+    field === 'storySections'
+  ) {
+    return (item) =>
+      typeof item.anchor === 'string' && item.anchor.trim() ? item.anchor : undefined
+  }
+
+  if (field === 'lodgings') {
+    return (item) => compositeIdentity(item, ['dateRange', 'hotel', 'city'])
+  }
+
+  return undefined
+}
+
+function compositeIdentity(
+  item: Record<string, unknown>,
+  keys: string[],
+): string | undefined {
+  const values = keys.map((key) => item[key])
+  return values.every((value) => typeof value === 'string' && value.trim())
+    ? values.join('|')
+    : undefined
+}
+
+function recordsByStableIdentity(
+  items: unknown[],
+  identity: (item: Record<string, unknown>) => string | undefined,
+): Map<string, Record<string, unknown>> | undefined {
+  const result = new Map<string, Record<string, unknown>>()
+
+  for (const item of items) {
+    if (!isRecord(item)) return undefined
+    const key = identity(item)
+    if (!key || result.has(key)) return undefined
+    result.set(key, item)
+  }
+
+  return result
+}
+
+function orderedStableKeys(
+  ...maps: Map<string, Record<string, unknown>>[]
+): string[] {
+  return [...new Set(maps.flatMap((map) => [...map.keys()]))]
+}
+
+function mergeStableRecord(
+  path: string,
+  base: Record<string, unknown>,
+  source: Record<string, unknown>,
+  current: Record<string, unknown>,
+): StableRecordPlan {
+  const value: Record<string, unknown> = {}
+  const conflicts: ReconciliationConflict[] = []
+  let sourceChanged = false
+  let currentChanged = false
+
+  for (const key of new Set([...Object.keys(base), ...Object.keys(source), ...Object.keys(current)])) {
+    const baseValue = base[key]
+    const sourceValue = source[key]
+    const currentValue = current[key]
+    const sourceValueChanged = !sameValue(baseValue, sourceValue)
+    const currentValueChanged = !sameValue(baseValue, currentValue)
+
+    if (sourceValueChanged && !currentValueChanged) {
+      value[key] = sourceValue
+      sourceChanged = true
+    } else if (!sourceValueChanged && currentValueChanged) {
+      value[key] = currentValue
+      currentChanged = true
+    } else if (sourceValueChanged && currentValueChanged && !sameValue(sourceValue, currentValue)) {
+      value[key] = currentValue
+      currentChanged = true
+      conflicts.push({
+        field: `${path}.${key}`,
+        category: classifyTravelField(`${path}.${key}`),
+        base: baseValue,
+        source: sourceValue,
+        current: currentValue,
+      })
+    } else {
+      value[key] = currentValue
+    }
+  }
+
+  return { value, conflicts, sourceChanged, currentChanged }
 }
 
 function sameValue(left: unknown, right: unknown): boolean {

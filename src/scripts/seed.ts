@@ -22,14 +22,18 @@ import { travelOnlySeedContent } from './seed-scope'
 import { attachSourceSectionMediaIds } from './travel-section-media'
 import { uploadFilenameForSourcePath } from './seed-upload-name'
 import {
-  buildTravelProjection,
   reconciliationModeFromArgs,
-  reconcileTravelSeed,
-  travelProjectionHash,
   writePayloadTravelDraft,
   type ReconciliationMode,
   type TravelProjection,
 } from './travel-seed-reconciliation'
+import {
+  buildTravelSeedTarget,
+  travelSeedStatBucket,
+  writeTravelSeedTarget,
+  type TravelSeedCollection,
+  type TravelSeedStore,
+} from './travel-seed-target'
 
 interface SeedStats {
   created: number
@@ -42,7 +46,7 @@ interface SeedContext {
   mediaBySourcePath: Map<string, number>
   mediaByOwner: Map<string, MediaSeed[]>
   categoryBySlug: Map<string, number>
-  travelBySlug: Map<string, number>
+  travelBySlug: Map<string, { relationTo: TravelSeedCollection; value: number }>
   userBySlug: Map<string, number>
 }
 
@@ -620,136 +624,47 @@ async function seedTravelProjects(
         galleryImages,
         itineraryImages,
       }
-
-      const existing = await payload.find({
-        collection: 'travel-projects',
-        depth: 0,
-        limit: 1,
-        where: {
-          slug: {
-            equals: travel.slug,
-          },
-        },
+      const target = buildTravelSeedTarget(travel, data as TravelProjection)
+      const result = await writeTravelSeedTarget({
+        mode,
+        store: payload as unknown as TravelSeedStore,
+        target,
       })
 
-      const existingDoc = existing.docs[0]
-
-      if (existingDoc) {
-        const source = buildTravelProjection(data as TravelProjection)
-        const current = buildTravelProjection(existingDoc as unknown as TravelProjection)
-        const metadata = travelSourceMetadata(existingDoc)
-        const plan = reconcileTravelSeed({
-          slug: travel.slug,
-          base: metadata?.baseProjection,
-          source,
-          current,
-          mode,
-        })
-        const nextMetadata = {
-          sourceFile: travel.externalDocIdentifier,
-          sourceHash: travelProjectionHash(source),
-          parserVersion: 'phase-16-v1',
-          baseProjection: source,
-          ...(plan.action === 'apply-source' ? { lastImportedAt: new Date().toISOString() } : {}),
-        }
-
-        if (plan.action === 'conflict') {
-          console.error(
-            `Travel reconciliation conflict (${travel.slug}): ${plan.conflicts.map((item) => item.field).join(', ')}`,
-          )
-
-          if (!Object.keys(plan.patch).length) {
-            stats.skipped += 1
-            continue
-          }
-
-          const updated = await payload.update({
-            collection: 'travel-projects',
-            id: existingDoc.id,
-            data: {
-              ...plan.patch,
-              sourceMetadata: {
-                ...nextMetadata,
-                lastImportedAt: new Date().toISOString(),
-                baseProjection: {
-                  ...(metadata?.baseProjection ?? {}),
-                  ...plan.patch,
-                },
-              },
-            },
-          })
-          context.travelBySlug.set(travel.slug, Number(updated.id))
-          stats.updated += 1
-          continue
-        }
-
-        if (mode === 'payload-wins' && process.argv.includes('--export-payload-drafts')) {
-          const draftPath = await writePayloadTravelDraft({
-            artifactRoot: path.join(projectRoot, 'docs/phase-artifacts/phase-16/exports'),
-            slug: travel.slug,
-            sourceFile: travel.externalDocIdentifier,
-            current,
-          })
-          console.log(`Payload reconciliation draft: ${draftPath}`)
-        }
-
-        if (plan.action === 'preserve-current' && metadata && mode === 'safe') {
-          stats.skipped += 1
-          context.travelBySlug.set(travel.slug, Number(existingDoc.id))
-          continue
-        }
-
-        const updated = await payload.update({
-          collection: 'travel-projects',
-          id: existingDoc.id,
-          data:
-            plan.action === 'apply-source'
-              ? { ...plan.patch, sourceMetadata: nextMetadata }
-              : { sourceMetadata: nextMetadata },
-        })
-        context.travelBySlug.set(travel.slug, Number(updated.id))
-        stats.updated += 1
-      } else {
-        const source = buildTravelProjection(data as TravelProjection)
-        const created = await payload.create({
-          collection: 'travel-projects',
-          data: {
-            ...data,
-            sourceMetadata: {
-              sourceFile: travel.externalDocIdentifier,
-              sourceHash: travelProjectionHash(source),
-              parserVersion: 'phase-16-v1',
-              lastImportedAt: new Date().toISOString(),
-              baseProjection: source,
-            },
-          },
-        })
-        context.travelBySlug.set(travel.slug, Number(created.id))
-        stats.created += 1
+      if (result.action === 'conflict') {
+        console.error(
+          `Travel reconciliation conflict (${travel.slug}): ${result.conflicts.map((item) => item.field).join(', ')}`,
+        )
+        stats.skipped += 1
+        continue
       }
+
+      if (
+        mode === 'payload-wins' &&
+        process.argv.includes('--export-payload-drafts') &&
+        result.current
+      ) {
+        const draftPath = await writePayloadTravelDraft({
+          artifactRoot: path.join(projectRoot, 'docs/phase-artifacts/phase-16/exports'),
+          slug: travel.slug,
+          sourceFile: travel.externalDocIdentifier,
+          current: result.current,
+        })
+        console.log(`Payload reconciliation draft: ${draftPath}`)
+      }
+
+      if (result.id !== undefined) {
+        context.travelBySlug.set(travel.slug, {
+          relationTo: target.collection,
+          value: Number(result.id),
+        })
+      }
+
+      stats[travelSeedStatBucket(result.action, mode)] += 1
     } catch (error) {
       stats.failed += 1
       console.error(`Failed to seed travel project: ${travel.slug}`, error)
     }
-  }
-}
-
-function travelSourceMetadata(value: unknown): { baseProjection?: TravelProjection } | undefined {
-  if (!value || typeof value !== 'object' || !('sourceMetadata' in value)) {
-    return undefined
-  }
-
-  const metadata = value.sourceMetadata
-  if (!metadata || typeof metadata !== 'object') {
-    return undefined
-  }
-
-  const baseProjection = 'baseProjection' in metadata ? metadata.baseProjection : undefined
-  return {
-    baseProjection:
-      baseProjection && typeof baseProjection === 'object' && !Array.isArray(baseProjection)
-        ? (baseProjection as TravelProjection)
-        : undefined,
   }
 }
 
@@ -773,7 +688,7 @@ async function seedPhase7DemoData(payload: Payload, context: SeedContext, stats:
       summary: '亞龍灣、海棠灣與石梅灣把一家人的度假記憶串成第一段公開時空膠囊。',
       description: '這筆公開事件用來讓訪客也能看見 Web Li 的家庭時間線質感。',
       images: galleryImages.slice(0, 1),
-      relatedTravel: hainanTravelId,
+      relatedTravelRecord: hainanTravelId,
       relatedMembers: [tavisId, lynnId].filter((id): id is number => typeof id === 'number'),
       sourceType: 'travel' as const,
       isPrivate: false,
@@ -787,7 +702,7 @@ async function seedPhase7DemoData(payload: Payload, context: SeedContext, stats:
       summary: '墨爾本、企鵝歸巢與藍山之外，還有只留給家人的旅途細節。',
       description: '這筆私密事件驗證家人模式下的完整時間線與訪客模式隔離。',
       images: galleryImages.slice(1, 2),
-      relatedTravel: eastAustraliaTravelId,
+      relatedTravelRecord: eastAustraliaTravelId,
       relatedMembers: [tavisId, lynnId].filter((id): id is number => typeof id === 'number'),
       sourceType: 'travel' as const,
       isPrivate: true,

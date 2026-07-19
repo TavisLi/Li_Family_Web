@@ -273,10 +273,10 @@ docs/travel-projects.md
 
 `docs/travel-projects.md` 是所有可公開旅遊項目的 catalog。每一個項目都必須明確提供：
 
-- `呈現名稱`：Payload `TravelProjects.title` 的優先來源。
+- `呈現名稱`：Payload `TravelPlans.title` 或 `TravelMemories.title` 的優先來源。
 - `Canonical slug`：穩定、唯一，並和 Payload record 與 `/travel/[slug]` 完全一致。
 - `數據源`：`content-source/travels/` 下恰好一份 Markdown 檔案。
-- 所屬章節：`規劃中的旅遊項目` 或 `已完成的旅遊項目信息`，對應 Payload status。
+- 所屬章節：`規劃中的旅遊項目` 會寫入 `travel-plans`；`已完成的旅遊項目信息` 會寫入 `travel-memories`。Catalog status 是 collection 路由依據，不是在同一筆資料上切換頁面狀態。
 
 Catalog parser 會驗證每個 source file 與 canonical slug 都只出現一次，也會拒絕未登錄的旅遊 Markdown。Markdown frontmatter 與標題保留做為行程原始內容；顯示 title 以 catalog 的 `呈現名稱` 優先。
 
@@ -291,6 +291,8 @@ Catalog parser 會驗證每個 source file 與 canonical slug 都只出現一次
 - Current：Payload published content。
 
 預設 safe mode 只套用「Source 有改、Current 沒改」的內容；Admin-only 修改會保留，Source 與 Current 同時改動則列為 conflict。先執行 `pnpm run seed:phase-9:dry-run`，確認 conflict 與 media projection 後才可申請 Production write。
+
+Travel-only reconciliation 應使用 `pnpm run seed:travel:dry-run` 與 `pnpm run seed:travel`。新版 seed 只以 `travel-plans`／`travel-memories` 為目標；legacy `travel-projects` 僅保留於 rollback／觀察期，不得再當作日常同步目的地。
 
 Payload-to-Markdown 只提供人工 reconciliation draft；不得自動覆蓋本目錄內的原始 Markdown。
 

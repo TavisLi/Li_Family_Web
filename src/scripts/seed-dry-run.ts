@@ -1,10 +1,15 @@
 import type { Payload } from 'payload'
 import { sql } from '@payloadcms/db-postgres'
 
-import type { Media, TravelProject } from '../payload/payload-types'
+import type { Media, TravelMemory, TravelPlan } from '../payload/payload-types'
 import type { SeedContent } from './seed-content'
 import { mediaRecordMatchesSeed } from './seed-media-compare'
 import { attachSourceSectionMediaIds } from './travel-section-media'
+import {
+  buildTravelSeedTarget,
+  travelSeedBaseProjection,
+  type TravelSeedCollection,
+} from './travel-seed-target'
 import {
   buildTravelProjection,
   reconcileTravelSeed,
@@ -14,7 +19,7 @@ import {
 } from './travel-seed-reconciliation'
 
 export type DryRunAction = {
-  collection: 'media' | 'travel-projects' | 'users'
+  collection: 'media' | 'travel-memories' | 'travel-plans' | 'travel-projects' | 'users'
   key: string
   action: 'conflict' | 'create' | 'preserve' | 'skip' | 'update'
   existingId?: number
@@ -32,7 +37,12 @@ export type DryRunSummary = {
 
 type DryRunMediaRecord = Pick<Media, 'altText' | 'id' | 'sourcePath' | 'tags' | 'type'>
 type DryRunUserRecord = { id: number; slug: string }
-type DryRunTravelRecord = Pick<TravelProject, 'id' | 'slug' | 'sourceMetadata'> | TravelProject
+type DryRunTravelRecord = (
+  | Pick<TravelMemory, 'id' | 'slug' | 'sourceMetadata'>
+  | Pick<TravelPlan, 'id' | 'slug' | 'sourceMetadata'>
+  | TravelMemory
+  | TravelPlan
+) & { collection: TravelSeedCollection }
 
 export async function buildPayloadDryRun(
   payload: Payload,
@@ -58,23 +68,37 @@ export async function buildPayloadDryRun(
   )
   onProgress?.('catalog:complete')
   const travelDocs: DryRunTravelRecord[] = []
-  const travelMetadataBySlug = new Map(catalog.travels.map((travel) => [travel.slug, travel]))
+  const travelMetadataByIdentity = new Map(
+    catalog.travels.map((travel) => [`${travel.collection}:${travel.slug}`, travel]),
+  )
+  const crossCollectionCollisionBySlug = new Map<string, DryRunTravelRecord>()
 
   for (const travel of seedContent.travels) {
-    const metadataDoc = travelMetadataBySlug.get(travel.slug)
+    const collection: TravelSeedCollection =
+      travel.status === 'planning' ? 'travel-plans' : 'travel-memories'
+    const otherCollection: TravelSeedCollection =
+      collection === 'travel-plans' ? 'travel-memories' : 'travel-plans'
+    const metadataDoc = travelMetadataByIdentity.get(`${collection}:${travel.slug}`)
+    const crossCollectionCollision = travelMetadataByIdentity.get(
+      `${otherCollection}:${travel.slug}`,
+    )
+
+    if (crossCollectionCollision) {
+      crossCollectionCollisionBySlug.set(travel.slug, crossCollectionCollision)
+    }
 
     if (!metadataDoc) {
       continue
     }
 
-    if (!sourceMetadataFrom(metadataDoc)?.baseProjection) {
+    if (!travelSeedBaseProjection(metadataDoc)) {
       travelDocs.push(metadataDoc)
       continue
     }
 
     onProgress?.(`travel:${travel.slug}:start`)
     const fullResult = await payload.find({
-      collection: 'travel-projects',
+      collection,
       depth: 0,
       limit: 1,
       pagination: false,
@@ -85,7 +109,12 @@ export async function buildPayloadDryRun(
       },
     })
     onProgress?.(`travel:${travel.slug}:complete`)
-    travelDocs.push(...fullResult.docs)
+    travelDocs.push(
+      ...fullResult.docs.map((document) => ({
+        ...document,
+        collection,
+      })),
+    )
   }
   const userIdBySlug = new Map(catalog.users.map((user) => [user.slug, user.id]))
   const travelBySlug = new Map(travelDocs.map((travel) => [travel.slug, travel]))
@@ -121,16 +150,37 @@ export async function buildPayloadDryRun(
         .map((item) => mediaIdBySourcePath.get(item.sourcePath))
         .filter((id): id is number => typeof id === 'number')
     const coverImage = idsFor(['cover', 'gallery'])[0]
-    const source = buildTravelProjection({
+    const target = buildTravelSeedTarget(travel, {
       ...attachSourceSectionMediaIds({ mediaBySourcePath: mediaIdBySourcePath, mediaItems: assets, travel }),
       coverImage,
       galleryImages: idsFor(['gallery', 'cover']),
       itineraryImages: idsFor(['itinerary']),
     })
-    const metadata = existing ? sourceMetadataFrom(existing) : undefined
+    const crossCollectionCollision = crossCollectionCollisionBySlug.get(travel.slug)
+
+    if (crossCollectionCollision) {
+      actions.push({
+        collection: target.collection,
+        key: travel.slug,
+        action: 'conflict',
+        existingId: Number(crossCollectionCollision.id),
+        conflicts: [
+          {
+            field: 'collection',
+            category: 'identity-publication',
+            base: crossCollectionCollision.collection,
+            source: target.collection,
+            current: crossCollectionCollision.collection,
+          },
+        ],
+      })
+      continue
+    }
+
+    const source = target.source
     const plan = reconcileTravelSeed({
       slug: travel.slug,
-      base: metadata?.baseProjection,
+      base: existing ? travelSeedBaseProjection(existing) : undefined,
       source,
       current: existing ? buildTravelProjection(existing as unknown as TravelProjection) : undefined,
       mode,
@@ -147,7 +197,7 @@ export async function buildPayloadDryRun(
               : 'skip'
 
     actions.push({
-      collection: 'travel-projects',
+      collection: target.collection,
       key: travel.slug,
       action,
       existingId: existing ? Number(existing.id) : undefined,
@@ -198,20 +248,43 @@ async function readDryRunCatalog(
         SELECT COALESCE(
           json_agg(
             json_build_object(
-              'id', travel_projects.id,
-              'slug', travel_projects.slug,
+              'id', travel_records.id,
+              'slug', travel_records.slug,
+              'collection', travel_records.collection,
               'sourceMetadata', json_build_object(
-                'sourceFile', travel_projects.source_metadata_source_file,
-                'sourceHash', travel_projects.source_metadata_source_hash,
-                'parserVersion', travel_projects.source_metadata_parser_version,
-                'lastImportedAt', travel_projects.source_metadata_last_imported_at,
-                'baseProjection', travel_projects.source_metadata_base_projection
+                'sourceFile', travel_records.source_metadata_source_file,
+                'sourceHash', travel_records.source_metadata_source_hash,
+                'parserVersion', travel_records.source_metadata_parser_version,
+                'lastImportedAt', travel_records.source_metadata_last_imported_at,
+                'baseProjection', travel_records.source_metadata_base_projection
               )
             )
           ),
           '[]'::json
         )
-        FROM travel_projects
+        FROM (
+          SELECT
+            id,
+            slug,
+            'travel-plans'::text AS collection,
+            source_metadata_source_file,
+            source_metadata_source_hash,
+            source_metadata_parser_version,
+            source_metadata_last_imported_at,
+            source_metadata_base_projection
+          FROM travel_plans
+          UNION ALL
+          SELECT
+            id,
+            slug,
+            'travel-memories'::text AS collection,
+            source_metadata_source_file,
+            source_metadata_source_hash,
+            source_metadata_parser_version,
+            source_metadata_last_imported_at,
+            source_metadata_base_projection
+          FROM travel_memories
+        ) AS travel_records
       ) AS travels,
       '[]'::json AS media
   `)
@@ -260,7 +333,10 @@ async function readDryRunCatalog(
       : [],
     travels: Array.isArray(row.travels)
       ? row.travels.flatMap((travel) =>
-          isRecord(travel) && typeof travel.id === 'number' && typeof travel.slug === 'string'
+          isRecord(travel) &&
+          typeof travel.id === 'number' &&
+          typeof travel.slug === 'string' &&
+          (travel.collection === 'travel-plans' || travel.collection === 'travel-memories')
             ? [travel as DryRunTravelRecord]
             : [],
         )
@@ -292,25 +368,6 @@ async function readDryRunCatalog(
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function sourceMetadataFrom(value: unknown): { baseProjection?: TravelProjection } | undefined {
-  if (!value || typeof value !== 'object' || !('sourceMetadata' in value)) {
-    return undefined
-  }
-
-  const metadata = value.sourceMetadata
-  if (!metadata || typeof metadata !== 'object') {
-    return undefined
-  }
-
-  const baseProjection = 'baseProjection' in metadata ? metadata.baseProjection : undefined
-  return {
-    baseProjection:
-      baseProjection && typeof baseProjection === 'object' && !Array.isArray(baseProjection)
-        ? (baseProjection as TravelProjection)
-        : undefined,
-  }
 }
 
 export function summarizeDryRunActions(actions: DryRunAction[]): DryRunSummary {

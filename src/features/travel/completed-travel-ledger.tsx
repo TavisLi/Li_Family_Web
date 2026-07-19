@@ -1,10 +1,10 @@
 import { Hotel, Plane } from 'lucide-react'
 import React, { type ReactNode } from 'react'
 
-import type { TravelProject } from '@/payload/payload-types'
+import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 
 type CompletedTravelLedgerProps = {
-  project: TravelProject
+  project: TravelRuntimeRecord
 }
 
 export function CompletedTravelLedger({ project }: CompletedTravelLedgerProps) {
