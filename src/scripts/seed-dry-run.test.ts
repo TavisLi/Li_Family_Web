@@ -6,11 +6,11 @@ import { buildTravelSeedTarget, travelSeedBaseProjection } from './travel-seed-t
 
 const summary = summarizeDryRunActions([
   { collection: 'users', key: 'tavis', action: 'update', existingId: 7 },
-  { collection: 'travel-projects', key: '202602-thailand-phuket', action: 'create' },
+  { collection: 'travel-memories', key: '202602-thailand-phuket', action: 'create' },
   { collection: 'media', key: 'content-source/assets/members/tavis/tavis-avatar.jpeg', action: 'update', existingId: 42 },
   { collection: 'media', key: 'content-source/assets/members/tavis/tavis-hero.jpeg', action: 'skip', existingId: 43 },
-  { collection: 'travel-projects', key: 'legacy-travel', action: 'preserve', existingId: 44 },
-  { collection: 'travel-projects', key: 'conflicted-travel', action: 'conflict', existingId: 45 },
+  { collection: 'travel-plans', key: 'archived-plan', action: 'preserve', existingId: 44 },
+  { collection: 'travel-plans', key: 'conflicted-plan', action: 'conflict', existingId: 45 },
 ])
 
 assert.deepEqual(summary, {
@@ -25,8 +25,8 @@ assert.deepEqual(summary, {
 assert.deepEqual(
   sampleDryRunActions([
     {
-      collection: 'travel-projects',
-      key: 'conflicted-travel',
+      collection: 'travel-plans',
+      key: 'conflicted-plan',
       action: 'conflict',
       conflicts: [
         {
@@ -41,8 +41,8 @@ assert.deepEqual(
   ]),
   [
     {
-      collection: 'travel-projects',
-      key: 'conflicted-travel',
+      collection: 'travel-plans',
+      key: 'conflicted-plan',
       action: 'conflict',
       conflicts: [
         {

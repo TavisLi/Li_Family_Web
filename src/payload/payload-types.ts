@@ -73,7 +73,6 @@ export interface Config {
     'travel-plans': TravelPlan;
     'travel-memories': TravelMemory;
     'travel-route-identities': TravelRouteIdentity;
-    'travel-projects': TravelProject;
     'timeline-events': TimelineEvent;
     'bucket-items': BucketItem;
     'wrapped-snapshots': WrappedSnapshot;
@@ -96,7 +95,6 @@ export interface Config {
     'travel-plans': TravelPlansSelect<false> | TravelPlansSelect<true>;
     'travel-memories': TravelMemoriesSelect<false> | TravelMemoriesSelect<true>;
     'travel-route-identities': TravelRouteIdentitiesSelect<false> | TravelRouteIdentitiesSelect<true>;
-    'travel-projects': TravelProjectsSelect<false> | TravelProjectsSelect<true>;
     'timeline-events': TimelineEventsSelect<false> | TimelineEventsSelect<true>;
     'bucket-items': BucketItemsSelect<false> | BucketItemsSelect<true>;
     'wrapped-snapshots': WrappedSnapshotsSelect<false> | WrappedSnapshotsSelect<true>;
@@ -287,10 +285,6 @@ export interface Media {
       }[]
     | null;
   relatedMembers?: (number | User)[] | null;
-  relatedTravel?: (number | null) | TravelProject;
-  /**
-   * Phase 17 cutover field. Keep relatedTravel until the legacy collection is retired.
-   */
   relatedTravelRecord?:
     | ({
         relationTo: 'travel-plans';
@@ -337,228 +331,6 @@ export interface Media {
       filename?: string | null;
     };
   };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "travel-projects".
- */
-export interface TravelProject {
-  id: number;
-  title: string;
-  slug: string;
-  status: 'planning' | 'completed';
-  isPrivate?: boolean | null;
-  startDate: string;
-  endDate: string;
-  /**
-   * Matches a file under content-source/travels for future seed import.
-   */
-  externalDocIdentifier?: string | null;
-  /**
-   * Seed reconciliation metadata. Managed by the travel seed workflow; content editors should not change it manually.
-   */
-  sourceMetadata?: {
-    sourceFile?: string | null;
-    sourceHash?: string | null;
-    parserVersion?: string | null;
-    lastImportedAt?: string | null;
-    /**
-     * Last accepted seed projection used as Base for three-way reconciliation.
-     */
-    baseProjection?:
-      | {
-          [k: string]: unknown;
-        }
-      | unknown[]
-      | string
-      | number
-      | boolean
-      | null;
-  };
-  coverImage?: (number | null) | Media;
-  galleryImages?: (number | Media)[] | null;
-  /**
-   * Seeded from content-source/assets/travels/[slug]/itinerary and replaceable in Payload Admin.
-   */
-  itineraryImages?: (number | Media)[] | null;
-  members?: (number | User)[] | null;
-  summary?: string | null;
-  party?:
-    | {
-        name: string;
-        note?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  flights?:
-    | {
-        date?: string | null;
-        airline?: string | null;
-        flightNumber: string;
-        route: string;
-        passengers?: string | null;
-        departureTime?: string | null;
-        arrivalTime?: string | null;
-        terminal?: string | null;
-        notes?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  railSegments?:
-    | {
-        date?: string | null;
-        trainNumber: string;
-        route: string;
-        departureTime?: string | null;
-        arrivalTime?: string | null;
-        duration?: string | null;
-        fare?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  lodgings?:
-    | {
-        dateRange: string;
-        city?: string | null;
-        hotel: string;
-        address?: string | null;
-        roomType?: string | null;
-        bookingChannel?: string | null;
-        price?: string | null;
-        highlights?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  cabinAssignments?:
-    | {
-        cabin: string;
-        passengers: string;
-        id?: string | null;
-      }[]
-    | null;
-  dailyItinerary?:
-    | {
-        day: number;
-        date?: string | null;
-        title: string;
-        theme?: string | null;
-        segments?:
-          | {
-              time?: string | null;
-              activity: string;
-              transport?: string | null;
-              notes?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        meals?: {
-          breakfast?: string | null;
-          lunch?: string | null;
-          dinner?: string | null;
-        };
-        lodging?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  foodRecommendations?:
-    | {
-        category?: string | null;
-        name: string;
-        description?: string | null;
-        suitableFor?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  costItems?:
-    | {
-        category: string;
-        item: string;
-        unitPrice?: string | null;
-        quantity?: string | null;
-        subtotal?: string | null;
-        notes?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  optionalActivities?:
-    | {
-        city?: string | null;
-        name: string;
-        description?: string | null;
-        price?: string | null;
-        riskLevel?: string | null;
-        notes?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  reminders?:
-    | {
-        category: string;
-        items?:
-          | {
-              text: string;
-              id?: string | null;
-            }[]
-          | null;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Faithful Markdown source sections imported from content-source/travels for full-page coverage.
-   */
-  sourceSections?:
-    | {
-        level: number;
-        title: string;
-        anchor: string;
-        /**
-         * Optional daily section day label, e.g. Day 1. Leave empty to derive it from title.
-         */
-        displayDay?: string | null;
-        /**
-         * Optional daily section date label. Leave empty to derive it from title.
-         */
-        displayDate?: string | null;
-        /**
-         * Optional daily section subtitle, e.g. 抵達日. Leave empty to derive it from title.
-         */
-        displaySubtitle?: string | null;
-        body: string;
-        links?:
-          | {
-              label: string;
-              url: string;
-              id?: string | null;
-            }[]
-          | null;
-        /**
-         * Optional photos or YouTube media selected for this source section. Leave empty when no section media should render.
-         */
-        mediaItems?: (number | Media)[] | null;
-        /**
-         * Enable the comment seat for this source section.
-         */
-        enableComments?: boolean | null;
-        /**
-         * Enable thumb-up reactions for this source section.
-         */
-        enableThumbsUp?: boolean | null;
-        /**
-         * Enable thumb-down reactions for this source section.
-         */
-        enableThumbsDown?: boolean | null;
-        id?: string | null;
-      }[]
-    | null;
-  externalVideos?:
-    | {
-        title: string;
-        youtubeUrl: string;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * Planning workspaces. The end date controls Active Plans versus Archived Plans in the lobby.
@@ -895,10 +667,6 @@ export interface TimelineEvent {
   summary?: string | null;
   description?: string | null;
   images?: (number | Media)[] | null;
-  relatedTravel?: (number | null) | TravelProject;
-  /**
-   * Phase 17 cutover field. Keep relatedTravel until the legacy collection is retired.
-   */
   relatedTravelRecord?:
     | ({
         relationTo: 'travel-plans';
@@ -1025,10 +793,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'travel-memories';
         value: number | TravelMemory;
-      } | null)
-    | ({
-        relationTo: 'travel-projects';
-        value: number | TravelProject;
       } | null)
     | ({
         relationTo: 'timeline-events';
@@ -1456,187 +1220,6 @@ export interface TravelRouteIdentitiesSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "travel-projects_select".
- */
-export interface TravelProjectsSelect<T extends boolean = true> {
-  title?: T;
-  slug?: T;
-  status?: T;
-  isPrivate?: T;
-  startDate?: T;
-  endDate?: T;
-  externalDocIdentifier?: T;
-  sourceMetadata?:
-    | T
-    | {
-        sourceFile?: T;
-        sourceHash?: T;
-        parserVersion?: T;
-        lastImportedAt?: T;
-        baseProjection?: T;
-      };
-  coverImage?: T;
-  galleryImages?: T;
-  itineraryImages?: T;
-  members?: T;
-  summary?: T;
-  party?:
-    | T
-    | {
-        name?: T;
-        note?: T;
-        id?: T;
-      };
-  flights?:
-    | T
-    | {
-        date?: T;
-        airline?: T;
-        flightNumber?: T;
-        route?: T;
-        passengers?: T;
-        departureTime?: T;
-        arrivalTime?: T;
-        terminal?: T;
-        notes?: T;
-        id?: T;
-      };
-  railSegments?:
-    | T
-    | {
-        date?: T;
-        trainNumber?: T;
-        route?: T;
-        departureTime?: T;
-        arrivalTime?: T;
-        duration?: T;
-        fare?: T;
-        id?: T;
-      };
-  lodgings?:
-    | T
-    | {
-        dateRange?: T;
-        city?: T;
-        hotel?: T;
-        address?: T;
-        roomType?: T;
-        bookingChannel?: T;
-        price?: T;
-        highlights?: T;
-        id?: T;
-      };
-  cabinAssignments?:
-    | T
-    | {
-        cabin?: T;
-        passengers?: T;
-        id?: T;
-      };
-  dailyItinerary?:
-    | T
-    | {
-        day?: T;
-        date?: T;
-        title?: T;
-        theme?: T;
-        segments?:
-          | T
-          | {
-              time?: T;
-              activity?: T;
-              transport?: T;
-              notes?: T;
-              id?: T;
-            };
-        meals?:
-          | T
-          | {
-              breakfast?: T;
-              lunch?: T;
-              dinner?: T;
-            };
-        lodging?: T;
-        id?: T;
-      };
-  foodRecommendations?:
-    | T
-    | {
-        category?: T;
-        name?: T;
-        description?: T;
-        suitableFor?: T;
-        id?: T;
-      };
-  costItems?:
-    | T
-    | {
-        category?: T;
-        item?: T;
-        unitPrice?: T;
-        quantity?: T;
-        subtotal?: T;
-        notes?: T;
-        id?: T;
-      };
-  optionalActivities?:
-    | T
-    | {
-        city?: T;
-        name?: T;
-        description?: T;
-        price?: T;
-        riskLevel?: T;
-        notes?: T;
-        id?: T;
-      };
-  reminders?:
-    | T
-    | {
-        category?: T;
-        items?:
-          | T
-          | {
-              text?: T;
-              id?: T;
-            };
-        id?: T;
-      };
-  sourceSections?:
-    | T
-    | {
-        level?: T;
-        title?: T;
-        anchor?: T;
-        displayDay?: T;
-        displayDate?: T;
-        displaySubtitle?: T;
-        body?: T;
-        links?:
-          | T
-          | {
-              label?: T;
-              url?: T;
-              id?: T;
-            };
-        mediaItems?: T;
-        enableComments?: T;
-        enableThumbsUp?: T;
-        enableThumbsDown?: T;
-        id?: T;
-      };
-  externalVideos?:
-    | T
-    | {
-        title?: T;
-        youtubeUrl?: T;
-        id?: T;
-      };
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "timeline-events_select".
  */
 export interface TimelineEventsSelect<T extends boolean = true> {
@@ -1647,7 +1230,6 @@ export interface TimelineEventsSelect<T extends boolean = true> {
   summary?: T;
   description?: T;
   images?: T;
-  relatedTravel?: T;
   relatedTravelRecord?: T;
   relatedPost?: T;
   relatedMembers?: T;
@@ -1736,7 +1318,6 @@ export interface MediaSelect<T extends boolean = true> {
         id?: T;
       };
   relatedMembers?: T;
-  relatedTravel?: T;
   relatedTravelRecord?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1854,10 +1435,6 @@ export interface HomeConfig {
   heroTitle: string;
   heroSubtitle?: string | null;
   heroBackground?: (number | null) | Media;
-  featuredTravel?: (number | null) | TravelProject;
-  /**
-   * Phase 17 cutover field. Keep featuredTravel until the legacy collection is retired.
-   */
   featuredTravelRecord?:
     | ({
         relationTo: 'travel-plans';
@@ -1900,7 +1477,6 @@ export interface HomeConfigSelect<T extends boolean = true> {
   heroTitle?: T;
   heroSubtitle?: T;
   heroBackground?: T;
-  featuredTravel?: T;
   featuredTravelRecord?: T;
   announcement?: T;
   updatedAt?: T;

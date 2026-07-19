@@ -3,16 +3,18 @@ import assert from 'node:assert/strict'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-import type { Media, TravelProject } from '@/payload/payload-types'
+import type { Media } from '@/payload/payload-types'
 import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import { CompletedTravelLedger } from './completed-travel-ledger'
 import { TravelPhotoGalleryPreview } from './travel-photo-gallery'
-import { TravelPlanningExtras } from './travel-planning-extras'
 import { TravelSourceSections } from './travel-source-sections'
 import { PayloadImage } from '@/components/ui/payload-image'
 
-const completedProject: TravelProject = {
-  id: 1,
+const completedProject: TravelRuntimeRecord = {
+  id: 'travel-memories:1',
+  sourceId: 1,
+  collection: 'travel-memories',
+  kind: 'memory',
   title: '初探泰國普吉島',
   slug: '202602-thailand-phuket',
   status: 'completed',
@@ -62,20 +64,21 @@ const completedProject: TravelProject = {
       youtubeUrl: 'https://youtu.be/lYP3m2N8yvs',
     },
   ],
-  createdAt: '2026-06-21T00:00:00.000Z',
-  updatedAt: '2026-06-21T00:00:00.000Z',
 }
 
 const html = renderToStaticMarkup(
-  createElement(CompletedTravelLedger, { project: runtimeProject(completedProject) }),
+  createElement(CompletedTravelLedger, { project: completedProject }),
 )
 
 assert.match(html, /旅程資料簿/)
 assert.match(html, /BR211/)
 assert.match(html, /Splash Beach Resort/)
 
-const planningProject: TravelProject = {
-  id: 2,
+const planningProject: TravelRuntimeRecord = {
+  id: 'travel-plans:2',
+  sourceId: 2,
+  collection: 'travel-plans',
+  kind: 'plan',
   title: '泰國普吉島度假二刷',
   slug: '202702-thailand-phuket',
   status: 'planning',
@@ -108,40 +111,6 @@ const planningProject: TravelProject = {
       day: 1,
       title: '台北 → 普吉島 · 安納塔拉入住',
       segments: [{ id: 'segment-1', activity: '抵達普吉島' }],
-    },
-  ],
-  reminders: [
-    {
-      id: 'reminder-1',
-      category: '補充細節',
-      items: [{ id: 'reminder-item-1', text: '萬豪推介會出席提醒' }],
-    },
-  ],
-  foodRecommendations: [
-    {
-      id: 'food-1',
-      category: '酸湯兔',
-      name: '老來福酸湯兔',
-      description: '完全不辣',
-      suitableFor: '小孩最愛',
-    },
-  ],
-  costItems: [
-    {
-      id: 'cost-1',
-      category: '費用',
-      item: '《烽煙三國》演出',
-      unitPrice: '290元/人',
-      quantity: '6人',
-      subtotal: '1,740元',
-    },
-  ],
-  optionalActivities: [
-    {
-      id: 'option-1',
-      name: '白帝城',
-      price: '252元/人',
-      notes: '自費項目',
     },
   ],
   sourceSections: [
@@ -274,8 +243,6 @@ const planningProject: TravelProject = {
       body: '💡 建議：方案A打車更靈活，適合6人家庭自主安排時間；方案B套票省心但需配合固定班次。可提前在攜程對比套票價格是否划算（單獨買門票180元/人+打車200元 vs 套票210元/人含車）',
     },
   ],
-  createdAt: '2026-06-21T00:00:00.000Z',
-  updatedAt: '2026-06-21T00:00:00.000Z',
 }
 
 const sectionPhoto: Media = {
@@ -330,7 +297,7 @@ planningProject.sourceSections?.push(
 
 const planningHtml = renderToStaticMarkup(
   createElement(TravelSourceSections, {
-    project: runtimeProject(planningProject),
+    project: planningProject,
     renderInteraction: ({ associatedId, label }) =>
       createElement('div', {
         'data-associated-id': associatedId,
@@ -405,13 +372,6 @@ assert.match(planningHtml, /泳池角度/)
 assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:pool-angle/)
 assert.doesNotMatch(planningHtml, /anantara-media photo 1/)
 
-const extrasHtml = renderToStaticMarkup(createElement(TravelPlanningExtras, { project: planningProject }))
-
-assert.match(extrasHtml, /費用、餐食與可選項目/)
-assert.match(extrasHtml, /老來福酸湯兔/)
-assert.match(extrasHtml, /《烽煙三國》演出/)
-assert.match(extrasHtml, /白帝城/)
-
 const mediaHtml = renderToStaticMarkup(
   createElement(PayloadImage, {
     fallbackLabel: '原比例照片',
@@ -452,25 +412,12 @@ assert.doesNotMatch(planningHtml, /border-t border-white\/10 py-5/)
 
 const completedGalleryHtml = renderToStaticMarkup(
   createElement(TravelPhotoGalleryPreview, {
-    project: runtimeProject({
+    project: {
       ...completedProject,
       galleryImages: galleryPhotos,
-    } as TravelProject),
+    },
   }),
 )
 
 assert.match(completedGalleryHtml, /Show all photos/)
 assert.match(completedGalleryHtml, /\/travel\/202602-thailand-phuket\/photos/)
-
-function runtimeProject(project: TravelProject): TravelRuntimeRecord {
-  const isPlan = project.status === 'planning'
-
-  return {
-    ...project,
-    id: `${isPlan ? 'travel-plans' : 'travel-memories'}:${project.id}`,
-    sourceId: project.id,
-    collection: isPlan ? 'travel-plans' : 'travel-memories',
-    kind: isPlan ? 'plan' : 'memory',
-    status: project.status,
-  } as TravelRuntimeRecord
-}

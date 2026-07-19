@@ -6,7 +6,7 @@
 
 **Phase 名稱**：Phase-17 Travel Conflict Resolution and Schema Cleanup Readiness  
 **準備日期**：2026-07-12  
-**決策更新**：2026-07-17
+**決策更新**：2026-07-19
 **建議工作分支**：`codex/phase-17-travel-conflict-resolution`  
 **建議基底**：從最新 `main` 開新分支。  
 **主要對應議題**：Issue #50「旅行：Travel Project 計劃中項目Table Schema 重構」與 Issue #57「旅行：Travel Project 規畫中/前期規劃旅遊項目Table Schema 重構」
@@ -35,6 +35,8 @@ Phase 17 的核心不是立即刪除欄位，也不是用 Markdown 覆蓋 Payloa
 - 2026-07-18 後續 family-mode Chrome QA 確認旅遊大廳上方三張分類卡片的既定用途是同頁區塊導航，三個 target IDs 與捲動落點均存在；但 Next.js Link 接管與缺乏落點回饋，讓操作感受近似「沒有反應」。本地已將三張卡片改為原生頁內連結，並為命中的規劃中／旅行回憶／過往規劃區塊加入清楚的 target 外框；未新增分類頁面，也沒有 Production data mutation。
 - 2026-07-19 網站擁有者完成本機 family-mode 人工審核並確認沒有問題。送 PR 前的雙軸 review 另發現 seed／dry-run 尚指向 legacy `travel-projects`；本地已補上共用 `buildTravelSeedTarget` seam，planning source 寫入 `travel-plans`、completed source 寫入 `travel-memories`，並同步 Phase 7 TimelineEvents 使用 polymorphic `relatedTravelRecord`。測試只使用 in-memory adapter，未執行 Production seed 或 data mutation。
 - 2026-07-19 新 seed seam 的第一次 Production 唯讀 dry-run 成功讀取新 collections：0 create、0 update、751 media skip、5 safe conflicts、0 delete，證明不再查寫 legacy collection。五筆 conflict 暴露 copy Base 保留雙語物件、而 dry-run Source／Current 使用 `zh-TW` 字串的表示差異；本地已在比較前 materialize Base locale，並把 `planningSections`／`storySections`／`dailyHighlights` 納入 stable item reconciliation。修正後兩次重跑都在 Payload 初始化前遇到 Supabase pooler connection timeout，故沒有宣稱取得修正後 Production read-back；依限次策略停止，沒有 write 或 data mutation。
+- 2026-07-19 PR #59 已合併；merge commit `9c15df3` 的 Vercel Production deployment 已成功，正式站 `/`、`/travel`、`/family/login` HTTP smoke 為 200。runtime 與 seed 現已停止依賴 legacy `travel-projects`。
+- 2026-07-19 已建立最後的 controlled legacy cleanup：移除 Payload collection config、四個舊 relationship fields、33 張 legacy tables 與 legacy enum；DOWN 明確要求從 verified backup 回復，不建立會誤導的空舊表。本地 disposable PostgreSQL 17 的 inspect、approval token、單一 transaction apply、batch 8 record 與獨立 verify 全數通過，新 2／3／5 records 不變，舊表／欄位為 0。Production 尚缺 cleanup 前 backup、唯讀 inspect token 與 destructive apply 明確批准，因此 Issue #50／#57 尚未關閉。
 
 本文件以下 PRD 保留 Phase 17 開始時的問題背景與安全要求；最新模型以 `docs/phase-artifacts/phase-17/`、`docs/data-models/travel-domain-schema.md` 與 ADR 0007 為準。
 

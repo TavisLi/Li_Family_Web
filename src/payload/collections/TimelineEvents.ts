@@ -70,20 +70,10 @@ export const TimelineEvents: CollectionConfig = {
       required: false,
     },
     {
-      name: 'relatedTravel',
-      type: 'relationship',
-      relationTo: 'travel-projects',
-      required: false,
-    },
-    {
       name: 'relatedTravelRecord',
       type: 'relationship',
       relationTo: ['travel-plans', 'travel-memories'],
       required: false,
-      admin: {
-        description:
-          'Phase 17 cutover field. Keep relatedTravel until the legacy collection is retired.',
-      },
     },
     {
       name: 'relatedPost',
