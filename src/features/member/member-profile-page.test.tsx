@@ -155,7 +155,8 @@ const lynn = baseMember({
       role: '經理',
       start: '1997/6',
       end: '2005/1',
-      summary: '帶領審計團隊服務上市櫃電子製造業。',
+      summary:
+        '帶領審計團隊服務上市櫃電子製造業。\n\n#### 會計部門\n\n- **財務報表**查核\n- 稅務申報',
     },
   ],
 })
@@ -184,6 +185,8 @@ assert.match(tavisHtml, /<span class="mx-2 inline-grid min-w-\[8em\] align-botto
 assert.match(tavisHtml, /工廠自動化 \/ 數字化轉型/)
 assert.match(tavisHtml, /數字化轉型戰略/)
 assert.match(tavisHtml, /智能製造與自動化/)
+assert.match(tavisHtml, /origin-left scale-x-0 transform-gpu/)
+assert.match(tavisHtml, /motion-reduce:scale-x-100/)
 assert.match(tavisHtml, /銳立平芯微電子/)
 assert.match(tavisHtml, /長江存儲/)
 assert.match(tavisHtml, /華亞科技/)
@@ -219,3 +222,11 @@ assert.match(lynnHtml, /宏達國際電子股份有限公司/)
 assert.match(lynnHtml, /勤業眾信會計師事務所/)
 assert.match(lynnHtml, /HTC milestone/)
 assert.doesNotMatch(lynnHtml, /勤業眾信會計師事務所 milestone media/)
+assert.match(lynnHtml, /lg:grid-cols-\[10rem_minmax\(0,1fr\)\]/)
+assert.match(lynnHtml, /<h4 class="text-base font-semibold text-slate-900">會計部門<\/h4>/)
+assert.match(lynnHtml, /<ul class="list-disc space-y-2 pl-5">/)
+assert.match(
+  lynnHtml,
+  /<li><strong class="font-semibold text-slate-900">財務報表<\/strong>查核<\/li>/,
+)
+assert.doesNotMatch(lynnHtml, /#### 會計部門/)

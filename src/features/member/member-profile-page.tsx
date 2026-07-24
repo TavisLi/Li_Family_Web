@@ -14,6 +14,7 @@ import {
 import { PayloadImage } from '@/components/ui/payload-image'
 import type { User } from '@/payload/payload-types'
 import { MemberTypewriter } from './member-typewriter'
+import { SkillRadarMeter } from './skill-radar-meter'
 
 type MemberProfilePageProps = {
   member: User
@@ -214,6 +215,108 @@ function renderRichTextLines(text: string): ReactNode {
   )
 }
 
+function renderMarkdownBlocks(text: string): ReactNode[] {
+  const lines = text.replace(/\r/g, '').split('\n')
+  const blocks: ReactNode[] = []
+  const paragraphLines: string[] = []
+
+  const flushParagraph = () => {
+    const paragraph = paragraphLines.join(' ').trim()
+
+    if (paragraph) {
+      blocks.push(<p key={`paragraph-${blocks.length}`}>{renderInlineEmphasis(paragraph)}</p>)
+    }
+
+    paragraphLines.length = 0
+  }
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index]?.trim() ?? ''
+
+    if (!line) {
+      flushParagraph()
+      continue
+    }
+
+    if (/^---+$/.test(line)) {
+      flushParagraph()
+      continue
+    }
+
+    const heading = line.match(/^#{1,6}\s+(.+)$/)
+
+    if (heading) {
+      flushParagraph()
+      blocks.push(
+        <h4 className="text-base font-semibold text-slate-900" key={`heading-${blocks.length}`}>
+          {renderInlineEmphasis(heading[1])}
+        </h4>,
+      )
+      continue
+    }
+
+    const unorderedItem = line.match(/^[-*•]\s+(.+)$/)
+
+    if (unorderedItem) {
+      flushParagraph()
+      const items = [unorderedItem[1]]
+
+      while (index + 1 < lines.length) {
+        const nextItem = lines[index + 1]?.trim().match(/^[-*•]\s+(.+)$/)
+
+        if (!nextItem) {
+          break
+        }
+
+        items.push(nextItem[1])
+        index += 1
+      }
+
+      blocks.push(
+        <ul className="list-disc space-y-2 pl-5" key={`unordered-list-${blocks.length}`}>
+          {items.map((item, itemIndex) => (
+            <li key={`${item}-${itemIndex}`}>{renderInlineEmphasis(item)}</li>
+          ))}
+        </ul>,
+      )
+      continue
+    }
+
+    const orderedItem = line.match(/^\d+[.)]\s+(.+)$/)
+
+    if (orderedItem) {
+      flushParagraph()
+      const items = [orderedItem[1]]
+
+      while (index + 1 < lines.length) {
+        const nextItem = lines[index + 1]?.trim().match(/^\d+[.)]\s+(.+)$/)
+
+        if (!nextItem) {
+          break
+        }
+
+        items.push(nextItem[1])
+        index += 1
+      }
+
+      blocks.push(
+        <ol className="list-decimal space-y-2 pl-5" key={`ordered-list-${blocks.length}`}>
+          {items.map((item, itemIndex) => (
+            <li key={`${item}-${itemIndex}`}>{renderInlineEmphasis(item)}</li>
+          ))}
+        </ol>,
+      )
+      continue
+    }
+
+    paragraphLines.push(line)
+  }
+
+  flushParagraph()
+
+  return blocks
+}
+
 function timelineHighlightItems(item: CareerTimelineItem): string[] {
   return compactTextList(item.highlights?.map((highlight) => highlight.text) ?? [])
 }
@@ -389,48 +492,51 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
         </div>
         <div className="grid gap-4">
           {timeline.length > 0 ? (
-            timeline.map((item, index) => (
-              <article
-                className={`grid gap-5 rounded-lg border ${style.panel} p-5 shadow-sm backdrop-blur-md lg:grid-cols-[10rem_1fr_16rem]`}
-                key={item.id ?? `${displayText(item.organization, 'milestone')}-${index}`}
-              >
-                <div>
-                  <p className={timelineMetaClass}>
-                    {compactTextList([item.start, item.end]).join(' - ')}
-                  </p>
-                  {displayText(item.location) ? (
-                    <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-slate-500">
-                      <MapPin className="size-4" aria-hidden="true" />
-                      {displayText(item.location)}
+            timeline.map((item, index) => {
+              const media = timelineCareerMedia({ index, item, member, milestoneImages })
+              const layoutClass = media.length
+                ? 'lg:grid-cols-[10rem_1fr_16rem]'
+                : 'lg:grid-cols-[10rem_minmax(0,1fr)]'
+
+              return (
+                <article
+                  className={`grid gap-5 rounded-lg border ${style.panel} p-5 shadow-sm backdrop-blur-md ${layoutClass}`}
+                  key={item.id ?? `${displayText(item.organization, 'milestone')}-${index}`}
+                >
+                  <div>
+                    <p className={timelineMetaClass}>
+                      {compactTextList([item.start, item.end]).join(' - ')}
                     </p>
-                  ) : null}
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold tracking-normal text-slate-950">
-                    {displayText(item.organization, '職涯里程碑')} · {displayText(item.role, '專業經歷')}
-                  </h3>
-                  {displayText(item.summary) ? (
-                    <p className="mt-3 text-sm leading-7 text-slate-600">
-                      {renderInlineEmphasis(displayText(item.summary))}
-                    </p>
-                  ) : null}
-                  {timelineHighlightItems(item).length ? (
-                    <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-600 md:grid-cols-2">
-                      {timelineHighlightItems(item).slice(0, 4).map((highlight, highlightIndex) => (
-                        <li className="border-l border-slate-300 pl-3" key={`${highlight}-${highlightIndex}`}>
-                          {renderRichTextLines(highlight)}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                </div>
-                <CareerMilestoneMedia
-                  item={item}
-                  media={timelineCareerMedia({ index, item, member, milestoneImages })}
-                  tone={tone}
-                />
-              </article>
-            ))
+                    {displayText(item.location) ? (
+                      <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-slate-500">
+                        <MapPin className="size-4" aria-hidden="true" />
+                        {displayText(item.location)}
+                      </p>
+                    ) : null}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold tracking-normal text-slate-950">
+                      {displayText(item.organization, '職涯里程碑')} · {displayText(item.role, '專業經歷')}
+                    </h3>
+                    {displayText(item.summary) ? (
+                      <div className="mt-3 grid gap-3 text-sm leading-7 text-slate-600">
+                        {renderMarkdownBlocks(displayText(item.summary))}
+                      </div>
+                    ) : null}
+                    {timelineHighlightItems(item).length ? (
+                      <ul className="mt-4 grid gap-2 text-sm leading-6 text-slate-600 md:grid-cols-2">
+                        {timelineHighlightItems(item).slice(0, 4).map((highlight, highlightIndex) => (
+                          <li className="border-l border-slate-300 pl-3" key={`${highlight}-${highlightIndex}`}>
+                            {renderRichTextLines(highlight)}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </div>
+                  <CareerMilestoneMedia item={item} media={media} tone={tone} />
+                </article>
+              )
+            })
           ) : (
             <article className={`rounded-lg border ${style.panel} p-6 text-sm text-slate-600`}>
               履歷時間軸資料尚未建立。
@@ -590,7 +696,7 @@ function SkillRadar({
       <h2 className={sectionHeadingClass}>能力不是標籤，而是證據。</h2>
       <div className="mt-7 grid gap-4">
         {skills.length > 0 ? (
-          skills.map((skill) => (
+          skills.map((skill, index) => (
             <div key={skill.id ?? skill.skill}>
               <div className="mb-2 flex items-center justify-between gap-4 text-sm">
                 <span className="font-medium text-slate-800">
@@ -598,9 +704,12 @@ function SkillRadar({
                 </span>
                 <span className="text-slate-500">{skill.score}</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-slate-200/80">
-                <div className={`h-full rounded-full bg-slate-900 ${scoreClass(skill.score)}`} />
-              </div>
+              <SkillRadarMeter
+                index={index}
+                label={displayText(skill.skill, '專業能力')}
+                score={skill.score}
+                widthClass={scoreClass(skill.score)}
+              />
               {displayText(skill.evidence) ? (
                 <p className="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">
                   {renderInlineEmphasis(displayText(skill.evidence))}
