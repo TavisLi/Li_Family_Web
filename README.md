@@ -1,122 +1,142 @@
-# Web Li - 家庭门户网站
+# Web Li 家庭入口網站
 
-一个现代科技风的家庭门户网站，展示家庭成员信息、大事记、旅游相册，并提供后台管理系统。
-我的第一个项目，运用现代AI技术进行开发
+Web Li 是一個長期營運的家庭數位入口，保存家庭成員故事、文章、旅行規劃、旅行回憶、時間軸、共同願望與年度回顧，並以 Public mode／Family mode 控制不同訪客可讀取與參與的內容。
 
-## ✨ 功能特性
+正式網站：[li-family-web.vercel.app](https://li-family-web.vercel.app/)
 
-- 🏠 **首页**：科技粒子动画、全家福、动态跑马灯、成员3D卡片入口
-- 👨‍👩‍👧‍👦 **成员主页**：自定义风格（爸爸科技风、妈妈温暖风、女儿少女风、儿子极客风）
-- 📅 **家庭大事记**：科技感时间轴，支持旅游项目标记
-- ✈️ **旅游项目主页**：行程时间轴 + 瀑布流照片墙 + Lightbox 预览
-- 🔐 **后台管理 (CMS)**：基于 Payload CMS，支持事件/旅游/媒体/联系信息管理
+## 目前已交付
 
-## 🛠️ 技术栈
-- **前台與後台一體化**：Next.js 15 (App Router) & Payload CMS v3 stable (Embedded)
-- **資料庫**：Supabase PostgreSQL (經由連接池穩定運行)
-- **多媒體儲存**：Cloudflare R2 (相片與圖片儲存，讀取流量完全免費)
-- **影片處置**：嵌入式 YouTube 播放系統（全站不存放原生影片，節省成本與串流頻寬）
-- **UI 與樣式**：Tailwind CSS + shadcn/ui + Framer Motion (流暢平滑動畫)
-- **國際化**：next-intl (支援繁體中文、英文)
+- 家庭大廳與家庭成員敘事頁面
+- Payload-backed 家庭 Blog、分類、標籤與家庭互動
+- Public mode／Family mode 存取邊界
+- Timeline、Bucket List、Annual Wrapped
+- Travel corridor、Travel Plan、Archived Plan 與 Travel Memory
+- Travel planning sections、照片、YouTube、留言及反應
+- Payload Admin、Supabase PostgreSQL、Cloudflare R2
+- 可重複執行的 content-source seed 與 Base／Source／Current reconciliation
 
-## 🚀 快速开始
+旅行領域已在 Phase 17 拆分為 `travel-plans` 與 `travel-memories`。舊 `travel-projects` records 與 relationship 欄位目前只作為 rollback evidence，尚未批准 destructive cleanup。
+
+## 技術基線
+
+| 項目 | 現行選型 |
+| --- | --- |
+| Web framework | Next.js `15.4.11` App Router |
+| CMS | Payload CMS `3.85.1`，嵌入 Next.js |
+| Runtime | Node.js `20.20.2` |
+| Database | Supabase PostgreSQL，serverless pooler |
+| Media | Cloudflare R2 S3 adapter |
+| UI | React 19、Tailwind CSS、shadcn/ui |
+| Deployment | GitHub PR → Vercel Preview → `main` Production |
+
+實際套件版本以 [`package.json`](./package.json)、[`.nvmrc`](./.nvmrc) 與 [`.node-version`](./.node-version) 為準。不要僅依舊 Phase prompt 或早期架構文件推斷版本。
+
+## 內容與資料流
+
+```text
+docs catalog + content-source Markdown/assets
+                    │
+                    ▼
+      parser / manifest / reconciliation
+                    │
+                    ▼
+          Payload published records
+                    │
+                    ▼
+       src/lib/data → routes / features
+```
+
+- `content-source/` 是可版本化、可審查、可重複匯入的輸入。
+- Payload collections／globals 是 Production runtime 的 published source of truth。
+- Admin 與 Source 都可能修改的資料，必須以 Base／Source／Current reconciliation 保護 Admin edits。
+- 修改來源檔不代表已上線；必須完成 dry-run、批准、同步、read-back 與 Production 驗證。
+
+## 快速開始
 
 ### 前置要求
 
-- Node.js 20 LTS（本專案固定使用 `20.20.2`；Payload CMS v3 要求 Node.js `20.9.0+`，請避免使用 Node 24/26 執行 migration）
-- pnpm (推荐) 或 npm
-- Vercel 帐号（用于部署）
-- Supabase PostgreSQL 与 Cloudflare R2 帐号（用于数据库与媒体储存）
+- Node.js `20.20.2`
+- pnpm
+- 可用的 Supabase PostgreSQL
+- 開發上傳媒體時需要 Cloudflare R2
 
-### 1. 克隆仓库
-
-```bash
-git clone https://github.com/TavisLi/Li_Family_Web.git 
-cd Li_Family_Web
-```
-### 2. 安装依赖
 ```bash
 nvm use
 pnpm install
-```
-### 3. 配置环境变量
-
-复制 .env.example 到 .env，并填入真实值：
-
-```bash
 cp .env.example .env
-```
-必需的环境变量：
-
-- PAYLOAD_SECRET – 随机字符串，用于会话加密
-- DATABASE_URI – Supabase PostgreSQL 连接池字符串
-- R2_BUCKET_NAME / R2_ACCOUNT_ID / R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY – Cloudflare R2 存储配置
-- NEXT_PUBLIC_SERVER_URL – 当前部署的公开站点 URL；Production 使用正式网域，Preview 使用对应的 Vercel Preview URL
-- NEXT_PUBLIC_R2_PUBLIC_URL – R2/CDN 公开读取地址。媒体会由 Payload S3 adapter 生成直连 URL，不应填写 R2 S3 API endpoint
-
-`PAYLOAD_SECRET`、`DATABASE_URI`、`R2_ACCESS_KEY_ID` 与 `R2_SECRET_ACCESS_KEY` 只能设为 Vercel 的 server-side 环境变量，绝不可使用 `NEXT_PUBLIC_` 前缀或传给 client component。
-
-### 4. 运行数据库迁移
-
-```bash
-pnpm payload migrate
-```
-### 5. 启动开发服务器
-
-```bash
+pnpm exec payload migrate
 pnpm dev
 ```
-访问 http://localhost:3000 查看前台，http://localhost:3000/admin 进入后台（首次需创建管理员账号）。
 
+- 前台：`http://localhost:3000`
+- Payload Admin：`http://localhost:3000/admin`
 
-## 🌐 国际化
+任何 migration 執行前都要先確認目前連線的資料庫環境。Production migration、seed 或 destructive cleanup 不屬於一般開發授權。
 
-- 默认语言：繁体中文 (zh-TW)
-- 支持语言：英文 (en)
-- 通过 URL 路径前缀切换，如 /en/members/tavis
+## 常用驗證
 
-## 📦 部署
-
-本项目以 Vercel 部署 Next.js 与 Payload，以 Supabase 提供 PostgreSQL、Cloudflare R2 提供媒体储存：
-
-1. 将代码推送到 GitHub 仓库，并在 Vercel 导入项目。
-2. 在 Preview 与 Production 分别设定 `.env.example` 中列出的变量。Production 的 `NEXT_PUBLIC_SERVER_URL` 必须是正式网域；Preview 必须是该 Preview deployment URL，避免 canonical 与 Open Graph 指向错误环境。
-3. 在 Cloudflare R2 连接 public domain 或 `r2.dev` domain，并将其填入 `NEXT_PUBLIC_R2_PUBLIC_URL`。R2 S3 endpoint 只供 Payload 上传使用。
-4. 每次 branch push 检查 Preview；合并到 `main` 后检查 Production。验证清单见 `docs/production-deployment-checklist.md`。
-5. 发生回归时在 Vercel 恢复到最近一次可用 Production deployment，并重新执行公开/家人模式 smoke test。
-
-## 🤝 贡献
-
-目前为私人项目，暂不接受外部 PR。如有建议可联系项目维护者。
-
-## 📄 许可证
-
-私有项目，仅限家庭成员使用。
-
-项目详细需求、成员数据、AI 开发规范请参考：
-
-- architecture.md – 技术架构与编码规范
-- CLAUDE.md – AI 行为准则
-- family-members.md – 家庭成员信息
-- travel-projects.md – 旅游项目信息
-- travel-content-source-guidelines.md – 新增旅游项目的 Markdown、照片与影片准备规范
-- content-source-asset-guidelines.md – content-source/assets 照片与媒体命名规范
-- Web Li Prompt.txt – 原始功能需求
-
-## Phase 交付报告
-
-每个 Phase 完成后的正式交接报告统一存放于：
-
-```text
-docs/phase-completion-reports/
+```bash
+pnpm run build
+pnpm tsc --noEmit
+git diff --check
 ```
 
-报告需记录 Phase 范围、branch/commit、GitHub 同步或 PR 状态、验证命令、Browser QA、已知限制与下一 Phase 准备事项。
+有 Collection 變更時：
 
-尚未进入正式交付、用于后续 Phase 开工准备的工作流记录统一存放于：
-
-```text
-docs/phase-preparation/
+```bash
+pnpm exec payload generate:types
 ```
 
-准备文档需记录建议分支、当前阻塞、必读上下文、可复用基础、验收清单与完成报告位置。
+Travel 工作依範圍使用：
+
+```bash
+pnpm run test:phase-17
+pnpm run seed:travel:dry-run
+pnpm run seed:travel:read-back
+```
+
+`pnpm run build` 與 `pnpm tsc --noEmit` 不要並行執行，以免 `.next/types` 產生競態。
+
+## Phase 工作方式
+
+所有新 Phase 必須遵循：
+
+1. 從最新 `main` 建立 `codex/phase-*` 分支。
+2. 先定義 scope、非目標、驗收條件與授權邊界。
+3. 讀取 `CONTEXT.md`、相關 ADR、現行程式 seam 與資料 ownership。
+4. 執行 focused tests、build、TypeScript、diff 與 Preview QA。
+5. 資料 migration、Production write、destructive cleanup 分別取得批准。
+6. PR 合併後驗證實際 Production runtime；Vercel `READY` 不能單獨代表完成。
+7. 寫入 Phase Completion Report，記錄真實 branch、commit、PR、deployment、data 與 blocker 狀態。
+
+完整流程見 [`docs/phase-execution-playbook.md`](./docs/phase-execution-playbook.md)。
+
+## 文件導覽與優先級
+
+1. [`CONTEXT.md`](./CONTEXT.md)：產品領域詞彙與內容 ownership。
+2. [`docs/adr/`](./docs/adr/)：已接受、不可被一般 Phase 靜默推翻的決策。
+3. [`docs/全栈系统需求与技术架构说明书.md`](./docs/全栈系统需求与技术架构说明书.md)：現行業務與技術架構契約。
+4. [`AGENTS.md`](./AGENTS.md)：AI／代理執行規則。
+5. [`docs/phase-execution-playbook.md`](./docs/phase-execution-playbook.md)：Phase 開工至結案流程。
+6. [`docs/website-operations-sop.md`](./docs/website-operations-sop.md)：內容更新、資料同步與營運。
+7. [`docs/production-deployment-checklist.md`](./docs/production-deployment-checklist.md)：Preview／Production 驗收。
+8. [`docs/travel-projects.md`](./docs/travel-projects.md)：旅行 catalog。
+9. [`docs/travel-content-source-guidelines.md`](./docs/travel-content-source-guidelines.md)：旅行來源包規範。
+10. [`docs/content-source-asset-guidelines.md`](./docs/content-source-asset-guidelines.md)：照片與素材規範。
+
+若文件與 repo 現況衝突，先停止實作並查明哪一方已過時，不要靜默選擇。
+
+## 部署與安全
+
+- Production：Vercel `main` deployment。
+- Database：Supabase PostgreSQL。
+- Media：Cloudflare R2；禁止引入 Vercel Blob 作為第二套媒體來源。
+- Secret 只能存在於本機受保護環境或部署平台，不得寫入 Git、Issue、PR、Completion Report 或 client bundle。
+- Production 驗收需檢查路由、實際 HTML、canonical／Open Graph、runtime logs、Public／Family boundary。
+- 程式 rollback 不能回復 Payload／Supabase 資料；資料操作必須另有備份、read-back 與回復方案。
+
+詳細步驟見 [`docs/production-deployment-checklist.md`](./docs/production-deployment-checklist.md)。
+
+## 專案性質
+
+本專案為私人家庭網站，目前不接受外部貢獻。內容可能涉及家庭私密資料；未取得網站擁有者批准，不得擴大公開範圍、執行 Production mutation 或輸出私密資料。

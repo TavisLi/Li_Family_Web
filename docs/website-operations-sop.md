@@ -32,11 +32,12 @@
 | 角色 | 可以做什麼 | 不可做什麼 |
 | --- | --- | --- |
 | 網站擁有者 | 決定公開性、批准 Production 資料同步與發布、保管 Vercel／Cloudflare／Supabase 權限 | 不在 Git、文件、聊天室貼出 secret |
-| 內容編輯者 | 在 Admin 更新文章、圖片、成員、公告、時間軸 | 不修改程式碼、環境變數、Production seed |
+| Payload 管理員（`role=admin`） | 進入 Admin、管理被授權的網站內容與帳號 | 不以 Admin 身份推導 migration／Production seed／destructive cleanup 權限 |
+| 家庭成員（`role=family`） | 登入 Family mode、讀取 family-only 內容與參與互動 | 不可進入 Payload Admin 或管理其他內容 |
 | 資料操作員 | 整理來源包、執行 audit、dry-run、經批准後的 seed | 未經批准不得寫入 Production；不得執行刪除型清理 |
 | 技術維護者 | 修程式、建立 PR、處理 Vercel／R2 問題 | 不將帳密、cookie 或私密資料寫入程式或報告 |
 
-目前尚未建立可供日常治理使用的「管理員／內容編輯者／一般家人」角色分權。將 Admin 帳號只交給受信任的維護者；若要讓更多家人登入，應先規劃角色型權限與內容審核流程。
+Phase 10 已建立 `admin`／`family` 兩種帳號角色。現行模型沒有獨立「內容編輯者」角色；因此只有受信任的 `admin` 可進入 Payload Admin。若未來要讓非管理員編輯內容，需另開 access-control Phase，不可直接把家庭帳號升為管理員。
 
 ---
 
@@ -65,7 +66,7 @@
 
 ### 4.1 準備內容包
 
-1. 在 `docs/travel-projects.md` 加入或更新：呈現名稱、唯一 canonical slug、狀態、Markdown 資料源。
+1. 在 `docs/travel-projects.md` 加入或更新：呈現名稱、唯一 canonical slug、domain collection（Plan／Memory）、Markdown 資料源。
 2. 建立／更新 `content-source/travels/[中文旅行名稱].md`，包含行程、航班、住宿、每日行程與可選的 YouTube 影片。
 3. 建立與 slug **完全相同**的資料夾：
 
@@ -103,10 +104,10 @@ pnpm run seed:travel:dry-run
 
    ```bash
    pnpm run seed:travel
-   pnpm run seed:travel:dry-run
+   pnpm run seed:travel:read-back
    ```
 
-3. 第二次 dry-run 是 read-back；已收斂資料應為 `skip`，保留的 Admin-only 修改應為 `preserve`，並確認沒有非預期 `update` 或 delete。
+3. 執行 domain-specific read-back，驗證目標 collection、record、relationship、visibility 與 source metadata。可再跑一次 dry-run 觀察收斂，但第二次 dry-run 不能取代完整 read-back。
 4. 在 Payload Admin 抽查標題語系、關聯圖片、公開 R2 URL 與 itinerary 資料。
 5. 實測 `/travel` 和 `/travel/[travel-slug]` 的桌機、手機、封面、照片牆與 YouTube 區塊。
 
@@ -142,6 +143,20 @@ pnpm run seed:travel:dry-run
 5. 以授權帳號驗證私密頁；不可讓私密資料出現在未登入頁面的 metadata、JSON-LD 或回應內容。
 6. 合併 PR 後，在 Production 重跑同一輪公開與家人流程驗證。
 7. 將 PR、Production URL、驗證結果、已知限制與回復方式寫入變更紀錄或 phase completion report。
+
+### 5.1 Human-in-the-loop 閘門
+
+下列動作必須由網站擁有者或指定維護者明確批准：
+
+- 將需求／PRD／Issue 拆分發布至 GitHub。
+- 改變 Public／Family visibility 或帳號角色。
+- 執行 Production migration。
+- 執行 Production content／media write。
+- 對 Base／Source／Current conflict 選擇 source-wins、payload-wins 或人工合併。
+- Merge 會觸發 Production deployment 的 PR。
+- 刪除、drop、覆蓋或移除 rollback evidence。
+
+詳細 HITL 表見 [`phase-execution-playbook.md`](./phase-execution-playbook.md)。
 
 ---
 

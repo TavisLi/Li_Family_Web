@@ -2,7 +2,7 @@
 
 本文件定義 `content-source/assets/` 的照片與媒體檔案治理規則，供 seed pipeline、後續頁面開發與人工整理素材時遵循。
 
-目標是讓預置照片可以作為 Payload CMS 的初始資料來源，同時避免前台 component 硬編圖片路徑。所有預置照片都應透過 seed 建立為 Payload Media 記錄，再由 Members、TravelProjects、Posts 或 HomeConfig 的 media relationship 引用。
+目標是讓預置照片可以作為 Payload CMS 的初始資料來源，同時避免前台 component 硬編圖片路徑。所有預置照片都應透過 seed 建立為 Payload Media 記錄，再由 Users、Travel Plans／Memories、Posts、Timeline Events 或 HomeConfig 的 media relationship 引用。
 
 若要新增完整旅遊項目，請同時參考 `docs/travel-content-source-guidelines.md`，其中包含旅行 Markdown、照片資料夾、YouTube 影片與 seed 驗證流程。
 
@@ -139,7 +139,7 @@ content-source/assets/travels/[travel-slug]/cover/
 [travel-slug]-cover-002.jpeg
 ```
 
-第一張封面通常會作為 TravelProjects 的主要 `coverImage`。
+第一張封面通常會作為對應 Travel Plan／Memory 的主要 `coverImage`。
 
 ### 4.2 Gallery
 

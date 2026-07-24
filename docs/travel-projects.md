@@ -1,52 +1,109 @@
-# Web Li - 全局環境與旅遊項目配置
+# Web Li 旅行目錄與內容配置
 
-本項目為現代科技風的家庭門戶網站。以下信息為網站初始化與個性化頁面的核心數據：
+更新日期：2026-07-24
 
-## 設計系統 (Design System)
-- **主視覺風格**：現代科技感、日夜深淺色模式自動與手動切換、毛玻璃效果 (Glassmorphism)。
-- **獨立網頁**：每一個旅遊項目須有獨立的一個以上的網頁呈現
- - **數據源**：位於 `content-source/travels/` 目錄下
+本文件定義 Web Li 應管理的旅行 catalog、canonical slug、來源檔與 domain 分類。它是版本化 catalog input，不是 Production runtime database；來源變更必須經 seed reconciliation、批准、read-back 與 runtime 驗證。
 
-## 旅遊領域與大廳分類
+## 1. Travel Domain
 
-- `travel-plans` 與 `travel-memories` 是兩種獨立內容，不是同一筆資料的 planning／completed 狀態切換；正式決策見 `docs/adr/0007-travel-plans-and-memories-are-separate-records.md`。
-- Plan 在旅遊日期未過時顯示於「規劃中／Active Plans」，日期已過後顯示於「過往規劃／Archived Plans」；兩者仍是同一筆 Plan。
-- 不使用 `Pre-planning`，因為它容易被理解為更早期的規劃階段，而不是已過旅遊日期的計畫封存。
-- Travel Memory 是獨立的行後記錄與分享作品，可選擇連回原 Plan，但必須擁有不同的 canonical slug。
-- Phase 17 已在 Production 完成五份 additive migrations、5-record transactional copy、RLS／grants security migration 與完整 read-back；Media、TimelineEvents、HomeConfig 的新 polymorphic 影子關聯已填入。70 張 Phase 17／relationship tables 已啟用 RLS，anon/authenticated table privileges 已撤銷。本地 runtime data layer 已改讀 `travel-plans`／`travel-memories` 並通過測試、build、公開訪客 browser smoke 與 Production owner read-back；尚未 deploy，所以正式站仍使用舊 runtime。舊 records／關聯繼續保留作 rollback，destructive cleanup 尚未批准。詳見 `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md` 與 `docs/phase-artifacts/phase-17/travel-data-api-security-approval-package.md`。
+- `travel-plans` 與 `travel-memories` 是獨立內容，不是同一 record 的 planning／completed status。
+- Plan 在旅遊日期未過時顯示為「規劃中／Active Plans」；日期已過後顯示為「過往規劃／Archived Plans」，persisted record 仍是 Plan。
+- Travel Memory 是獨立行後作品，可 optional `originPlan`，但必須有不同 canonical slug。
+- `travel-route-identities` 管理跨 collection route ownership。
+- 正式決策見 [`adr/0007-travel-plans-and-memories-are-separate-records.md`](./adr/0007-travel-plans-and-memories-are-separate-records.md)。
 
-## 規劃中的旅遊項目信息：著重於行程規劃的互動
+## 2. Phase 17 Runtime 狀態
 
-- **頁面風格**：按不同項目行程內容設計合適的頁面風格。
-- **核心組件**：具備**嵌入外部網站鏈接（如 酒店官網）** 的功能。頁面的各項內容須有讓用戶添加comment、Thumb-up, Thumb-down的功能，並可查看前述動作的用戶名。
+已完成：
 
-1. **202607重慶**
-   - **呈現名稱**：重慶+長江三峽8日 - 山城精華·三峽游輪·宜昌探索
-   - **Canonical slug**：202607-chongqing-yangtze-river
-   - **數據源**：頁面內容需嚴格解析 `202607重慶長江三峽8日.md`，提取所有內容，從段落里提取規劃頁面。
+- 五份 Production additive migrations。
+- 2 Plans／3 Memories／5 Route Identities transactional copy。
+- Media、TimelineEvents、HomeConfig polymorphic shadow relationship copy。
+- 相關 tables 的 RLS／grants security migration。
+- Data layer、renderer、interaction 與 travel-only seed cutover。
+- PR #59 merge 與 Vercel Production deployment。
+- 正式站 `/travel` 200，rendered HTML 已顯示「規劃中／旅行回憶／過往規劃」。
 
-2. **202702泰國普吉島**
-   - **呈現名稱**：泰國普吉島度假二刷
-   - **Canonical slug**：202702-thailand-phuket
-   - **數據源**：頁面內容需嚴格解析 `202702泰國普吉島7日.md`，提取所有內容，從段落里提取規劃頁面。
-   - **UI設計**：海灘豪華酒店度假休閒風。參照 `docs/design/travel/202702-thailand-phuket.design.md`
+仍保留：
 
-## 已完成的旅遊項目信息：著重於旅遊心得、照片、影片(鏈接到Youtube等平台上的視頻)的分享，需提取並適當編配所有內容，包含但不限於詳細行程、核心裡程碑、項目亮點、航班、食宿與各項消費等細節
+- Legacy `travel-projects` records／tables。
+- Legacy relationship 欄位。
+- Legacy migration evidence。
 
-- **頁面風格**：基調為溫暖、現代高雅。主色調：莫蘭迪色系 / 柔和米黃。可視項目具體內容調整合適的頁面風格。
-- **核心組件**：頁面的各項內容須有讓用戶添加心得感想、增加照片（上傳至 Cloudflare R2）、**嵌入外部視頻鏈接（如 YouTube 等平台）** 的功能。視頻嵌入使用 `<iframe>` 標籤並以 Suspense 包裹實現性能優化。
+保留項目只作 rollback evidence。Issue #50／#57 的 destructive cleanup 尚未批准，必須另有 backup、observation、inventory、relationship mapping、批准與 read-back。
 
-1. **2013海南**
-   - **呈現名稱**：非誠勿擾之海南三亞度假 - 亞龍灣·海棠灣·石梅灣
-   - **Canonical slug**：201307-hainan
-   - **數據源**：頁面內容需嚴格解析 `201307海南島8日.md`，提取所有內容，從段落里提取規劃頁面。
+詳細模型見 [`data-models/travel-domain-schema.md`](./data-models/travel-domain-schema.md)，執行證據見 [`phase-completion-reports/phase-17-travel-plan-memory-split.md`](./phase-completion-reports/phase-17-travel-plan-memory-split.md)。
 
-1. **202308東澳全覽9日**
-   - **呈現名稱**：東澳全覽9日 - 墨爾本蒸汽火車·企鵝歸巢·黃金海岸無尾熊·悉尼藍山
-   - **Canonical slug**：202308-east-australia
-   - **數據源**：頁面內容需嚴格解析 `202308東澳全覽9日.md`，提取所有內容，從段落里提取要點。
+## 3. Canonical Identity
 
-1. **202602泰國普吉島8日**
-   - **呈現名稱**：初探泰國普吉島 - 萬豪度假會·躍浪渡假村·芭東海灘
-   - **Canonical slug**：202602-thailand-phuket
-   - **數據源**：頁面內容需嚴格解析 `202602泰國普吉島8日.md`，提取所有內容，從段落里提取規劃頁面。
+每個 catalog item 必須有 stable canonical slug，並同時用於：
+
+- Dynamic route
+- Catalog mapping
+- Source mapping
+- `content-source/assets/travels/[slug]/`
+- Travel-local `manifest.json`
+
+Display title、中文 Markdown filename 或旅行年份改變時，不自動改 canonical slug。
+
+## 4. Travel Plans
+
+### 202607 重慶＋長江三峽
+
+- **呈現名稱**：重慶＋長江三峽 8 日－山城精華、三峽遊輪、宜昌探索
+- **Canonical slug**：`202607-chongqing-yangtze-river`
+- **Collection**：`travel-plans`
+- **Source**：`content-source/travels/202607重慶長江三峽8日.md`
+- **產品重點**：高密度 planning sections、航班、住宿、提醒、每日節點與家庭決策互動。
+
+### 202702 泰國普吉島
+
+- **呈現名稱**：泰國普吉島度假二刷
+- **Canonical slug**：`202702-thailand-phuket`
+- **Collection**：`travel-plans`
+- **Source**：`content-source/travels/202702泰國普吉島7日.md`
+- **Design doc**：[`design/travel/202702-thailand-phuket.design.md`](./design/travel/202702-thailand-phuket.design.md)
+- **產品重點**：度假規劃、飯店與交通連結、planning section interaction。
+- **Reconciliation fixture**：Admin-edited link labels 必須受 Base／Source／Current 保護。
+
+## 5. Travel Memories
+
+### 201307 海南
+
+- **呈現名稱**：非誠勿擾之海南三亞度假－亞龍灣、海棠灣、石梅灣
+- **Canonical slug**：`201307-hainan`
+- **Collection**：`travel-memories`
+- **Source**：`content-source/travels/201307海南島8日.md`
+
+### 202308 東澳
+
+- **呈現名稱**：東澳全覽 9 日－墨爾本、黃金海岸、悉尼藍山
+- **Canonical slug**：`202308-east-australia`
+- **Collection**：`travel-memories`
+- **Source**：`content-source/travels/202308東澳全覽9日.md`
+
+### 202602 泰國普吉島
+
+- **呈現名稱**：初探泰國普吉島－萬豪度假會、躍浪渡假村、芭東海灘
+- **Canonical slug**：`202602-thailand-phuket`
+- **Collection**：`travel-memories`
+- **Source**：`content-source/travels/202602泰國普吉島8日.md`
+
+Travel Memory 著重照片、心得、里程碑、外部 YouTube 與行後分享，不以 Plan schema 的 planning sections／決策生命週期取代。
+
+## 6. Interaction and Access
+
+- Planning section 可獨立設定 comment、thumb-up、thumb-down。
+- Travel Memory 可依其內容 target 提供家庭互動。
+- Public mode 只能讀取明確公開的 travel record。
+- Family-only內容不得出現在 public HTML、metadata、JSON-LD 或 media relationship。
+- Comment／reaction 必須顯示授權 user identity，並由 server/data layer 驗證。
+
+## 7. Source and Seed
+
+- 新增／大量更新旅行依 [`travel-content-source-guidelines.md`](./travel-content-source-guidelines.md)。
+- 日常 Admin 修改不應被 safe seed 靜默覆蓋。
+- Travel-only dry-run：`pnpm run seed:travel:dry-run`。
+- Travel read-back：`pnpm run seed:travel:read-back`。
+- 未取得 Production write 批准前只準備 evidence。
+- 一般 travel seed 不再寫入 legacy `travel-projects`。
