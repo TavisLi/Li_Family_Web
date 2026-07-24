@@ -114,8 +114,8 @@ pnpm run seed:travel:read-back
 ## 文件導覽與優先級
 
 1. [`CONTEXT.md`](./CONTEXT.md)：產品領域詞彙與內容 ownership。
-2. [`docs/全栈系统需求与技术架构说明书.md`](./docs/全栈系统需求与技术架构说明书.md)：現行業務與技術架構契約。
-3. [`docs/adr/`](./docs/adr/)：已接受、不可被一般 Phase 靜默推翻的決策。
+2. [`docs/adr/`](./docs/adr/)：已接受、不可被一般 Phase 靜默推翻的決策。
+3. [`docs/全栈系统需求与技术架构说明书.md`](./docs/全栈系统需求与技术架构说明书.md)：現行業務與技術架構契約。
 4. [`AGENTS.md`](./AGENTS.md)：AI／代理執行規則。
 5. [`docs/phase-execution-playbook.md`](./docs/phase-execution-playbook.md)：Phase 開工至結案流程。
 6. [`docs/website-operations-sop.md`](./docs/website-operations-sop.md)：內容更新、資料同步與營運。

@@ -127,7 +127,8 @@ PR #59 記錄以下 Node `20.20.2` 驗證通過：
 - Issues #50／#57 保持 open。
 - Legacy tables、records、relationships 與 migration history 仍保留。
 - Destructive cleanup 只能在 backup、deployment verification、inventory、relationship mapping、observation window 與新批准完成後執行。
-- 正式站 metadata URL 仍需 hotfix。
+- `BLOCKER-P17-METADATA`：正式站 canonical／Open Graph URL 仍需 hotfix、Production HTML 驗證及 follow-up Issue；在該 blocker 解決或由已批准 Issue 明確接管前，Phase 17 不得標記 `Production verified`／`Closed`。
+- 後續 `seed:travel:read-back` timeout 需依當次 query scope 重驗；不得用舊 baseline 取代新 read-back evidence。
 
 ## 10. Rollback
 
@@ -148,5 +149,5 @@ PR #59 記錄以下 Node `20.20.2` 驗證通過：
 | Locally verified | Yes |
 | PR ready | Yes |
 | Merged | Yes，PR #59 |
-| Production verified | Yes，split runtime route；metadata hotfix outstanding |
-| Closed | Phase 17 implementation closed；legacy cleanup Issues remain open |
+| Production verified | Partial：split runtime route 已驗證；`BLOCKER-P17-METADATA` 與適用 read-back 尚未完成 |
+| Closed | No：implementation 已 merge，但 Phase closeout 尚未通過；#50／#57 與 metadata blocker remain open |

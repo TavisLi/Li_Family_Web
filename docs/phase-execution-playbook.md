@@ -286,7 +286,7 @@ Substantive Phase 使用 `docs/templates/phase-preparation-template.md`，至少
 
 ## 9. Gate 5：資料與 Migration
 
-### 8.1 風險分層
+### 9.1 風險分層
 
 1. Read-only inventory
 2. Additive nullable schema
@@ -297,7 +297,7 @@ Substantive Phase 使用 `docs/templates/phase-preparation-template.md`，至少
 
 每一層都有獨立批准；不能以「已批准 migration」推導「已批准 content write」。
 
-### 8.2 固定順序
+### 9.2 固定順序
 
 1. Production inventory
 2. Collection change
