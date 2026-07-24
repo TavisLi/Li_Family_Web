@@ -47,13 +47,13 @@ YYYYMM-short-location-or-theme
 
 - 前台 URL：`/travel/[slug]`
 - 照片資料夾：`content-source/assets/travels/[travel-slug]/`
-- Payload `TravelProjects` seed 對應
+- Payload `TravelPlan`／`TravelMemory` seed 對應
 - media relationship owner mapping
 
 新增旅行時，請同時告知 Codex：
 
 - `travel-slug`
-- 狀態：`planning` 或 `completed`
+- Domain type：`plan` 或 `memory`（catalog 章節仍可使用「規劃中／已完成」作為來源分類）
 - Markdown 檔名
 - 是否有照片與影片
 
@@ -175,7 +175,7 @@ content-source/assets/travels/[travel-slug]/cover/cover-001.jpeg
 content-source/assets/travels/[travel-slug]/cover/cover-002.jpeg
 ```
 
-第一張封面通常作為 TravelProjects 的主要 `coverImage`。
+第一張封面通常作為對應 Travel Plan／Memory 的主要 `coverImage`。
 
 ### Gallery
 
@@ -403,7 +403,7 @@ docs/design/travel/202702-thailand-phuket.design.md
 - 作為 Phase 實作時的設計依據。
 - 不作為前台 runtime 直接讀取的資料來源。
 
-實作頁面時，應將設計文檔轉為結構化欄位，例如 `designProfile`、`presentation.template` 或 Payload TravelProjects 的對應欄位。`/travel/[slug]` 路由仍保持一致，由資料中的 template/profile 決定渲染方式。
+設計文檔是頁面方向與驗收依據，不是 runtime input。若某個設計差異真的需要持久化設定，必須先確認現行 Travel Plan／Memory schema 無法表達，再走 schema-first 與 migration gate；不得在文件中預設不存在的欄位。`/travel/[slug]` 保持動態路由，不為單一旅行新增硬編 route。
 
 ---
 

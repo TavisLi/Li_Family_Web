@@ -1,3 +1,10 @@
+---
+status: accepted
+date: 2026-06-23
+last-reviewed: 2026-07-24
+supersedes: null
+---
+
 # Runtime content records are Payload-owned
 
 The application reads published family content from Payload collections and globals; `content-source/` remains the curated source and seed-import input rather than a second runtime data store. This preserves CMS editing, relations, visibility rules, and generated types while retaining reviewable source material.

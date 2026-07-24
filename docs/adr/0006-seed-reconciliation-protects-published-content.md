@@ -1,3 +1,12 @@
+---
+status: accepted
+date: 2026-07-11
+last-reviewed: 2026-07-24
+related:
+  - "Issue #50"
+supersedes: null
+---
+
 # Seed reconciliation protects published content
 
 當一類 published content 同時允許版本化 Content source 匯入與 Payload Admin 人工編輯時，seed import 不得把 Source 當成可以無條件覆蓋 Current 的唯一真相。系統必須使用 Base／Source／Current reconciliation，或提供具相同保護能力的機制。

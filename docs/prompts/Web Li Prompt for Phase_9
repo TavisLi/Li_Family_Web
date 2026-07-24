@@ -185,3 +185,4 @@ Phase 9 不算完成，直到：
 4. Preview、Production、桌機、手機、公開與 family 流程 QA 完成，或每個外部 blocker 均有明確證據與後續責任。
 5. completion report 已建立，本地 commit 已建立，branch 已推送，PR 已建立。
 6. PR merge 後 Production deployment 與資料同步結果已再次確認。
+> 歷史文件：本 prompt 只記錄 Phase 9 當時輸入，不是現行架構或 Phase 執行規則。新工作請讀取 `docs/prompts/README.md`。

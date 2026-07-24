@@ -136,3 +136,4 @@ commit message:
 Implement phase 4 travel interaction system
 
 执行完后需输出 markdown 格式的Phase Completion Report, 执行记录与详细信息，作为后续工作流的交接凭证。
+> 歷史文件：本 prompt 只記錄 Phase 4 當時輸入，不是現行架構或 Phase 執行規則。新工作請讀取 `docs/prompts/README.md`。

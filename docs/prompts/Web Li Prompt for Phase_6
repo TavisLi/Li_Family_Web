@@ -103,3 +103,4 @@ Phase-6 只接好 Timeline / Bucket List / Wrapped 的入口與權限狀態，�
 - 建立 PR 或在完成報告記錄明確 PR blocker。
 - 完成後在 `docs/phase-completion-reports/` 新增中文 Phase Completion Report，例如 `phase-06-family-access-gate.md`。
 - Completion Report 必須包含：phase scope、branch / commit、GitHub sync 或 PR 狀態、delivered features、key files、validation commands、browser QA scope、known limitations、next-phase readiness。
+> 歷史文件：本 prompt 只記錄 Phase 6 當時輸入，不是現行架構或 Phase 執行規則。新工作請讀取 `docs/prompts/README.md`。

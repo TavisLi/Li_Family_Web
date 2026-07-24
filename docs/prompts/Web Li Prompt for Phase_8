@@ -204,3 +204,4 @@ Phase 8 不算完成，直到：
 6. PR 已建立，或 report 內明確記錄 PR blocker。
 7. Preview deployment 通過。
 8. PR merge 後，Production deployment 已確認，或 report 內明確記錄需要人工確認的原因。
+> 歷史文件：本 prompt 只記錄 Phase 8 當時輸入，不是現行架構或 Phase 執行規則。新工作請讀取 `docs/prompts/README.md`。

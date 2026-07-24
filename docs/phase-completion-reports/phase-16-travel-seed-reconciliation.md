@@ -67,7 +67,7 @@
 - `docs/website-operations-sop.md`
 - `docs/travel-content-source-guidelines.md`
 - `docs/phase-preparation/phase-16-travel-seed-reconciliation.md`
-- `docs/data-models/travel-projects-schema.md`
+- `docs/data-models/travel-domain-schema.md`
 - `docs/adr/0006-seed-reconciliation-protects-published-content.md`
 
 ## TDD 行為覆蓋
@@ -122,7 +122,7 @@ pnpm run build
 - 五筆均維持 safe conflict，沒有 content mutation。`202702-thailand-phuket` 已精確定位到 `sourceSections[item-1c51hpg].links`，其中 Current 的人類可讀標籤屬於 Payload Admin 修改，必須保留。
 - 其餘部分 travel 的陣列差異目前仍保守報為整體 conflict；Phase 16 不自動合併不相交的 array edits，以免在未能證明安全時覆蓋 Current。
 - 後續兩次唯讀重跑分別遇到 pooler connection timeout 與 120 秒 timeout；依限次策略停止，沒有 mutation。第一次完整成功報告是本階段審查依據。
-- 詳細 schema 與後續計畫見 `docs/data-models/travel-projects-schema.md`。
+- 現行 schema 與後續 legacy cleanup gate 見 `docs/data-models/travel-domain-schema.md`。
 
 ## Browser QA 範圍
 

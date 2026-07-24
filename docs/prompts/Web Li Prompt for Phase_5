@@ -116,3 +116,4 @@ commit message:
 - 新增中文 Phase Completion Report：
   - `docs/phase-completion-reports/phase-05-premium-family-blog.md`
 - Completion Report 需記錄 Phase 範圍、branch/commit、GitHub push/PR 狀態、主要檔案、驗證命令、Browser QA、已知限制、登入互動驗證狀態與 Phase-6 準備事項。
+> 歷史文件：本 prompt 只記錄 Phase 5 當時輸入，不是現行架構或 Phase 執行規則。新工作請讀取 `docs/prompts/README.md`。
