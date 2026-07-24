@@ -2,7 +2,7 @@
 
 報告日期：2026-07-24
 主要交付日期：2026-07-15–2026-07-19
-最終狀態：Production verified；legacy cleanup remains open
+最終狀態：Merged；Production verification partial；metadata／read-back blockers 與 legacy cleanup remain open
 
 ## 1. Phase Scope
 
