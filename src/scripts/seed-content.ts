@@ -48,6 +48,11 @@ const memberAssetSlugByDir = new Map([
   ['grandma', 'grandma'],
 ])
 
+const memberProfessionalTimelineIntroBySlug = {
+  tavis: '從早期自動化工程到數字化轉型領導，每段經歷都保留當時的責任、判斷與具體成果。',
+  lynn: '從會計師事務所、電信產業到半導體製造，每段經歷都累積財務治理、經營分析與內控判斷力。',
+} as const
+
 const travelSlugByFilename = new Map([
   ['201307海南岛8日.md', '201307-hainan'],
   ['201307海南島8日.md', '201307-hainan'],
@@ -117,6 +122,7 @@ const familyMemberSeedSchema = z.object({
     })
     .optional(),
   bio: z.string().optional(),
+  professionalTimelineIntro: z.string().optional(),
   publicContact: z
     .object({
       siteTitle: z.string().optional(),
@@ -594,6 +600,8 @@ export async function parseResumeMarkdown(filePath: string, slug: string): Promi
       persona: memberPersonaBySlug[slug as keyof typeof memberPersonaBySlug] ?? 'neutral',
     },
     bio,
+    professionalTimelineIntro:
+      memberProfessionalTimelineIntroBySlug[slug as keyof typeof memberProfessionalTimelineIntroBySlug],
     education,
     careerTimeline,
     skillRadar,
@@ -1026,6 +1034,7 @@ function mergeMemberSeeds(base: FamilyMemberSeed | undefined, resume: FamilyMemb
     ...base,
     bio: resume.bio ?? base.bio,
     publicContact: resume.publicContact ?? base.publicContact,
+    professionalTimelineIntro: resume.professionalTimelineIntro ?? base.professionalTimelineIntro,
     education: resume.education ?? base.education,
     careerTimeline: resume.careerTimeline ?? base.careerTimeline,
     skillRadar: resume.skillRadar ?? base.skillRadar,
