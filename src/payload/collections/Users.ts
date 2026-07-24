@@ -336,6 +336,15 @@ export const Users: CollectionConfig = {
       ],
     },
     {
+      name: 'professionalTimelineIntro',
+      type: 'textarea',
+      required: false,
+      localized: true,
+      admin: {
+        description: 'Intro copy shown beside the Professional Timeline heading on the public member profile.',
+      },
+    },
+    {
       name: 'skillRadar',
       type: 'array',
       required: false,

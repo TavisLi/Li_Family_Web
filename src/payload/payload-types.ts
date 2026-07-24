@@ -232,6 +232,10 @@ export interface User {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Intro copy shown beside the Professional Timeline heading on the public member profile.
+   */
+  professionalTimelineIntro?: string | null;
   skillRadar?:
     | {
         skill: string;
@@ -1172,6 +1176,7 @@ export interface UsersSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  professionalTimelineIntro?: T;
   skillRadar?:
     | T
     | {

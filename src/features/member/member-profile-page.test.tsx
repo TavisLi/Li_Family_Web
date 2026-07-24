@@ -68,6 +68,7 @@ const tavis = baseMember({
     suffix: '專業工作者。',
   },
   bio: '28年半導體行業數字化轉型、智能製造與IT戰略管理經驗。',
+  professionalTimelineIntro: '這段時間軸引言來自後台 Users 設定。',
   beliefs: [{ text: '天行健，君子以自強不息' }],
   education: [
     {
@@ -134,7 +135,7 @@ const lynn = baseMember({
     rotatingWords: [{ word: '生活美學家' }, { word: '旅行探索者' }],
     suffix: '優雅生活家。',
   },
-  bio: '台大會計系畢業，擁有審計、財務與內控管理經驗。',
+  bio: '台大會計系畢業，擁有審計、財務與內控管理經驗。\n\n#### 核心專長\n\n- **財務治理**\n- 內部稽核',
   beliefs: [{ text: '把專業、秩序與美感，安放在生活的細節裡。' }],
   education: [{ school: '台灣大學', degree: '學士', major: '會計系', year: '1996' }],
   interests: [{ name: '閱讀' }, { name: '旅行' }],
@@ -183,6 +184,7 @@ assert.doesNotMatch(tavisHtml, /object-contain object-\[50%_18%\]/)
 assert.match(tavisHtml, /<p class="text-lg font-semibold text-slate-500">2023\/6 - 至今<\/p>/)
 assert.match(tavisHtml, /<span class="mx-2 inline-grid min-w-\[8em\] align-bottom text-\[#1e3494\]">/)
 assert.match(tavisHtml, /工廠自動化 \/ 數字化轉型/)
+assert.match(tavisHtml, /這段時間軸引言來自後台 Users 設定。/)
 assert.match(tavisHtml, /數字化轉型戰略/)
 assert.match(tavisHtml, /智能製造與自動化/)
 assert.match(tavisHtml, /origin-left scale-x-0 transform-gpu/)
@@ -215,6 +217,12 @@ assert.doesNotMatch(tavisHtml, /父親<\/p>/)
 const lynnHtml = renderToStaticMarkup(createElement(MemberProfilePage, { member: lynn }))
 
 assert.match(lynnHtml, /生活美學家 \/ 旅行探索者/)
+assert.match(lynnHtml, /<h4 class="text-base font-semibold text-slate-900">核心專長<\/h4>/)
+assert.match(
+  lynnHtml,
+  /<li><strong class="font-semibold text-slate-900">財務治理<\/strong><\/li>/,
+)
+assert.match(lynnHtml, /每段經歷都保留當時的責任、判斷與具體成果，形成今日持續前進的專業底蘊。/)
 assert.match(lynnHtml, /台灣大學 · 學士 · 會計系 · 1996/)
 assert.match(lynnHtml, /財務會計/)
 assert.match(lynnHtml, /內部稽核/)
@@ -230,3 +238,4 @@ assert.match(
   /<li><strong class="font-semibold text-slate-900">財務報表<\/strong>查核<\/li>/,
 )
 assert.doesNotMatch(lynnHtml, /#### 會計部門/)
+assert.doesNotMatch(lynnHtml, /#### 核心專長/)

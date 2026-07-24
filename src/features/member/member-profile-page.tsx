@@ -114,6 +114,8 @@ const defaultPublicContact = {
   phone: '+886-988-115546',
   siteTitle: 'Web Li',
 }
+const defaultProfessionalTimelineIntro =
+  '每段經歷都保留當時的責任、判斷與具體成果，形成今日持續前進的專業底蘊。'
 
 function displayText(value: unknown, fallback = ''): string {
   if (typeof value === 'string') {
@@ -429,6 +431,10 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
   const milestoneImages = member.resumeMilestoneImages ?? []
   const displayName = displayText(member.displayName, 'Family member')
   const publicContact = publicContactForMember(member)
+  const professionalTimelineIntro = displayText(
+    member.professionalTimelineIntro,
+    defaultProfessionalTimelineIntro,
+  )
   const typewriterWords = compactTextList(member.typewriter?.rotatingWords?.map((item) => item.word) ?? [])
 
   return (
@@ -467,9 +473,9 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
             <MemberTypewriter words={typewriterWords} />
             {displayText(member.typewriter?.suffix) ? <span>{displayText(member.typewriter?.suffix)}</span> : null}
           </div>
-          <p className="mt-6 max-w-2xl text-base leading-8 text-slate-600">
-            {displayText(member.bio, style.title)}
-          </p>
+          <div className="mt-6 grid max-w-2xl gap-3 text-base leading-8 text-slate-600">
+            {renderMarkdownBlocks(displayText(member.bio, style.title))}
+          </div>
         </div>
       </section>
 
@@ -487,7 +493,7 @@ export function MemberProfilePage({ member }: MemberProfilePageProps) {
             </h2>
           </div>
           <p className="max-w-md text-sm leading-7 text-slate-600">
-            從早期自動化工程到數字化轉型領導，每段經歷都保留當時的責任、判斷與具體成果。
+            {professionalTimelineIntro}
           </p>
         </div>
         <div className="grid gap-4">
