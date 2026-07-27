@@ -10,6 +10,10 @@ test('uses the configured public server URL as the metadata base', () => {
   )
 })
 
+test('falls back to the production domain when no public server URL is configured', () => {
+  assert.equal(siteMetadataBase('').toString(), 'https://li-family-web.vercel.app/')
+})
+
 test('creates an absolute canonical URL from a route path', () => {
   assert.equal(
     absoluteSiteUrl('/blog/family-memory', 'https://family.example.com'),

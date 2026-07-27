@@ -1,4 +1,4 @@
-const DEFAULT_SITE_URL = 'http://localhost:3000'
+const DEFAULT_SITE_URL = 'https://li-family-web.vercel.app'
 const DEFAULT_OG_IMAGE_PATH = '/api/og-default'
 
 export function siteMetadataBase(value = process.env.NEXT_PUBLIC_SERVER_URL): URL {
