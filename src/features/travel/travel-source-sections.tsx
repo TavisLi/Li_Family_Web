@@ -139,7 +139,7 @@ export function SourceBody({
               }
               key={`table-${index}`}
             >
-              <table className="min-w-full divide-y divide-cyan-100/70 text-left text-sm">
+              <table className={`${sourceTableWidthClass(header.length)} w-full table-fixed divide-y divide-cyan-100/70 text-left text-sm`}>
                 <thead
                   className={
                     tone === 'dark'
@@ -148,8 +148,11 @@ export function SourceBody({
                   }
                 >
                   <tr>
-                    {header.map((cell) => (
-                      <th className="px-4 py-3" key={cell}>
+                    {header.map((cell, cellIndex) => (
+                      <th
+                        className={`${sourceTableColumnClass(cell, header.length)} whitespace-normal break-words px-4 py-3`}
+                        key={`${cell}-${cellIndex}`}
+                      >
                         {cell}
                       </th>
                     ))}
@@ -163,7 +166,7 @@ export function SourceBody({
                     >
                       {row.map((cell, cellIndex) => (
                         <td
-                          className={tone === 'dark' ? 'px-4 py-3 align-top text-slate-300' : 'px-4 py-3 align-top text-slate-600'}
+                          className={tone === 'dark' ? 'break-words px-4 py-3 align-top text-slate-300' : 'break-words px-4 py-3 align-top text-slate-600'}
                           key={`${rowIndex}-${cellIndex}`}
                         >
                           {cell}
@@ -174,6 +177,18 @@ export function SourceBody({
                 </tbody>
               </table>
             </div>
+          )
+        }
+
+        if (block.type === 'heading') {
+          return (
+            <h5
+              className={`${block.level === 1 ? 'text-xl' : 'text-lg'} font-semibold leading-tight tracking-normal ${tone === 'dark' ? 'text-white' : 'text-slate-950'} ${spanClass}`}
+              data-planning-heading-level={block.level}
+              key={`heading-${index}`}
+            >
+              {block.text}
+            </h5>
           )
         }
 
@@ -366,7 +381,10 @@ function NestedSourceSection({
       {daily ? (
         <DailySectionTitle section={section} tone={tone} />
       ) : (
-        <h4 className={dark ? 'text-[22px] font-semibold tracking-normal text-white' : 'text-[22px] font-semibold tracking-normal text-slate-950'}>
+        <h4
+          className={dark ? 'text-[22px] font-semibold tracking-normal text-white' : 'text-[22px] font-semibold tracking-normal text-slate-950'}
+          data-planning-heading-level="1"
+        >
           {section.title}
         </h4>
       )}
@@ -769,6 +787,7 @@ function hasBody(section: SourceSection) {
 
 type SourceBlock =
   | { type: 'paragraph'; text: string }
+  | { type: 'heading'; level: number; text: string }
   | { type: 'quote'; text: string }
   | { type: 'list'; items: string[] }
   | { type: 'table'; rows: string[][] }
@@ -779,6 +798,10 @@ function sourceBlockSpanClass(block: SourceBlock, forceWide = false): string {
   }
 
   if (block.type === 'table') {
+    return 'min-[560px]:col-span-2'
+  }
+
+  if (block.type === 'heading') {
     return 'min-[560px]:col-span-2'
   }
 
@@ -890,6 +913,10 @@ function isWideSourceBlock(block: SourceBlock): boolean {
     return !isCompactTable(block.rows)
   }
 
+  if (block.type === 'heading') {
+    return true
+  }
+
   if (block.type === 'list') {
     return block.items.some(isWideSourceListItem)
   }
@@ -946,6 +973,18 @@ function parseSourceBlocks(body: string): SourceBlock[] {
       continue
     }
 
+    const heading = line.match(/^(#{1,6})\s+(.+)$/)
+
+    if (heading) {
+      blocks.push({
+        type: 'heading',
+        level: heading[1]?.length ?? 1,
+        text: cleanInline(heading[2] ?? ''),
+      })
+      index += 1
+      continue
+    }
+
     if (isTableLine(line)) {
       const tableLines: string[] = []
 
@@ -992,6 +1031,7 @@ function parseSourceBlocks(body: string): SourceBlock[] {
     while (
       index < lines.length &&
       lines[index]?.trim() &&
+      !/^(#{1,6})\s+/.test(lines[index]?.trim() ?? '') &&
       !isTableLine(lines[index]?.trim() ?? '') &&
       !/^[-*]\s+/.test(lines[index]?.trim() ?? '') &&
       !(lines[index]?.trim() ?? '').startsWith('>')
@@ -1019,6 +1059,46 @@ function parseTableRow(line: string) {
     .replace(/\|$/, '')
     .split('|')
     .map((cell) => cleanInline(cell.trim()))
+}
+
+function sourceTableWidthClass(columnCount: number): string {
+  if (columnCount >= 5) {
+    return 'min-w-[56rem]'
+  }
+
+  if (columnCount >= 4) {
+    return 'min-w-[44rem]'
+  }
+
+  return 'min-w-full'
+}
+
+function sourceTableColumnClass(header: string, columnCount: number): string {
+  const normalized = header.replace(/\s+/g, '')
+
+  if (/日期|Date/i.test(normalized)) return 'w-[12%]'
+  if (/航班號|Flight/i.test(normalized)) return 'w-[17%]'
+  if (/航線|Route/i.test(normalized)) return 'w-[27%]'
+  if (/起飛|Departure/i.test(normalized)) return 'w-[10%]'
+  if (/抵達|Arrival/i.test(normalized)) return 'w-[10%]'
+  if (/旅客|Passenger/i.test(normalized)) return 'w-[24%]'
+  if (/城市|City/i.test(normalized)) return 'w-[9%]'
+  if (/酒店|飯店|Hotel/i.test(normalized)) return 'w-[24%]'
+  if (/房型|Room/i.test(normalized)) return 'w-[15%]'
+  if (/地址|Address/i.test(normalized)) return 'w-[28%]'
+  if (/確認號|Confirmation/i.test(normalized)) return 'w-[12%]'
+  if (/時間|時段|Time/i.test(normalized)) return 'w-[13%]'
+  if (/安排|行程|Schedule/i.test(normalized)) return 'w-[42%]'
+  if (/交通|Transport/i.test(normalized)) return 'w-[18%]'
+  if (/備注|備註|Notes?/i.test(normalized)) return columnCount === 6 ? 'w-[24%]' : 'w-[27%]'
+
+  if (columnCount === 2) return 'w-1/2'
+  if (columnCount === 3) return 'w-1/3'
+  if (columnCount === 4) return 'w-1/4'
+  if (columnCount === 5) return 'w-1/5'
+  if (columnCount === 6) return 'w-1/6'
+
+  return ''
 }
 
 function cleanInline(value: string) {

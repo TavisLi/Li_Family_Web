@@ -198,6 +198,13 @@ const planningProject: TravelProject = {
       body: '- 推薦方案：打車2輛，夜間價較穩\n- 備選方案：地鐵3號線→2號線至臨江門站',
     },
     {
+      id: 'source-2e',
+      level: 2,
+      title: '✈️ 航班信息',
+      anchor: 'flight-information',
+      body: '## 去程：\n| 日期 | 航班號 | 航線 | 起飛 | 抵達 | 旅客 |\n| --- | --- | --- | --- | --- | --- |\n| 2/1（一） | CZ8004 | 武漢 → 廣州 | 15:00 | 16:55 | 李天行 |\n\n| 日期 | 航班號 | 航線 | 起飛 | 抵達 | 旅客 |\n| --- | --- | --- | --- | --- | --- |\n| 2/3（三） | SQ879 | 台北 → 新加坡 | 17:35 | 22:20 | 簡采涵 |\n\n## 回程：\n| 日期 | 航班號 | 航線 | 起飛 | 抵達 | 旅客 |\n| --- | --- | --- | --- | --- | --- |\n| 2/9（二） | SQ723 | 普吉島 → 新加坡 | 08:40 | 11:40 | 簡采涵 |',
+    },
+    {
       id: 'source-3',
       level: 1,
       title: '每日節點與決策討論',
@@ -369,6 +376,13 @@ assert.match(planningHtml, /三峽人家交通方案/)
 assert.match(planningHtml, /套票210元\/人含車/)
 assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:notes/)
 assert.match(planningHtml, /入住安納塔拉/)
+assert.match(planningHtml, /data-planning-heading-level="1">✈️ 航班信息/)
+assert.match(planningHtml, /data-planning-heading-level="2">去程：/)
+assert.match(planningHtml, /data-planning-heading-level="2">回程：/)
+assert.doesNotMatch(planningHtml, /## 去程：/)
+assert.equal(planningHtml.match(/w-\[27%\] whitespace-normal break-words px-4 py-3">航線/g)?.length, 3)
+assert.equal(planningHtml.match(/w-\[24%\] whitespace-normal break-words px-4 py-3">旅客/g)?.length, 3)
+assert.equal(planningHtml.match(/min-w-\[56rem\] w-full table-fixed/g)?.length, 3)
 assert.match(planningHtml, /data-source-level="1"/)
 assert.match(planningHtml, /data-source-level="2"/)
 assert.match(planningHtml, /data-source-level="3"/)
