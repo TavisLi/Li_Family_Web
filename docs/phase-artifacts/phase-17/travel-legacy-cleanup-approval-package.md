@@ -19,7 +19,7 @@
 保留內容：
 
 - `travel_plans` 2 筆、`travel_memories` 3 筆、`travel_route_identities` 5 筆。
-- Media 12、TimelineEvents 2、HomeConfig 1 的新 polymorphic relationships。
+- Media 22、TimelineEvents 2、HomeConfig 1 的新 polymorphic relationships。
 - 歷史 migration files、Phase 16／17 conflict evidence 與決策文件。
 - `payload_migrations` 的既有 `dev/-1` 與 batch 1–7 records。
 
@@ -30,7 +30,7 @@ controlled executor 會在寫入前與 transaction 鎖表後各檢查一次，�
 1. Production runtime deployment 必須是包含本 cleanup code 的已審查 `main` commit，狀態為 success；executor 會要求 Vercel deployment SHA 與執行時本地 checkout `HEAD` 完全一致，避免用舊 runtime 刪除仍被 Payload config 宣告的 legacy tables。
 2. 必須提供 backup reference、建立時間與驗證時間。
 3. inventory 必須維持 legacy 5、Plans 2、Memories 3、Route identities 5。
-4. 舊／新 relationships 必須成對維持 Media 12／12、TimelineEvents 2／2、HomeConfig 1／1；shadow 以實際 row count 計算，逐 owner／canonical slug 驗證，重複或額外錯誤 row 也會拒絕。
+4. 舊／新 relationships 必須成對維持 Media 22／22、TimelineEvents 2／2、HomeConfig 1／1；shadow 以實際 row count 計算，逐 owner／canonical slug 驗證，重複或額外錯誤 row 也會拒絕。
 5. 33 張舊表與四個舊 relationship columns 必須完整存在。
 6. batch 6 的五份 schema migrations 與 batch 7 security migration 必須存在；batch 8 cleanup record 必須尚未存在。
 7. database、implementation、backup、deployment 與 inventory 會共同產生 approval token；任何漂移都令舊 token 失效。
@@ -54,7 +54,7 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 
 1. 回退到 cleanup 前 deployment。
 2. 從已驗證的 cleanup 前 database backup／PITR restore。
-3. 重新執行 owner read-back，確認五筆 legacy travel 與 12／2／1 relationships。
+3. 重新執行 owner read-back，確認五筆 legacy travel 與 22／2／1 relationships。
 
 ## 本地演練結果（2026-07-19）
 
@@ -72,8 +72,26 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 - PR #59 merge commit 已完成 runtime cutover。2026-07-28 最新 `main@edc9bf5` 的 Vercel Production deployment 為 `READY`；正式 `/travel` HTML 已顯示三類旅行內容，canonical 使用 `https://li-family-web.vercel.app/travel`，未再出現 localhost。
 - Cleanup code 尚未透過 PR 合併及部署；Production inspect／apply 前，必須先以 cleanup PR 的最終 merge commit 完成部署並同步本地 `main`，使 deployment SHA 與本地 `HEAD` 一致。
 - 尚未取得／記錄 cleanup 前 Production backup reference 與復原驗證時間。
-- 尚未執行 Production cleanup inspect，因此也沒有 Production database fingerprint 或 approval token。
+- Production H4 唯讀盤點已執行，但因 relationship drift、deployment SHA 尚未對齊及 backup 尚未驗證，不產生 cleanup approval token。
 - 尚未獲得本 destructive cleanup 的明確 Production 執行批准。
+
+## Production H4 唯讀盤點（2026-07-28 23:06 CST）
+
+盤點以資料庫 `READ ONLY` transaction 執行，沒有寫入、migration、delete 或 drop：
+
+- Database fingerprint：`db:f186aaf5a523`。
+- Production deployment：`main@edc9bf55dd69a3fb1197435ba20bf01077b5b096`，Vercel `READY`。
+- Records：legacy projects 5、Plans 2、Memories 3、Route identities 5。
+- Schema：legacy tables 33、legacy relationship columns 4。
+- Relationships：TimelineEvents 2／2、HomeConfig 1／1。
+- Media 現況為 legacy 22、shadow 21，發現 1 筆不一致：
+  - Media `id=1472`、`202702-thailand-phuket-gallery-001.webp`
+  - legacy owner：`202702-thailand-phuket`（planning）
+  - 新 `travel-plans` shadow relationship：缺少
+- 依旅程分組：重慶 12／12 完整；普吉島 10 筆 legacy media 中只有 9 筆 shadow 完整。
+- batch 6 的五筆 Phase 17 schema migration 與 batch 7 security migration 均存在；batch 8 cleanup migration 尚未存在。
+
+結論：Production 沒有 travel record 遺失，但目前不符合 destructive cleanup 前置條件。原 Media 12／12 baseline 已因後續內容增加而過時，修復後正確基準應為 22／22。必須先以另案 H6 批准補齊上述一筆 shadow relationship，並完成 cleanup code merge／deployment 與 backup verification，再重新 inspect。
 
 ## 2026-07-28 最新 main 本地再驗證
 

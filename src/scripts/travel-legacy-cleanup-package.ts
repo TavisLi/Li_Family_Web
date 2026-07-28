@@ -43,8 +43,8 @@ const expectedInventory: TravelLegacyCleanupInventory = {
   homeShadow: 1,
   invalidMappings: 0,
   legacyProjects: 5,
-  mediaLegacy: 12,
-  mediaShadow: 12,
+  mediaLegacy: 22,
+  mediaShadow: 22,
   memories: 3,
   plans: 2,
   routeIdentities: 5,
@@ -73,7 +73,7 @@ export function assertTravelLegacyCleanupPreconditions(state: TravelLegacyCleanu
     throw new Error('Legacy cleanup requires a verified pre-cleanup backup reference')
   }
   if (JSON.stringify(state.inventory) !== JSON.stringify(expectedInventory)) {
-    throw new Error('Legacy cleanup inventory does not match the approved 5 / 2 / 3 / 5 and 12 / 2 / 1 baseline')
+    throw new Error('Legacy cleanup inventory does not match the approved 5 / 2 / 3 / 5 and 22 / 2 / 1 baseline')
   }
   if (state.legacyTableCount !== 33 || !state.legacyColumnsPresent) {
     throw new Error('Legacy cleanup requires all 33 legacy tables and four legacy relationship columns')

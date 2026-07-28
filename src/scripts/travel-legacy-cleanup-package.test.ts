@@ -32,8 +32,8 @@ const state: TravelLegacyCleanupState = {
     homeShadow: 1,
     invalidMappings: 0,
     legacyProjects: 5,
-    mediaLegacy: 12,
-    mediaShadow: 12,
+    mediaLegacy: 22,
+    mediaShadow: 22,
     memories: 3,
     plans: 2,
     routeIdentities: 5,
@@ -52,7 +52,7 @@ assert.equal(
 )
 
 assert.throws(
-  () => assertTravelLegacyCleanupPreconditions({ ...state, inventory: { ...state.inventory, mediaShadow: 11 } }),
+  () => assertTravelLegacyCleanupPreconditions({ ...state, inventory: { ...state.inventory, mediaShadow: 21 } }),
   /inventory/,
 )
 assert.throws(

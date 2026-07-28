@@ -162,13 +162,14 @@ PR #59 記錄以下 Node `20.20.2` 驗證通過：
 - Controlled legacy cleanup 已移植到最新 `main` 的 `codex/phase-17-closeout`，並改為要求部署 SHA 與本地 cleanup checkout SHA 完全一致。
 - Node `20.20.2` 下已通過 Payload types generation、seed／Phase 9／Phase 16／Phase 17 tests、build、build 後 TypeScript 與 diff check。
 - 因治理文件已改用現行 Travel Plans／Travel Memories 標題格式，本次同步修正 catalog parser 與 regression expectations，避免治理文件更新後 travel seed 無法讀取。
-- 本 addendum 不代表已執行 Production database inspect、backup verification 或 destructive apply；這些仍需 H4／H8 個別批准。
+- Production H4 唯讀盤點已於 2026-07-28 執行：核心 records 仍為 5／2／3／5、legacy schema 仍為 33 tables／4 columns；但 Media 為 legacy 22／shadow 21，`202702-thailand-phuket-gallery-001.webp` 缺少一筆 Plan shadow relationship。
+- H4 沒有執行任何寫入或刪除。上述 drift 需另案 H6 批准修復；backup verification、cleanup apply 與 H5／H8 批准仍未完成。
 
 目前結論：
 
 | State | Result |
 | --- | --- |
 | Production runtime／metadata | Verified |
-| Production data read-back | 待新的 Production 唯讀批准後重驗 |
-| Legacy cleanup | 本地執行包與驗證完成；Production 未執行 |
+| Production data read-back | H4 已完成；發現 Media 22／21 relationship drift |
+| Legacy cleanup | 自動停止；待 H6 修復、cleanup deployment、backup verification 與 H5／H8 |
 | Closed | No；#50／#57 尚未 close |
