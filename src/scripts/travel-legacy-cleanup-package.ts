@@ -2,7 +2,6 @@ import { createHash } from 'node:crypto'
 
 export const phase17LegacyCleanupMigration = '20260719_025401'
 export const phase17LegacyCleanupBatch = 8
-export const phase17RuntimeCommit = '9c15df3a3db6bfffd2037674bda10cc87f6c3c0e'
 
 export const phase17RequiredMigrations = [
   { batch: 6, name: '20260715_073322_phase_17_add_travel_collections' },
@@ -31,6 +30,7 @@ export type TravelLegacyCleanupState = {
   backup: { reference: string; createdAt: string; verifiedAt: string }
   databaseFingerprint: string
   deployment: { commitSha: string; status: string; verifiedAt: string }
+  implementationCommitSha: string
   implementationFingerprint: string
   inventory: TravelLegacyCleanupInventory
   legacyColumnsPresent: boolean
@@ -60,8 +60,11 @@ export function buildTravelLegacyCleanupApprovalToken(state: TravelLegacyCleanup
 }
 
 export function assertTravelLegacyCleanupPreconditions(state: TravelLegacyCleanupState) {
-  if (state.deployment.status !== 'success' || state.deployment.commitSha !== phase17RuntimeCommit) {
+  if (state.deployment.status !== 'success' || !/^[0-9a-f]{40}$/.test(state.deployment.commitSha)) {
     throw new Error('Legacy cleanup requires the reviewed Phase 17 runtime deployment to be successful')
+  }
+  if (state.deployment.commitSha !== state.implementationCommitSha) {
+    throw new Error('Legacy cleanup requires the deployed commit to match the reviewed local cleanup checkout')
   }
   if (!state.deployment.verifiedAt) {
     throw new Error('Legacy cleanup requires a recorded runtime verification time')

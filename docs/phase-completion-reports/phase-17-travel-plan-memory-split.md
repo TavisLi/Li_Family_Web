@@ -151,3 +151,24 @@ PR #59 記錄以下 Node `20.20.2` 驗證通過：
 | Merged | Yes，PR #59 |
 | Production verified | Partial：split runtime route 已驗證；`BLOCKER-P17-METADATA` 與適用 read-back 尚未完成 |
 | Closed | No：implementation 已 merge，但 Phase closeout 尚未通過；#50／#57 與 metadata blocker remain open |
+
+## 13. Closeout Addendum（2026-07-28）
+
+本段記錄原報告之後的狀態，不改寫 2026-07-24 當時的歷史結論。
+
+- `BLOCKER-P17-METADATA` 已解決：PR #64 將 metadata fallback 改為正式網域，PR #65 補上 travel detail `og:url`。
+- 最新 `main@edc9bf5` 已由 Vercel 部署至 Production，狀態為 `READY`。
+- 正式 `/travel` rendered HTML 包含「規劃中／旅行回憶／過往規劃」，canonical 為 `https://li-family-web.vercel.app/travel`，未出現 `http://localhost:3000`。
+- Controlled legacy cleanup 已移植到最新 `main` 的 `codex/phase-17-closeout`，並改為要求部署 SHA 與本地 cleanup checkout SHA 完全一致。
+- Node `20.20.2` 下已通過 Payload types generation、seed／Phase 9／Phase 16／Phase 17 tests、build、build 後 TypeScript 與 diff check。
+- 因治理文件已改用現行 Travel Plans／Travel Memories 標題格式，本次同步修正 catalog parser 與 regression expectations，避免治理文件更新後 travel seed 無法讀取。
+- 本 addendum 不代表已執行 Production database inspect、backup verification 或 destructive apply；這些仍需 H4／H8 個別批准。
+
+目前結論：
+
+| State | Result |
+| --- | --- |
+| Production runtime／metadata | Verified |
+| Production data read-back | 待新的 Production 唯讀批准後重驗 |
+| Legacy cleanup | 本地執行包與驗證完成；Production 未執行 |
+| Closed | No；#50／#57 尚未 close |

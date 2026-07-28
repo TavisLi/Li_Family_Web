@@ -1,7 +1,9 @@
 import { createHash } from 'node:crypto'
+import { execFile } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import path from 'node:path'
+import { promisify } from 'node:util'
 
 import { sql, type MigrateUpArgs } from '@payloadcms/db-postgres'
 import {
@@ -25,6 +27,7 @@ import {
 } from './travel-legacy-cleanup-package'
 
 const require = createRequire(import.meta.resolve('@payloadcms/db-postgres'))
+const execFileAsync = promisify(execFile)
 const { Pool } = require('pg') as {
   Pool: new (options: { connectionString: string; max: number }) => {
     connect(): Promise<DatabaseClient>
@@ -172,6 +175,7 @@ async function buildState(input: {
       status: process.env.TRAVEL_CLEANUP_DEPLOYMENT_STATUS ?? '',
       verifiedAt: process.env.TRAVEL_CLEANUP_DEPLOYMENT_VERIFIED_AT ?? '',
     },
+    implementationCommitSha: await readImplementationCommitSha(input.root),
     implementationFingerprint: await readImplementationFingerprint(input.root),
     inventory: mapInventory(input.inventory),
     legacyColumnsPresent: input.schema.legacy_columns === 4,
@@ -317,6 +321,11 @@ async function readImplementationFingerprint(root: string) {
     'src/scripts/travel-legacy-cleanup-package.ts',
   ].map((file) => readFile(path.join(root, file))))
   return `impl:${createHash('sha256').update(Buffer.concat(contents)).digest('hex').slice(0, 12)}`
+}
+
+async function readImplementationCommitSha(root: string) {
+  const { stdout } = await execFileAsync('git', ['rev-parse', 'HEAD'], { cwd: root })
+  return stdout.trim()
 }
 
 function requiredRow<Row>(row: Row | undefined, label: string): Row {

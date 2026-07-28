@@ -2,7 +2,7 @@
 
 版本：1.0
 更新日期：2026-07-24
-狀態：Current runtime model；legacy cleanup pending
+狀態：Current runtime model；controlled legacy cleanup prepared，Production execution pending approval
 
 ## 1. 文件目的
 
@@ -212,6 +212,8 @@ Destructive cleanup 必須全部滿足：
 8. 網站擁有者批准明確 targets。
 9. Apply 後 schema／record／route read-back。
 
+Executor 另要求已部署的 Production commit SHA 與執行 cleanup 的本地 `main` HEAD 完全一致。這可避免在 Production 仍載入 legacy Payload collection config 時提前刪除資料表。
+
 任何條件不滿足都停止。一般 Payload migration runner 不自動執行 legacy cleanup。
 
 ## 12. Rollback
@@ -228,5 +230,6 @@ Vercel rollback 不回復 database mutation；兩者必須分開操作。
 - `docs/adr/0007-travel-plans-and-memories-are-separate-records.md`
 - `docs/phase-artifacts/phase-17/travel-collection-split-plan.md`
 - `docs/phase-artifacts/phase-17/travel-migration-data-copy-approval-package.md`
+- `docs/phase-artifacts/phase-17/travel-legacy-cleanup-approval-package.md`
 - `docs/phase-artifacts/phase-17/travel-data-api-security-approval-package.md`
 - `docs/phase-completion-reports/phase-17-travel-plan-memory-split.md`

@@ -528,21 +528,27 @@ export async function parseTravelCatalog(
   }
 
   for (const line of markdown.split('\n')) {
-    if (line.includes('規劃中的旅遊項目')) {
+    if (line.includes('規劃中的旅遊項目') || /^##\s+(?:\d+\.\s+)?Travel Plans\s*$/.test(line)) {
       finishCurrent()
       status = 'planning'
       continue
     }
 
-    if (line.includes('已完成的旅遊項目信息')) {
+    if (line.includes('已完成的旅遊項目信息') || /^##\s+(?:\d+\.\s+)?Travel Memories\s*$/.test(line)) {
       finishCurrent()
       status = 'completed'
       continue
     }
 
-    if (/^\d+\.\s+\*\*.+\*\*/.test(line)) {
+    if (status && (/^\d+\.\s+\*\*.+\*\*/.test(line) || /^###\s+.+/.test(line))) {
       finishCurrent()
       current = {}
+      continue
+    }
+
+    if (/^##\s+/.test(line)) {
+      finishCurrent()
+      status = undefined
       continue
     }
 
@@ -552,16 +558,16 @@ export async function parseTravelCatalog(
 
     const title = getFieldValue(line, ['呈現名稱'])
     const slug = getFieldValue(line, ['Canonical slug'])
-    const sourceFile = line.includes('數據源') ? line.match(/`([^`]+\.md)`/)?.[1] : undefined
+    const sourceFile = line.match(/^\s*-\s+\*\*(?:數據源|Source)\*\*：`([^`]+\.md)`/)?.[1]
 
     if (title) {
       current.title = title
     }
     if (slug) {
-      current.slug = slug
+      current.slug = slug.replace(/^`(.+)`$/, '$1')
     }
     if (sourceFile) {
-      current.sourceFile = sourceFile
+      current.sourceFile = sourceFile.replace(/^content-source\/travels\//, '')
     }
   }
 

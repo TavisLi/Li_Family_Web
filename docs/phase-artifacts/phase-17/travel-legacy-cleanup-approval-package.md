@@ -27,7 +27,7 @@
 
 controlled executor 會在寫入前與 transaction 鎖表後各檢查一次，任一條件不符即拒絕：
 
-1. Production runtime deployment 必須是 merge commit `9c15df3a3db6bfffd2037674bda10cc87f6c3c0e` 且狀態為 success。
+1. Production runtime deployment 必須是包含本 cleanup code 的已審查 `main` commit，狀態為 success；executor 會要求 Vercel deployment SHA 與執行時本地 checkout `HEAD` 完全一致，避免用舊 runtime 刪除仍被 Payload config 宣告的 legacy tables。
 2. 必須提供 backup reference、建立時間與驗證時間。
 3. inventory 必須維持 legacy 5、Plans 2、Memories 3、Route identities 5。
 4. 舊／新 relationships 必須成對維持 Media 12／12、TimelineEvents 2／2、HomeConfig 1／1；shadow 以實際 row count 計算，逐 owner／canonical slug 驗證，重複或額外錯誤 row 也會拒絕。
@@ -69,10 +69,26 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 
 ## Production 現況與尚缺批准
 
-- PR #59 merge commit 的 Vercel status 已於 2026-07-19 顯示 success；正式站 `/`、`/travel`、`/family/login` HTTP smoke 均為 200。
+- PR #59 merge commit 已完成 runtime cutover。2026-07-28 最新 `main@edc9bf5` 的 Vercel Production deployment 為 `READY`；正式 `/travel` HTML 已顯示三類旅行內容，canonical 使用 `https://li-family-web.vercel.app/travel`，未再出現 localhost。
+- Cleanup code 尚未透過 PR 合併及部署；Production inspect／apply 前，必須先以 cleanup PR 的最終 merge commit 完成部署並同步本地 `main`，使 deployment SHA 與本地 `HEAD` 一致。
 - 尚未取得／記錄 cleanup 前 Production backup reference 與復原驗證時間。
 - 尚未執行 Production cleanup inspect，因此也沒有 Production database fingerprint 或 approval token。
 - 尚未獲得本 destructive cleanup 的明確 Production 執行批准。
+
+## 2026-07-28 最新 main 本地再驗證
+
+以下驗證已在 Node `20.20.2`、`codex/phase-17-closeout` 執行通過：
+
+- `pnpm exec payload generate:types`
+- `pnpm run test:seed-content`
+- `pnpm run test:phase-9`
+- `pnpm run test:phase-16`
+- `pnpm run test:phase-17`
+- `pnpm run build`
+- `pnpm tsc --noEmit`
+- `git diff --check`
+
+另已人工確認 cleanup UP migration 僅移除批准清單中的 legacy columns／tables／enum，不含 `CASCADE`；DOWN migration 明確要求以 backup restore 回復資料。
 
 因此，目前可以提交與審查本 cleanup PR，但不得執行 Production `apply`，Issue #50／#57 也尚不能宣稱完成。
 

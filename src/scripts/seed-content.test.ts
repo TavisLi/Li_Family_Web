@@ -57,7 +57,7 @@ async function main() {
   )
   assert.equal(
     catalog.find((entry) => entry.slug === '202602-thailand-phuket')?.title,
-    '初探泰國普吉島 - 萬豪度假會·躍浪渡假村·芭東海灘',
+    '初探泰國普吉島－萬豪度假會、躍浪渡假村、芭東海灘',
   )
 
   const tavisResume = await parseResumeMarkdown(
@@ -167,7 +167,7 @@ async function main() {
   )
   assert.equal(
     seedContent.travels.find((travel) => travel.slug === '201307-hainan')?.title,
-    '非誠勿擾之海南三亞度假 - 亞龍灣·海棠灣·石梅灣',
+    '非誠勿擾之海南三亞度假－亞龍灣、海棠灣、石梅灣',
   )
   for (const entry of catalog) {
     const travel = seedContent.travels.find((candidate) => candidate.slug === entry.slug)

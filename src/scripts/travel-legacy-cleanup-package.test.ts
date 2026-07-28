@@ -8,9 +8,10 @@ import {
   buildTravelLegacyCleanupApprovalToken,
   phase17LegacyCleanupMigration,
   phase17RequiredMigrations,
-  phase17RuntimeCommit,
   type TravelLegacyCleanupState,
 } from './travel-legacy-cleanup-package'
+
+const implementationCommitSha = '1234567890abcdef1234567890abcdef12345678'
 
 const state: TravelLegacyCleanupState = {
   backup: {
@@ -20,10 +21,11 @@ const state: TravelLegacyCleanupState = {
   },
   databaseFingerprint: 'database:production',
   deployment: {
-    commitSha: phase17RuntimeCommit,
+    commitSha: implementationCommitSha,
     status: 'success',
     verifiedAt: '2026-07-19T03:10:00.000Z',
   },
+  implementationCommitSha,
   implementationFingerprint: 'implementation:reviewed',
   inventory: {
     homeLegacy: 1,
@@ -60,6 +62,10 @@ assert.throws(
 assert.throws(
   () => assertTravelLegacyCleanupPreconditions({ ...state, deployment: { ...state.deployment, status: 'pending' } }),
   /deployment/,
+)
+assert.throws(
+  () => assertTravelLegacyCleanupPreconditions({ ...state, implementationCommitSha: 'abcdef1234567890abcdef1234567890abcdef12' }),
+  /deployed commit/,
 )
 
 const token = buildTravelLegacyCleanupApprovalToken(state)
