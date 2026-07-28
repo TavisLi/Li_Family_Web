@@ -163,13 +163,14 @@ PR #59 記錄以下 Node `20.20.2` 驗證通過：
 - Node `20.20.2` 下已通過 Payload types generation、seed／Phase 9／Phase 16／Phase 17 tests、build、build 後 TypeScript 與 diff check。
 - 因治理文件已改用現行 Travel Plans／Travel Memories 標題格式，本次同步修正 catalog parser 與 regression expectations，避免治理文件更新後 travel seed 無法讀取。
 - Production H4 唯讀盤點已於 2026-07-28 執行：核心 records 仍為 5／2／3／5、legacy schema 仍為 33 tables／4 columns；但 Media 為 legacy 22／shadow 21，`202702-thailand-phuket-gallery-001.webp` 缺少一筆 Plan shadow relationship。
-- H4 沒有執行任何寫入或刪除。上述 drift 需另案 H6 批准修復；backup verification、cleanup apply 與 H5／H8 批准仍未完成。
+- H4 沒有執行任何寫入或刪除。經另案 H6 批准後，已在單一 transaction 只新增 `media_rels.id=79`，獨立唯讀 read-back 為 Media 22／22、invalid mappings 0，其他 Travel／Timeline／Home counts 未改變。
+- Cleanup code deployment、backup verification、cleanup apply 與 H5／H8 批准仍未完成。
 
 目前結論：
 
 | State | Result |
 | --- | --- |
 | Production runtime／metadata | Verified |
-| Production data read-back | H4 已完成；發現 Media 22／21 relationship drift |
-| Legacy cleanup | 自動停止；待 H6 修復、cleanup deployment、backup verification 與 H5／H8 |
+| Production data read-back | H4／H6 完成；Media 22／22、invalid mappings 0 |
+| Legacy cleanup | 待 cleanup deployment、backup verification 與 H5／H8 |
 | Closed | No；#50／#57 尚未 close |

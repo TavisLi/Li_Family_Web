@@ -72,7 +72,7 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 - PR #59 merge commit 已完成 runtime cutover。2026-07-28 最新 `main@edc9bf5` 的 Vercel Production deployment 為 `READY`；正式 `/travel` HTML 已顯示三類旅行內容，canonical 使用 `https://li-family-web.vercel.app/travel`，未再出現 localhost。
 - Cleanup code 尚未透過 PR 合併及部署；Production inspect／apply 前，必須先以 cleanup PR 的最終 merge commit 完成部署並同步本地 `main`，使 deployment SHA 與本地 `HEAD` 一致。
 - 尚未取得／記錄 cleanup 前 Production backup reference 與復原驗證時間。
-- Production H4 唯讀盤點已執行，但因 relationship drift、deployment SHA 尚未對齊及 backup 尚未驗證，不產生 cleanup approval token。
+- Production H4 唯讀盤點與 H6 單筆 relationship 修復已完成；目前因 cleanup deployment SHA 尚未對齊及 backup 尚未驗證，仍不產生 cleanup approval token。
 - 尚未獲得本 destructive cleanup 的明確 Production 執行批准。
 
 ## Production H4 唯讀盤點（2026-07-28 23:06 CST）
@@ -92,7 +92,18 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 - 依旅程分組：重慶 12／12 完整；普吉島 10 筆 legacy media 中只有 9 筆 shadow 完整。
 - batch 6 的五筆 Phase 17 schema migration 與 batch 7 security migration 均存在；batch 8 cleanup migration 尚未存在。
 
-結論：Production 沒有 travel record 遺失，但目前不符合 destructive cleanup 前置條件。原 Media 12／12 baseline 已因後續內容增加而過時，修復後正確基準應為 22／22。必須先以另案 H6 批准補齊上述一筆 shadow relationship，並完成 cleanup code merge／deployment 與 backup verification，再重新 inspect。
+結論：Production 沒有 travel record 遺失，但盤點當下不符合 destructive cleanup 前置條件。原 Media 12／12 baseline 已因後續內容增加而過時，修復後正確基準為 22／22。
+
+## Production H6 單筆 Relationship 修復（2026-07-28 23:15 CST）
+
+- 寫入前 `READ ONLY` dry-run 再次確認 database fingerprint `db:f186aaf5a523`、Media 22／21、invalid mappings 1，且 `parent_id=1472` 尚無 `relatedTravelRecord`。
+- 在單一 serializable transaction 中鎖定 `media_rels` 與目標 owner rows，只執行一筆 `INSERT`；沒有 update、delete、Travel content mutation 或其他 Media mutation。
+- 新增 row：`media_rels.id=79`、`order=null`、`parent_id=1472`、`path=relatedTravelRecord`、`travel_plans_id=2`、`travel_memories_id=null`。
+- Commit 前 read-back：Media 22／22、invalid mappings 0；Travel records 5／2／3／5、TimelineEvents 2／2、HomeConfig 1／1 均未改變。
+- Commit 後以獨立連線及 `READ ONLY` transaction 再驗證，結果維持 Media 22／22、invalid mappings 0，且只有上述一筆 target relationship。
+- 若需要回退這次內容修復，刪除 `media_rels.id=79` 屬於新的 destructive mutation，必須另行批准；本次未執行回退。
+
+H6 修復已通過。Destructive cleanup 前仍必須完成 cleanup code merge／Production deployment、backup reference／restore verification，然後重新執行 controlled inspect 產生當次 approval token。
 
 ## 2026-07-28 最新 main 本地再驗證
 
