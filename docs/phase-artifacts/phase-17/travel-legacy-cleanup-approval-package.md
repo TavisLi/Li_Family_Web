@@ -87,7 +87,8 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 - Media 現況為 legacy 22、shadow 21，發現 1 筆不一致：
   - Media `id=1472`、`202702-thailand-phuket-gallery-001.webp`
   - legacy owner：`202702-thailand-phuket`（planning）
-  - 新 `travel-plans` shadow relationship：缺少
+  - 新 `travel-plans` shadow relationship：缺少；正確 target 為 `travel_plans.id=2`、slug `202702-thailand-phuket`
+- 相鄰 Phuket Media 的既有 row shape 均為 `order=null`、`path=relatedTravelRecord`、`travel_plans_id=2`、`travel_memories_id=null`；因此 H6 修復可被限制為只替 `parent_id=1472` 新增同形 relationship，且必須先重驗該 row 仍不存在。
 - 依旅程分組：重慶 12／12 完整；普吉島 10 筆 legacy media 中只有 9 筆 shadow 完整。
 - batch 6 的五筆 Phase 17 schema migration 與 batch 7 security migration 均存在；batch 8 cleanup migration 尚未存在。
 
