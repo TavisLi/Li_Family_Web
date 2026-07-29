@@ -6,7 +6,9 @@ import {
   assertTravelLegacyCleanupReadback,
   assertTravelLegacyCleanupWriteApproval,
   buildTravelLegacyCleanupApprovalToken,
+  buildTravelLegacyCleanupRecoveryConfirmation,
   phase17LegacyCleanupMigration,
+  phase17NoBackupWaiverConfirmation,
   phase17RequiredMigrations,
   type TravelLegacyCleanupState,
 } from './travel-legacy-cleanup-package'
@@ -45,7 +47,34 @@ const state: TravelLegacyCleanupState = {
   migrationHistory: [{ batch: -1, name: 'dev' }, ...phase17RequiredMigrations],
 }
 
+const noBackupState: TravelLegacyCleanupState = {
+  ...state,
+  backup: { reference: '', createdAt: '', verifiedAt: '' },
+  noBackupWaiver: {
+    acceptedAt: '2026-07-29T10:31:04.713+08:00',
+    confirmation: phase17NoBackupWaiverConfirmation,
+  },
+}
+
 assert.doesNotThrow(() => assertTravelLegacyCleanupPreconditions(state))
+assert.doesNotThrow(() => assertTravelLegacyCleanupPreconditions(noBackupState))
+assert.throws(
+  () => assertTravelLegacyCleanupPreconditions({
+    ...state,
+    noBackupWaiver: noBackupState.noBackupWaiver,
+  }),
+  /either a verified backup or an explicit no-backup waiver/,
+)
+assert.throws(
+  () => assertTravelLegacyCleanupPreconditions({
+    ...noBackupState,
+    noBackupWaiver: {
+      ...noBackupState.noBackupWaiver!,
+      acceptedAt: 'not-a-timestamp',
+    },
+  }),
+  /no-backup waiver/,
+)
 assert.equal(
   buildTravelLegacyCleanupApprovalToken(state),
   buildTravelLegacyCleanupApprovalToken({ ...state, migrationHistory: [...state.migrationHistory].reverse() }),
@@ -69,24 +98,45 @@ assert.throws(
 )
 
 const token = buildTravelLegacyCleanupApprovalToken(state)
+const recoveryConfirmation = buildTravelLegacyCleanupRecoveryConfirmation(state)
 assert.doesNotThrow(() => assertTravelLegacyCleanupWriteApproval({
   allowWrite: true,
   expectedTarget: state.databaseFingerprint,
   expectedToken: token,
-  expectedBackup: state.backup.reference,
+  expectedRecoveryConfirmation: recoveryConfirmation,
   providedTarget: state.databaseFingerprint,
   providedToken: token,
-  providedBackup: state.backup.reference,
+  providedRecoveryConfirmation: recoveryConfirmation,
 }))
 assert.throws(() => assertTravelLegacyCleanupWriteApproval({
   allowWrite: false,
   expectedTarget: state.databaseFingerprint,
   expectedToken: token,
-  expectedBackup: state.backup.reference,
+  expectedRecoveryConfirmation: recoveryConfirmation,
   providedTarget: state.databaseFingerprint,
   providedToken: token,
-  providedBackup: state.backup.reference,
+  providedRecoveryConfirmation: recoveryConfirmation,
 }), /allow-write/)
+
+const noBackupToken = buildTravelLegacyCleanupApprovalToken(noBackupState)
+assert.doesNotThrow(() => assertTravelLegacyCleanupWriteApproval({
+  allowWrite: true,
+  expectedTarget: noBackupState.databaseFingerprint,
+  expectedToken: noBackupToken,
+  expectedRecoveryConfirmation: phase17NoBackupWaiverConfirmation,
+  providedTarget: noBackupState.databaseFingerprint,
+  providedToken: noBackupToken,
+  providedRecoveryConfirmation: phase17NoBackupWaiverConfirmation,
+}))
+assert.throws(() => assertTravelLegacyCleanupWriteApproval({
+  allowWrite: true,
+  expectedTarget: noBackupState.databaseFingerprint,
+  expectedToken: noBackupToken,
+  expectedRecoveryConfirmation: phase17NoBackupWaiverConfirmation,
+  providedTarget: noBackupState.databaseFingerprint,
+  providedToken: noBackupToken,
+  providedRecoveryConfirmation: 'I_ACCEPT_SOMETHING_ELSE',
+}), /recovery confirmation/)
 
 assert.doesNotThrow(() => assertTravelLegacyCleanupReadback({
   inventory: { memories: 3, plans: 2, routeIdentities: 5 },

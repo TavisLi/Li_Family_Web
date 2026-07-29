@@ -2,6 +2,8 @@ import { createHash } from 'node:crypto'
 
 export const phase17LegacyCleanupMigration = '20260719_025401'
 export const phase17LegacyCleanupBatch = 8
+export const phase17NoBackupWaiverConfirmation =
+  'I_ACCEPT_IRREVERSIBLE_PHASE_17_LEGACY_DATA_LOSS'
 
 export const phase17RequiredMigrations = [
   { batch: 6, name: '20260715_073322_phase_17_add_travel_collections' },
@@ -28,6 +30,7 @@ export type TravelLegacyCleanupInventory = {
 
 export type TravelLegacyCleanupState = {
   backup: { reference: string; createdAt: string; verifiedAt: string }
+  noBackupWaiver?: { acceptedAt: string; confirmation: string }
   databaseFingerprint: string
   deployment: { commitSha: string; status: string; verifiedAt: string }
   implementationCommitSha: string
@@ -59,6 +62,10 @@ export function buildTravelLegacyCleanupApprovalToken(state: TravelLegacyCleanup
     .slice(0, 16)}`
 }
 
+export function buildTravelLegacyCleanupRecoveryConfirmation(state: TravelLegacyCleanupState) {
+  return state.noBackupWaiver?.confirmation ?? state.backup.reference
+}
+
 export function assertTravelLegacyCleanupPreconditions(state: TravelLegacyCleanupState) {
   if (state.deployment.status !== 'success' || !/^[0-9a-f]{40}$/.test(state.deployment.commitSha)) {
     throw new Error('Legacy cleanup requires the reviewed Phase 17 runtime deployment to be successful')
@@ -69,8 +76,30 @@ export function assertTravelLegacyCleanupPreconditions(state: TravelLegacyCleanu
   if (!state.deployment.verifiedAt) {
     throw new Error('Legacy cleanup requires a recorded runtime verification time')
   }
-  if (!state.backup.reference || !state.backup.createdAt || !state.backup.verifiedAt) {
-    throw new Error('Legacy cleanup requires a verified pre-cleanup backup reference')
+  const hasVerifiedBackup = Boolean(
+    state.backup.reference && state.backup.createdAt && state.backup.verifiedAt,
+  )
+  const hasAnyBackupMetadata = Boolean(
+    state.backup.reference || state.backup.createdAt || state.backup.verifiedAt,
+  )
+  const hasAnyNoBackupWaiverMetadata = Boolean(
+    state.noBackupWaiver?.acceptedAt || state.noBackupWaiver?.confirmation,
+  )
+  const hasNoBackupWaiver = Boolean(
+    state.noBackupWaiver?.acceptedAt &&
+      !Number.isNaN(Date.parse(state.noBackupWaiver.acceptedAt)) &&
+      state.noBackupWaiver.confirmation === phase17NoBackupWaiverConfirmation,
+  )
+  if (hasAnyNoBackupWaiverMetadata && !hasNoBackupWaiver) {
+    throw new Error('Legacy cleanup no-backup waiver is incomplete or invalid')
+  }
+  if (
+    hasVerifiedBackup === hasNoBackupWaiver ||
+    (hasNoBackupWaiver && hasAnyBackupMetadata)
+  ) {
+    throw new Error(
+      'Legacy cleanup requires either a verified backup or an explicit no-backup waiver',
+    )
   }
   if (JSON.stringify(state.inventory) !== JSON.stringify(expectedInventory)) {
     throw new Error('Legacy cleanup inventory does not match the approved 5 / 2 / 3 / 5 and 22 / 2 / 1 baseline')
@@ -92,15 +121,17 @@ export function assertTravelLegacyCleanupWriteApproval(input: {
   allowWrite: boolean
   expectedTarget: string
   expectedToken: string
+  expectedRecoveryConfirmation: string
+  providedRecoveryConfirmation: string | undefined
   providedTarget: string | undefined
   providedToken: string | undefined
-  providedBackup: string | undefined
-  expectedBackup: string
 }) {
   if (!input.allowWrite) throw new Error('Legacy cleanup requires --allow-write')
   if (input.providedTarget !== input.expectedTarget) throw new Error('Legacy cleanup target confirmation mismatch')
   if (input.providedToken !== input.expectedToken) throw new Error('Legacy cleanup approval token mismatch')
-  if (input.providedBackup !== input.expectedBackup) throw new Error('Legacy cleanup backup confirmation mismatch')
+  if (input.providedRecoveryConfirmation !== input.expectedRecoveryConfirmation) {
+    throw new Error('Legacy cleanup recovery confirmation mismatch')
+  }
 }
 
 export function assertTravelLegacyCleanupReadback(state: {

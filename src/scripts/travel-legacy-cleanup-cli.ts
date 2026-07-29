@@ -21,6 +21,7 @@ import {
   assertTravelLegacyCleanupReadback,
   assertTravelLegacyCleanupWriteApproval,
   buildTravelLegacyCleanupApprovalToken,
+  buildTravelLegacyCleanupRecoveryConfirmation,
   phase17LegacyCleanupBatch,
   phase17LegacyCleanupMigration,
   type TravelLegacyCleanupState,
@@ -76,7 +77,7 @@ async function run() {
       writeCommand:
         `TRAVEL_CLEANUP_TARGET_CONFIRM=${state.databaseFingerprint} ` +
         `TRAVEL_CLEANUP_WRITE_CONFIRM=${approvalToken} ` +
-        `TRAVEL_CLEANUP_BACKUP_CONFIRM=${state.backup.reference} ` +
+        `TRAVEL_CLEANUP_RECOVERY_CONFIRM=${buildTravelLegacyCleanupRecoveryConfirmation(state)} ` +
         'pnpm run seed:travel:cleanup apply -- --allow-write',
     }, null, 2))
     return
@@ -86,10 +87,10 @@ async function run() {
     allowWrite: process.argv.includes('--allow-write'),
     expectedTarget: state.databaseFingerprint,
     expectedToken: approvalToken,
-    expectedBackup: state.backup.reference,
+    expectedRecoveryConfirmation: buildTravelLegacyCleanupRecoveryConfirmation(state),
     providedTarget: process.env.TRAVEL_CLEANUP_TARGET_CONFIRM,
     providedToken: process.env.TRAVEL_CLEANUP_WRITE_CONFIRM,
-    providedBackup: process.env.TRAVEL_CLEANUP_BACKUP_CONFIRM,
+    providedRecoveryConfirmation: process.env.TRAVEL_CLEANUP_RECOVERY_CONFIRM,
   })
 
   const { default: config } = await import('@payload-config')
@@ -169,6 +170,7 @@ async function buildState(input: {
       createdAt: process.env.TRAVEL_CLEANUP_BACKUP_CREATED_AT ?? '',
       verifiedAt: process.env.TRAVEL_CLEANUP_BACKUP_VERIFIED_AT ?? '',
     },
+    noBackupWaiver: buildNoBackupWaiver(),
     databaseFingerprint: buildDatabaseFingerprint(input.databaseUri),
     deployment: {
       commitSha: process.env.TRAVEL_CLEANUP_DEPLOYMENT_SHA ?? '',
@@ -182,6 +184,13 @@ async function buildState(input: {
     legacyTableCount: input.schema.legacy_tables,
     migrationHistory: input.history,
   }
+}
+
+function buildNoBackupWaiver() {
+  const acceptedAt = process.env.TRAVEL_CLEANUP_NO_BACKUP_ACCEPTED_AT ?? ''
+  const confirmation = process.env.TRAVEL_CLEANUP_NO_BACKUP_WAIVER ?? ''
+  if (!acceptedAt && !confirmation) return undefined
+  return { acceptedAt, confirmation }
 }
 
 async function collectReadback(databaseUri: string) {
