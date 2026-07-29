@@ -15,7 +15,6 @@ import { Posts } from './collections/Posts'
 import { TimelineEvents } from './collections/TimelineEvents'
 import { TravelMemories } from './collections/TravelMemories'
 import { TravelPlans } from './collections/TravelPlans'
-import { TravelProjects } from './collections/TravelProjects'
 import { TravelRouteIdentities } from './collections/TravelRouteIdentities'
 import { Users } from './collections/Users'
 import { WrappedSnapshots } from './collections/WrappedSnapshots'
@@ -53,7 +52,6 @@ export default buildConfig({
     TravelPlans,
     TravelMemories,
     TravelRouteIdentities,
-    TravelProjects,
     TimelineEvents,
     BucketItems,
     WrappedSnapshots,

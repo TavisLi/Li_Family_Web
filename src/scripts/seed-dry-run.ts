@@ -19,7 +19,7 @@ import {
 } from './travel-seed-reconciliation'
 
 export type DryRunAction = {
-  collection: 'media' | 'travel-memories' | 'travel-plans' | 'travel-projects' | 'users'
+  collection: 'media' | 'travel-memories' | 'travel-plans' | 'users'
   key: string
   action: 'conflict' | 'create' | 'preserve' | 'skip' | 'update'
   existingId?: number

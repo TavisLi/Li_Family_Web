@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 
-import type { Media, TravelProject } from '@/payload/payload-types'
+import type { Media } from '@/payload/payload-types'
 import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import { TravelIndexPage } from './travel-index-page'
 
@@ -21,9 +21,12 @@ const coverImage: Media = {
   width: 1600,
 }
 
-const projects: TravelProject[] = [
+const projects: TravelRuntimeRecord[] = [
   {
-    id: 3,
+    id: 'travel-plans:3',
+    sourceId: 3,
+    collection: 'travel-plans',
+    kind: 'plan',
     title: '重慶長江三峽過往規劃',
     slug: '202607-chongqing-yangtze-river',
     status: 'planning',
@@ -34,11 +37,12 @@ const projects: TravelProject[] = [
     coverImage,
     galleryImages: [],
     itineraryImages: [],
-    createdAt: '2026-06-21T00:00:00.000Z',
-    updatedAt: '2026-06-21T00:00:00.000Z',
   },
   {
-    id: 1,
+    id: 'travel-plans:1',
+    sourceId: 1,
+    collection: 'travel-plans',
+    kind: 'plan',
     title: '泰國普吉島度假二刷',
     slug: '202702-thailand-phuket',
     status: 'planning',
@@ -49,11 +53,12 @@ const projects: TravelProject[] = [
     coverImage,
     galleryImages: [],
     itineraryImages: [],
-    createdAt: '2026-06-21T00:00:00.000Z',
-    updatedAt: '2026-06-21T00:00:00.000Z',
   },
   {
-    id: 2,
+    id: 'travel-memories:2',
+    sourceId: 2,
+    collection: 'travel-memories',
+    kind: 'memory',
     title: '東澳全覽9日',
     slug: '202308-east-australia',
     status: 'completed',
@@ -64,15 +69,13 @@ const projects: TravelProject[] = [
     coverImage,
     galleryImages: [],
     itineraryImages: [],
-    createdAt: '2026-06-21T00:00:00.000Z',
-    updatedAt: '2026-06-21T00:00:00.000Z',
   },
 ]
 
 const html = renderToStaticMarkup(
   createElement(TravelIndexPage, {
     currentDate: '2026-08-01T00:00:00.000Z',
-    projects: projects.map(runtimeProject),
+    projects,
   }),
 )
 
@@ -96,18 +99,6 @@ assert.match(html, /旅遊日期已過的計畫會歸檔在這裡/)
 assert.doesNotMatch(html, /前期規劃|preliminary/i)
 assert.match(html, /object-cover transition duration-500 group-hover:scale-105/)
 
-function runtimeProject(project: TravelProject): TravelRuntimeRecord {
-  const isPlan = project.status === 'planning'
-
-  return {
-    ...project,
-    id: `${isPlan ? 'travel-plans' : 'travel-memories'}:${project.id}`,
-    sourceId: project.id,
-    collection: isPlan ? 'travel-plans' : 'travel-memories',
-    kind: isPlan ? 'plan' : 'memory',
-    status: project.status,
-  } as TravelRuntimeRecord
-}
 assert.doesNotMatch(html, /object-contain transition duration-500 group-hover:scale-105/)
 assert.match(html, /bg-gradient-to-r from-slate-950 via-sky-800 to-cyan-600 bg-clip-text/)
 assert.doesNotMatch(html, /from-slate-950 via-cyan-950 to-amber-900 px-5 py-8 text-white/)

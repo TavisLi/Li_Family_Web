@@ -151,3 +151,26 @@ PR #59 記錄以下 Node `20.20.2` 驗證通過：
 | Merged | Yes，PR #59 |
 | Production verified | Partial：split runtime route 已驗證；`BLOCKER-P17-METADATA` 與適用 read-back 尚未完成 |
 | Closed | No：implementation 已 merge，但 Phase closeout 尚未通過；#50／#57 與 metadata blocker remain open |
+
+## 13. Closeout Addendum（2026-07-28）
+
+本段記錄原報告之後的狀態，不改寫 2026-07-24 當時的歷史結論。
+
+- `BLOCKER-P17-METADATA` 已解決：PR #64 將 metadata fallback 改為正式網域，PR #65 補上 travel detail `og:url`。
+- 最新 `main@edc9bf5` 已由 Vercel 部署至 Production，狀態為 `READY`。
+- 正式 `/travel` rendered HTML 包含「規劃中／旅行回憶／過往規劃」，canonical 為 `https://li-family-web.vercel.app/travel`，未出現 `http://localhost:3000`。
+- Controlled legacy cleanup 已移植到最新 `main` 的 `codex/phase-17-closeout`，並改為要求部署 SHA 與本地 cleanup checkout SHA 完全一致。
+- Node `20.20.2` 下已通過 Payload types generation、seed／Phase 9／Phase 16／Phase 17 tests、build、build 後 TypeScript 與 diff check。
+- 因治理文件已改用現行 Travel Plans／Travel Memories 標題格式，本次同步修正 catalog parser 與 regression expectations，避免治理文件更新後 travel seed 無法讀取。
+- Production H4 唯讀盤點已於 2026-07-28 執行：核心 records 仍為 5／2／3／5、legacy schema 仍為 33 tables／4 columns；但 Media 為 legacy 22／shadow 21，`202702-thailand-phuket-gallery-001.webp` 缺少一筆 Plan shadow relationship。
+- H4 沒有執行任何寫入或刪除。經另案 H6 批准後，已在單一 transaction 只新增 `media_rels.id=79`，獨立唯讀 read-back 為 Media 22／22、invalid mappings 0，其他 Travel／Timeline／Home counts 未改變。
+- Cleanup code deployment、backup verification、cleanup apply 與 H5／H8 批准仍未完成。
+
+目前結論：
+
+| State | Result |
+| --- | --- |
+| Production runtime／metadata | Verified |
+| Production data read-back | H4／H6 完成；Media 22／22、invalid mappings 0 |
+| Legacy cleanup | 待 cleanup deployment、backup verification 與 H5／H8 |
+| Closed | No；#50／#57 尚未 close |

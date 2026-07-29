@@ -73,9 +73,9 @@ Planning records 的 `galleryImages`、`itineraryImages`、`flights`、`railSegm
 2. **Inventory**：唯讀確認 2 筆 Plan、3 筆 Memory 及所有 child／relationship non-null counts。
 3. **Copy dry-run**：產生逐 slug mapping report；不寫資料。
 4. **Copy write**：取得獨立批准後，以單一 Payload request transaction 寫入新 collections 與影子 relationships；舊表與舊 relationships 不刪。
-5. **Runtime adapter（本地已完成）**：`src/lib/data/travel.ts` 只聚合兩個新 collection，轉成既有 UI 可用的共用 view model；不再 dual-read 舊表，避免同一 slug 有兩個 runtime authority。rollback 依靠尚未刪除的舊資料與回退 deploy，而不是在同一 request 混讀新舊 records。
-6. **Cutover deploy**：本地 tests／build／public browser smoke 已通過；family-mode Preview／browser QA 與 deploy 後觀察通過後，正式站才算停止使用舊表。
-7. **Cleanup**：另一次 destructive approval 後才刪除 `travel-projects` 與未採用欄位。
+5. **Runtime adapter（已完成）**：`src/lib/data/travel.ts` 只聚合兩個新 collection，轉成既有 UI 可用的共用 view model；不再 dual-read 舊表，避免同一 slug 有兩個 runtime authority。
+6. **Cutover deploy（已完成）**：PR #59 merge commit `9c15df3` 已成功部署，正式站公開路由 smoke 通過；runtime 與 seed 均已停止使用舊 collection。
+7. **Cleanup（本地演練完成、Production 待批准）**：controlled migration 會在 verified backup 與 inventory gate 後刪除 33 張 `travel_projects` tables、四個舊 relationship fields 與 legacy enum。Production apply 仍需獨立批准。
 
 ## Production 唯讀 Inventory（2026-07-15）
 

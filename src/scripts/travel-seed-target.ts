@@ -1,7 +1,9 @@
 import type { TravelSeed } from './seed-content'
-import { materializeTravelLocale } from './travel-collection-copy-package'
-import { buildTravelPlanProjection } from './travel-collection-copy-readiness'
-import { buildTravelMemoryProjection } from './travel-memory-copy-transformer'
+import {
+  buildTravelMemoryProjection,
+  buildTravelPlanProjection,
+  materializeTravelLocale,
+} from './travel-seed-projections'
 import {
   buildTravelProjection,
   reconcileTravelSeed,

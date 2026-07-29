@@ -31,7 +31,10 @@ async function run() {
       {
         summary: report.summary,
         travels: report.actions
-          .filter((action) => action.collection === 'travel-projects')
+          .filter(
+            (action) =>
+              action.collection === 'travel-plans' || action.collection === 'travel-memories',
+          )
           .map((action) => ({
             slug: action.key,
             action: action.action,

@@ -26,7 +26,7 @@ export function buildTravelConflictRegister(
 ): TravelConflictRegisterEntry[] {
   return actions.flatMap((action) => {
     if (
-      !['travel-memories', 'travel-plans', 'travel-projects'].includes(action.collection) ||
+      !['travel-memories', 'travel-plans'].includes(action.collection) ||
       action.action !== 'conflict'
     ) {
       return []

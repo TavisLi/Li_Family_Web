@@ -32,6 +32,8 @@
 
 保留項目只作 rollback evidence。Issue #50／#57 的 destructive cleanup 尚未批准，必須另有 backup、observation、inventory、relationship mapping、批准與 read-back。
 
+Controlled cleanup migration、executor 與核准包已完成本地 PostgreSQL 17 演練，現正依最新 Production commit 更新並重新驗證；在取得 cleanup 前備份、Production 唯讀 inventory／approval token 與 destructive apply 明確批准前，不得執行。詳見 [`phase-artifacts/phase-17/travel-legacy-cleanup-approval-package.md`](./phase-artifacts/phase-17/travel-legacy-cleanup-approval-package.md)。
+
 詳細模型見 [`data-models/travel-domain-schema.md`](./data-models/travel-domain-schema.md)，執行證據見 [`phase-completion-reports/phase-17-travel-plan-memory-split.md`](./phase-completion-reports/phase-17-travel-plan-memory-split.md)。
 
 ## 3. Canonical Identity
