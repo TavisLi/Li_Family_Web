@@ -183,6 +183,7 @@ PR #59 記錄以下 Node `20.20.2` 驗證通過：
 - 經另案批准，只將 `201307-hainan`、`202308-east-australia` 的 `_status` 從 `draft` 改為 `published`。獨立 read-back 確認三筆 Memory 均為 public published；匿名 `/travel` HTML 可見三筆 routes。
 - 修復後核心 inventory 維持 5／2／3／5、Media 22／22、TimelineEvents 2／2、HomeConfig 1／1；batch 8 cleanup 尚未執行。
 - 本地新增 no-backup waiver 防線：verified backup 與 explicit waiver 必須二選一；錯誤 waiver、同時提供兩種 recovery mode、deployment SHA／inventory／relationship 漂移仍會拒絕。
+- 2026-07-29 以一次性 PostgreSQL 17 synthetic database 對齊現行 22／22 基線重新演練：cleanup 後 legacy tables／columns 為 0，新 records 維持 2／3／5、public published 維持 2／3，shadow relationships 維持 22／2／1；沒有連線 Production。
 
 目前結論：
 

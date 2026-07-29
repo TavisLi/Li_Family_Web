@@ -165,11 +165,14 @@ assert.throws(() => assertTravelLegacyCleanupWriteApproval({
 
 assert.doesNotThrow(() => assertTravelLegacyCleanupReadback({
   inventory: {
+    homeShadow: 1,
+    mediaShadow: 22,
     memories: 3,
     plans: 2,
     publicPublishedMemories: 3,
     publicPublishedPlans: 2,
     routeIdentities: 5,
+    timelineShadow: 2,
   },
   legacyColumnsPresent: false,
   legacyTableCount: 0,
@@ -177,11 +180,14 @@ assert.doesNotThrow(() => assertTravelLegacyCleanupReadback({
 }))
 assert.throws(() => assertTravelLegacyCleanupReadback({
   inventory: {
+    homeShadow: 1,
+    mediaShadow: 22,
     memories: 3,
     plans: 2,
     publicPublishedMemories: 3,
     publicPublishedPlans: 2,
     routeIdentities: 5,
+    timelineShadow: 2,
   },
   legacyColumnsPresent: true,
   legacyTableCount: 0,
@@ -197,7 +203,8 @@ assert.ok(
   'external relationships must be removed before legacy tables',
 )
 assert.doesNotMatch(migrationSource, /drop table[\s\S]*cascade/i)
-assert.match(migrationSource, /cannot reconstruct deleted travel data/)
+assert.match(migrationSource, /row\(22, 22, 2, 2, 1, 1\)/)
+assert.match(migrationSource, /no-backup waiver has no data recovery path/)
 assert.match(migrationSource, /select count\(\*\) into shadow_media_refs/)
 assert.doesNotMatch(migrationSource, /count\(distinct parent_id\)/)
 
@@ -207,3 +214,18 @@ assert.doesNotMatch(
   /20260719_025401/,
   'destructive cleanup must not be reachable through the default Payload migration runner',
 )
+
+const cleanupCliSource = await readFile(
+  new URL('./travel-legacy-cleanup-cli.ts', import.meta.url),
+  'utf8',
+)
+for (const variable of [
+  'TRAVEL_CLEANUP_DEPLOYMENT_SHA',
+  'TRAVEL_CLEANUP_DEPLOYMENT_STATUS',
+  'TRAVEL_CLEANUP_DEPLOYMENT_VERIFIED_AT',
+  'TRAVEL_CLEANUP_NO_BACKUP_ACCEPTED_AT',
+  'TRAVEL_CLEANUP_NO_BACKUP_WAIVER',
+  'TRAVEL_CLEANUP_RECOVERY_CONFIRM',
+]) {
+  assert.match(cleanupCliSource, new RegExp(variable))
+}

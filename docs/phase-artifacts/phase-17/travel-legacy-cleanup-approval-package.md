@@ -71,6 +71,14 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 - migration record `20260719_025401` 為 batch 8；既有 `dev/-1` 與 batch 1–7 records 未更動。
 - 獨立 verify 再次通過。
 
+## 22／22 基線複驗（2026-07-29）
+
+- 使用一次性 `postgres:17-alpine`，只載入 synthetic schema／rows，沒有連線或複製 Production 資料。
+- 基線與最新 Production inventory 對齊：legacy 5、Plans 2、Memories 3、Route identities 5、Media 22／22、TimelineEvents 2／2、HomeConfig 1／1，且 Plans 2、Memories 3 均為 public published。
+- 直接執行目前 `20260719_025401` migration SQL，guard 通過並完成 cleanup。
+- cleanup 後獨立 read-back：legacy tables 0、legacy columns 0；Plans 2、Memories 3、public published Plans 2／Memories 3、Route identities 5；shadow relationships 維持 Media 22、TimelineEvents 2、HomeConfig 1。
+- 本次複驗亦確認 migration 的 Production relationship guard 已由舊 12／12 baseline 修正為現行 22／22，且 executor 的 post-readback 會檢查 22／2／1 shadow relationships。
+
 ## Production 現況與尚缺批准
 
 - PR #59 merge commit 已完成 runtime cutover。2026-07-28 最新 `main@edc9bf5` 的 Vercel Production deployment 為 `READY`；正式 `/travel` HTML 已顯示三類旅行內容，canonical 使用 `https://li-family-web.vercel.app/travel`，未再出現 localhost。

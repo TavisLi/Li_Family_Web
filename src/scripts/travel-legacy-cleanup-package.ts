@@ -173,7 +173,14 @@ export function assertTravelLegacyCleanupWriteApproval(input: {
 export function assertTravelLegacyCleanupReadback(state: {
   inventory: Pick<
     TravelLegacyCleanupInventory,
-    'memories' | 'plans' | 'publicPublishedMemories' | 'publicPublishedPlans' | 'routeIdentities'
+    | 'homeShadow'
+    | 'mediaShadow'
+    | 'memories'
+    | 'plans'
+    | 'publicPublishedMemories'
+    | 'publicPublishedPlans'
+    | 'routeIdentities'
+    | 'timelineShadow'
   >
   legacyColumnsPresent: boolean
   legacyTableCount: number
@@ -183,11 +190,14 @@ export function assertTravelLegacyCleanupReadback(state: {
     throw new Error('Legacy cleanup read-back found legacy schema objects')
   }
   if (JSON.stringify(state.inventory) !== JSON.stringify({
+    homeShadow: 1,
+    mediaShadow: 22,
     memories: 3,
     plans: 2,
     publicPublishedMemories: 3,
     publicPublishedPlans: 2,
     routeIdentities: 5,
+    timelineShadow: 2,
   })) {
     throw new Error('Legacy cleanup read-back found target inventory drift')
   }

@@ -79,6 +79,9 @@ async function run() {
         `${renderEnvironmentCommand({
           TRAVEL_CLEANUP_TARGET_CONFIRM: state.databaseFingerprint,
           TRAVEL_CLEANUP_WRITE_CONFIRM: approvalToken,
+          TRAVEL_CLEANUP_DEPLOYMENT_SHA: state.deployment.commitSha,
+          TRAVEL_CLEANUP_DEPLOYMENT_STATUS: state.deployment.status,
+          TRAVEL_CLEANUP_DEPLOYMENT_VERIFIED_AT: state.deployment.verifiedAt,
           ...buildTravelLegacyCleanupRecoveryEnvironment(state),
         })} pnpm run seed:travel:cleanup apply -- --allow-write`,
     }, null, 2))
@@ -228,11 +231,14 @@ function buildReadback(
 ) {
   return {
     inventory: {
+      homeShadow: inventory.home_shadow,
+      mediaShadow: inventory.media_shadow,
       memories: inventory.memories,
       plans: inventory.plans,
       publicPublishedMemories: inventory.public_published_memories,
       publicPublishedPlans: inventory.public_published_plans,
       routeIdentities: inventory.route_identities,
+      timelineShadow: inventory.timeline_shadow,
     },
     legacyColumnsPresent: schema.legacy_columns !== 0,
     legacyTableCount: schema.legacy_tables,
@@ -249,7 +255,14 @@ type InventoryRow = {
 }
 type ReadbackInventoryRow = Pick<
   InventoryRow,
-  'memories' | 'plans' | 'public_published_memories' | 'public_published_plans' | 'route_identities'
+  | 'home_shadow'
+  | 'media_shadow'
+  | 'memories'
+  | 'plans'
+  | 'public_published_memories'
+  | 'public_published_plans'
+  | 'route_identities'
+  | 'timeline_shadow'
 >
 type SchemaRow = { legacy_columns: number; legacy_tables: number }
 
@@ -306,7 +319,10 @@ const readbackInventorySql = `select
   (select count(*)::int from travel_memories) memories,
   (select count(*)::int from travel_plans where is_private = false and _status = 'published') public_published_plans,
   (select count(*)::int from travel_memories where is_private = false and _status = 'published') public_published_memories,
-  (select count(*)::int from travel_route_identities) route_identities`
+  (select count(*)::int from travel_route_identities) route_identities,
+  (select count(*)::int from media_rels where path = 'relatedTravelRecord' and (travel_plans_id is not null or travel_memories_id is not null)) media_shadow,
+  (select count(*)::int from timeline_events_rels where path = 'relatedTravelRecord' and (travel_plans_id is not null or travel_memories_id is not null)) timeline_shadow,
+  (select count(*)::int from home_config_rels where path = 'featuredTravelRecord' and (travel_plans_id is not null or travel_memories_id is not null)) home_shadow`
 const schemaSql = `select
   (select count(*)::int from information_schema.tables where table_schema = 'public' and (table_name = 'travel_projects' or table_name like 'travel_projects_%')) legacy_tables,
   (select count(*)::int from information_schema.columns where table_schema = 'public' and
