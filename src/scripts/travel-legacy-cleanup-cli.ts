@@ -21,6 +21,7 @@ import {
   assertTravelLegacyCleanupReadback,
   assertTravelLegacyCleanupWriteApproval,
   buildTravelLegacyCleanupApprovalToken,
+  buildTravelLegacyCleanupRecoveryEnvironment,
   buildTravelLegacyCleanupRecoveryConfirmation,
   phase17LegacyCleanupBatch,
   phase17LegacyCleanupMigration,
@@ -75,10 +76,11 @@ async function run() {
       approvalToken,
       ...state,
       writeCommand:
-        `TRAVEL_CLEANUP_TARGET_CONFIRM=${state.databaseFingerprint} ` +
-        `TRAVEL_CLEANUP_WRITE_CONFIRM=${approvalToken} ` +
-        `TRAVEL_CLEANUP_RECOVERY_CONFIRM=${buildTravelLegacyCleanupRecoveryConfirmation(state)} ` +
-        'pnpm run seed:travel:cleanup apply -- --allow-write',
+        `${renderEnvironmentCommand({
+          TRAVEL_CLEANUP_TARGET_CONFIRM: state.databaseFingerprint,
+          TRAVEL_CLEANUP_WRITE_CONFIRM: approvalToken,
+          ...buildTravelLegacyCleanupRecoveryEnvironment(state),
+        })} pnpm run seed:travel:cleanup apply -- --allow-write`,
     }, null, 2))
     return
   }
@@ -193,6 +195,16 @@ function buildNoBackupWaiver() {
   return { acceptedAt, confirmation }
 }
 
+function renderEnvironmentCommand(environment: Record<string, string>) {
+  return Object.entries(environment)
+    .map(([key, value]) => `${key}=${shellQuote(value)}`)
+    .join(' ')
+}
+
+function shellQuote(value: string) {
+  return `'${value.replaceAll("'", "'\"'\"'")}'`
+}
+
 async function collectReadback(databaseUri: string) {
   return withClient(databaseUri, async (client) => buildReadback(
     (await client.query<{ batch: number | null; name: string }>(historySql)).rows,
@@ -215,7 +227,13 @@ function buildReadback(
   schema: SchemaRow,
 ) {
   return {
-    inventory: { memories: inventory.memories, plans: inventory.plans, routeIdentities: inventory.route_identities },
+    inventory: {
+      memories: inventory.memories,
+      plans: inventory.plans,
+      publicPublishedMemories: inventory.public_published_memories,
+      publicPublishedPlans: inventory.public_published_plans,
+      routeIdentities: inventory.route_identities,
+    },
     legacyColumnsPresent: schema.legacy_columns !== 0,
     legacyTableCount: schema.legacy_tables,
     migrationHistory,
@@ -226,9 +244,13 @@ type InventoryRow = {
   home_legacy: number; home_shadow: number; legacy_projects: number
   invalid_mappings: number
   media_legacy: number; media_shadow: number; memories: number; plans: number
+  public_published_memories: number; public_published_plans: number
   route_identities: number; timeline_legacy: number; timeline_shadow: number
 }
-type ReadbackInventoryRow = Pick<InventoryRow, 'memories' | 'plans' | 'route_identities'>
+type ReadbackInventoryRow = Pick<
+  InventoryRow,
+  'memories' | 'plans' | 'public_published_memories' | 'public_published_plans' | 'route_identities'
+>
 type SchemaRow = { legacy_columns: number; legacy_tables: number }
 
 const historySql = 'select batch::int as batch, name from payload_migrations order by id'
@@ -236,6 +258,8 @@ const inventorySql = `select
   (select count(*)::int from travel_projects) legacy_projects,
   (select count(*)::int from travel_plans) plans,
   (select count(*)::int from travel_memories) memories,
+  (select count(*)::int from travel_plans where is_private = false and _status = 'published') public_published_plans,
+  (select count(*)::int from travel_memories where is_private = false and _status = 'published') public_published_memories,
   (select count(*)::int from travel_route_identities) route_identities,
   (select count(*)::int from media where related_travel_id is not null) media_legacy,
   (select count(*)::int from media_rels where path = 'relatedTravelRecord' and (travel_plans_id is not null or travel_memories_id is not null)) media_shadow,
@@ -280,6 +304,8 @@ const inventorySql = `select
 const readbackInventorySql = `select
   (select count(*)::int from travel_plans) plans,
   (select count(*)::int from travel_memories) memories,
+  (select count(*)::int from travel_plans where is_private = false and _status = 'published') public_published_plans,
+  (select count(*)::int from travel_memories where is_private = false and _status = 'published') public_published_memories,
   (select count(*)::int from travel_route_identities) route_identities`
 const schemaSql = `select
   (select count(*)::int from information_schema.tables where table_schema = 'public' and (table_name = 'travel_projects' or table_name like 'travel_projects_%')) legacy_tables,
@@ -292,7 +318,10 @@ function mapInventory(row: InventoryRow) {
     invalidMappings: row.invalid_mappings,
     legacyProjects: row.legacy_projects,
     mediaLegacy: row.media_legacy, mediaShadow: row.media_shadow,
-    memories: row.memories, plans: row.plans, routeIdentities: row.route_identities,
+    memories: row.memories, plans: row.plans,
+    publicPublishedMemories: row.public_published_memories,
+    publicPublishedPlans: row.public_published_plans,
+    routeIdentities: row.route_identities,
     timelineLegacy: row.timeline_legacy, timelineShadow: row.timeline_shadow,
   }
 }

@@ -6,6 +6,7 @@ import {
   assertTravelLegacyCleanupReadback,
   assertTravelLegacyCleanupWriteApproval,
   buildTravelLegacyCleanupApprovalToken,
+  buildTravelLegacyCleanupRecoveryEnvironment,
   buildTravelLegacyCleanupRecoveryConfirmation,
   phase17LegacyCleanupMigration,
   phase17NoBackupWaiverConfirmation,
@@ -38,13 +39,15 @@ const state: TravelLegacyCleanupState = {
     mediaShadow: 22,
     memories: 3,
     plans: 2,
+    publicPublishedMemories: 3,
+    publicPublishedPlans: 2,
     routeIdentities: 5,
     timelineLegacy: 2,
     timelineShadow: 2,
   },
   legacyColumnsPresent: true,
   legacyTableCount: 33,
-  migrationHistory: [{ batch: -1, name: 'dev' }, ...phase17RequiredMigrations],
+  migrationHistory: [...phase17RequiredMigrations],
 }
 
 const noBackupState: TravelLegacyCleanupState = {
@@ -75,6 +78,16 @@ assert.throws(
   }),
   /no-backup waiver/,
 )
+assert.throws(
+  () => assertTravelLegacyCleanupPreconditions({
+    ...noBackupState,
+    noBackupWaiver: {
+      ...noBackupState.noBackupWaiver!,
+      acceptedAt: '2999-01-01T00:00:00.000Z',
+    },
+  }),
+  /no-backup waiver/,
+)
 assert.equal(
   buildTravelLegacyCleanupApprovalToken(state),
   buildTravelLegacyCleanupApprovalToken({ ...state, migrationHistory: [...state.migrationHistory].reverse() }),
@@ -95,6 +108,13 @@ assert.throws(
 assert.throws(
   () => assertTravelLegacyCleanupPreconditions({ ...state, implementationCommitSha: 'abcdef1234567890abcdef1234567890abcdef12' }),
   /deployed commit/,
+)
+assert.throws(
+  () => assertTravelLegacyCleanupPreconditions({
+    ...state,
+    migrationHistory: state.migrationHistory.filter((record) => record.name !== 'dev'),
+  }),
+  /requires migration dev/,
 )
 
 const token = buildTravelLegacyCleanupApprovalToken(state)
@@ -119,6 +139,11 @@ assert.throws(() => assertTravelLegacyCleanupWriteApproval({
 }), /allow-write/)
 
 const noBackupToken = buildTravelLegacyCleanupApprovalToken(noBackupState)
+assert.deepEqual(buildTravelLegacyCleanupRecoveryEnvironment(noBackupState), {
+  TRAVEL_CLEANUP_NO_BACKUP_ACCEPTED_AT: noBackupState.noBackupWaiver?.acceptedAt,
+  TRAVEL_CLEANUP_NO_BACKUP_WAIVER: phase17NoBackupWaiverConfirmation,
+  TRAVEL_CLEANUP_RECOVERY_CONFIRM: phase17NoBackupWaiverConfirmation,
+})
 assert.doesNotThrow(() => assertTravelLegacyCleanupWriteApproval({
   allowWrite: true,
   expectedTarget: noBackupState.databaseFingerprint,
@@ -139,13 +164,25 @@ assert.throws(() => assertTravelLegacyCleanupWriteApproval({
 }), /recovery confirmation/)
 
 assert.doesNotThrow(() => assertTravelLegacyCleanupReadback({
-  inventory: { memories: 3, plans: 2, routeIdentities: 5 },
+  inventory: {
+    memories: 3,
+    plans: 2,
+    publicPublishedMemories: 3,
+    publicPublishedPlans: 2,
+    routeIdentities: 5,
+  },
   legacyColumnsPresent: false,
   legacyTableCount: 0,
   migrationHistory: [...state.migrationHistory, { batch: 8, name: phase17LegacyCleanupMigration }],
 }))
 assert.throws(() => assertTravelLegacyCleanupReadback({
-  inventory: { memories: 3, plans: 2, routeIdentities: 5 },
+  inventory: {
+    memories: 3,
+    plans: 2,
+    publicPublishedMemories: 3,
+    publicPublishedPlans: 2,
+    routeIdentities: 5,
+  },
   legacyColumnsPresent: true,
   legacyTableCount: 0,
   migrationHistory: [...state.migrationHistory, { batch: 8, name: phase17LegacyCleanupMigration }],

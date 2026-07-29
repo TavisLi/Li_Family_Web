@@ -20,6 +20,7 @@ ADR 記錄 Web Li 已接受、會跨 Phase 持續生效的架構決策。一般 
 | [0005](./0005-completed-bucket-items-enter-the-timeline.md) | Completed bucket items enter the timeline | accepted |
 | [0006](./0006-seed-reconciliation-protects-published-content.md) | Seed reconciliation protects published content | accepted |
 | [0007](./0007-travel-plans-and-memories-are-separate-records.md) | Travel Plan and Memory are separate records | accepted |
+| [0008](./0008-phase-17-cleanup-allows-one-time-no-backup-waiver.md) | Phase 17 cleanup allows one-time no-backup waiver | accepted |
 
 ## Required Metadata
 

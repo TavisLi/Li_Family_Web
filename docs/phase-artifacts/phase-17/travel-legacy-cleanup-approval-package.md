@@ -6,6 +6,8 @@
 
 白話來說：網站現在已改從兩張新表讀取；這一步是把仍留作保險的舊表與舊關聯清掉。因為刪除後不能靠 DOWN migration 找回舊資料，預設必須有可核對的備份。2026-07-29 Supabase Dashboard 唯讀盤點確認 Free 方案沒有 Scheduled Backup 或 PITR；網站擁有者隨後明確選擇不備份繼續，接受 cleanup 後無法回復 legacy 資料的風險。此為本次一次性 operational waiver，不改變未來 destructive migration 的預設備份要求。
 
+此例外的持久決策紀錄為 ADR-0008。
+
 ## 實際刪除範圍
 
 - legacy `travel_projects` 主表、locales、relationships 與 nested arrays：共 33 張表。
@@ -29,10 +31,10 @@ controlled executor 會在寫入前與 transaction 鎖表後各檢查一次，�
 
 1. Production runtime deployment 必須是包含本 cleanup code 的已審查 `main` commit，狀態為 success；executor 會要求 Vercel deployment SHA 與執行時本地 checkout `HEAD` 完全一致，避免用舊 runtime 刪除仍被 Payload config 宣告的 legacy tables。
 2. 必須二選一：提供 backup reference、建立時間與驗證時間；或提供精確的 no-backup waiver、接受時間，並確認沒有同時填入任何會被誤認為有效備份的 metadata。
-3. inventory 必須維持 legacy 5、Plans 2、Memories 3、Route identities 5。
+3. inventory 必須維持 legacy 5、Plans 2、Memories 3、Route identities 5，且兩筆 Plans／三筆 Memories 均為 public published。
 4. 舊／新 relationships 必須成對維持 Media 22／22、TimelineEvents 2／2、HomeConfig 1／1；shadow 以實際 row count 計算，逐 owner／canonical slug 驗證，重複或額外錯誤 row 也會拒絕。
 5. 33 張舊表與四個舊 relationship columns 必須完整存在。
-6. batch 6 的五份 schema migrations 與 batch 7 security migration 必須存在；batch 8 cleanup record 必須尚未存在。
+6. `dev/-1`、既有 batch 1–5、batch 6 的五份 schema migrations 與 batch 7 security migration 必須完整存在；batch 8 cleanup record 必須尚未存在。
 7. database、implementation、recovery mode（verified backup／no-backup waiver）、deployment 與 inventory 會共同產生 approval token；任何漂移都令舊 token 失效。
 
 ## Transaction 行為
