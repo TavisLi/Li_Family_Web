@@ -25,7 +25,7 @@
 | 14 | Media and travel polish | Merged；PR #43–46 | [`phase-14-v1-4-media-travel-polish.md`](./phase-14-v1-4-media-travel-polish.md) |
 | 15 | Travel planning layout | Merged；PR #51 | [`phase-15-v1-5-travel-planning-layout.md`](./phase-15-v1-5-travel-planning-layout.md) |
 | 16 | Travel seed reconciliation | Merged、Production baseline／read-back | [`phase-16-travel-seed-reconciliation.md`](./phase-16-travel-seed-reconciliation.md) |
-| 17 | Travel Plan／Memory split | Merged；Production metadata blocker resolved；legacy cleanup approval／execution remains open | [`phase-17-travel-plan-memory-split.md`](./phase-17-travel-plan-memory-split.md) |
+| 17 | Travel Plan／Memory split | Merged；Production verified；legacy cleanup completed；Issue closeout pending | [`phase-17-travel-plan-memory-split.md`](./phase-17-travel-plan-memory-split.md) |
 
 ## 閱讀規則
 
