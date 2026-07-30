@@ -6,7 +6,7 @@
 
 `Implemented → Locally verified → PR ready`
 
-Draft PR 已建立，但 Preview runtime 因環境缺少 Payload secret 而無法完成 route QA。尚未進入 `Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
+Draft PR 已建立。Preview 專用 Payload secret 已補齊，但此分支仍無可用 `DATABASE_URI`，因此無法完成 route QA。尚未進入 `Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
 
 ## Scope
 
@@ -105,12 +105,15 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 ### Vercel Preview
 
 - Implementation head 的 deployment `dpl_9svnXnNvoy5vUjyTwvB9vyZZkUxY` 為 `READY`，deployed commit 為 `bdd28422ba77261bb63097ba8d06ad3b5586dcab`。
-- 受保護 Preview 的 `GET /travel/202607-chongqing-yangtze-river` 實際回傳 HTTP 500。
-- 同一次 request 的 Vercel runtime log 為 `missing secret key. A secret key is needed to secure Payload.`，因此 Preview route QA 停在 Payload 初始化邊界；不能把 build／deployment READY 視為功能通過。
+- 初次受保護 Preview 的 `GET /travel/202607-chongqing-yangtze-river` 回傳 HTTP 500，runtime log 為 `missing secret key. A secret key is needed to secure Payload.`。
+- 經使用者批准後，新增只適用 `codex/phase-18-member-links-travel-table` 的 sensitive Preview `PAYLOAD_SECRET`；未讀取或修改 Production secret。
+- 最新 redeployment `dpl_8dUoDm8EB3eEur3ZqyEhKXeTBf5V` 為 `READY`，deployed commit 與 PR head 同為 `79e9a808fe1925610adcf5a1f7ce24bb8b43c2bc`。
+- Payload secret 錯誤已消失；同一旅行 route 仍回 HTTP 500，runtime log 顯示 `DATABASE_URI` 回退至 `127.0.0.1:5432` 並 `ECONNREFUSED`。現有 Preview `DATABASE_URI` 只綁定舊分支 `codex/phase-15-v1-5`，未授權擴大到本分支。
+- 因此 Preview route QA 停在 database connection 邊界；不能把 build／deployment READY 視為功能通過。
 
 ## Known limitations／blockers
 
-- Draft PR #71 已建立；Preview build READY，但 runtime 缺少 Payload secret。
+- Draft PR #71 已建立；Preview build READY，Payload secret 已補齊，但本分支缺少可用 `DATABASE_URI`。
 - 尚未執行 Production migration。
 - 尚未寫入允生外部 URL。
 - Issue #68 因 schema 尚未 rollout，無法完成真實 Lobby browser QA。
@@ -126,4 +129,4 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 
 - Issue #68：Implemented；local schema／logic verified；Production migration、record write 與 browser QA pending。
 - Issue #69：Implemented；local tests 與 responsive browser QA passed；Preview／Production verification pending。
-- 下一步：先修復 Preview 的 Payload secret 環境設定並重跑 route QA，再提交 H5／H6／H9／H10 evidence。
+- 下一步：取得授權後，將既有 Preview `DATABASE_URI` scope 擴及 Phase 18 分支並只做 route read-only QA；之後再提交 H5／H6／H9／H10 evidence。
