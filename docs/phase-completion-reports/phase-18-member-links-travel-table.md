@@ -107,7 +107,7 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 - Implementation head 的 deployment `dpl_9svnXnNvoy5vUjyTwvB9vyZZkUxY` 為 `READY`，deployed commit 為 `bdd28422ba77261bb63097ba8d06ad3b5586dcab`。
 - 初次受保護 Preview 的 `GET /travel/202607-chongqing-yangtze-river` 回傳 HTTP 500，runtime log 為 `missing secret key. A secret key is needed to secure Payload.`。
 - 經使用者批准後，新增只適用 `codex/phase-18-member-links-travel-table` 的 sensitive Preview `PAYLOAD_SECRET`；未讀取或修改 Production secret。
-- 最新 redeployment `dpl_8dUoDm8EB3eEur3ZqyEhKXeTBf5V` 為 `READY`，deployed commit 與 PR head 同為 `79e9a808fe1925610adcf5a1f7ce24bb8b43c2bc`。
+- 驗證時的 redeployment `dpl_8dUoDm8EB3eEur3ZqyEhKXeTBf5V` 為 `READY`，deployed commit 為 `79e9a808fe1925610adcf5a1f7ce24bb8b43c2bc`。
 - Payload secret 錯誤已消失；同一旅行 route 仍回 HTTP 500，runtime log 顯示 `DATABASE_URI` 回退至 `127.0.0.1:5432` 並 `ECONNREFUSED`。現有 Preview `DATABASE_URI` 只綁定舊分支 `codex/phase-15-v1-5`，未授權擴大到本分支。
 - 因此 Preview route QA 停在 database connection 邊界；不能把 build／deployment READY 視為功能通過。
 
