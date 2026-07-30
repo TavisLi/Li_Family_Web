@@ -8,6 +8,30 @@
 - [Issue #68 — Member profile: Option for connecting to outside web page](https://github.com/TavisLi/Li_Family_Web/issues/68)
 - [Issue #69 — Bug Fix: 旅遊頁面表格顯示異常](https://github.com/TavisLi/Li_Family_Web/issues/69)
 
+## Problem statement
+
+- Family Lobby 成員卡目前固定導向站內 `/member/[slug]`，無法讓單一成員卡改連既有外部作品頁。
+- 重慶旅行頁的 8 欄航班表沿用一般欄寬規則，「航空公司」沒有獨立寬度，在桌面版被壓成逐字直排。
+
+## Current architecture seam
+
+- 成員資料由 Payload `users` collection 擁有，Family Lobby 由 `src/features/home/home-page.tsx` 渲染卡片。
+- Travel planning Markdown 由 `src/features/travel/travel-source-sections.tsx` 統一解析並渲染表格；現有 wrapper 已提供小螢幕水平捲動。
+- `content-source/` 只作版本化 seed input；本 Phase 不修改 published Travel Plan 內容。
+
+## Proposed minimal design
+
+- 在 `users` 新增 nullable `externalProfileUrl`，只接受 `http`／`https`。
+- Family Lobby 只在該值存在時使用外部 URL、新分頁與安全 `rel`；否則保留站內路由。
+- 只有「恰為 8 欄且含航空公司欄」的表格使用本次專用 `64rem` minimum width 與欄寬；其他 5／6／7／9 欄表格維持原規則。
+- migration 僅新增 nullable column，不回填、不更新任何 Users record。
+
+## Alternatives／tradeoffs
+
+- 把外部 URL 寫死在前端：改動較少，但內容擁有權錯置，後續每次改網址都要重新部署，因此不採用。
+- 將所有 8 欄以上表格一律加寬：實作簡單，但會改變其他旅行表格，超出 #69，因此不採用。
+- 同分頁開啟外站：互動較直接，但家族網站狀態會被取代；依 Issue 需求採新分頁並清楚標示外部連結。
+
 ## Scope
 
 1. 在 Payload `users` collection 新增 optional 外部成員頁 URL。
@@ -49,6 +73,34 @@
 6. `git diff --check`
 7. 本機 browser QA：Family Lobby 內外部連結與重慶航班表桌面／手機 viewport
 8. Preview／Production QA 另依 H9、H5、H6、H10 授權執行
+
+## Browser／route QA matrix
+
+| Route | Viewport／情境 | 驗收 |
+| --- | --- | --- |
+| `/` | Family Lobby，未設定外部 URL | 成員卡仍進入 `/member/[slug]` |
+| `/` | Family Lobby，`nini` 已設定外部 URL | 新分頁開啟指定外站，具外部連結提示 |
+| `/travel/202607-chongqing-yangtze-river` | Desktop 1280×720 | 航空公司不逐字直排 |
+| 同上 | Mobile 390×844 | 表格水平捲動，欄位保持可讀 |
+| 既有 5／9 欄航空公司表格 fixture | Static render | 不套用本次 8 欄專用規則 |
+
+## Data／migration plan
+
+1. 產生並人工審查 additive nullable migration。
+2. 在 disposable PostgreSQL 先執行 UP／DOWN，確認 Users 筆數不變且無資料回填。
+3. H5 批准後才可執行 Production migration，完成 schema read-back。
+4. 部署同一 PR head。
+5. H6 批准後只更新 `nini.externalProfileUrl`，再回讀單筆 record。
+
+## Rollback
+
+- Runtime：回退到本 PR 前 deployment。
+- Content：清空 `nini.externalProfileUrl`，立即恢復 `/member/nini`。
+- Schema：若欄位尚無資料可執行 DOWN；若已有資料，先導出並取得 destructive approval。
+
+## Completion Report
+
+完成證據記錄於 `docs/phase-completion-reports/phase-18-member-links-travel-table.md`。
 
 ## Stop conditions
 

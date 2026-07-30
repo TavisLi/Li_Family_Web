@@ -139,7 +139,7 @@ export function SourceBody({
               }
               key={`table-${index}`}
             >
-              <table className={`${sourceTableWidthClass(header.length)} w-full table-fixed divide-y divide-cyan-100/70 text-left text-sm`}>
+              <table className={`${sourceTableWidthClass(header)} w-full table-fixed divide-y divide-cyan-100/70 text-left text-sm`}>
                 <thead
                   className={
                     tone === 'dark'
@@ -1061,8 +1061,14 @@ function parseTableRow(line: string) {
     .map((cell) => cleanInline(cell.trim()))
 }
 
-function sourceTableWidthClass(columnCount: number): string {
-  if (columnCount >= 8) {
+function isEightColumnAirlineFlightTable(headers: string[]): boolean {
+  return headers.length === 8 && headers.some((cell) => /航空公司|Airline/i.test(cell))
+}
+
+function sourceTableWidthClass(headers: string[]): string {
+  const columnCount = headers.length
+
+  if (isEightColumnAirlineFlightTable(headers)) {
     return 'min-w-[64rem]'
   }
 
@@ -1080,9 +1086,8 @@ function sourceTableWidthClass(columnCount: number): string {
 function sourceTableColumnClass(header: string, headers: string[]): string {
   const normalized = header.replace(/\s+/g, '')
   const columnCount = headers.length
-  const isAirlineFlightTable = headers.some((cell) => /航空公司|Airline/i.test(cell))
 
-  if (isAirlineFlightTable) {
+  if (isEightColumnAirlineFlightTable(headers)) {
     if (/日期|Date/i.test(normalized)) return 'w-[10%]'
     if (/航空公司|Airline/i.test(normalized)) return 'w-[14%]'
     if (/航班號|Flight/i.test(normalized)) return 'w-[9%]'

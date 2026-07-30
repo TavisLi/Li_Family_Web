@@ -1,0 +1,122 @@
+# Phase 18 Completion Report — 成員外部頁連結與旅行航班表格修正
+
+日期：2026-07-30
+
+## Status
+
+`Implemented → Locally verified`
+
+尚未進入 `PR ready`、`Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
+
+## Scope
+
+- Issue #68：讓 Family Lobby 成員卡片可由 Payload User record 選擇內建 Member profile 或外部頁面。
+- Issue #69：修正重慶旅行頁 8 欄航班表的航空公司欄位被壓成逐字直排。
+- 產生 nullable-only Users migration、regression tests 與 Phase 18 文件。
+
+## Out of scope
+
+- 未修改既有 Member profile 內容或其他 Users records。
+- 未修改 Travel Plan published content、Markdown source 或 seed。
+- 未執行 Production schema/content write、merge、deploy 或 Issue closeout。
+
+## Branch／commit／PR
+
+- Branch：`codex/phase-18-member-links-travel-table`
+- Implementation commit：`9750e6e`
+- PR：尚未建立
+- Merge：N/A
+
+## Delivered work
+
+### Issue #68
+
+- `users.externalProfileUrl` 為 optional、非 localized 的 text field。
+- validator 只接受合法 `http`／`https` URL。
+- URL 留空時卡片維持 `/member/[slug]`。
+- URL 有值時卡片使用外部 URL、`target="_blank"`、`rel="noopener noreferrer"`、外部連結 icon 與 screen-reader 說明。
+- Payload types 與 migration snapshot 已重新產生。
+
+### Issue #69
+
+- 8 欄航班表使用 `64rem` minimum width。
+- 航班表 8 個欄位取得合計 100% 的專用欄寬；航空公司欄為 14%。
+- 專用規則只在「恰為 8 欄且含航空公司欄」時啟用；既有 5／6／7／9 欄表格規則不變。
+- 小 viewport 仍由原有 `overflow-x-auto` 提供水平捲動。
+
+## Key files
+
+- `src/payload/collections/Users.ts`
+- `src/features/home/member-portal-link.ts`
+- `src/features/home/home-page.tsx`
+- `src/features/travel/travel-source-sections.tsx`
+- `src/migrations/20260730_140837_phase_18_member_external_profile_url.ts`
+- `src/migrations/20260730_140837_phase_18_member_external_profile_url.json`
+- `docs/phase-preparation/phase-18-member-links-travel-table.md`
+
+## Validation
+
+- `pnpm run test:phase-18`：通過。
+- `pnpm run test:phase-17`：通過。
+- `pnpm exec payload generate:types`（Node 20.20.2）：通過。
+- `pnpm run build`（Node 20.20.2）：通過。
+- build 完成後 `pnpm tsc --noEmit`（Node 20.20.2）：通過。
+- `git diff --check`：通過。
+- credential pattern scan：未找到疑似 secret。
+
+## Independent review
+
+- Standards review 找到原實作會影響其他 5／9 欄航空公司表格，已收斂到指定 8 欄 shape，並新增非目標表格回歸測試。
+- Standards review 指出 Phase preparation 缺少必要欄位，已補齊 problem、architecture seam、minimal design、tradeoffs、QA matrix、migration、rollback 與 Completion Report path。
+- Spec review 確認 Issue #68 的 Production record write／read-back 尚未完成；本報告維持 pending，不宣稱 Issue ready。
+- 單次使用的 link resolver 保留為可測試的安全語意 seam，集中外部連結的 `target`／`rel` 契約，未擴展為通用抽象。
+
+## Migration rehearsal／data
+
+Payload 自動產生的第一版 migration 同時帶入 Phase 17 cleanup drift，包含多個未批准 `DROP TABLE`；依 stop condition 未執行，並人工收斂成：
+
+- UP：只新增 nullable `users.external_profile_url varchar`。
+- DOWN：只移除 `users.external_profile_url`。
+
+Disposable PostgreSQL 17 rehearsal：
+
+- 建立 2 筆假 Users records。
+- UP 後 Users 仍為 2 筆，新欄位 `is_nullable = YES`、populated count = 0。
+- DOWN 後 Users 仍為 2 筆，新欄位 count = 0。
+- 臨時 container 已停止並自動移除。
+
+## Browser QA
+
+### Issue #69
+
+- Desktop viewport 1280×720：表格寬 1238px，航空公司欄 173px、表頭高 41px，未逐字直排。
+- Mobile viewport 390×844：表格寬 1024px、可視容器 348px、`overflow-x = auto`、航空公司欄 143px。
+
+### Issue #68 deployment-order gate
+
+Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到現有資料庫讀取 Family Lobby 時，以 PostgreSQL `42703 column does not exist` 停止；因此 release 順序必須是：
+
+1. H5 批准並執行 additive migration。
+2. Deploy 同一 PR head。
+3. H6 批准並只更新 `nini.externalProfileUrl`。
+4. 回讀 record，再做 Family Lobby internal／external navigation QA。
+
+## Known limitations／blockers
+
+- 尚未建立 PR 或取得 Preview。
+- 尚未執行 Production migration。
+- 尚未寫入允生外部 URL。
+- Issue #68 因 schema 尚未 rollout，無法完成真實 Lobby browser QA。
+- Issue #68／#69 尚不可 close。
+
+## Rollback
+
+- Runtime：回退至本 PR 前 deployment。
+- Schema：若尚未寫入外部 URL，可執行 migration DOWN；若已有值，需先導出／確認欄位內容，再決定是否移除。
+- Content：清空單筆 `nini.externalProfileUrl` 可立即恢復內建 `/member/nini` 導航。
+
+## Issue closeout／next readiness
+
+- Issue #68：Implemented；local schema／logic verified；Production migration、record write 與 browser QA pending。
+- Issue #69：Implemented；local tests 與 responsive browser QA passed；Preview／Production verification pending。
+- 下一步：完成 review、push／Draft PR 與 Preview QA，再提交 H5／H6／H9／H10 evidence。

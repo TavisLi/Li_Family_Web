@@ -392,6 +392,33 @@ assert.match(eightColumnFlightTableHtml, /w-\[9%\] whitespace-normal break-words
 assert.match(eightColumnFlightTableHtml, /w-\[9%\] whitespace-normal break-words px-4 py-3">預計抵達/)
 assert.match(eightColumnFlightTableHtml, /w-\[17%\] whitespace-normal break-words px-4 py-3">備注/)
 
+const fiveColumnAirlineTableHtml = renderToStaticMarkup(
+  createElement(SourceBody, {
+    body: [
+      '| 方向 | 航空公司 | 起飛 | 抵達 | 備注 |',
+      '| --- | --- | --- | --- | --- |',
+      '| 去程 | 中華航空 | 09:00 | 11:00 | — |',
+    ].join('\n'),
+  }),
+)
+
+assert.match(fiveColumnAirlineTableHtml, /min-w-\[56rem\] w-full table-fixed/)
+assert.match(fiveColumnAirlineTableHtml, /w-1\/5 whitespace-normal break-words px-4 py-3">航空公司/)
+assert.doesNotMatch(fiveColumnAirlineTableHtml, /w-\[14%\].*航空公司/)
+
+const nineColumnAirlineTableHtml = renderToStaticMarkup(
+  createElement(SourceBody, {
+    body: [
+      '| 日期 | 星期 | 航空公司 | 航班號 | 起飛機場 | 起飛時間 | 抵達機場 | 抵達時間 | 飛行時間 |',
+      '| --- | --- | --- | --- | --- | --- | --- | --- | --- |',
+      '| 8/1 | 二 | 中華航空 | CI123 | TPE | 09:00 | SYD | 18:00 | 9h |',
+    ].join('\n'),
+  }),
+)
+
+assert.match(nineColumnAirlineTableHtml, /min-w-\[56rem\] w-full table-fixed/)
+assert.doesNotMatch(nineColumnAirlineTableHtml, /w-\[14%\].*航空公司/)
+
 const mediaHtml = renderToStaticMarkup(
   createElement(PayloadImage, {
     fallbackLabel: '原比例照片',

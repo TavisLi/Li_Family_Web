@@ -4,7 +4,7 @@
 
 狀態定義見 [`../phase-execution-playbook.md`](../phase-execution-playbook.md)。
 
-## Phase 1–17
+## Phase 1–18
 
 | Phase | 主題 | 最終交付狀態 | 報告 |
 | --- | --- | --- | --- |
@@ -26,6 +26,7 @@
 | 15 | Travel planning layout | Merged；PR #51 | [`phase-15-v1-5-travel-planning-layout.md`](./phase-15-v1-5-travel-planning-layout.md) |
 | 16 | Travel seed reconciliation | Merged、Production baseline／read-back | [`phase-16-travel-seed-reconciliation.md`](./phase-16-travel-seed-reconciliation.md) |
 | 17 | Travel Plan／Memory split | Merged；Production verified；legacy cleanup completed；Issue closeout pending | [`phase-17-travel-plan-memory-split.md`](./phase-17-travel-plan-memory-split.md) |
+| 18 | Member external links／Travel flight table | Locally verified；PR／Production pending | [`phase-18-member-links-travel-table.md`](./phase-18-member-links-travel-table.md) |
 
 ## 閱讀規則
 
@@ -33,4 +34,4 @@
 - 現行產品詞彙讀 `CONTEXT.md`。
 - 現行架構讀 `docs/全栈系统需求与技术架构说明书.md` 與 ADR。
 - 未完成項目必須對應 Issue／blocker，不得只留在「下一步」文字。
-- Phase 4.1 是延伸 hardening，不增加 Phase 1–17 的編號計數。
+- Phase 4.1 是延伸 hardening，不增加 Phase 1–18 的編號計數。
