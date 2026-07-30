@@ -13,6 +13,7 @@ import * as migration_20260716_091228_phase_17_align_travel_memory_sections from
 import * as migration_20260716_094718_phase_17_add_travel_cutover_relationships from './20260716_094718_phase_17_add_travel_cutover_relationships';
 import * as migration_20260717_121714_phase_17_secure_travel_data_api from './20260717_121714_phase_17_secure_travel_data_api';
 import * as migration_20260724_153813_phase_member_timeline_intro from './20260724_153813_phase_member_timeline_intro';
+import * as migration_20260730_140837_phase_18_member_external_profile_url from './20260730_140837_phase_18_member_external_profile_url';
 
 export const migrations = [
   {
@@ -88,6 +89,11 @@ export const migrations = [
   {
     up: migration_20260724_153813_phase_member_timeline_intro.up,
     down: migration_20260724_153813_phase_member_timeline_intro.down,
-    name: '20260724_153813_phase_member_timeline_intro'
+    name: '20260724_153813_phase_member_timeline_intro',
+  },
+  {
+    up: migration_20260730_140837_phase_18_member_external_profile_url.up,
+    down: migration_20260730_140837_phase_18_member_external_profile_url.down,
+    name: '20260730_140837_phase_18_member_external_profile_url',
   },
 ];

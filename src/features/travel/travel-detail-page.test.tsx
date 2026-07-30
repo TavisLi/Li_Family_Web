@@ -7,7 +7,7 @@ import type { Media } from '@/payload/payload-types'
 import type { TravelRuntimeRecord } from '@/lib/travel-runtime'
 import { CompletedTravelLedger } from './completed-travel-ledger'
 import { TravelPhotoGalleryPreview } from './travel-photo-gallery'
-import { TravelSourceSections } from './travel-source-sections'
+import { SourceBody, TravelSourceSections } from './travel-source-sections'
 import { PayloadImage } from '@/components/ui/payload-image'
 
 const completedProject: TravelRuntimeRecord = {
@@ -371,6 +371,26 @@ assert.match(planningHtml, /youtube-nocookie\.com\/embed\/lYP3m2N8yvs/)
 assert.match(planningHtml, /泳池角度/)
 assert.doesNotMatch(planningHtml, /travel:202702-thailand-phuket:source:pool-angle/)
 assert.doesNotMatch(planningHtml, /anantara-media photo 1/)
+
+const eightColumnFlightTableHtml = renderToStaticMarkup(
+  createElement(SourceBody, {
+    body: [
+      '| 日期 | 航空公司 | 航班號 | 航線 | 旅客 | 預計起飛 | 預計抵達 | 備注 |',
+      '| --- | --- | --- | --- | --- | --- | --- | --- |',
+      '| 7/1（三） | 中國東方航空 | MU2539 | 武漢WUH T3 → 重慶CKG T3 | 李天行 | 21:05 | 22:40 | 計劃時間由19:25變更為21:05起飛 |',
+    ].join('\n'),
+  }),
+)
+
+assert.match(eightColumnFlightTableHtml, /min-w-\[64rem\] w-full table-fixed/)
+assert.match(eightColumnFlightTableHtml, /w-\[10%\] whitespace-normal break-words px-4 py-3">日期/)
+assert.match(eightColumnFlightTableHtml, /w-\[14%\] whitespace-normal break-words px-4 py-3">航空公司/)
+assert.match(eightColumnFlightTableHtml, /w-\[9%\] whitespace-normal break-words px-4 py-3">航班號/)
+assert.match(eightColumnFlightTableHtml, /w-\[22%\] whitespace-normal break-words px-4 py-3">航線/)
+assert.match(eightColumnFlightTableHtml, /w-\[10%\] whitespace-normal break-words px-4 py-3">旅客/)
+assert.match(eightColumnFlightTableHtml, /w-\[9%\] whitespace-normal break-words px-4 py-3">預計起飛/)
+assert.match(eightColumnFlightTableHtml, /w-\[9%\] whitespace-normal break-words px-4 py-3">預計抵達/)
+assert.match(eightColumnFlightTableHtml, /w-\[17%\] whitespace-normal break-words px-4 py-3">備注/)
 
 const mediaHtml = renderToStaticMarkup(
   createElement(PayloadImage, {

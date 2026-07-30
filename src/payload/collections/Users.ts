@@ -51,6 +51,29 @@ export const Users: CollectionConfig = {
       index: true,
     },
     {
+      name: 'externalProfileUrl',
+      type: 'text',
+      required: false,
+      admin: {
+        description:
+          'Optional external destination for this member card. Leave empty to use the built-in member profile.',
+      },
+      validate: (value: string | null | undefined) => {
+        if (!value) {
+          return true
+        }
+
+        try {
+          const url = new URL(value)
+          return url.protocol === 'http:' || url.protocol === 'https:'
+            ? true
+            : 'External profile URL must use http or https.'
+        } catch {
+          return 'External profile URL must be a valid URL.'
+        }
+      },
+    },
+    {
       name: 'familyRole',
       type: 'select',
       required: true,

@@ -5,6 +5,7 @@ import {
   CalendarDays,
   Clock3,
   CheckCircle2,
+  ExternalLink,
   HeartHandshake,
   LockKeyhole,
   Newspaper,
@@ -28,6 +29,7 @@ import type {
   User,
 } from '@/payload/payload-types'
 import { HomeBucketQuickView } from './home-bucket-quick-view'
+import { memberPortalLink } from './member-portal-link'
 
 type HomePageViewProps = {
   bucketItems: BucketItem[]
@@ -184,44 +186,54 @@ export function HomePageView({
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {members.length > 0 ? (
-            members.map((member) => (
-              <Link
-                className="group grid min-h-[28rem] overflow-hidden rounded-lg border border-white/55 bg-white/45 shadow-sm backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/65 hover:shadow-2xl hover:shadow-slate-900/10"
-                href={`/member/${member.slug}`}
-                key={member.id}
-              >
-                <PayloadImage
-                  className="aspect-[4/3] rounded-none border-b border-white/50"
-                  fallbackLabel={member.displayName}
-                  fit="cover"
-                  media={memberImage(member)}
-                  sizes="(min-width: 1024px) 31vw, (min-width: 640px) 46vw, 100vw"
-                  tone={memberTone(member)}
-                />
-                <div className="flex flex-col justify-between p-5">
-                  <div>
-                    <div className="flex items-center justify-between gap-4">
-                      <p className="text-xs font-semibold uppercase text-slate-500">
-                        {member.familyRole}
+            members.map((member) => {
+              const memberLink = memberPortalLink(member)
+              const MemberLinkIcon = memberLink.external ? ExternalLink : ArrowRight
+
+              return (
+                <Link
+                  className="group grid min-h-[28rem] overflow-hidden rounded-lg border border-white/55 bg-white/45 shadow-sm backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/65 hover:shadow-2xl hover:shadow-slate-900/10"
+                  href={memberLink.href}
+                  key={member.id}
+                  rel={memberLink.rel}
+                  target={memberLink.target}
+                >
+                  <PayloadImage
+                    className="aspect-[4/3] rounded-none border-b border-white/50"
+                    fallbackLabel={member.displayName}
+                    fit="cover"
+                    media={memberImage(member)}
+                    sizes="(min-width: 1024px) 31vw, (min-width: 640px) 46vw, 100vw"
+                    tone={memberTone(member)}
+                  />
+                  <div className="flex flex-col justify-between p-5">
+                    <div>
+                      <div className="flex items-center justify-between gap-4">
+                        <p className="text-xs font-semibold uppercase text-slate-500">
+                          {member.familyRole}
+                        </p>
+                        <MemberLinkIcon
+                          className="size-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-slate-800"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <h3 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950">
+                        {member.displayName}
+                        {memberLink.external ? (
+                          <span className="sr-only">（在新分頁開啟）</span>
+                        ) : null}
+                      </h3>
+                      <p className="mt-2 text-sm font-medium text-slate-600">
+                        {memberIdentity[member.slug] ?? 'Family member'}
                       </p>
-                      <ArrowRight
-                        className="size-4 text-slate-400 transition group-hover:translate-x-1 group-hover:text-slate-800"
-                        aria-hidden="true"
-                      />
                     </div>
-                    <h3 className="mt-3 text-2xl font-semibold tracking-normal text-slate-950">
-                      {member.displayName}
-                    </h3>
-                    <p className="mt-2 text-sm font-medium text-slate-600">
-                      {memberIdentity[member.slug] ?? 'Family member'}
+                    <p className="mt-5 line-clamp-3 text-sm leading-7 text-slate-600">
+                      {member.status || member.bio || '家人的故事正在慢慢展開。'}
                     </p>
                   </div>
-                  <p className="mt-5 line-clamp-3 text-sm leading-7 text-slate-600">
-                    {member.status || member.bio || '家人的故事正在慢慢展開。'}
-                  </p>
-                </div>
-              </Link>
-            ))
+                </Link>
+              )
+            })
           ) : (
             <ImageFallback className="sm:col-span-2 lg:col-span-3" label="Family members" />
           )}

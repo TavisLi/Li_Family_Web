@@ -154,6 +154,10 @@ export interface User {
   role: 'admin' | 'family';
   displayName: string;
   slug: string;
+  /**
+   * Optional external destination for this member card. Leave empty to use the built-in member profile.
+   */
+  externalProfileUrl?: string | null;
   familyRole: 'father' | 'mother' | 'daughter' | 'son' | 'grandmother' | 'family';
   profileVisibility: 'public' | 'family';
   avatar?: (number | null) | Media;
@@ -864,6 +868,7 @@ export interface UsersSelect<T extends boolean = true> {
   role?: T;
   displayName?: T;
   slug?: T;
+  externalProfileUrl?: T;
   familyRole?: T;
   profileVisibility?: T;
   avatar?: T;
