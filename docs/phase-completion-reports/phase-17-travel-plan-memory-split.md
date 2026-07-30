@@ -191,5 +191,24 @@ PR #59 記錄以下 Node `20.20.2` 驗證通過：
 | --- | --- |
 | Production runtime／metadata | Verified |
 | Travel Memory public visibility | Verified：匿名頁 3／3 |
-| Legacy cleanup | no-backup waiver code 待 PR／merge／deployment，之後才可 inspect／apply |
-| Closed | No；batch 8 與 Issue #50／#57 closeout 尚未完成 |
+| Legacy cleanup | Completed；Production batch 8 cleanup 已執行並 verify |
+| Closed | Pending Issue closeout；Production cleanup evidence 已完成 |
+
+## 15. Production Cleanup Addendum（2026-07-30）
+
+- PR #67 已合併至 `main@8caf147fbc72f396bf7bd5cc9292480536f2d9d0`，Vercel Production deployment `READY`。
+- cleanup 前 controlled inspect 通過：database fingerprint `db:f186aaf5a523`、implementation fingerprint `impl:f7c2d1cd0b2e`、approval token `phase-17-cleanup:601d258c15d9e5ce`。
+- no-backup waiver 使用網站擁有者「不備份繼續進行」的 timestamp `2026-07-29T10:09:12.338Z` 與 confirmation `I_ACCEPT_IRREVERSIBLE_PHASE_17_LEGACY_DATA_LOSS`。
+- 網站擁有者批准 destructive Production apply 後，由本機 Terminal 執行專用 Node executor；結果為 `mode=apply`、`committed=true`、`batch=8`。
+- Executor read-back 通過：legacy tables 0、legacy columns 0；Plans 2、Memories 3、public published Plans 2／Memories 3、Route identities 5；shadow relationships Media 22、TimelineEvents 2、HomeConfig 1。
+- Supabase Production read-only SQL 獨立驗證同樣通過，且 `payload_migrations` 已有 batch 8 `20260719_025401` record。
+- 正式 `/travel` cleanup 後 HTTP 200，HTML 仍可見三筆旅行回憶與一筆過往規劃。
+
+目前結論：
+
+| State | Result |
+| --- | --- |
+| Production runtime／metadata | Verified |
+| Travel Memory public visibility | Verified：匿名頁 3／3 |
+| Legacy cleanup | Completed：legacy schema 0 tables／0 columns |
+| Closed | Pending Issue #50／#57 closeout |

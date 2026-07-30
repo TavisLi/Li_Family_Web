@@ -79,13 +79,26 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 - cleanup 後獨立 read-back：legacy tables 0、legacy columns 0；Plans 2、Memories 3、public published Plans 2／Memories 3、Route identities 5；shadow relationships 維持 Media 22、TimelineEvents 2、HomeConfig 1。
 - 本次複驗亦確認 migration 的 Production relationship guard 已由舊 12／12 baseline 修正為現行 22／22，且 executor 的 post-readback 會檢查 22／2／1 shadow relationships。
 
-## Production 現況與尚缺批准
+## Production cleanup 執行結果（2026-07-30）
+
+- PR #67 已合併至 `main@8caf147fbc72f396bf7bd5cc9292480536f2d9d0`，Vercel Production deployment 為 `READY`。
+- 正式 `/travel` runtime 在 cleanup 前後均為 HTTP 200；cleanup 後 HTML 仍可見三筆旅行回憶與一筆過往規劃。
+- cleanup 前 controlled inspect 通過，database fingerprint `db:f186aaf5a523`、implementation fingerprint `impl:f7c2d1cd0b2e`，approval token `phase-17-cleanup:601d258c15d9e5ce`。
+- no-backup waiver 採網站擁有者在本 Phase 17 對話中明確選擇「不備份繼續進行」的 timestamp：`2026-07-29T10:09:12.338Z`；confirmation 為 `I_ACCEPT_IRREVERSIBLE_PHASE_17_LEGACY_DATA_LOSS`。
+- 網站擁有者批准 destructive Production apply 後，由本機 Terminal 執行專用 Node executor；executor 回報 `mode=apply`、`committed=true`、`batch=8`。
+- Executor read-back：legacy tables 0、legacy relationship columns 0；Plans 2、Memories 3、public published Plans 2／Memories 3、Route identities 5；shadow relationships 維持 Media 22、TimelineEvents 2、HomeConfig 1。
+- `payload_migrations` 已新增 batch 8 record：`20260719_025401`；既有 `dev/-1`、batch 1–7 與 unrelated batch 8 `20260724_153813_phase_member_timeline_intro` 均保留。
+- 另以 Supabase Production read-only SQL 獨立驗證：legacy tables 0、legacy columns 0、Plans 2、Memories 3、public 2／3、Route identities 5、Media 22、TimelineEvents 2、HomeConfig 1、cleanup migration record 1。
+
+結論：Phase 17 legacy cleanup 已在 Production 完成。由於採 no-backup waiver，已刪除的 legacy `travel_projects` schema／records／relationships 沒有資料復原路徑；可回退的範圍僅限 runtime deployment。
+
+## Production pre-cleanup 現況與批准歷程
 
 - PR #59 merge commit 已完成 runtime cutover。2026-07-28 最新 `main@edc9bf5` 的 Vercel Production deployment 為 `READY`；正式 `/travel` HTML 已顯示三類旅行內容，canonical 使用 `https://li-family-web.vercel.app/travel`，未再出現 localhost。
 - PR #66 已將原 controlled cleanup code 合併至 `main@f98576c` 並完成 Production runtime deployment；本次新增的 no-backup waiver 仍須另行 PR、merge 與 deployment，最終執行時 deployment SHA 必須與本地 `HEAD` 完全一致。
 - 2026-07-29 Supabase Dashboard 唯讀盤點確認 Free 方案沒有 Scheduled Backup、backup reference、retention 或 PITR；沒有執行 upgrade、restore、建立 project 或產生費用。
 - 網站擁有者已明確選擇不備份繼續，接受 legacy schema／records 刪除後無法回復；executor 仍須以精確 waiver confirmation 產生當次 approval token。
-- Production H4、H6 與 H7 發布狀態修復已完成；no-backup executor 尚待 PR／deployment，因此尚未產生最終 cleanup approval token，也尚未執行 batch 8。
+- Production H4、H6 與 H7 發布狀態修復已完成；no-backup executor 後續已透過 PR #67 部署，並於 2026-07-30 完成 Production batch 8 cleanup。
 
 ## Production H4 唯讀盤點（2026-07-28 23:06 CST）
 
@@ -141,7 +154,7 @@ H6 修復已通過。Destructive cleanup 前仍必須完成 no-backup waiver cod
 
 另已人工確認 cleanup UP migration 僅移除批准清單中的 legacy columns／tables／enum，不含 `CASCADE`；DOWN migration 明確要求以 backup restore 回復資料。
 
-因此，目前可以提交與審查本 cleanup PR，但不得執行 Production `apply`，Issue #50／#57 也尚不能宣稱完成。
+因此，cleanup PR 與 Production `apply` 均已完成；Issue #50／#57 可進入最終 closeout 檢查。
 
 ## 指令
 
