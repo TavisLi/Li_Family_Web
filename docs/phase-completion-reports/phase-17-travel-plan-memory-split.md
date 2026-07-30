@@ -174,3 +174,22 @@ PR #59 記錄以下 Node `20.20.2` 驗證通過：
 | Production data read-back | H4／H6 完成；Media 22／22、invalid mappings 0 |
 | Legacy cleanup | 待 cleanup deployment、backup verification 與 H5／H8 |
 | Closed | No；#50／#57 尚未 close |
+
+## 14. Closeout Addendum（2026-07-29）
+
+- PR #66 已合併至 `main@f98576c`，原 controlled cleanup code 已完成 Production runtime deployment。
+- Supabase Production Dashboard 唯讀盤點確認 Free 方案沒有 Scheduled Backup 或 PITR。網站擁有者明確選擇不備份繼續並接受 legacy schema／records 無法復原；此為一次性 operational waiver。
+- cleanup 前 visibility 稽核發現三筆 `travel_memories` 中兩筆仍為 draft；登入管理員可見三筆，但匿名正式頁只顯示一筆，因此 cleanup 立即停止。
+- 經另案批准，只將 `201307-hainan`、`202308-east-australia` 的 `_status` 從 `draft` 改為 `published`。獨立 read-back 確認三筆 Memory 均為 public published；匿名 `/travel` HTML 可見三筆 routes。
+- 修復後核心 inventory 維持 5／2／3／5、Media 22／22、TimelineEvents 2／2、HomeConfig 1／1；batch 8 cleanup 尚未執行。
+- 本地新增 no-backup waiver 防線：verified backup 與 explicit waiver 必須二選一；錯誤 waiver、同時提供兩種 recovery mode、deployment SHA／inventory／relationship 漂移仍會拒絕。
+- 2026-07-29 以一次性 PostgreSQL 17 synthetic database 對齊現行 22／22 基線重新演練：cleanup 後 legacy tables／columns 為 0，新 records 維持 2／3／5、public published 維持 2／3，shadow relationships 維持 22／2／1；沒有連線 Production。
+
+目前結論：
+
+| State | Result |
+| --- | --- |
+| Production runtime／metadata | Verified |
+| Travel Memory public visibility | Verified：匿名頁 3／3 |
+| Legacy cleanup | no-backup waiver code 待 PR／merge／deployment，之後才可 inspect／apply |
+| Closed | No；batch 8 與 Issue #50／#57 closeout 尚未完成 |

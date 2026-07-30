@@ -101,7 +101,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
           legacy_projects, plan_records, memory_records, route_identities;
       end if;
       if row(legacy_media_refs, shadow_media_refs, legacy_timeline_refs, shadow_timeline_refs, legacy_home_refs, shadow_home_refs)
-        <> row(12, 12, 2, 2, 1, 1) then
+        <> row(22, 22, 2, 2, 1, 1) then
         raise exception 'Phase 17 cleanup refused: relationship inventory drifted (media %/%, timeline %/%, home %/%)',
           legacy_media_refs, shadow_media_refs, legacy_timeline_refs, shadow_timeline_refs, legacy_home_refs, shadow_home_refs;
       end if;
@@ -150,6 +150,6 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
 
 export async function down(_args: MigrateDownArgs): Promise<void> {
   throw new Error(
-    'Phase 17 legacy cleanup cannot reconstruct deleted travel data. Restore the verified pre-cleanup database backup instead.',
+    'Phase 17 legacy cleanup cannot reconstruct deleted travel data. Restore the verified pre-cleanup database backup when available; a no-backup waiver has no data recovery path.',
   )
 }

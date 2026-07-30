@@ -2,9 +2,11 @@
 
 ## 目的
 
-本包負責 Phase 17 最後一段 destructive cleanup：在新 runtime 已部署、資料已複製且備份可復原的前提下，移除不再被程式使用的 legacy `travel_projects` schema。它不修改 `travel-plans`、`travel-memories` 的內容，也不重新執行 data-copy。
+本包負責 Phase 17 最後一段 destructive cleanup：在新 runtime 已部署、資料已複製，且已具備可復原備份或網站擁有者明確接受無備份資料遺失風險的前提下，移除不再被程式使用的 legacy `travel_projects` schema。它不修改 `travel-plans`、`travel-memories` 的內容，也不重新執行 data-copy。
 
-白話來說：網站現在已改從兩張新表讀取；這一步是把仍留作保險的舊表與舊關聯清掉。因為刪除後不能靠 DOWN migration 找回舊資料，Production 執行前一定要有可核對的備份。
+白話來說：網站現在已改從兩張新表讀取；這一步是把仍留作保險的舊表與舊關聯清掉。因為刪除後不能靠 DOWN migration 找回舊資料，預設必須有可核對的備份。2026-07-29 Supabase Dashboard 唯讀盤點確認 Free 方案沒有 Scheduled Backup 或 PITR；網站擁有者隨後明確選擇不備份繼續，接受 cleanup 後無法回復 legacy 資料的風險。此為本次一次性 operational waiver，不改變未來 destructive migration 的預設備份要求。
+
+此例外的持久決策紀錄為 ADR-0008。
 
 ## 實際刪除範圍
 
@@ -28,16 +30,16 @@
 controlled executor 會在寫入前與 transaction 鎖表後各檢查一次，任一條件不符即拒絕：
 
 1. Production runtime deployment 必須是包含本 cleanup code 的已審查 `main` commit，狀態為 success；executor 會要求 Vercel deployment SHA 與執行時本地 checkout `HEAD` 完全一致，避免用舊 runtime 刪除仍被 Payload config 宣告的 legacy tables。
-2. 必須提供 backup reference、建立時間與驗證時間。
-3. inventory 必須維持 legacy 5、Plans 2、Memories 3、Route identities 5。
+2. 必須二選一：提供 backup reference、建立時間與驗證時間；或提供精確的 no-backup waiver、接受時間，並確認沒有同時填入任何會被誤認為有效備份的 metadata。
+3. inventory 必須維持 legacy 5、Plans 2、Memories 3、Route identities 5，且兩筆 Plans／三筆 Memories 均為 public published。
 4. 舊／新 relationships 必須成對維持 Media 22／22、TimelineEvents 2／2、HomeConfig 1／1；shadow 以實際 row count 計算，逐 owner／canonical slug 驗證，重複或額外錯誤 row 也會拒絕。
 5. 33 張舊表與四個舊 relationship columns 必須完整存在。
-6. batch 6 的五份 schema migrations 與 batch 7 security migration 必須存在；batch 8 cleanup record 必須尚未存在。
-7. database、implementation、backup、deployment 與 inventory 會共同產生 approval token；任何漂移都令舊 token 失效。
+6. `dev/-1`、既有 batch 1–5、batch 6 的五份 schema migrations 與 batch 7 security migration 必須完整存在；batch 8 cleanup record 必須尚未存在。
+7. database、implementation、recovery mode（verified backup／no-backup waiver）、deployment 與 inventory 會共同產生 approval token；任何漂移都令舊 token 失效。
 
 ## Transaction 行為
 
-`apply` 只接受 `--allow-write`、database fingerprint、approval token 與 backup reference 四重確認。執行時會：
+`apply` 只接受 `--allow-write`、database fingerprint、approval token 與 recovery confirmation 四重確認。備份模式的 recovery confirmation 是 backup reference；無備份模式必須是精確字串 `I_ACCEPT_IRREVERSIBLE_PHASE_17_LEGACY_DATA_LOSS`。執行時會：
 
 cleanup migration 在 Production 執行完成前刻意不註冊到 Payload 預設 migration index，因此一般 `pnpm exec payload migrate` 無法繞過專用 executor。Production cleanup verify 通過後，才以後續紀錄變更把已執行的 batch 8 migration 納入 index。
 
@@ -50,11 +52,13 @@ cleanup migration 在 Production 執行完成前刻意不註冊到 Payload 預�
 
 ## 回復方式
 
-DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資料回復。若 cleanup 後需要回復，唯一正確方式是：
+DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資料回復。有 verified backup 時，若 cleanup 後需要回復，唯一正確方式是：
 
 1. 回退到 cleanup 前 deployment。
 2. 從已驗證的 cleanup 前 database backup／PITR restore。
 3. 重新執行 owner read-back，確認五筆 legacy travel 與 22／2／1 relationships。
+
+若使用本次 no-backup waiver，步驟 2 不存在：deployment 可以回退，但已刪除的 legacy tables、五筆 legacy records 與舊 relationships 無法重建。新 `travel_plans`／`travel_memories` runtime records 仍由 transaction read-back 保護，但不能把它們宣稱為 legacy schema 的完整備份。
 
 ## 本地演練結果（2026-07-19）
 
@@ -67,13 +71,21 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 - migration record `20260719_025401` 為 batch 8；既有 `dev/-1` 與 batch 1–7 records 未更動。
 - 獨立 verify 再次通過。
 
+## 22／22 基線複驗（2026-07-29）
+
+- 使用一次性 `postgres:17-alpine`，只載入 synthetic schema／rows，沒有連線或複製 Production 資料。
+- 基線與最新 Production inventory 對齊：legacy 5、Plans 2、Memories 3、Route identities 5、Media 22／22、TimelineEvents 2／2、HomeConfig 1／1，且 Plans 2、Memories 3 均為 public published。
+- 直接執行目前 `20260719_025401` migration SQL，guard 通過並完成 cleanup。
+- cleanup 後獨立 read-back：legacy tables 0、legacy columns 0；Plans 2、Memories 3、public published Plans 2／Memories 3、Route identities 5；shadow relationships 維持 Media 22、TimelineEvents 2、HomeConfig 1。
+- 本次複驗亦確認 migration 的 Production relationship guard 已由舊 12／12 baseline 修正為現行 22／22，且 executor 的 post-readback 會檢查 22／2／1 shadow relationships。
+
 ## Production 現況與尚缺批准
 
 - PR #59 merge commit 已完成 runtime cutover。2026-07-28 最新 `main@edc9bf5` 的 Vercel Production deployment 為 `READY`；正式 `/travel` HTML 已顯示三類旅行內容，canonical 使用 `https://li-family-web.vercel.app/travel`，未再出現 localhost。
-- Cleanup code 尚未透過 PR 合併及部署；Production inspect／apply 前，必須先以 cleanup PR 的最終 merge commit 完成部署並同步本地 `main`，使 deployment SHA 與本地 `HEAD` 一致。
-- 尚未取得／記錄 cleanup 前 Production backup reference 與復原驗證時間。
-- Production H4 唯讀盤點與 H6 單筆 relationship 修復已完成；目前因 cleanup deployment SHA 尚未對齊及 backup 尚未驗證，仍不產生 cleanup approval token。
-- 尚未獲得本 destructive cleanup 的明確 Production 執行批准。
+- PR #66 已將原 controlled cleanup code 合併至 `main@f98576c` 並完成 Production runtime deployment；本次新增的 no-backup waiver 仍須另行 PR、merge 與 deployment，最終執行時 deployment SHA 必須與本地 `HEAD` 完全一致。
+- 2026-07-29 Supabase Dashboard 唯讀盤點確認 Free 方案沒有 Scheduled Backup、backup reference、retention 或 PITR；沒有執行 upgrade、restore、建立 project 或產生費用。
+- 網站擁有者已明確選擇不備份繼續，接受 legacy schema／records 刪除後無法回復；executor 仍須以精確 waiver confirmation 產生當次 approval token。
+- Production H4、H6 與 H7 發布狀態修復已完成；no-backup executor 尚待 PR／deployment，因此尚未產生最終 cleanup approval token，也尚未執行 batch 8。
 
 ## Production H4 唯讀盤點（2026-07-28 23:06 CST）
 
@@ -103,7 +115,16 @@ DOWN migration 會明確拒絕建立空的 legacy tables，因為空表不是資
 - Commit 後以獨立連線及 `READ ONLY` transaction 再驗證，結果維持 Media 22／22、invalid mappings 0，且只有上述一筆 target relationship。
 - 若需要回退這次內容修復，刪除 `media_rels.id=79` 屬於新的 destructive mutation，必須另行批准；本次未執行回退。
 
-H6 修復已通過。Destructive cleanup 前仍必須完成 cleanup code merge／Production deployment、backup reference／restore verification，然後重新執行 controlled inspect 產生當次 approval token。
+H6 修復已通過。Destructive cleanup 前仍必須完成 no-backup waiver code merge／Production deployment，然後重新執行 controlled inspect 產生當次 approval token。
+
+## Production H7 Travel Memory 發布狀態修復（2026-07-29）
+
+- 正式站登入管理員時顯示三筆 Memory，但匿名 HTML 只顯示 `202602-thailand-phuket`；唯讀資料庫盤點確認 `201307-hainan`、`202308-east-australia` 仍為 `_status=draft`。
+- 根因是 Phase 17 data-copy transformer 嘗試複製 legacy `_status`，但 legacy `travel_projects` 沒有 Payload drafts 欄位，目標表因而採用 schema 預設 `draft`；舊 verify 只比對 manifest 中存在的欄位，沒有把 published visibility 納入驗收。
+- 經網站擁有者另案批准，以單一 guarded SQL statement 只將上述兩個 slug 的 `_status` 從 `draft` 改為 `published`；statement 必須同時找到兩筆 `is_private=false` 的 draft，否則更新 0 筆。
+- Mutation 回傳恰好兩筆；獨立 read-back 確認三筆 Memory 均為 `published`、`is_private=false`。
+- 其他 inventory 維持 legacy／Plans／Memories／Route identities 5／2／3／5、Media 22／22、TimelineEvents 2／2、HomeConfig 1／1，batch 8 record 仍為 0。
+- 匿名正式 `/travel` HTML 已同時找到 `201307-hainan`、`202308-east-australia`、`202602-thailand-phuket` 三筆 route。
 
 ## 2026-07-28 最新 main 本地再驗證
 
@@ -131,3 +152,10 @@ pnpm run seed:travel:cleanup verify
 ```
 
 Production 執行時的 confirmation variables 必須直接採用當次 inspect 輸出；不得使用本文件的本地 token。
+
+本次 no-backup inspect 還必須明確提供：
+
+```bash
+TRAVEL_CLEANUP_NO_BACKUP_ACCEPTED_AT=<approved timestamp>
+TRAVEL_CLEANUP_NO_BACKUP_WAIVER=I_ACCEPT_IRREVERSIBLE_PHASE_17_LEGACY_DATA_LOSS
+```

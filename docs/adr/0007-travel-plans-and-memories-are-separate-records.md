@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-07-16
-last-reviewed: 2026-07-24
+last-reviewed: 2026-07-29
 related:
   - "Issue #50"
   - "Issue #57"
@@ -27,6 +27,7 @@ Travel Plan 是審核與修訂未來旅程的互動工作區，Travel Memory 則
 - Phase 17 已完成 additive migrations、5-record copy、route identities、shadow relationships、RLS／grants、runtime／seed cutover 與 Production deployment。
 - Legacy `travel_projects` records／relationships 仍保留作 rollback evidence。
 - Issues #50／#57 的 destructive cleanup 尚未由本 ADR 或 Phase 17 merge 自動批准。
+- 2026-07-29 網站擁有者另案批准一次性 no-backup cleanup 方向；此有限例外由 ADR-0008 記錄，不改變本 ADR 其餘 Plan／Memory ownership 決策。
 
 ## 曾考慮的方案
 
