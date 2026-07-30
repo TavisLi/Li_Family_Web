@@ -4,9 +4,9 @@
 
 ## Status
 
-`Implemented → Locally verified`
+`Implemented → Locally verified → PR ready`
 
-尚未進入 `PR ready`、`Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
+Draft PR 已建立，但 Preview runtime 因環境缺少 Payload secret 而無法完成 route QA。尚未進入 `Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
 
 ## Scope
 
@@ -24,7 +24,8 @@
 
 - Branch：`codex/phase-18-member-links-travel-table`
 - Implementation commit：`9750e6e`
-- PR：尚未建立
+- Review fix／report commit：`bdd2842`
+- PR：[Draft PR #71](https://github.com/TavisLi/Li_Family_Web/pull/71)
 - Merge：N/A
 
 ## Delivered work
@@ -101,9 +102,15 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 3. H6 批准並只更新 `nini.externalProfileUrl`。
 4. 回讀 record，再做 Family Lobby internal／external navigation QA。
 
+### Vercel Preview
+
+- Implementation head 的 deployment `dpl_9svnXnNvoy5vUjyTwvB9vyZZkUxY` 為 `READY`，deployed commit 為 `bdd28422ba77261bb63097ba8d06ad3b5586dcab`。
+- 受保護 Preview 的 `GET /travel/202607-chongqing-yangtze-river` 實際回傳 HTTP 500。
+- 同一次 request 的 Vercel runtime log 為 `missing secret key. A secret key is needed to secure Payload.`，因此 Preview route QA 停在 Payload 初始化邊界；不能把 build／deployment READY 視為功能通過。
+
 ## Known limitations／blockers
 
-- 尚未建立 PR 或取得 Preview。
+- Draft PR #71 已建立；Preview build READY，但 runtime 缺少 Payload secret。
 - 尚未執行 Production migration。
 - 尚未寫入允生外部 URL。
 - Issue #68 因 schema 尚未 rollout，無法完成真實 Lobby browser QA。
@@ -119,4 +126,4 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 
 - Issue #68：Implemented；local schema／logic verified；Production migration、record write 與 browser QA pending。
 - Issue #69：Implemented；local tests 與 responsive browser QA passed；Preview／Production verification pending。
-- 下一步：完成 review、push／Draft PR 與 Preview QA，再提交 H5／H6／H9／H10 evidence。
+- 下一步：先修復 Preview 的 Payload secret 環境設定並重跑 route QA，再提交 H5／H6／H9／H10 evidence。

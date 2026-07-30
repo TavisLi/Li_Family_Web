@@ -26,7 +26,7 @@
 | 15 | Travel planning layout | Merged；PR #51 | [`phase-15-v1-5-travel-planning-layout.md`](./phase-15-v1-5-travel-planning-layout.md) |
 | 16 | Travel seed reconciliation | Merged、Production baseline／read-back | [`phase-16-travel-seed-reconciliation.md`](./phase-16-travel-seed-reconciliation.md) |
 | 17 | Travel Plan／Memory split | Merged；Production verified；legacy cleanup completed；Issue closeout pending | [`phase-17-travel-plan-memory-split.md`](./phase-17-travel-plan-memory-split.md) |
-| 18 | Member external links／Travel flight table | Locally verified；PR／Production pending | [`phase-18-member-links-travel-table.md`](./phase-18-member-links-travel-table.md) |
+| 18 | Member external links／Travel flight table | Draft PR #71；Preview runtime blocked；Production pending | [`phase-18-member-links-travel-table.md`](./phase-18-member-links-travel-table.md) |
 
 ## 閱讀規則
 
