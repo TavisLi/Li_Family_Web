@@ -6,7 +6,7 @@
 
 `Implemented → Locally verified → PR ready`
 
-Draft PR 已建立。Preview 專用 Payload secret 已補齊，但此分支仍無可用 `DATABASE_URI`，因此無法完成 route QA。尚未進入 `Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
+Draft PR 已建立。Preview 專用 Payload secret 已補齊，但現有舊分支的 Preview `DATABASE_URI` 經驗證為無效 placeholder，已回滾本分支的複製設定；因此目前仍無可用 Preview database，無法完成 route QA。尚未進入 `Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
 
 ## Scope
 
@@ -109,11 +109,14 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 - 經使用者批准後，新增只適用 `codex/phase-18-member-links-travel-table` 的 sensitive Preview `PAYLOAD_SECRET`；未讀取或修改 Production secret。
 - 驗證時的 redeployment `dpl_8dUoDm8EB3eEur3ZqyEhKXeTBf5V` 為 `READY`，deployed commit 為 `79e9a808fe1925610adcf5a1f7ce24bb8b43c2bc`。
 - Payload secret 錯誤已消失；同一旅行 route 仍回 HTTP 500，runtime log 顯示 `DATABASE_URI` 回退至 `127.0.0.1:5432` 並 `ECONNREFUSED`。現有 Preview `DATABASE_URI` 只綁定舊分支 `codex/phase-15-v1-5`，未授權擴大到本分支。
-- 因此 Preview route QA 停在 database connection 邊界；不能把 build／deployment READY 視為功能通過。
+- 2026-07-31 經使用者批准後，以不輸出連線字串的方式，將舊 Phase 15 Preview `DATABASE_URI` 暫時複製到 Phase 18 branch scope。
+- Redeployment `dpl_E6Xi5oCHWpjsoNZx5qJ7uYBceeSz` 為 `READY`，deployed commit 為 `f40052215a3601d51c5bc637ae31582f8d5d6f2e`；旅行 route 仍回 HTTP 500，runtime log 改為 `getaddrinfo ENOTFOUND base`，證實來源值本身是不可用 placeholder，而非真實 database connection。
+- 依 rollback 原則，已只移除新加的 Phase 18 `DATABASE_URI` 並回查確認；舊 Phase 15 與 Production env 未修改。所有暫存明文 env／OIDC 檔案已永久刪除。
+- 因此 Preview route QA 仍停在 database connection 邊界；不能把 build／deployment READY 視為功能通過。
 
 ## Known limitations／blockers
 
-- Draft PR #71 已建立；Preview build READY，Payload secret 已補齊，但本分支缺少可用 `DATABASE_URI`。
+- Draft PR #71 已建立；Preview build READY，Payload secret 已補齊，但 project 目前沒有可供 Phase 18 使用的有效 Preview `DATABASE_URI`。
 - 尚未執行 Production migration。
 - 尚未寫入允生外部 URL。
 - Issue #68 因 schema 尚未 rollout，無法完成真實 Lobby browser QA。
@@ -129,4 +132,4 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 
 - Issue #68：Implemented；local schema／logic verified；Production migration、record write 與 browser QA pending。
 - Issue #69：Implemented；local tests 與 responsive browser QA passed；Preview／Production verification pending。
-- 下一步：取得授權後，將既有 Preview `DATABASE_URI` scope 擴及 Phase 18 分支並只做 route read-only QA；之後再提交 H5／H6／H9／H10 evidence。
+- 下一步：建立或指定一個有效、隔離的 Preview PostgreSQL database，再完成 route read-only QA；不應沿用已證實無效的舊 placeholder，也不應未經獨立批准將 Preview 直接連到 Production database。之後再提交 H5／H6／H9／H10 evidence。
