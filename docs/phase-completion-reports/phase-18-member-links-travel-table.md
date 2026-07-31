@@ -6,7 +6,7 @@
 
 `Implemented → Locally verified → PR ready`
 
-Draft PR 已建立。Preview 專用 Payload secret 已補齊，但現有舊分支的 Preview `DATABASE_URI` 經驗證為無效 placeholder，已回滾本分支的複製設定；因此目前仍無可用 Preview database，無法完成 route QA。尚未進入 `Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
+Draft PR 已建立。Preview 專用 Payload secret 已補齊，但現有舊分支的 Preview `DATABASE_URI` 經驗證為無效 placeholder，已回滾本分支的複製設定；因此目前仍無可用 Preview database，無法完成 Vercel route QA。2026-07-31 依使用者指示改用免費方案：不建立 Supabase paid branch，改以一次性本機 PostgreSQL 補足 schema／seed dry-run 驗證。尚未進入 `Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
 
 ## Scope
 
@@ -64,6 +64,8 @@ Draft PR 已建立。Preview 專用 Payload secret 已補齊，但現有舊分�
 - build 完成後 `pnpm tsc --noEmit`（Node 20.20.2）：通過。
 - `git diff --check`：通過。
 - credential pattern scan：未找到疑似 secret。
+- 免費替代驗證（2026-07-31）：一次性本機 PostgreSQL 17 container 上以 `PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=true` 建立目前 schema，read-back 確認 `users.external_profile_url` 存在且 `is_nullable = YES`。
+- 免費替代驗證（2026-07-31）：同一一次性 DB 執行 `pnpm run seed:travel:dry-run`，結果為 creates 756、updates 0、conflicts 0、deletes 0，刪除風險說明為 seed workflow 不實作 delete。
 
 ## Independent review
 
@@ -114,9 +116,20 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 - 依 rollback 原則，已只移除新加的 Phase 18 `DATABASE_URI` 並回查確認；舊 Phase 15 與 Production env 未修改。所有暫存明文 env／OIDC 檔案已永久刪除。
 - 因此 Preview route QA 仍停在 database connection 邊界；不能把 build／deployment READY 視為功能通過。
 
+### Free Preview alternative
+
+- 取消建立 Supabase Branch；未呼叫 paid branch `confirm_cost` 或 `create_branch`，因此沒有新增每小時費用。
+- 使用一次性本機 PostgreSQL 17 container 作為免費替代驗證環境，只驗證 schema 與 seed dry-run，不連到 Production 或 Supabase Preview。
+- `payload migrate:status` 在本機 DB 顯示 Payload CLI 會掃描 `src/migrations` 全目錄，包含 Phase 17 destructive cleanup 檔 `20260719_025401`；基於 stop condition，未對一次性 DB 執行全量 `payload migrate`。
+- 改以 `PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=true` 在一次性 DB 建立目前 schema；read-back 顯示 `users.external_profile_url` 欄位存在且 nullable。
+- `pnpm run seed:travel:dry-run` 在一次性 DB 上完成主要輸出：creates 756、updates 0、conflicts 0、deletes 0。
+- 實際 `pnpm run seed:travel` 因全量 media 建檔進度過慢，僅寫入 11 筆 media、尚未建立 travel plan，即停止；此結果不作為 route QA 通過證據。
+- 一次性 container 僅供本機驗證，完成後可停止移除；它不能替代 Vercel Preview 的遠端 `DATABASE_URI`，因此 Preview route QA blocker 仍存在。
+
 ## Known limitations／blockers
 
 - Draft PR #71 已建立；Preview build READY，Payload secret 已補齊，但 project 目前沒有可供 Phase 18 使用的有效 Preview `DATABASE_URI`。
+- 已依使用者要求改用免費方案；免費方案只能提供本地 DB/schema/seed dry-run 證據，不能讓 Vercel Preview 讀到本機 container。
 - 尚未執行 Production migration。
 - 尚未寫入允生外部 URL。
 - Issue #68 因 schema 尚未 rollout，無法完成真實 Lobby browser QA。
@@ -132,4 +145,4 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 
 - Issue #68：Implemented；local schema／logic verified；Production migration、record write 與 browser QA pending。
 - Issue #69：Implemented；local tests 與 responsive browser QA passed；Preview／Production verification pending。
-- 下一步：建立或指定一個有效、隔離的 Preview PostgreSQL database，再完成 route read-only QA；不應沿用已證實無效的舊 placeholder，也不應未經獨立批准將 Preview 直接連到 Production database。之後再提交 H5／H6／H9／H10 evidence。
+- 下一步：若堅持零外部成本，本 Phase 可維持 Draft PR 並以本地驗證作為 PR evidence，但不能宣稱 Preview route QA completed。若要完成 Vercel Preview route QA，仍需指定一個有效、隔離、可由 Vercel 連線的 PostgreSQL database；不應沿用已證實無效的舊 placeholder，也不應未經獨立批准將 Preview 直接連到 Production database。之後再提交 H5／H6／H9／H10 evidence。
