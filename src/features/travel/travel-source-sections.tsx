@@ -139,7 +139,7 @@ export function SourceBody({
               }
               key={`table-${index}`}
             >
-              <table className={`${sourceTableWidthClass(header.length)} w-full table-fixed divide-y divide-cyan-100/70 text-left text-sm`}>
+              <table className={`${sourceTableWidthClass(header)} w-full table-fixed divide-y divide-cyan-100/70 text-left text-sm`}>
                 <thead
                   className={
                     tone === 'dark'
@@ -150,7 +150,7 @@ export function SourceBody({
                   <tr>
                     {header.map((cell, cellIndex) => (
                       <th
-                        className={`${sourceTableColumnClass(cell, header.length)} whitespace-normal break-words px-4 py-3`}
+                        className={`${sourceTableColumnClass(cell, header)} whitespace-normal break-words px-4 py-3`}
                         key={`${cell}-${cellIndex}`}
                       >
                         {cell}
@@ -1061,7 +1061,17 @@ function parseTableRow(line: string) {
     .map((cell) => cleanInline(cell.trim()))
 }
 
-function sourceTableWidthClass(columnCount: number): string {
+function isEightColumnAirlineFlightTable(headers: string[]): boolean {
+  return headers.length === 8 && headers.some((cell) => /航空公司|Airline/i.test(cell))
+}
+
+function sourceTableWidthClass(headers: string[]): string {
+  const columnCount = headers.length
+
+  if (isEightColumnAirlineFlightTable(headers)) {
+    return 'min-w-[64rem]'
+  }
+
   if (columnCount >= 5) {
     return 'min-w-[56rem]'
   }
@@ -1073,8 +1083,20 @@ function sourceTableWidthClass(columnCount: number): string {
   return 'min-w-full'
 }
 
-function sourceTableColumnClass(header: string, columnCount: number): string {
+function sourceTableColumnClass(header: string, headers: string[]): string {
   const normalized = header.replace(/\s+/g, '')
+  const columnCount = headers.length
+
+  if (isEightColumnAirlineFlightTable(headers)) {
+    if (/日期|Date/i.test(normalized)) return 'w-[10%]'
+    if (/航空公司|Airline/i.test(normalized)) return 'w-[14%]'
+    if (/航班號|Flight/i.test(normalized)) return 'w-[9%]'
+    if (/航線|Route/i.test(normalized)) return 'w-[22%]'
+    if (/旅客|Passenger/i.test(normalized)) return 'w-[10%]'
+    if (/起飛|Departure/i.test(normalized)) return 'w-[9%]'
+    if (/抵達|Arrival/i.test(normalized)) return 'w-[9%]'
+    if (/備注|備註|Notes?/i.test(normalized)) return 'w-[17%]'
+  }
 
   if (/日期|Date/i.test(normalized)) return 'w-[12%]'
   if (/航班號|Flight/i.test(normalized)) return 'w-[17%]'
