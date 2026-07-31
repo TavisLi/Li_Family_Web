@@ -1,12 +1,13 @@
 # Phase 18 Completion Report — 成員外部頁連結與旅行航班表格修正
 
 日期：2026-07-30
+Production closeout：2026-07-31
 
 ## Status
 
-`Implemented → Locally verified → PR ready`
+`Implemented → Locally verified → PR ready → Merged → Production verified → Closed`
 
-Draft PR 已建立。Preview 專用 Payload secret 已補齊，但現有舊分支的 Preview `DATABASE_URI` 經驗證為無效 placeholder，已回滾本分支的複製設定；因此目前仍無可用 Preview database，無法完成 Vercel route QA。2026-07-31 依使用者指示改用免費方案：不建立 Supabase paid branch，改以一次性本機 PostgreSQL 補足 schema／seed dry-run 驗證。尚未進入 `Merged`、`Production verified` 或 `Closed`。Production migration、允生 record write、merge 與 Issue closeout 都需要後續 HITL。
+PR #71 已合併並由 Vercel Production 部署完成。Production schema migration 已套用並 read-back；`nini.externalProfileUrl` 已依 Issue #68 寫入指定外部頁面並回讀確認。首頁與重慶旅行頁正式網域 smoke test 通過；航班表格已用 Production Playwright desktop/mobile 量測確認。Preview 專用 Payload secret 已補齊，但本分支沒有有效 Preview `DATABASE_URI`；2026-07-31 依使用者指示改用免費方案，不建立 Supabase paid branch，改以一次性本機 PostgreSQL 補足 schema／seed dry-run 驗證。
 
 ## Scope
 
@@ -18,15 +19,16 @@ Draft PR 已建立。Preview 專用 Payload secret 已補齊，但現有舊分�
 
 - 未修改既有 Member profile 內容或其他 Users records。
 - 未修改 Travel Plan published content、Markdown source 或 seed。
-- 未執行 Production schema/content write、merge、deploy 或 Issue closeout。
+- 未建立 Supabase paid Preview branch。
 
 ## Branch／commit／PR
 
 - Branch：`codex/phase-18-member-links-travel-table`
 - Implementation commit：`9750e6e`
 - Review fix／report commit：`bdd2842`
-- PR：[Draft PR #71](https://github.com/TavisLi/Li_Family_Web/pull/71)
-- Merge：N/A
+- PR：[PR #71](https://github.com/TavisLi/Li_Family_Web/pull/71)
+- Merge commit：`f50821c0bf3a90aa159069407cb9f9d72ff2dcf0`
+- Production deployment：`dpl_D4XrRuxPZznQWksjJSnWivAdxqrA`，Vercel `READY`
 
 ## Delivered work
 
@@ -66,6 +68,8 @@ Draft PR 已建立。Preview 專用 Payload secret 已補齊，但現有舊分�
 - credential pattern scan：未找到疑似 secret。
 - 免費替代驗證（2026-07-31）：一次性本機 PostgreSQL 17 container 上以 `PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=true` 建立目前 schema，read-back 確認 `users.external_profile_url` 存在且 `is_nullable = YES`。
 - 免費替代驗證（2026-07-31）：同一一次性 DB 執行 `pnpm run seed:travel:dry-run`，結果為 creates 756、updates 0、conflicts 0、deletes 0，刪除風險說明為 seed workflow 不實作 delete。
+- Production smoke（2026-07-31）：`GET /` 與 `GET /travel/202607-chongqing-yangtze-river` 正式網域皆為 HTTP 200。
+- Production browser QA（2026-07-31）：Playwright desktop 1280×720 與 mobile 390×844 量測通過。
 
 ## Independent review
 
@@ -88,6 +92,17 @@ Disposable PostgreSQL 17 rehearsal：
 - DOWN 後 Users 仍為 2 筆，新欄位 count = 0。
 - 臨時 container 已停止並自動移除。
 
+Production migration（2026-07-31）：
+
+- Preflight read-back：`external_profile_url` column count = 0、`nini` user count = 1、Phase 18 migration count = 0、Users count = 9。
+- 以 Supabase migration transaction 新增 `public.users.external_profile_url varchar`，並補 `payload_migrations.name = 20260730_140837_phase_18_member_external_profile_url`，避免後續 Payload migration runner 重跑撞欄位。
+- Post-migration read-back：`external_profile_url is_nullable = YES`、Phase 18 migration count = 1、Users count = 9、populated external URL count = 0。
+
+Production content write（2026-07-31）：
+
+- 只更新 `slug = 'nini'` 的 `external_profile_url` 為 `https://cancan-lierixia-novel.mjdhdsbcn8.chatgpt.site/zh-Hans`。
+- Read-back：`nini_target_url_count = 1`、`populated_external_profile_url_count = 1`、Users count = 9。
+
 ## Browser QA
 
 ### Issue #69
@@ -97,12 +112,14 @@ Disposable PostgreSQL 17 rehearsal：
 
 ### Issue #68 deployment-order gate
 
-Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到現有資料庫讀取 Family Lobby 時，以 PostgreSQL `42703 column does not exist` 停止；因此 release 順序必須是：
+Production schema rollout 已完成。原先 gate 是：
 
 1. H5 批准並執行 additive migration。
 2. Deploy 同一 PR head。
 3. H6 批准並只更新 `nini.externalProfileUrl`。
 4. 回讀 record，再做 Family Lobby internal／external navigation QA。
+
+以上 4 步已於 2026-07-31 完成。
 
 ### Vercel Preview
 
@@ -126,23 +143,27 @@ Production schema 尚無 `users.external_profile_url`。本機新 runtime 連到
 - 實際 `pnpm run seed:travel` 因全量 media 建檔進度過慢，僅寫入 11 筆 media、尚未建立 travel plan，即停止；此結果不作為 route QA 通過證據。
 - 一次性 container 僅供本機驗證，完成後可停止移除；它不能替代 Vercel Preview 的遠端 `DATABASE_URI`，因此 Preview route QA blocker 仍存在。
 
+### Production QA
+
+- Vercel Production deployment `dpl_D4XrRuxPZznQWksjJSnWivAdxqrA` 為 `READY`，由 merge commit `f50821c0bf3a90aa159069407cb9f9d72ff2dcf0` 觸發。
+- `https://li-family-web.vercel.app/`：HTTP 200，首頁 HTML 輸出 Nini 外部連結、`target="_blank"`、`rel="noopener noreferrer"`、外部連結 icon 與 screen-reader 文案。
+- `https://li-family-web.vercel.app/travel/202607-chongqing-yangtze-river`：HTTP 200。
+- Desktop 1280×720：航班表 `tableClass = min-w-[64rem] ... table-fixed`，table width 1238px、航空公司欄 173px、表頭高 41px。
+- Mobile 390×844：wrapper client width 348px、scroll width 1024px、`overflow-x = auto`、has horizontal scroll = true、航空公司欄 143px。
+
 ## Known limitations／blockers
 
-- Draft PR #71 已建立；Preview build READY，Payload secret 已補齊，但 project 目前沒有可供 Phase 18 使用的有效 Preview `DATABASE_URI`。
-- 已依使用者要求改用免費方案；免費方案只能提供本地 DB/schema/seed dry-run 證據，不能讓 Vercel Preview 讀到本機 container。
-- 尚未執行 Production migration。
-- 尚未寫入允生外部 URL。
-- Issue #68 因 schema 尚未 rollout，無法完成真實 Lobby browser QA。
-- Issue #68／#69 尚不可 close。
+- Preview branch 仍沒有有效、隔離、可由 Vercel 連線的 `DATABASE_URI`；本次依使用者要求改用免費替代驗證，未建立 Supabase paid branch。
+- Preview route QA 仍不可宣稱完成；Production route QA 已完成。
 
 ## Rollback
 
 - Runtime：回退至本 PR 前 deployment。
-- Schema：若尚未寫入外部 URL，可執行 migration DOWN；若已有值，需先導出／確認欄位內容，再決定是否移除。
+- Schema：目前已有 `nini.externalProfileUrl` 資料；若需移除欄位，需先導出／確認欄位內容，再決定是否執行 DOWN。
 - Content：清空單筆 `nini.externalProfileUrl` 可立即恢復內建 `/member/nini` 導航。
 
 ## Issue closeout／next readiness
 
-- Issue #68：Implemented；local schema／logic verified；Production migration、record write 與 browser QA pending。
-- Issue #69：Implemented；local tests 與 responsive browser QA passed；Preview／Production verification pending。
-- 下一步：若堅持零外部成本，本 Phase 可維持 Draft PR 並以本地驗證作為 PR evidence，但不能宣稱 Preview route QA completed。若要完成 Vercel Preview route QA，仍需指定一個有效、隔離、可由 Vercel 連線的 PostgreSQL database；不應沿用已證實無效的舊 placeholder，也不應未經獨立批准將 Preview 直接連到 Production database。之後再提交 H5／H6／H9／H10 evidence。
+- Issue #68：Production verified；可 close。
+- Issue #69：Production verified；可 close。
+- Phase 18：Closed。若未來需要恢復 Preview route QA，仍需指定一個有效、隔離、可由 Vercel 連線的 PostgreSQL database；不應沿用已證實無效的舊 placeholder，也不應未經獨立批准將 Preview 直接連到 Production database。
