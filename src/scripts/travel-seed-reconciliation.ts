@@ -40,6 +40,7 @@ const relationshipFields = new Set([
   'coverImage',
   'galleryImages',
   'itineraryImages',
+  'media',
   'mediaItems',
   'members',
 ])

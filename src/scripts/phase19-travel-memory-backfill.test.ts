@@ -102,6 +102,26 @@ assert.equal(rerun.dayCreates.length, 0)
 assert.equal(rerun.dayUpdates.length, 0)
 assert.equal(rerun.dayPlans[0]?.action, 'skip')
 
+const populatedCurrent = structuredClone(currentDay)
+populatedCurrent.sourceMetadata = structuredClone(currentDay.sourceMetadata)
+const populatedMoments = populatedCurrent.moments as Array<{
+  placements: Array<{ media: unknown }>
+}>
+populatedMoments[0].placements[0].media = {
+  id: 99,
+  altText: '海上觀音',
+  updatedAt: '2026-08-02T00:00:00.000Z',
+  createdAt: '2026-08-02T00:00:00.000Z',
+}
+const populatedRerun = buildPhase19TravelMemoryBackfillPlan({
+  memories: [{ id: 1, slug: '201307-hainan' }],
+  travels: [travels[0]],
+  mediaItems: media,
+  mediaIdsBySourcePath: new Map([[media[0].sourcePath, 99]]),
+  currentDays: [populatedCurrent],
+})
+assert.equal(populatedRerun.dayPlans[0]?.action, 'skip')
+
 const withoutBase = buildPhase19TravelMemoryBackfillPlan({
   memories: [{ id: 1, slug: '201307-hainan' }],
   travels: [travels[0]],

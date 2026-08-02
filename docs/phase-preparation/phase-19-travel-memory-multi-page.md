@@ -1,6 +1,6 @@
 # Phase 19 Preparation — Travel Memory 多頁回憶與可配置視覺樣式
 
-狀態：Locally verified；review／PR preparation 中
+狀態：Locally verified；雙軸 review 通過；PR ready
 建議分支：`codex/phase-19-travel-memory-prototype`
 Owning PRD：[#73](https://github.com/TavisLi/Li_Family_Web/issues/73)
 預計 Completion Report：`docs/phase-completion-reports/phase-19-travel-memory-multi-page.md`
@@ -52,7 +52,7 @@ Owning PRD：[#73](https://github.com/TavisLi/Li_Family_Web/issues/73)
 - [x] Gallery 可按 Day 篩選、顯示 caption，並返回 Daily Moment。
 - [x] Public／Family／draft child route 不弱化 owning Memory access。
 - [x] Migration additive、nullable、無 drop／rename／content write；Production rollout 三段獨立批准。
-- [ ] Focused tests、generated types、build、post-build TypeScript、diff check 與 browser QA 通過（截至 2026-08-02，除 staged diff check／review 外均通過）。
+- [x] Focused tests、generated types、build、post-build TypeScript、diff check 與 browser QA 通過。
 
 ## 4. 授權矩陣
 
@@ -163,7 +163,7 @@ Owning PRD：[#73](https://github.com/TavisLi/Li_Family_Web/issues/73)
 
 - [x] Implemented
 - [x] Locally verified
-- [ ] PR ready
+- [x] PR ready（push／Draft PR 尚未授權）
 - [ ] Merged（H9）
 - [ ] Production verified（H5／H6／H9）
 - [ ] Closed（H10）

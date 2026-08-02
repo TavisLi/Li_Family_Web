@@ -22,6 +22,7 @@ import {
 } from '@/lib/travel-interactions'
 import { getCurrentUser, userReq } from './auth'
 import { getPayloadClient } from './payload'
+import { readTravelMemoryChildAfterOwner } from './travel-memory-child-access'
 
 const DEFAULT_LIMIT = 6
 const TRAVEL_LIMIT = 24
@@ -186,54 +187,60 @@ export async function getTravelMemoryDayBySlug(
   slug: string,
   dayKey: string,
 ): Promise<TravelMemoryDayView | null> {
-  const context = await getTravelMemoryReadContext(slug)
-  if (!context) return null
-  const [target, navigation] = await Promise.all([
-    context.payload.find({
-      collection: 'travel-memory-days',
-      depth: 2,
-      limit: 1,
-      overrideAccess: false,
-      where: {
-        and: [
-          { memory: { equals: context.memory.id } },
-          { dayKey: { equals: dayKey } },
-        ],
-      },
-      ...userReq(context.user),
-    }),
-    context.payload.find({
-      collection: 'travel-memory-days',
-      depth: 0,
-      limit: 64,
-      overrideAccess: false,
-      select: { day: true, dayKey: true, title: true },
-      sort: 'day',
-      where: { memory: { equals: context.memory.id } },
-      ...userReq(context.user),
-    }),
-  ])
-  const targetDay = target.docs[0]
-  if (!targetDay) return null
-  return toTravelMemoryDayView(context.memory, targetDay, navigation.docs)
+  return readTravelMemoryChildAfterOwner({
+    readOwner: () => getTravelMemoryReadContext(slug),
+    readChild: async (context) => {
+      const [target, navigation] = await Promise.all([
+        context.payload.find({
+          collection: 'travel-memory-days',
+          depth: 2,
+          limit: 1,
+          overrideAccess: false,
+          where: {
+            and: [
+              { memory: { equals: context.memory.id } },
+              { dayKey: { equals: dayKey } },
+            ],
+          },
+          ...userReq(context.user),
+        }),
+        context.payload.find({
+          collection: 'travel-memory-days',
+          depth: 0,
+          limit: 64,
+          overrideAccess: false,
+          select: { day: true, dayKey: true, title: true },
+          sort: 'day',
+          where: { memory: { equals: context.memory.id } },
+          ...userReq(context.user),
+        }),
+      ])
+      const targetDay = target.docs[0]
+      if (!targetDay) return null
+      return toTravelMemoryDayView(context.memory, targetDay, navigation.docs)
+    },
+  })
 }
 
 export async function getTravelMemoryGalleryBySlug(
   slug: string,
   filters: { dayKey?: string | null; location?: string | null; page?: number } = {},
 ): Promise<TravelMemoryGallery | null> {
-  const context = await getTravelMemoryReadContext(slug, true)
-  if (!context) return null
-  const days = await context.payload.find({
-    collection: 'travel-memory-days',
-    depth: 2,
-    limit: 64,
-    overrideAccess: false,
-    sort: 'day',
-    where: { memory: { equals: context.memory.id } },
-    ...userReq(context.user),
+  return readTravelMemoryChildAfterOwner({
+    readOwner: () => getTravelMemoryReadContext(slug, true),
+    readChild: async (context) => {
+      const days = await context.payload.find({
+        collection: 'travel-memory-days',
+        depth: 2,
+        limit: 64,
+        overrideAccess: false,
+        sort: 'day',
+        where: { memory: { equals: context.memory.id } },
+        ...userReq(context.user),
+      })
+      return toTravelMemoryGallery(context.memory, days.docs, filters)
+    },
   })
-  return toTravelMemoryGallery(context.memory, days.docs, filters)
 }
 
 async function getTravelMemoryReadContext(slug: string, includeGallery = false) {
