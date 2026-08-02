@@ -23,3 +23,15 @@ export function toYouTubeEmbedUrl(value: string): string | null {
     return null
   }
 }
+
+export function toSafeYouTubeExternalUrl(value: string): string | null {
+  try {
+    const url = new URL(value)
+    const host = url.hostname.replace(/^www\./, '')
+    return url.protocol === 'https:' && (host === 'youtu.be' || host === 'youtube.com')
+      ? value
+      : null
+  } catch {
+    return null
+  }
+}

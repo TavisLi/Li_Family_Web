@@ -108,6 +108,68 @@ assert.deepEqual(itemLevelDayPlan.patch, {
   dailyItinerary: [{ day: 1, title: 'Admin 修正標題', theme: 'Source 主題' }],
 })
 
+const nestedMomentPlacementPlan = reconcileTravelSeed({
+  slug: '201307-hainan:day-03',
+  base: {
+    moments: [{
+      momentKey: 'nanshan-sea-guanyin',
+      body: 'Base body',
+      placements: [{ placementKey: 'guanyin.jpeg', caption: 'Base caption' }],
+    }],
+  },
+  source: {
+    moments: [{
+      momentKey: 'nanshan-sea-guanyin',
+      body: 'Base body',
+      placements: [{ placementKey: 'guanyin.jpeg', caption: 'Source caption' }],
+    }],
+  },
+  current: {
+    moments: [{
+      momentKey: 'nanshan-sea-guanyin',
+      body: 'Admin body',
+      placements: [{ placementKey: 'guanyin.jpeg', caption: 'Base caption' }],
+    }],
+  },
+})
+
+assert.equal(nestedMomentPlacementPlan.action, 'apply-source')
+assert.deepEqual(nestedMomentPlacementPlan.patch, {
+  moments: [{
+    momentKey: 'nanshan-sea-guanyin',
+    body: 'Admin body',
+    placements: [{ placementKey: 'guanyin.jpeg', caption: 'Source caption' }],
+  }],
+})
+
+const nestedPlacementConflictPlan = reconcileTravelSeed({
+  slug: '201307-hainan:day-03',
+  base: {
+    moments: [{
+      momentKey: 'nanshan-sea-guanyin',
+      placements: [{ placementKey: 'guanyin.jpeg', caption: 'Base caption' }],
+    }],
+  },
+  source: {
+    moments: [{
+      momentKey: 'nanshan-sea-guanyin',
+      placements: [{ placementKey: 'guanyin.jpeg', caption: 'Source caption' }],
+    }],
+  },
+  current: {
+    moments: [{
+      momentKey: 'nanshan-sea-guanyin',
+      placements: [{ placementKey: 'guanyin.jpeg', caption: 'Admin caption' }],
+    }],
+  },
+})
+
+assert.equal(nestedPlacementConflictPlan.action, 'conflict')
+assert.equal(
+  nestedPlacementConflictPlan.conflicts[0]?.field,
+  'moments[nanshan-sea-guanyin].placements[guanyin.jpeg].caption',
+)
+
 const itemLevelSectionPlan = reconcileTravelSeed({
   slug: '202702-thailand-phuket',
   base: { sourceSections: [{ anchor: 'day-1', title: 'Day 1', body: 'Base' }] },

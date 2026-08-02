@@ -14,6 +14,7 @@ import { Media } from './collections/Media'
 import { Posts } from './collections/Posts'
 import { TimelineEvents } from './collections/TimelineEvents'
 import { TravelMemories } from './collections/TravelMemories'
+import { TravelMemoryDays } from './collections/TravelMemoryDays'
 import { TravelPlans } from './collections/TravelPlans'
 import { TravelRouteIdentities } from './collections/TravelRouteIdentities'
 import { Users } from './collections/Users'
@@ -51,6 +52,7 @@ export default buildConfig({
     Posts,
     TravelPlans,
     TravelMemories,
+    TravelMemoryDays,
     TravelRouteIdentities,
     TimelineEvents,
     BucketItems,

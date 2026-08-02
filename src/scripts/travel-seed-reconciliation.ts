@@ -71,6 +71,10 @@ export function classifyTravelField(field: string): TravelFieldCategory {
     return 'faithful-source-projection'
   }
 
+  if (root === 'moments' || field.includes('.placements')) {
+    return 'faithful-source-projection'
+  }
+
   if (['members'].includes(root ?? '') || /enableComments|enableThumbs/.test(field)) {
     return 'admin-override'
   }
@@ -282,6 +286,20 @@ function stableArrayIdentity(
     return (item) => compositeIdentity(item, ['dateRange', 'hotel', 'city'])
   }
 
+  if (field === 'moments' || field.endsWith('.moments')) {
+    return (item) =>
+      typeof item.momentKey === 'string' && item.momentKey.trim()
+        ? item.momentKey
+        : undefined
+  }
+
+  if (field === 'placements' || field.endsWith('.placements')) {
+    return (item) =>
+      typeof item.placementKey === 'string' && item.placementKey.trim()
+        ? item.placementKey
+        : undefined
+  }
+
   return undefined
 }
 
@@ -342,15 +360,30 @@ function mergeStableRecord(
       value[key] = currentValue
       currentChanged = true
     } else if (sourceValueChanged && currentValueChanged && !sameValue(sourceValue, currentValue)) {
-      value[key] = currentValue
-      currentChanged = true
-      conflicts.push({
-        field: `${path}.${key}`,
-        category: classifyTravelField(`${path}.${key}`),
-        base: baseValue,
-        source: sourceValue,
-        current: currentValue,
-      })
+      const nestedField = `${path}.${key}`
+      const nestedArray = reconcileStableArray(
+        nestedField,
+        baseValue,
+        sourceValue,
+        currentValue,
+      )
+
+      if (nestedArray) {
+        value[key] = nestedArray.value
+        conflicts.push(...nestedArray.conflicts)
+        sourceChanged ||= nestedArray.sourceChanged
+        currentChanged ||= nestedArray.currentChanged
+      } else {
+        value[key] = currentValue
+        currentChanged = true
+        conflicts.push({
+          field: nestedField,
+          category: classifyTravelField(nestedField),
+          base: baseValue,
+          source: sourceValue,
+          current: currentValue,
+        })
+      }
     } else {
       value[key] = currentValue
     }

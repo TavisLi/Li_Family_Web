@@ -3,6 +3,10 @@ import type {
   TravelMemory,
   TravelPlan,
 } from '@/payload/payload-types'
+import {
+  resolveTravelMemoryPresentationStyle,
+  type TravelMemoryPresentationStyle,
+} from '@/lib/travel-memory'
 
 type TravelPlanSection = NonNullable<TravelPlan['planningSections']>[number]
 type TravelSectionLink = NonNullable<TravelPlanSection['links']>[number]
@@ -59,6 +63,7 @@ type TravelRuntimeBase = Pick<
   flights?: TravelRuntimeFlight[] | null
   lodgings?: TravelRuntimeLodging[] | null
   externalVideos?: TravelRuntimeVideo[] | null
+  presentationStyle?: TravelMemoryPresentationStyle
 }
 
 export type TravelRuntimeRecord = TravelRuntimeBase &
@@ -162,6 +167,7 @@ export function toTravelRuntimeRecord(
         youtubeUrl: video.url,
         id: video.id,
       })),
+      presentationStyle: resolveTravelMemoryPresentationStyle(memory.presentationStyle),
     }
   }
 

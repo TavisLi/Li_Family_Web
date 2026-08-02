@@ -67,6 +67,7 @@ const memory: TravelMemory = {
   endDate: '2013-07-08T00:00:00.000Z',
   participants: [],
   guestParticipants: [{ name: 'Memory guest', id: 'guest-2' }],
+  presentationStyle: 'family-scrapbook',
   originPlan: plan,
   galleryImages: [],
   itineraryImages: [],
@@ -108,6 +109,7 @@ const memoryRecord = toTravelRuntimeRecord('travel-memories', memory)
 assert.equal(memoryRecord.id, 'travel-memories:11')
 assert.equal(memoryRecord.kind, 'memory')
 assert.equal(memoryRecord.status, 'completed')
+assert.equal(memoryRecord.presentationStyle, 'family-scrapbook')
 assert.deepEqual(memoryRecord.originPlan, {
   collection: 'travel-plans',
   sourceId: plan.id,

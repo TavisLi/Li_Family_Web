@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { TravelPhotoGalleryPage } from '@/features/travel/travel-photo-gallery'
-import { getTravelProjectBySlug } from '@/lib/data/travel'
+import { TravelMemoryGalleryPage } from '@/features/travel/travel-memory-pages'
+import { getTravelMemoryGalleryBySlug, getTravelProjectBySlug } from '@/lib/data/travel'
 import { getMediaUrl } from '@/lib/media'
-import { metadataImageUrl } from '@/lib/site-metadata'
+import { absoluteSiteUrl, metadataImageUrl } from '@/lib/site-metadata'
+import { travelMemoryMultipageEnabled } from '@/lib/travel-memory-rollout'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,6 +14,7 @@ type TravelPhotosPageProps = {
   params: Promise<{
     slug: string
   }>
+  searchParams: Promise<{ day?: string }>
 }
 
 export async function generateMetadata({ params }: TravelPhotosPageProps): Promise<Metadata> {
@@ -35,17 +38,24 @@ export async function generateMetadata({ params }: TravelPhotosPageProps): Promi
     openGraph: {
       title: `${project.title} photos`,
       description: `${project.title} 的完整旅行照片。`,
+      url: absoluteSiteUrl(`/travel/${slug}/photos`),
       images: [{ url: metadataImageUrl(coverImage) }],
     },
   }
 }
 
-export default async function TravelPhotosPage({ params }: TravelPhotosPageProps) {
+export default async function TravelPhotosPage({ params, searchParams }: TravelPhotosPageProps) {
   const { slug } = await params
   const project = await getTravelProjectBySlug(slug)
 
   if (!project) {
     notFound()
+  }
+
+  if (project.kind === 'memory' && travelMemoryMultipageEnabled()) {
+    const { day } = await searchParams
+    const gallery = await getTravelMemoryGalleryBySlug(slug, day)
+    if (gallery?.memory.days.length) return <TravelMemoryGalleryPage gallery={gallery} />
   }
 
   return <TravelPhotoGalleryPage project={project} />

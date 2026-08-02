@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 
-import { toYouTubeEmbedUrl } from './youtube'
+import { toSafeYouTubeExternalUrl, toYouTubeEmbedUrl } from './youtube'
 
 assert.equal(
   toYouTubeEmbedUrl('https://youtu.be/lYP3m2N8yvs'),
@@ -16,3 +16,9 @@ assert.equal(
 )
 assert.equal(toYouTubeEmbedUrl('https://example.com/embed/not-youtube'), null)
 assert.equal(toYouTubeEmbedUrl('https://youtube.com/watch?v=invalid!'), null)
+assert.equal(
+  toSafeYouTubeExternalUrl('https://youtube.com/live/example123'),
+  'https://youtube.com/live/example123',
+)
+assert.equal(toSafeYouTubeExternalUrl('javascript:alert(1)'), null)
+assert.equal(toSafeYouTubeExternalUrl('https://example.com/video'), null)

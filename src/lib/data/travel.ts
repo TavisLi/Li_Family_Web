@@ -2,6 +2,14 @@ import 'server-only'
 
 import type { HomeConfig, User } from '@/payload/payload-types'
 import {
+  toTravelMemoryDayView,
+  toTravelMemoryGallery,
+  toTravelMemoryOverview,
+  type TravelMemoryDayView,
+  type TravelMemoryGallery,
+  type TravelMemoryOverview,
+} from '@/lib/travel-memory'
+import {
   mergeTravelRuntimeRecords,
   resolveTravelRuntimeRelationship,
   toTravelRuntimeRecord,
@@ -154,6 +162,56 @@ export async function getTravelProjectBySlug(slug: string): Promise<TravelRuntim
   }
 
   return null
+}
+
+export async function getTravelMemoryOverviewBySlug(
+  slug: string,
+): Promise<TravelMemoryOverview | null> {
+  const result = await getTravelMemoryWithDays(slug)
+  return result ? toTravelMemoryOverview(result.memory, result.days) : null
+}
+
+export async function getTravelMemoryDayBySlug(
+  slug: string,
+  dayKey: string,
+): Promise<TravelMemoryDayView | null> {
+  const result = await getTravelMemoryWithDays(slug)
+  return result ? toTravelMemoryDayView(result.memory, result.days, dayKey) : null
+}
+
+export async function getTravelMemoryGalleryBySlug(
+  slug: string,
+  dayKey?: string | null,
+): Promise<TravelMemoryGallery | null> {
+  const result = await getTravelMemoryWithDays(slug)
+  return result ? toTravelMemoryGallery(result.memory, result.days, dayKey) : null
+}
+
+async function getTravelMemoryWithDays(slug: string) {
+  const payload = await getPayloadClient()
+  const user = await getCurrentUser()
+  const memoryResult = await payload.find({
+    collection: 'travel-memories',
+    depth: 2,
+    limit: 1,
+    overrideAccess: false,
+    where: { slug: { equals: slug } },
+    ...userReq(user),
+  })
+  const memory = memoryResult.docs[0]
+  if (!memory) return null
+
+  const dayResult = await payload.find({
+    collection: 'travel-memory-days',
+    depth: 2,
+    limit: 64,
+    overrideAccess: false,
+    sort: 'day',
+    where: { memory: { equals: memory.id } },
+    ...userReq(user),
+  })
+
+  return { memory, days: dayResult.docs }
 }
 
 export async function getTravelInteractionThread(
