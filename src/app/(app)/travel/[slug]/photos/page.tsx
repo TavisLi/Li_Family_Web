@@ -14,7 +14,7 @@ type TravelPhotosPageProps = {
   params: Promise<{
     slug: string
   }>
-  searchParams: Promise<{ day?: string }>
+  searchParams: Promise<{ day?: string; location?: string; page?: string }>
 }
 
 export async function generateMetadata({ params }: TravelPhotosPageProps): Promise<Metadata> {
@@ -53,8 +53,13 @@ export default async function TravelPhotosPage({ params, searchParams }: TravelP
   }
 
   if (project.kind === 'memory' && travelMemoryMultipageEnabled()) {
-    const { day } = await searchParams
-    const gallery = await getTravelMemoryGalleryBySlug(slug, day)
+    const { day, location, page } = await searchParams
+    const parsedPage = Number.parseInt(page ?? '1', 10)
+    const gallery = await getTravelMemoryGalleryBySlug(slug, {
+      dayKey: day,
+      location,
+      page: Number.isFinite(parsedPage) ? parsedPage : 1,
+    })
     if (gallery?.memory.days.length) return <TravelMemoryGalleryPage gallery={gallery} />
   }
 

@@ -52,6 +52,7 @@ const days = [
     title: '三亞市區觀光',
     moments: [{
       momentKey: 'nanshan-sea-guanyin',
+      location: '南山文化旅遊區',
       title: '南山文化旅遊區',
       placements: [{
         placementKey: 'guanyin.jpeg',
@@ -75,16 +76,40 @@ const days = [
   },
 ] satisfies TravelMemoryDay[]
 
-const dayView = toTravelMemoryDayView(memory, days, 'day-03')
+const dayView = toTravelMemoryDayView(memory, days[0], days)
 assert.equal(dayView?.memory.presentationStyle, 'family-scrapbook')
 assert.equal(dayView?.previousDay, null)
 assert.equal(dayView?.nextDay?.dayKey, 'day-04')
-assert.equal(toTravelMemoryDayView(memory, days, 'day-08'), null)
+assert.equal(toTravelMemoryDayView(memory, { ...days[0], dayKey: 'day-08' }, days), null)
 
 const gallery = toTravelMemoryGallery(memory, days)
 assert.equal(gallery.items.length, 1)
 assert.equal(gallery.items[0]?.caption, '南山文化旅遊區的海上觀音。')
 assert.equal(gallery.items[0]?.media.altText, '海上觀音替代文字')
-assert.equal(toTravelMemoryGallery(memory, days, 'day-04').items.length, 0)
+assert.equal(toTravelMemoryGallery(memory, days, { dayKey: 'day-04' }).items.length, 0)
+
+const galleryOnlyMedia: Media = {
+  id: 999,
+  type: 'photo',
+  altText: '未分類家庭合照',
+  url: '/media/unclassified.jpeg',
+  updatedAt: '2026-08-02T00:00:00.000Z',
+  createdAt: '2026-08-02T00:00:00.000Z',
+}
+const galleryWithLegacy = toTravelMemoryGallery(
+  { ...memory, galleryImages: [galleryOnlyMedia] },
+  days,
+)
+assert.ok(galleryWithLegacy.items.some((item) => item.unclassified))
+
+const locationPage = toTravelMemoryGallery(
+  { ...memory, galleryImages: [galleryOnlyMedia] },
+  days,
+  { location: '南山文化旅遊區', page: 1, pageSize: 1 },
+)
+assert.equal(locationPage.selectedLocation, '南山文化旅遊區')
+assert.equal(locationPage.pageSize, 1)
+assert.equal(locationPage.items.length, 1)
+assert.ok(locationPage.locations.includes('南山文化旅遊區'))
 
 console.log('travel memory domain tests passed')

@@ -1,4 +1,10 @@
-import { buildTravelProjection, travelProjectionHash } from './travel-seed-reconciliation'
+import {
+  buildTravelProjection,
+  reconcileTravelSeed,
+  travelProjectionHash,
+  type TravelProjection,
+  type TravelReconciliationPlan,
+} from './travel-seed-reconciliation'
 import {
   buildTravelMemoryDayProjections,
   type TravelMemoryDaySourceProjection,
@@ -23,10 +29,18 @@ export type Phase19BackfillPlan = {
     before: string | null
     after: string
   }[]
+  dayPlans: TravelReconciliationPlan[]
   dayCreates: Record<string, unknown>[]
+  dayUpdates: { id: number; patch: TravelProjection }[]
   missingMemories: string[]
   missingMedia: string[]
   unassignedVideos: { slug: string; title?: string; youtubeUrl: string }[]
+}
+
+export type Phase19DayInventory = Record<string, unknown> & {
+  id: number
+  dayIdentity: string
+  sourceMetadata?: { baseProjection?: unknown } | null
 }
 
 export function buildPhase19TravelMemoryBackfillPlan(input: {
@@ -34,14 +48,20 @@ export function buildPhase19TravelMemoryBackfillPlan(input: {
   travels: TravelSeed[]
   mediaItems: MediaSeed[]
   mediaIdsBySourcePath: Map<string, number>
+  currentDays: Phase19DayInventory[]
 }): Phase19BackfillPlan {
   const memoriesBySlug = new Map(input.memories.map((memory) => [memory.slug, memory]))
   const completedTravels = input.travels.filter((travel) => travel.status === 'completed')
   const styleUpdates: Phase19BackfillPlan['styleUpdates'] = []
   const dayCreates: Record<string, unknown>[] = []
+  const dayUpdates: Phase19BackfillPlan['dayUpdates'] = []
+  const dayPlans: TravelReconciliationPlan[] = []
   const missingMemories: string[] = []
   const missingMedia: string[] = []
   const unassignedVideos: Phase19BackfillPlan['unassignedVideos'] = []
+  const currentDaysByIdentity = new Map(
+    input.currentDays.map((day) => [day.dayIdentity, day]),
+  )
 
   for (const travel of completedTravels) {
     const memory = memoriesBySlug.get(travel.slug)
@@ -68,14 +88,36 @@ export function buildPhase19TravelMemoryBackfillPlan(input: {
 
     for (const day of projection.days) {
       const materialized = materializeDay(day, memory.id, input.mediaIdsBySourcePath)
-      dayCreates.push(materialized.data)
+      const dayIdentity = `${memory.id}:${day.dayKey}`
+      const currentDay = currentDaysByIdentity.get(dayIdentity)
+      const plan = reconcileTravelSeed({
+        slug: dayIdentity,
+        base: asProjection(currentDay?.sourceMetadata?.baseProjection),
+        source: materialized.projection,
+        current: currentDay ? dayProjection(currentDay) : undefined,
+      })
+      dayPlans.push(plan)
+
+      if (plan.action === 'create') {
+        dayCreates.push(materialized.data)
+      } else if (plan.action === 'apply-source' && currentDay) {
+        dayUpdates.push({
+          id: currentDay.id,
+          patch: {
+            ...plan.patch,
+            sourceMetadata: materialized.data.sourceMetadata,
+          },
+        })
+      }
       missingMedia.push(...materialized.missingMedia)
     }
   }
 
   return {
     styleUpdates,
+    dayPlans,
     dayCreates,
+    dayUpdates,
     missingMemories: [...new Set(missingMemories)].sort(),
     missingMedia: [...new Set(missingMedia)].sort(),
     unassignedVideos,
@@ -143,5 +185,27 @@ function materializeDay(
       },
     },
     missingMedia,
+    projection,
   }
+}
+
+function dayProjection(day: Record<string, unknown>): TravelProjection {
+  return buildTravelProjection({
+    dayKey: day.dayKey,
+    day: day.day,
+    date: day.date,
+    dateLabel: day.dateLabel,
+    title: day.title,
+    theme: day.theme,
+    story: day.story,
+    moments: day.moments,
+    meals: day.meals,
+    lodging: day.lodging,
+  })
+}
+
+function asProjection(value: unknown): TravelProjection | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? buildTravelProjection(value as TravelProjection)
+    : undefined
 }

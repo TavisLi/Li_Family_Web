@@ -21,13 +21,19 @@ const styles: TravelMemoryPresentationStyle[] = [
   'family-scrapbook',
 ]
 
-for (const style of styles) {
+for (const [slug, style] of [
+  ['201307-hainan', styles[2]],
+  ['202308-east-australia', styles[1]],
+  ['202602-thailand-phuket', styles[0]],
+] as const) {
   const html = renderToStaticMarkup(
-    <TravelMemoryOverviewPage memory={overview(style)} />,
+    <TravelMemoryOverviewPage memory={{ ...overview(style), slug }} />,
   )
   assert.match(html, new RegExp(`data-travel-memory-style="${style}"`))
-  assert.match(html, /href="\/travel\/201307-hainan\/day\/day-08"/)
+  assert.match(html, new RegExp(`href="/travel/${slug}/day/day-08"`))
   assert.match(html, /完整相簿/)
+  assert.match(html, /8 chapters/)
+  assert.doesNotMatch(html, /Eight chapters/)
 }
 
 const photo: Media = {
@@ -86,6 +92,18 @@ const dayView: TravelMemoryDayView = {
   previousDay: { dayKey: 'day-02', title: '亞龍灣' },
   nextDay: { dayKey: 'day-04', title: '鳥巢度假村' },
 }
+for (const [slug, style] of [
+  ['201307-hainan', 'family-scrapbook'],
+  ['202308-east-australia', 'cinematic-timeline'],
+  ['202602-thailand-phuket', 'editorial-journal'],
+] as const) {
+  const configuredMemory = { ...overview(style), slug }
+  const configuredDayHtml = renderToStaticMarkup(
+    <TravelMemoryDayPage view={{ ...dayView, memory: configuredMemory }} />,
+  )
+  assert.match(configuredDayHtml, new RegExp(`data-travel-memory-style="${style}"`))
+  assert.match(configuredDayHtml, /南山文化旅遊區的海上觀音。/)
+}
 const dayHtml = renderToStaticMarkup(<TravelMemoryDayPage view={dayView} />)
 assert.match(dayHtml, /南山文化旅遊區的海上觀音。/)
 assert.match(dayHtml, /alt="海上觀音的無障礙替代文字"/)
@@ -103,6 +121,12 @@ assert.match(emptyDayHtml, /這一天尚未配置照片或影片/)
 const gallery: TravelMemoryGallery = {
   memory: overview('family-scrapbook'),
   selectedDayKey: null,
+  selectedLocation: null,
+  locations: ['南山文化旅遊區'],
+  page: 1,
+  pageSize: 24,
+  totalItems: 1,
+  totalPages: 1,
   items: [
     {
       placementKey: 'guanyin-photo',
@@ -112,6 +136,7 @@ const gallery: TravelMemoryGallery = {
       location: '南山文化旅遊區',
       time: '11:00',
       caption: '南山文化旅遊區的海上觀音。',
+      unclassified: false,
       media: photo,
     },
   ],
@@ -123,6 +148,34 @@ assert.match(
   /href="\/travel\/201307-hainan\/day\/day-03#moment-nanshan-sea-guanyin"/,
 )
 assert.match(galleryHtml, /南山文化旅遊區的海上觀音。/)
+assert.match(galleryHtml, /location=/)
+
+for (const [slug, style] of [
+  ['201307-hainan', 'family-scrapbook'],
+  ['202308-east-australia', 'cinematic-timeline'],
+  ['202602-thailand-phuket', 'editorial-journal'],
+] as const) {
+  const configuredGalleryHtml = renderToStaticMarkup(
+    <TravelMemoryGalleryPage
+      gallery={{ ...gallery, memory: { ...overview(style), slug } }}
+    />,
+  )
+  assert.match(configuredGalleryHtml, new RegExp(`data-travel-memory-style="${style}"`))
+  assert.match(configuredGalleryHtml, /回到每日故事/)
+}
+
+const duplicatePlacementGalleryHtml = renderToStaticMarkup(
+  <TravelMemoryGalleryPage
+    gallery={{
+      ...gallery,
+      items: [
+        gallery.items[0],
+        { ...gallery.items[0], momentKey: 'luhuitou-overlook' },
+      ],
+    }}
+  />,
+)
+assert.equal((duplicatePlacementGalleryHtml.match(/南山文化旅遊區的海上觀音。/g) ?? []).length, 2)
 
 console.log('travel memory page tests passed')
 

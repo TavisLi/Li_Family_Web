@@ -135,7 +135,7 @@ function OverviewContent({
 
       <section className="mx-auto w-full max-w-7xl px-5 py-14 md:py-20">
         <p className={cn('text-xs font-semibold uppercase tracking-[0.24em]', visual.muted)}>
-          Eight chapters
+          {memory.days.length} chapters
         </p>
         <h2 className={cn('mt-3 text-3xl font-semibold md:text-5xl', visual.title)}>每日回憶</h2>
         {memory.days.length ? (
@@ -271,25 +271,40 @@ function GalleryContent({ gallery, style }: { gallery: TravelMemoryGallery; styl
         <Link className={cn('inline-flex items-center gap-2 text-sm font-semibold', visual.accent)} href={`/travel/${gallery.memory.slug}`}><ArrowLeft className="size-4" aria-hidden="true" />回到旅行首頁</Link>
         <h1 className={cn('mt-9 text-4xl font-semibold md:text-7xl', visual.title)}>{gallery.memory.title}・完整相簿</h1>
         <div className="mt-8 flex flex-wrap gap-2" aria-label="按日期篩選照片">
-          <Link className={cn('px-3 py-2 text-sm font-semibold', gallery.selectedDayKey === null ? visual.button : visual.card)} href={`/travel/${gallery.memory.slug}/photos`}>全部</Link>
+          <Link className={cn('px-3 py-2 text-sm font-semibold', gallery.selectedDayKey === null ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: null, page: 1 })}>全部</Link>
           {gallery.memory.days.map((day) => (
-            <Link className={cn('px-3 py-2 text-sm font-semibold', gallery.selectedDayKey === day.dayKey ? visual.button : visual.card)} href={`/travel/${gallery.memory.slug}/photos?day=${day.dayKey}`} key={day.dayKey}>Day {day.day}</Link>
+            <Link className={cn('px-3 py-2 text-sm font-semibold', gallery.selectedDayKey === day.dayKey ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: day.dayKey, page: 1 })} key={day.dayKey}>Day {day.day}</Link>
           ))}
         </div>
+        {gallery.locations.length ? (
+          <div className="mt-3 flex flex-wrap gap-2" aria-label="按地點篩選照片">
+            <Link className={cn('px-3 py-2 text-sm font-semibold', gallery.selectedLocation === null ? visual.button : visual.card)} href={galleryHref(gallery, { location: null, page: 1 })}>所有地點</Link>
+            {gallery.locations.map((location) => (
+              <Link className={cn('px-3 py-2 text-sm font-semibold', gallery.selectedLocation === location ? visual.button : visual.card)} href={galleryHref(gallery, { location, page: 1 })} key={location}>{location}</Link>
+            ))}
+          </div>
+        ) : null}
         {gallery.items.length ? (
           <div className={cn('mt-10 columns-1 gap-5 sm:columns-2 lg:columns-3', style === 'cinematic-timeline' && 'lg:columns-2')}>
             {gallery.items.map((item, index) => (
-              <figure className={cn('mb-5 break-inside-avoid p-3', visual.card, scrapbookTilt(style, index))} key={item.placementKey}>
+              <figure className={cn('mb-5 break-inside-avoid p-3', visual.card, scrapbookTilt(style, index))} key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
                 <PayloadImage className={visual.image} fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" tone="travel" />
                 <figcaption className="px-2 pb-1 pt-4">
-                  <p className={cn('text-xs font-semibold uppercase tracking-wide', visual.accent)}>Day {item.day}{item.time ? ` · ${item.time}` : ''}</p>
+                  <p className={cn('text-xs font-semibold uppercase tracking-wide', visual.accent)}>{item.unclassified ? '未分類照片' : `Day ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
                   <p className={cn('mt-2 text-sm leading-6', visual.copy)}>{item.caption || item.media.altText}</p>
-                  <Link className={cn('mt-3 inline-flex text-sm font-semibold', visual.accent)} href={`/travel/${gallery.memory.slug}/day/${item.dayKey}#moment-${item.momentKey}`}>回到每日故事</Link>
+                  {item.dayKey && item.momentKey ? <Link className={cn('mt-3 inline-flex text-sm font-semibold', visual.accent)} href={`/travel/${gallery.memory.slug}/day/${item.dayKey}#moment-${item.momentKey}`}>回到每日故事</Link> : null}
                 </figcaption>
               </figure>
             ))}
           </div>
         ) : <EmptyState text="這個篩選條件尚未有已發布照片。" visual={visual} />}
+        {gallery.totalPages > 1 ? (
+          <nav className="mt-10 flex items-center justify-between gap-4" aria-label="相簿分頁">
+            {gallery.page > 1 ? <Link className={cn('px-4 py-2 text-sm font-semibold', visual.card)} href={galleryHref(gallery, { page: gallery.page - 1 })}>上一頁</Link> : <span />}
+            <span className={cn('text-sm', visual.muted)}>{gallery.page} / {gallery.totalPages}</span>
+            {gallery.page < gallery.totalPages ? <Link className={cn('px-4 py-2 text-sm font-semibold', visual.card)} href={galleryHref(gallery, { page: gallery.page + 1 })}>下一頁</Link> : null}
+          </nav>
+        ) : null}
       </div>
     </main>
   )
@@ -326,4 +341,19 @@ function scrapbookTilt(style: TravelMemoryPresentationStyle, index: number) {
 
 function formatDateRange(start: string, end: string) {
   return `${start.slice(0, 10)} — ${end.slice(0, 10)}`
+}
+
+function galleryHref(
+  gallery: TravelMemoryGallery,
+  changes: { dayKey?: string | null; location?: string | null; page?: number },
+) {
+  const dayKey = changes.dayKey === undefined ? gallery.selectedDayKey : changes.dayKey
+  const location = changes.location === undefined ? gallery.selectedLocation : changes.location
+  const page = changes.page ?? gallery.page
+  const search = new URLSearchParams()
+  if (dayKey) search.set('day', dayKey)
+  if (location) search.set('location', location)
+  if (page > 1) search.set('page', String(page))
+  const query = search.toString()
+  return `/travel/${gallery.memory.slug}/photos${query ? `?${query}` : ''}`
 }
