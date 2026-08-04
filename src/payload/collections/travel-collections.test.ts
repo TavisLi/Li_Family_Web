@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import type { Field } from 'payload'
 
 import { TravelMemories } from './TravelMemories'
+import { TravelMemoryDays } from './TravelMemoryDays'
 import { TravelPlans } from './TravelPlans'
 import { TravelRouteIdentities } from './TravelRouteIdentities'
 import { Media } from './Media'
@@ -23,6 +24,7 @@ const memoryFieldNames = fieldNames(TravelMemories.fields)
 
 assert.equal(TravelPlans.slug, 'travel-plans')
 assert.equal(TravelMemories.slug, 'travel-memories')
+assert.equal(TravelMemoryDays.slug, 'travel-memory-days')
 assert.equal(TravelRouteIdentities.slug, 'travel-route-identities')
 assert.equal(TravelRouteIdentities.admin?.hidden, true)
 
@@ -66,11 +68,55 @@ assert.deepEqual(fieldNames(interactions.fields), [
 ])
 
 assert.ok(memoryFieldNames.includes('originPlan'))
+assert.ok(memoryFieldNames.includes('presentationStyle'))
 assert.ok(memoryFieldNames.includes('storySections'))
 assert.ok(memoryFieldNames.includes('itineraryImages'))
 assert.ok(memoryFieldNames.includes('reminders'))
 assert.ok(!memoryFieldNames.includes('status'))
 assert.ok(!memoryFieldNames.includes('planningSections'))
+
+const presentationStyle = namedField(TravelMemories.fields, 'presentationStyle')
+assert.ok(presentationStyle && presentationStyle.type === 'select')
+assert.equal(presentationStyle.required, false)
+assert.deepEqual(
+  presentationStyle.options.map((option) =>
+    typeof option === 'string' ? option : option.value,
+  ),
+  ['editorial-journal', 'cinematic-timeline', 'family-scrapbook'],
+)
+
+const dayFieldNames = fieldNames(TravelMemoryDays.fields)
+assert.ok(dayFieldNames.includes('memory'))
+assert.ok(dayFieldNames.includes('dayKey'))
+assert.ok(dayFieldNames.includes('day'))
+assert.ok(dayFieldNames.includes('moments'))
+assert.ok(!dayFieldNames.includes('presentationStyle'))
+
+const dayMemory = namedField(TravelMemoryDays.fields, 'memory')
+assert.ok(dayMemory && dayMemory.type === 'relationship')
+assert.equal(dayMemory.relationTo, 'travel-memories')
+assert.equal(dayMemory.required, true)
+
+const moments = namedField(TravelMemoryDays.fields, 'moments')
+assert.ok(moments && moments.type === 'array')
+assert.deepEqual(fieldNames(moments.fields), [
+  'momentKey',
+  'time',
+  'location',
+  'title',
+  'body',
+  'placements',
+])
+const placements = namedField(moments.fields, 'placements')
+assert.ok(placements && placements.type === 'array')
+assert.deepEqual(fieldNames(placements.fields), [
+  'placementKey',
+  'type',
+  'role',
+  'media',
+  'youtubeUrl',
+  'caption',
+])
 
 const storySections = namedField(TravelMemories.fields, 'storySections')
 assert.ok(storySections && storySections.type === 'array')
@@ -128,6 +174,25 @@ if (typeof readAccess === 'function') {
     and: [
       { isPrivate: { equals: false } },
       { _status: { equals: 'published' } },
+    ],
+  })
+}
+
+const dayReadAccess = TravelMemoryDays.access?.read
+assert.equal(typeof dayReadAccess, 'function')
+if (typeof dayReadAccess === 'function') {
+  assert.equal(await dayReadAccess({ req: { user: { role: 'admin' } } } as never), true)
+  assert.deepEqual(await dayReadAccess({ req: { user: { role: 'family' } } } as never), {
+    and: [
+      { _status: { equals: 'published' } },
+      { 'memory._status': { equals: 'published' } },
+    ],
+  })
+  assert.deepEqual(await dayReadAccess({ req: { user: null } } as never), {
+    and: [
+      { _status: { equals: 'published' } },
+      { 'memory._status': { equals: 'published' } },
+      { 'memory.isPrivate': { equals: false } },
     ],
   })
 }

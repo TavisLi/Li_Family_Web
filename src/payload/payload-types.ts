@@ -72,6 +72,7 @@ export interface Config {
     posts: Post;
     'travel-plans': TravelPlan;
     'travel-memories': TravelMemory;
+    'travel-memory-days': TravelMemoryDay;
     'travel-route-identities': TravelRouteIdentity;
     'timeline-events': TimelineEvent;
     'bucket-items': BucketItem;
@@ -87,6 +88,9 @@ export interface Config {
     'travel-plans': {
       memories: 'travel-memories';
     };
+    'travel-memories': {
+      days: 'travel-memory-days';
+    };
   };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
@@ -94,6 +98,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     'travel-plans': TravelPlansSelect<false> | TravelPlansSelect<true>;
     'travel-memories': TravelMemoriesSelect<false> | TravelMemoriesSelect<true>;
+    'travel-memory-days': TravelMemoryDaysSelect<false> | TravelMemoryDaysSelect<true>;
     'travel-route-identities': TravelRouteIdentitiesSelect<false> | TravelRouteIdentitiesSelect<true>;
     'timeline-events': TimelineEventsSelect<false> | TimelineEventsSelect<true>;
     'bucket-items': BucketItemsSelect<false> | BucketItemsSelect<true>;
@@ -453,9 +458,21 @@ export interface TravelMemory {
       }[]
     | null;
   /**
+   * Published visual style for all routes in this Travel Memory. Source imports do not manage this field.
+   */
+  presentationStyle?: ('editorial-journal' | 'cinematic-timeline' | 'family-scrapbook') | null;
+  /**
    * Optional provenance link. Creating a memory never changes or removes its source plan.
    */
   originPlan?: (number | null) | TravelPlan;
+  /**
+   * Virtual reverse link; daily chapters are stored independently.
+   */
+  days?: {
+    docs?: (number | TravelMemoryDay)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
   galleryImages?: (number | Media)[] | null;
   itineraryImages?: (number | Media)[] | null;
   dailyHighlights?:
@@ -562,6 +579,75 @@ export interface TravelMemory {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Seed reconciliation metadata. Managed by the travel seed workflow; editors should not change it manually.
+   */
+  sourceMetadata?: {
+    sourceFile?: string | null;
+    sourceHash?: string | null;
+    parserVersion?: string | null;
+    lastImportedAt?: string | null;
+    /**
+     * Last accepted seed projection used as Base for three-way reconciliation.
+     */
+    baseProjection?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Independently editable daily chapters owned by one Travel Memory.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-memory-days".
+ */
+export interface TravelMemoryDay {
+  id: number;
+  memory: number | TravelMemory;
+  dayIdentity: string;
+  dayKey: string;
+  day: number;
+  date?: string | null;
+  dateLabel?: string | null;
+  title: string;
+  theme?: string | null;
+  story?: string | null;
+  moments?:
+    | {
+        momentKey: string;
+        time?: string | null;
+        location?: string | null;
+        title: string;
+        body?: string | null;
+        placements?:
+          | {
+              placementKey: string;
+              type: 'photo' | 'youtube';
+              role?: ('hero' | 'inline' | 'gallery') | null;
+              media?: (number | null) | Media;
+              youtubeUrl?: string | null;
+              caption?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  meals?: {
+    breakfast?: string | null;
+    lunch?: string | null;
+    dinner?: string | null;
+  };
+  lodging?: string | null;
   /**
    * Seed reconciliation metadata. Managed by the travel seed workflow; editors should not change it manually.
    */
@@ -797,6 +883,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'travel-memories';
         value: number | TravelMemory;
+      } | null)
+    | ({
+        relationTo: 'travel-memory-days';
+        value: number | TravelMemoryDay;
       } | null)
     | ({
         relationTo: 'timeline-events';
@@ -1086,7 +1176,9 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
         note?: T;
         id?: T;
       };
+  presentationStyle?: T;
   originPlan?: T;
+  days?: T;
   galleryImages?: T;
   itineraryImages?: T;
   dailyHighlights?:
@@ -1199,6 +1291,62 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  sourceMetadata?:
+    | T
+    | {
+        sourceFile?: T;
+        sourceHash?: T;
+        parserVersion?: T;
+        lastImportedAt?: T;
+        baseProjection?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "travel-memory-days_select".
+ */
+export interface TravelMemoryDaysSelect<T extends boolean = true> {
+  memory?: T;
+  dayIdentity?: T;
+  dayKey?: T;
+  day?: T;
+  date?: T;
+  dateLabel?: T;
+  title?: T;
+  theme?: T;
+  story?: T;
+  moments?:
+    | T
+    | {
+        momentKey?: T;
+        time?: T;
+        location?: T;
+        title?: T;
+        body?: T;
+        placements?:
+          | T
+          | {
+              placementKey?: T;
+              type?: T;
+              role?: T;
+              media?: T;
+              youtubeUrl?: T;
+              caption?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  meals?:
+    | T
+    | {
+        breakfast?: T;
+        lunch?: T;
+        dinner?: T;
+      };
+  lodging?: T;
   sourceMetadata?:
     | T
     | {

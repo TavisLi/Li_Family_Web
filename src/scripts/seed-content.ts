@@ -1268,15 +1268,18 @@ function parseExternalVideos(markdown: string): TravelSeed['externalVideos'] {
   return section
     .split('\n')
     .flatMap((line) => {
-      const match = line.match(/^\s*(.*?)\s*\[([^\]]+)\]\s*$/)
+      const bracketMatch = line.match(/^\s*(.*?)\s*\[([^\]]+)\]\s*$/)
+      const colonMatch = line.match(/^\s*(?:[-*]\s*)?(.*?)\s*[：:]\s*(https?:\/\/\S+)\s*$/)
+      const title = bracketMatch?.[1] ?? colonMatch?.[1]
+      const youtubeUrl = bracketMatch?.[2] ?? colonMatch?.[2]
 
-      if (!match || !isYouTubeUrl(match[2] ?? '')) {
+      if (!youtubeUrl || !isYouTubeUrl(youtubeUrl)) {
         return []
       }
 
       return [{
-        title: cleanMarkdown(match[1] ?? '') || 'YouTube 旅行影片',
-        youtubeUrl: match[2] ?? '',
+        title: cleanMarkdown(title ?? '').replace(/^[-*]\s*/, '') || 'YouTube 旅行影片',
+        youtubeUrl,
       }]
     })
 }

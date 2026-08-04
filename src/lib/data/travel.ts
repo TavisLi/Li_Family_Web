@@ -2,6 +2,14 @@ import 'server-only'
 
 import type { HomeConfig, User } from '@/payload/payload-types'
 import {
+  toTravelMemoryDayView,
+  toTravelMemoryGallery,
+  toTravelMemoryOverview,
+  type TravelMemoryDayView,
+  type TravelMemoryGallery,
+  type TravelMemoryOverview,
+} from '@/lib/travel-memory'
+import {
   mergeTravelRuntimeRecords,
   resolveTravelRuntimeRelationship,
   toTravelRuntimeRecord,
@@ -14,6 +22,7 @@ import {
 } from '@/lib/travel-interactions'
 import { getCurrentUser, userReq } from './auth'
 import { getPayloadClient } from './payload'
+import { readTravelMemoryChildAfterOwner } from './travel-memory-child-access'
 
 const DEFAULT_LIMIT = 6
 const TRAVEL_LIMIT = 24
@@ -154,6 +163,111 @@ export async function getTravelProjectBySlug(slug: string): Promise<TravelRuntim
   }
 
   return null
+}
+
+export async function getTravelMemoryOverviewBySlug(
+  slug: string,
+): Promise<TravelMemoryOverview | null> {
+  const context = await getTravelMemoryReadContext(slug)
+  if (!context) return null
+  const days = await context.payload.find({
+    collection: 'travel-memory-days',
+    depth: 0,
+    limit: 64,
+    overrideAccess: false,
+    select: { date: true, day: true, dayKey: true, theme: true, title: true },
+    sort: 'day',
+    where: { memory: { equals: context.memory.id } },
+    ...userReq(context.user),
+  })
+  return toTravelMemoryOverview(context.memory, days.docs)
+}
+
+export async function getTravelMemoryDayBySlug(
+  slug: string,
+  dayKey: string,
+): Promise<TravelMemoryDayView | null> {
+  return readTravelMemoryChildAfterOwner({
+    readOwner: () => getTravelMemoryReadContext(slug),
+    readChild: async (context) => {
+      const [target, navigation] = await Promise.all([
+        context.payload.find({
+          collection: 'travel-memory-days',
+          depth: 2,
+          limit: 1,
+          overrideAccess: false,
+          where: {
+            and: [
+              { memory: { equals: context.memory.id } },
+              { dayKey: { equals: dayKey } },
+            ],
+          },
+          ...userReq(context.user),
+        }),
+        context.payload.find({
+          collection: 'travel-memory-days',
+          depth: 0,
+          limit: 64,
+          overrideAccess: false,
+          select: { day: true, dayKey: true, title: true },
+          sort: 'day',
+          where: { memory: { equals: context.memory.id } },
+          ...userReq(context.user),
+        }),
+      ])
+      const targetDay = target.docs[0]
+      if (!targetDay) return null
+      return toTravelMemoryDayView(context.memory, targetDay, navigation.docs)
+    },
+  })
+}
+
+export async function getTravelMemoryGalleryBySlug(
+  slug: string,
+  filters: { dayKey?: string | null; location?: string | null; page?: number } = {},
+): Promise<TravelMemoryGallery | null> {
+  return readTravelMemoryChildAfterOwner({
+    readOwner: () => getTravelMemoryReadContext(slug, true),
+    readChild: async (context) => {
+      const days = await context.payload.find({
+        collection: 'travel-memory-days',
+        depth: 2,
+        limit: 64,
+        overrideAccess: false,
+        sort: 'day',
+        where: { memory: { equals: context.memory.id } },
+        ...userReq(context.user),
+      })
+      return toTravelMemoryGallery(context.memory, days.docs, filters)
+    },
+  })
+}
+
+async function getTravelMemoryReadContext(slug: string, includeGallery = false) {
+  const payload = await getPayloadClient()
+  const user = await getCurrentUser()
+  const memoryResult = await payload.find({
+    collection: 'travel-memories',
+    depth: 1,
+    limit: 1,
+    overrideAccess: false,
+    select: {
+      coverImage: true,
+      endDate: true,
+      isPrivate: true,
+      presentationStyle: true,
+      slug: true,
+      startDate: true,
+      summary: true,
+      title: true,
+      ...(includeGallery ? { galleryImages: true } : {}),
+    },
+    where: { slug: { equals: slug } },
+    ...userReq(user),
+  })
+  const memory = memoryResult.docs[0]
+  if (!memory) return null
+  return { memory, payload, user }
 }
 
 export async function getTravelInteractionThread(

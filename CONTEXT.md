@@ -113,6 +113,15 @@ Mutation 後重新從目標環境讀取資料，證明 schema、record、relatio
 **Travel Memory（旅行回憶）**
 行後整理照片、心得、里程碑與分享的獨立作品，保存於 `travel-memories`。可以 optional `originPlan` 關聯原 Plan，但擁有不同 identity。
 
+**Travel Memory Day（每日回憶章節）**
+隸屬一筆 Travel Memory、可獨立閱讀與編輯的每日章節，保存於 `travel-memory-days`，以 owning Memory＋`dayKey` 識別。
+
+**Travel Memory Moment（每日回憶片段）**
+Day 內具 `momentKey` 的有序敘事位置，用來連結當時的文字、時間、地點與 media placements。它不是 Markdown heading anchor。
+
+**Media placement（媒體敘事位置）**
+照片或 YouTube 在特定 Moment 中的使用方式，保存可見 caption、role 與 `placementKey`。它與 Media asset 的檔案、alt text及技術 metadata 分開。
+
 **Canonical travel slug**
 由 route、catalog mapping、source mapping 與 travel-local asset folder 共用的 stable identity。
 

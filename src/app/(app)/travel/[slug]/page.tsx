@@ -2,12 +2,15 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { TravelDetailPage, travelInteractionIds } from '@/features/travel/travel-detail-page'
+import { TravelMemoryOverviewPage } from '@/features/travel/travel-memory-pages'
 import {
   getTravelInteractionThreads,
+  getTravelMemoryOverviewBySlug,
   getTravelProjectBySlug,
 } from '@/lib/data/travel'
 import { getMediaUrl } from '@/lib/media'
 import { absoluteSiteUrl, metadataImageUrl } from '@/lib/site-metadata'
+import { travelMemoryMultipageEnabled } from '@/lib/travel-memory-rollout'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,6 +61,11 @@ export default async function TravelPage({ params }: TravelPageProps) {
 
   if (!project) {
     notFound()
+  }
+
+  if (project.kind === 'memory' && travelMemoryMultipageEnabled()) {
+    const memory = await getTravelMemoryOverviewBySlug(slug)
+    if (memory?.days.length) return <TravelMemoryOverviewPage memory={memory} />
   }
 
   const threads = await getTravelInteractionThreads(travelInteractionIds(project))

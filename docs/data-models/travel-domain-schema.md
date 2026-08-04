@@ -105,6 +105,15 @@ Collection：`travel-memories`
 | Origin | Optional relationship to `travel-plans` |
 | Seed ownership | `sourceMetadata` |
 
+### 多頁回憶呈現
+
+- `presentationStyle` 是 Admin-owned 的 Memory-level配置；不由 source seed 覆寫。
+- `travel-memory-days` 保存可獨立發布的每日章節，以 Memory relationship＋`dayKey` 識別。
+- Day 內嵌 Moments（`momentKey`）與 photo／YouTube placements（`placementKey`）。
+- Placement caption 是可見敘事 copy；Media `altText` 保持獨立 accessibility metadata。
+- Overview／Day／Gallery data interfaces 從 generated `TravelMemory`／`TravelMemoryDay` types 派生。
+- 三個 renderer共用資料契約；server-only rollout gate在正式 cutover前維持 legacy runtime。
+
 Memory 不重用 Plan slug，也不把同一 Plan record 的 status 改成 completed。
 
 ## 5. Travel Route Identity

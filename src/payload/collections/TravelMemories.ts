@@ -32,6 +32,20 @@ export const TravelMemories: CollectionConfig = {
   fields: [
     ...commonTravelFields('participants'),
     {
+      name: 'presentationStyle',
+      type: 'select',
+      required: false,
+      admin: {
+        description:
+          'Published visual style for all routes in this Travel Memory. Source imports do not manage this field.',
+      },
+      options: [
+        { label: 'Editorial journal', value: 'editorial-journal' },
+        { label: 'Cinematic timeline', value: 'cinematic-timeline' },
+        { label: 'Family scrapbook', value: 'family-scrapbook' },
+      ],
+    },
+    {
       name: 'originPlan',
       type: 'relationship',
       relationTo: 'travel-plans',
@@ -40,6 +54,15 @@ export const TravelMemories: CollectionConfig = {
       admin: {
         description:
           'Optional provenance link. Creating a memory never changes or removes its source plan.',
+      },
+    },
+    {
+      name: 'days',
+      type: 'join',
+      collection: 'travel-memory-days',
+      on: 'memory',
+      admin: {
+        description: 'Virtual reverse link; daily chapters are stored independently.',
       },
     },
     {
