@@ -101,5 +101,13 @@ const australia = await parseTravelMarkdown(
 )
 const australiaProjection = buildTravelMemoryDayProjections(australia, [])
 assert.equal(australiaProjection.unassignedVideos.length, 6)
+for (const day of australiaProjection.days) {
+  const keys = day.moments.map((moment) => moment.momentKey)
+  assert.equal(
+    new Set(keys).size,
+    keys.length,
+    `${day.dayKey} should not contain duplicate moment keys`,
+  )
+}
 
 console.log('travel memory day projection tests passed')
