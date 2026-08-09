@@ -406,5 +406,101 @@
     "location": "Singapore Jewel Changi Airport",
     "caption": "Jewel 夜色與室內瀑布，補足睡機場前的轉機記憶。",
     "sortOrder": 8050
+  },
+  {
+    "sourcePath": "travels/202602-thailand-phuket/itinerary/day-01-splash-beach-arrival-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "202602-thailand-phuket",
+    "usage": "itinerary",
+    "day": 1,
+    "sectionId": "splash-beach-arrival",
+    "time": "20:30",
+    "location": "Splash Beach Resort",
+    "caption": "抵達 Splash Beach Resort 後，全員在度假村匯合，正式進入普吉度假節奏。",
+    "sortOrder": 1035
+  },
+  {
+    "sourcePath": "travels/202602-thailand-phuket/itinerary/day-02-mai-khao-flight-viewing-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "202602-thailand-phuket",
+    "usage": "itinerary",
+    "day": 2,
+    "sectionId": "mai-khao-flight-viewing",
+    "time": "14:30",
+    "location": "Mai Khao Beach Flight Viewing Point",
+    "caption": "在 Mai Khao Beach Flight Viewing Point 看飛機低空掠過海灘。",
+    "sortOrder": 2035
+  },
+  {
+    "sourcePath": "travels/202602-thailand-phuket/itinerary/day-03-anantara-vacation-club-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "202602-thailand-phuket",
+    "usage": "itinerary",
+    "day": 3,
+    "sectionId": "anantara-vacation-club",
+    "time": "10:00",
+    "location": "Anantara Vacation Club",
+    "caption": "參加安納塔拉度假會說明會，深入了解普吉度假會體系。",
+    "sortOrder": 3025
+  },
+  {
+    "sourcePath": "travels/202602-thailand-phuket/itinerary/day-04-mai-khao-beach-sunset-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "202602-thailand-phuket",
+    "usage": "itinerary",
+    "day": 4,
+    "sectionId": "mai-khao-beach-sunset",
+    "time": "16:30",
+    "location": "Mai Khao Beach",
+    "caption": "泳池活動後走到邁考海灘，在海邊看夕陽。",
+    "sortOrder": 4035
+  },
+  {
+    "sourcePath": "travels/202602-thailand-phuket/itinerary/day-05-rak-elegant-rooftop-pool-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "202602-thailand-phuket",
+    "usage": "itinerary",
+    "day": 5,
+    "sectionId": "rak-rooftop-pool",
+    "time": "19:00",
+    "location": "Rak Elegant Hotel Patong Rooftop Pool",
+    "caption": "轉住芭東後，晴晴和 Leo 到 Rak Elegant Hotel 頂樓泳池游泳。",
+    "sortOrder": 5045
+  },
+  {
+    "sourcePath": "travels/202602-thailand-phuket/itinerary/day-06-patong-beach-dinner-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "202602-thailand-phuket",
+    "usage": "itinerary",
+    "day": 6,
+    "sectionId": "kans-haus-dinner",
+    "time": "18:40",
+    "location": "Kan's haus Cafe & Bistro",
+    "caption": "在芭東海灘邊用晚餐，記錄暴雨前後的熱鬧片刻。",
+    "sortOrder": 6065
+  },
+  {
+    "sourcePath": "travels/202602-thailand-phuket/itinerary/day-07-andaman-pool-villas-family-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "202602-thailand-phuket",
+    "usage": "itinerary",
+    "day": 7,
+    "sectionId": "villa-family-photo",
+    "time": "17:30",
+    "location": "Andaman Pool Villas, Maikhao",
+    "caption": "在 Andaman Pool Villas 前留下全家合影。",
+    "sortOrder": 7045
+  },
+  {
+    "sourcePath": "travels/202602-thailand-phuket/itinerary/day-08-singapore-jewel-transfer-001.jpeg",
+    "ownerType": "travel",
+    "ownerSlug": "202602-thailand-phuket",
+    "usage": "itinerary",
+    "day": 8,
+    "sectionId": "singapore-jewel",
+    "time": "18:00",
+    "location": "Singapore Jewel Changi Airport",
+    "caption": "返程轉機時在新加坡 Jewel Changi Airport 深度停留。",
+    "sortOrder": 8035
   }
 ]
