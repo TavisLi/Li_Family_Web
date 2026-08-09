@@ -145,7 +145,11 @@ function mediaMoments(media: MediaSeed[]): TravelMemoryMomentSourceProjection[] 
 }
 
 function segmentMomentKey(time: string | undefined, index: number): string {
-  const normalizedTime = time?.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')
+  const normalizedTime = time
+    ?.trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
   return normalizedTime ? `itinerary-${normalizedTime}` : `itinerary-${index + 1}`
 }
 
