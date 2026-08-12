@@ -80,8 +80,8 @@ const travelDatesBySlug = {
     endDate: '2013-07-08',
   },
   '202308-east-australia': {
-    startDate: '2023-08-01',
-    endDate: '2023-08-09',
+    startDate: '2023-08-07',
+    endDate: '2023-08-15',
   },
   '202602-thailand-phuket': {
     startDate: '2026-02-10',
