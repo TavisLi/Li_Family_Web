@@ -28,6 +28,12 @@
 | 17 | Travel Plan／Memory split | Merged；Production verified；legacy cleanup completed；Issue closeout pending | [`phase-17-travel-plan-memory-split.md`](./phase-17-travel-plan-memory-split.md) |
 | 18 | Member external links／Travel flight table | Draft PR #71；Preview runtime blocked；Production pending | [`phase-18-member-links-travel-table.md`](./phase-18-member-links-travel-table.md) |
 
+## Phase 19
+
+| Phase | 主題 | 最終交付狀態 | 報告 |
+| --- | --- | --- | --- |
+| 19 | Travel Memory 多頁回憶 | Production verified；H10 acceptance ready；Issue closeout pending | [`phase-19-travel-memory-multi-page.md`](./phase-19-travel-memory-multi-page.md) / [`closeout addendum`](./phase-19-travel-memory-multi-page-closeout-addendum.md) |
+
 ## 閱讀規則
 
 - Phase 報告不是現行架構 source of truth。
