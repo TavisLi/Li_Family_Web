@@ -36,6 +36,17 @@ for (const [slug, style] of [
   assert.doesNotMatch(html, /Eight chapters/)
 }
 
+for (const [style, layout, landmark, structure] of [
+  ['editorial-journal', 'editorial-overview', '旅行章節', /md:grid-cols-\[0\.7fr_1\.3fr\][\s\S]*<ol/],
+  ['cinematic-timeline', 'cinematic-overview', '場次導覽', /場次導覽[\s\S]*overflow-x-auto/],
+  ['family-scrapbook', 'scrapbook-overview', '打開哪一天', /rotate-\[-1\.5deg\][\s\S]*sm:grid-cols-2 lg:grid-cols-4/],
+] as const) {
+  const html = renderToStaticMarkup(<TravelMemoryOverviewPage memory={overview(style)} />)
+  assert.match(html, new RegExp(`data-travel-memory-layout="${layout}"`))
+  assert.match(html, new RegExp(landmark))
+  assert.match(html, structure)
+}
+
 const photo: Media = {
   id: 31,
   type: 'photo',
@@ -104,6 +115,19 @@ for (const [slug, style] of [
   assert.match(configuredDayHtml, new RegExp(`data-travel-memory-style="${style}"`))
   assert.match(configuredDayHtml, /南山文化旅遊區的海上觀音。/)
 }
+
+for (const [style, layout, landmark, structure] of [
+  ['editorial-journal', 'editorial-day', '今日札記', /md:grid-cols-\[0\.34fr_1fr\][\s\S]*<aside[\s\S]*今日札記/],
+  ['cinematic-timeline', 'cinematic-day', '當日時間軸', /aria-label="當日時間軸"[\s\S]*href="#moment-nanshan-sea-guanyin"/],
+  ['family-scrapbook', 'scrapbook-day', '家庭相簿', /家庭相簿[\s\S]*照片背記/],
+] as const) {
+  const html = renderToStaticMarkup(
+    <TravelMemoryDayPage view={{ ...dayView, memory: overview(style) }} />,
+  )
+  assert.match(html, new RegExp(`data-travel-memory-layout="${layout}"`))
+  assert.match(html, new RegExp(landmark))
+  assert.match(html, structure)
+}
 const dayHtml = renderToStaticMarkup(<TravelMemoryDayPage view={dayView} />)
 assert.match(dayHtml, /南山文化旅遊區的海上觀音。/)
 assert.match(dayHtml, /alt="海上觀音的無障礙替代文字"/)
@@ -117,6 +141,69 @@ const emptyDayHtml = renderToStaticMarkup(
   <TravelMemoryDayPage view={{ ...dayView, day: { ...day, moments: [] } }} />,
 )
 assert.match(emptyDayHtml, /這一天尚未配置照片或影片/)
+
+const photoOnlyDay: TravelMemoryDay = {
+  ...day,
+  moments: day.moments?.map((moment) => ({
+    ...moment,
+    placements: moment.placements?.filter((placement) => placement.type === 'photo'),
+  })),
+}
+for (const style of styles) {
+  const html = renderToStaticMarkup(
+    <TravelMemoryDayPage view={{ ...dayView, day: photoOnlyDay, memory: overview(style) }} />,
+  )
+  assert.match(html, /這一天沒有已配置的旅行影片/)
+  assert.doesNotMatch(html, /youtube-nocookie\.com/)
+}
+
+const missingUrlDay: TravelMemoryDay = {
+  ...day,
+  moments: day.moments?.map((moment) => ({
+    ...moment,
+    placements: [
+      ...(moment.placements?.filter((placement) => placement.type === 'photo') ?? []),
+      { placementKey: 'missing-video-url', type: 'youtube' as const },
+    ],
+  })),
+}
+for (const style of styles) {
+  const html = renderToStaticMarkup(
+    <TravelMemoryDayPage view={{ ...dayView, day: missingUrlDay, memory: overview(style) }} />,
+  )
+  assert.match(html, /這一天沒有已配置的旅行影片/)
+}
+
+const day8: TravelMemoryDay = {
+  ...day,
+  id: 8,
+  dayIdentity: '1:day-08',
+  dayKey: 'day-08',
+  day: 8,
+  title: '石梅灣艾美純度假 → 返程',
+  moments: [
+    {
+      momentKey: 'pool',
+      title: '旅程最後一次下水',
+      placements: [{ placementKey: 'pool-photo', type: 'photo', media: photo, caption: '旅程最後一天的度假亮點。' }],
+    },
+    {
+      momentKey: 'beach',
+      title: '在海邊替假期收尾',
+      placements: [{ placementKey: 'beach-photo', type: 'photo', media: photo, caption: '為八日旅程留下安靜的尾聲。' }],
+    },
+  ],
+}
+const day8Html = renderToStaticMarkup(
+  <TravelMemoryDayPage
+    view={{ ...dayView, day: day8, memory: overview('family-scrapbook'), previousDay: { dayKey: 'day-07', title: '上一日' }, nextDay: null }}
+  />,
+)
+assert.match(day8Html, /data-travel-memory-layout="scrapbook-day"/)
+assert.match(day8Html, /旅程最後一天的度假亮點。/)
+assert.match(day8Html, /為八日旅程留下安靜的尾聲。/)
+assert.equal((day8Html.match(/<figcaption/g) ?? []).length, 2)
+assert.match(day8Html, /href="\/travel\/201307-hainan\/day\/day-07"/)
 
 const gallery: TravelMemoryGallery = {
   memory: overview('family-scrapbook'),
@@ -162,6 +249,33 @@ for (const [slug, style] of [
   )
   assert.match(configuredGalleryHtml, new RegExp(`data-travel-memory-style="${style}"`))
   assert.match(configuredGalleryHtml, /回到每日故事/)
+}
+
+for (const [style, layout, landmark, structure] of [
+  ['editorial-journal', 'editorial-gallery', '視覺檔案', /md:grid-cols-2[\s\S]*sm:grid-cols-\[7rem_1fr\]/],
+  ['cinematic-timeline', 'cinematic-gallery', 'Contact sheet', /bg-white\/10 md:grid-cols-2[\s\S]*aspect-video/],
+  ['family-scrapbook', 'scrapbook-gallery', '照片信封', /照片背面[\s\S]*sm:grid-cols-2 lg:grid-cols-3/],
+] as const) {
+  const html = renderToStaticMarkup(
+    <TravelMemoryGalleryPage gallery={{ ...gallery, memory: overview(style) }} />,
+  )
+  assert.match(html, new RegExp(`data-travel-memory-layout="${layout}"`))
+  assert.match(html, new RegExp(landmark))
+  assert.match(html, structure)
+}
+
+for (const [style, emptyCaption] of [
+  ['editorial-journal', '此影像未附敘事說明。'],
+  ['cinematic-timeline', 'No scene note.'],
+  ['family-scrapbook', '照片背面沒有留下文字。'],
+] as const) {
+  const html = renderToStaticMarkup(
+    <TravelMemoryGalleryPage
+      gallery={{ ...gallery, items: [{ ...gallery.items[0], caption: undefined }], memory: overview(style) }}
+    />,
+  )
+  assert.match(html, new RegExp(emptyCaption.replace('.', '\\.')))
+  assert.doesNotMatch(html, />海上觀音的無障礙替代文字</)
 }
 
 const duplicatePlacementGalleryHtml = renderToStaticMarkup(
