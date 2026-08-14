@@ -756,7 +756,7 @@ function formatDateRange(start: string, end: string) {
 function firstDayPhoto(day: TravelMemoryDay): Media | null {
   for (const moment of day.moments ?? []) {
     for (const placement of moment.placements ?? []) {
-      if (placement.type === 'photo' && typeof placement.media === 'object') {
+      if (placement.type === 'photo' && placement.media && typeof placement.media === 'object') {
         return placement.media
       }
     }

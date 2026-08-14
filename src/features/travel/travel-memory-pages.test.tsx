@@ -205,6 +205,26 @@ assert.match(day8Html, /為八日旅程留下安靜的尾聲。/)
 assert.equal((day8Html.match(/<figcaption/g) ?? []).length, 2)
 assert.match(day8Html, /href="\/travel\/201307-hainan\/day\/day-07"/)
 
+const nullThenPhotoDay: TravelMemoryDay = {
+  ...day,
+  moments: [
+    {
+      momentKey: 'hero-selection',
+      title: '首張有效照片作為場景主視覺',
+      placements: [
+        { placementKey: 'missing-photo', type: 'photo', media: null },
+        { placementKey: 'valid-photo', type: 'photo', media: photo, caption: '有效的場景照片。' },
+      ],
+    },
+  ],
+}
+const cinematicHeroHtml = renderToStaticMarkup(
+  <TravelMemoryDayPage
+    view={{ ...dayView, day: nullThenPhotoDay, memory: overview('cinematic-timeline') }}
+  />,
+)
+assert.equal((cinematicHeroHtml.match(/src="\/media\/guanyin\.jpeg"/g) ?? []).length, 2)
+
 const gallery: TravelMemoryGallery = {
   memory: overview('family-scrapbook'),
   selectedDayKey: null,
