@@ -17,6 +17,7 @@
 - Branch：`codex/phase-20-travel-memory-renderers`
 - Base：`origin/main` at `4ab53fe`
 - Implementation commit：`855429b`（`fix(travel): restore distinct memory renderers (#91)`）
+- Review-fix commit：`9a32557`（`fix(travel): skip empty cinematic hero media`）
 - PR：未建立；使用者尚未批准 push／PR。
 - Merge：未執行。
 
@@ -43,7 +44,7 @@
 | `pnpm run build`（Node 20.20.2） | Pass |
 | `pnpm tsc --noEmit` after build | Pass |
 | `git diff --check`／`git diff --cached --check` | Pass |
-| Standards＋specification review | 2 個程式契約 finding 已修正；正式 route QA 缺口保留如下 |
+| Standards＋specification review | 3 個程式契約 finding 已修正；正式 route QA 缺口保留如下 |
 | Playwright local renderer QA | Day 3 desktop＋390px、Day 8 desktop＋390px；caption 可見；390px 無 horizontal overflow；0 console errors |
 | `pnpm run test:phase-19` | Blocked by pre-existing stale Australia projection assertion：預期 6 個 unassigned videos、現況為 0；本 Phase 未修改該 projection／test |
 
@@ -76,7 +77,7 @@
 
 ## Rollback
 
-本 Phase 沒有 schema 或資料寫入。若需要撤回，只需 revert implementation commit `855429b`；既有 routes、view models、Payload content 與 legacy fallback 不受影響。
+本 Phase 沒有 schema 或資料寫入。若需要撤回，依序 revert review-fix commit `9a32557` 與 implementation commit `855429b`；既有 routes、view models、Payload content 與 legacy fallback 不受影響。
 
 ## Issue closeout
 
