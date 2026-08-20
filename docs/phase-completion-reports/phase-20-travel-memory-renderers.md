@@ -99,3 +99,19 @@
 ## Next-phase readiness
 
 下一個 HITL 節點是審閱 Draft PR #92 與正式 Preview 截圖，決定是否補齊 Preview 媒體 binary 或進入 merge 審批。Production read、write、merge 與 Issue closeout 仍是分開授權。
+
+## Production closeout addendum（2026-08-21）
+
+本節只追加後續狀態，不改寫 2026-08-14 Completion Report 當時的歷史事實。
+
+- PR #92 已於 2026-08-16 合併；merge commit 為 `f17e162d67ba9181280a4291ffda32dada4d7bf5`。
+- Vercel Production deployment `dpl_Ei6gZYoB5TUxGX87JxAgUFZv4HFg` 為 `READY／PROMOTED`，Production alias 為 `https://li-family-web.vercel.app`，Git source SHA 與 merge commit 完全一致。
+- 經使用者批准的 Production read-only QA 已覆蓋 Hainan Day 3／Day 8 正式 route，各自於 1440×1000 與 390×844 驗收。
+- 四個 viewport 均為 HTTP 200、`family-scrapbook／scrapbook-day`，placement captions 與 alt text 正確、相片 binary 實際載入、相鄰日導覽正確、無影片誠實空狀態可見、無 horizontal overflow、0 console errors。
+- Canonical URL 均指向 Production alias；HTML 未出現 `NEXT_HTTP_ERROR_FALLBACK;404`。
+- 沒有執行 Production schema、content、media 或 access write。
+- Production 證據：`docs/phase-artifacts/travel-memory-multi-page/phase-20-production-qa.md`。
+- Issue #91 已依使用者批准以 `completed` 關閉；Production QA 證據記錄於 [closeout comment](https://github.com/TavisLi/Li_Family_Web/issues/91#issuecomment-5360268023)。
+- Closeout publication：branch `codex/docs-phase-20-production-closeout`，evidence commit `a692b18`，Draft PR [#93](https://github.com/TavisLi/Li_Family_Web/pull/93)。
+
+本 addendum 完成後，Phase 20 lifecycle 為 `Implemented → Locally verified → PR ready → Merged → Production verified → Closed`。既有 `test:phase-19` Australia `unassignedVideos` stale assertion 仍屬獨立測試債務，不影響本 Phase renderer acceptance。
