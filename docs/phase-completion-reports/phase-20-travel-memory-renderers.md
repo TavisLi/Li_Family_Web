@@ -112,5 +112,6 @@
 - 沒有執行 Production schema、content、media 或 access write。
 - Production 證據：`docs/phase-artifacts/travel-memory-multi-page/phase-20-production-qa.md`。
 - Issue #91 已依使用者批准以 `completed` 關閉；Production QA 證據記錄於 [closeout comment](https://github.com/TavisLi/Li_Family_Web/issues/91#issuecomment-5360268023)。
+- Closeout publication：branch `codex/docs-phase-20-production-closeout`，evidence commit `a692b18`，Draft PR [#93](https://github.com/TavisLi/Li_Family_Web/pull/93)。
 
 本 addendum 完成後，Phase 20 lifecycle 為 `Implemented → Locally verified → PR ready → Merged → Production verified → Closed`。既有 `test:phase-19` Australia `unassignedVideos` stale assertion 仍屬獨立測試債務，不影響本 Phase renderer acceptance。
