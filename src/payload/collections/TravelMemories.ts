@@ -176,6 +176,18 @@ export const TravelMemories: CollectionConfig = {
         { name: 'displayDay', type: 'text', required: false, localized: true },
         { name: 'displayDate', type: 'text', required: false, localized: true },
         { name: 'displaySubtitle', type: 'text', required: false, localized: true },
+        {
+          name: 'role',
+          type: 'select',
+          required: false,
+          options: [
+            { label: 'Featured memory', value: 'featured-memory' },
+            { label: 'Travel reflection', value: 'travel-reflection' },
+            { label: 'Unforgettable day', value: 'unforgettable-day' },
+            { label: 'Family story', value: 'family-story' },
+            { label: 'Additional information', value: 'additional-information' },
+          ],
+        },
         { name: 'body', type: 'textarea', required: true, localized: true },
         linksField(),
         mediaItemsField(),

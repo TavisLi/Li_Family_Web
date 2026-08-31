@@ -45,6 +45,13 @@ async function run() {
               currentChangedPaths: changedPaths(base, current).slice(0, 30),
             })),
           })),
+        travelMemoryDays: report.actions
+          .filter((action) => action.collection === 'travel-memory-days')
+          .map((action) => ({
+            identity: action.key,
+            action: action.action,
+            conflicts: action.conflicts?.map(({ field, category }) => ({ field, category })),
+          })),
         totalActions: report.actions.length,
         conflictRegister,
         artifactPath,

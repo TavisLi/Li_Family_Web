@@ -34,11 +34,17 @@ export type TravelMemoryOverview = Pick<
   TravelMemory,
   | 'coverImage'
   | 'endDate'
+  | 'externalVideos'
+  | 'guestParticipants'
   | 'isPrivate'
+  | 'participants'
+  | 'reminders'
   | 'slug'
   | 'startDate'
+  | 'storySections'
   | 'summary'
   | 'title'
+  | 'travelLedger'
 > & {
   presentationStyle: TravelMemoryPresentationStyle
   days: TravelMemoryOverviewDay[]
@@ -48,12 +54,18 @@ export type TravelMemorySource = Pick<
   TravelMemory,
   | 'coverImage'
   | 'endDate'
+  | 'externalVideos'
+  | 'guestParticipants'
   | 'isPrivate'
+  | 'participants'
   | 'presentationStyle'
+  | 'reminders'
   | 'slug'
   | 'startDate'
+  | 'storySections'
   | 'summary'
   | 'title'
+  | 'travelLedger'
 > & {
   galleryImages?: TravelMemory['galleryImages']
 }
@@ -128,6 +140,12 @@ export function toTravelMemoryOverview(
     endDate: memory.endDate,
     summary: memory.summary,
     coverImage: memory.coverImage,
+    participants: memory.participants,
+    guestParticipants: memory.guestParticipants,
+    travelLedger: memory.travelLedger,
+    storySections: memory.storySections,
+    externalVideos: memory.externalVideos,
+    reminders: memory.reminders,
     presentationStyle: resolveTravelMemoryPresentationStyle(memory.presentationStyle),
     days: days.map((day) => ({
       title: day.title,
@@ -189,13 +207,16 @@ export function toTravelMemoryGallery(
       }),
     ),
   )
-  const classifiedMediaIds = new Set(classifiedItems.map((item) => item.media.id))
+  const uniqueClassifiedItems = [...new Map(
+    classifiedItems.map((item) => [item.media.id, item] as const),
+  ).values()]
+  const classifiedMediaIds = new Set(uniqueClassifiedItems.map((item) => item.media.id))
   const unclassifiedItems = (memory.galleryImages ?? []).flatMap((item) => {
     if (typeof item !== 'object' || classifiedMediaIds.has(item.id)) return []
     return [{
       placementKey: `gallery:${item.id}`,
       role: 'gallery',
-      caption: item.altText,
+      caption: undefined,
       dayKey: null,
       day: null,
       momentKey: null,
@@ -203,9 +224,9 @@ export function toTravelMemoryGallery(
       unclassified: true,
     } satisfies TravelMemoryGalleryItem]
   })
-  const allItems: TravelMemoryGalleryItem[] = [...classifiedItems, ...unclassifiedItems]
+  const allItems: TravelMemoryGalleryItem[] = [...uniqueClassifiedItems, ...unclassifiedItems]
   const locations = [...new Set(
-    classifiedItems.flatMap((item) => item.location ? [item.location] : []),
+    uniqueClassifiedItems.flatMap((item) => item.location ? [item.location] : []),
   )].sort((left, right) => left.localeCompare(right, 'zh-Hant'))
   const selectedLocation = filters.location && locations.includes(filters.location)
     ? filters.location

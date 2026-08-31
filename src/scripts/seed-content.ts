@@ -76,8 +76,8 @@ const travelStatusBySlug = {
 
 const travelDatesBySlug = {
   '201307-hainan': {
-    startDate: '2013-07-01',
-    endDate: '2013-07-08',
+    startDate: '2013-07-27',
+    endDate: '2013-08-03',
   },
   '202308-east-australia': {
     startDate: '2023-08-07',
@@ -232,8 +232,10 @@ const travelSeedSchema = z.object({
       z.object({
         day: z.number().min(1),
         date: z.string().optional(),
+        dateLabel: z.string().optional(),
         title: z.string().min(1),
         theme: z.string().optional(),
+        story: z.string().optional(),
         segments: z
           .array(
             z.object({
@@ -646,7 +648,7 @@ export async function parseTravelMarkdown(
     railSegments: parseRailSegments(parsed.content),
     lodgings: parseLodgings(parsed.content),
     cabinAssignments: parseCabinAssignments(parsed.content),
-    dailyItinerary: parseDailyItinerary(parsed.content),
+    dailyItinerary: parseDailyItinerary(parsed.content, dates.startDate),
     foodRecommendations: parseFoodRecommendations(parsed.content),
     costItems: parseCostItems(parsed.content),
     optionalActivities: parseOptionalActivities(parsed.content),
@@ -654,6 +656,43 @@ export async function parseTravelMarkdown(
     sourceSections: parseSourceSections(parsed.content),
     externalVideos: parseExternalVideos(parsed.content),
   })
+}
+
+export function validateCanonicalTravelMemoryMarkdown(markdown: string): string[] {
+  const errors: string[] = []
+  const requiredSections = [
+    ['核心信息速覽', /#{1,2}[^\n]*核心信息速覽/],
+    ['航班信息', /#{1,2}[^\n]*航班信息/],
+    ['住宿安排', /#{1,2}[^\n]*住宿安排/],
+    ['每日行程詳解', /#{1,2}[^\n]*每日行程詳解/],
+  ] as const
+  for (const [label, pattern] of requiredSections) {
+    if (!pattern.test(markdown)) errors.push(`缺少必要章節：${label}`)
+  }
+
+  const days = [...markdown.matchAll(/^##\s+\**[^\n]*?Day\s+(\d+)\s*[·．.-]/gim)]
+  if (!days.length) errors.push('至少需要一個 `## Day N · 日期 — 標題` 每日章節。')
+  const numbers = days.map((match) => Number(match[1]))
+  for (let index = 0; index < numbers.length; index += 1) {
+    if (numbers[index] !== index + 1) {
+      errors.push(`Day 編號必須從 1 連續排列；第 ${index + 1} 筆為 Day ${numbers[index]}。`)
+      break
+    }
+  }
+
+  const allowedDailyLabels = new Set(['主題', '當日故事', '早餐', '午餐', '晚餐', '住宿'])
+  for (const match of markdown.matchAll(/^\s*-\s*\*\*([^*]+)\*\*：/gm)) {
+    const label = match[1]?.trim()
+    if (label && !allowedDailyLabels.has(label) && daySectionAt(markdown, match.index ?? 0)) {
+      errors.push(`未知的 Daily 欄位：${label}`)
+    }
+  }
+  return [...new Set(errors)]
+}
+
+function daySectionAt(markdown: string, index: number): boolean {
+  const precedingHeading = markdown.slice(0, index).match(/^##\s+([^\n]+)$/gim)?.at(-1) ?? ''
+  return /Day\s+\d+/i.test(precedingHeading)
 }
 
 export async function buildSeedContent(projectRoot: string): Promise<SeedContent> {
@@ -1284,7 +1323,10 @@ function parseExternalVideos(markdown: string): TravelSeed['externalVideos'] {
     })
 }
 
-function parseDailyItinerary(markdown: string): NonNullable<TravelSeed['dailyItinerary']> {
+function parseDailyItinerary(
+  markdown: string,
+  startDate?: string,
+): NonNullable<TravelSeed['dailyItinerary']> {
   const matches = [
     ...markdown.matchAll(/##\s+\**(?:[^\n]*?)Day\s+(\d+)\s*[·．.-]\s*([^\n*]+)\**([\s\S]*?)(?=\n##\s+\**(?:[^\n]*?)Day\s+\d+|$)/gi),
   ]
@@ -1292,14 +1334,38 @@ function parseDailyItinerary(markdown: string): NonNullable<TravelSeed['dailyIti
   return matches.map((match) => {
     const content = match[3] ?? ''
 
+    const day = Number(match[1])
+    const heading = cleanMarkdown(match[2] ?? '').trim()
+    const headingParts = heading.split(/\s*[—–]\s*/, 2)
+    const dateLabel = headingParts.length > 1 ? headingParts[0]?.trim() : undefined
+    const title = headingParts.length > 1 ? headingParts[1]?.trim() : heading
+
     return {
-      day: Number(match[1]),
-      title: cleanMarkdown(match[2] ?? '').trim(),
+      day,
+      ...(startDate ? { date: dateForTravelDay(startDate, day) } : {}),
+      ...(dateLabel ? { dateLabel } : {}),
+      title: title || heading,
+      theme: labeledDailyValue(content, '主題'),
+      story: labeledDailyValue(content, '當日故事'),
       segments: parseDailySegments(content),
       meals: parseDailyMeals(content),
       lodging: parseDailyLodging(content),
     }
   })
+}
+
+function dateForTravelDay(startDate: string, day: number): string {
+  const value = new Date(`${startDate.slice(0, 10)}T00:00:00.000Z`)
+  value.setUTCDate(value.getUTCDate() + day - 1)
+  return value.toISOString()
+}
+
+function labeledDailyValue(content: string, label: string): string | undefined {
+  return content
+    .split('\n')
+    .find((line) => new RegExp(`^\\s*-\\s*\\*\\*${escapeRegExp(label)}\\*\\*：`).test(line))
+    ?.replace(new RegExp(`^\\s*-\\s*\\*\\*${escapeRegExp(label)}\\*\\*：`), '')
+    .trim()
 }
 
 function parseDailySegments(

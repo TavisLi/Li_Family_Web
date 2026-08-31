@@ -110,7 +110,10 @@ Collection：`travel-memories`
 - `presentationStyle` 是 Admin-owned 的 Memory-level配置；不由 source seed 覆寫。
 - `travel-memory-days` 保存可獨立發布的每日章節，以 Memory relationship＋`dayKey` 識別。
 - Day 內嵌 Moments（`momentKey`）與 photo／YouTube placements（`placementKey`）。
+- Moment 可保存 nullable `transport`；每日日期、主題、故事、餐食與住宿由 Day 擁有。
 - Placement caption 是可見敘事 copy；Media `altText` 保持獨立 accessibility metadata。
+- Story section 使用 `featured-memory`、`travel-reflection`、`unforgettable-day`、`family-story` 或 `additional-information` role，讓 Overview 不依標題文字猜用途。
+- Admin 新增 Moment／Placement 時 technical key 自動生成並唯讀；Source 可提供語意化 stable key。
 - Overview／Day／Gallery data interfaces 從 generated `TravelMemory`／`TravelMemoryDay` types 派生。
 - 三個 renderer共用資料契約；server-only rollout gate在正式 cutover前維持 legacy runtime。
 
@@ -179,6 +182,9 @@ Phase 17 為以下 owner 新增 polymorphic relationships：
 | Daily itinerary | day |
 | Planning／source sections | anchor |
 | Lodgings | date range＋hotel＋city |
+| Memory Day | owning Memory＋dayKey |
+| Moment | momentKey |
+| Placement | placementKey；Source photo為source path，YouTube為canonical video id |
 
 Identity absent／unmatched 時保留 parent-level conflict，不猜測合併。
 

@@ -5,6 +5,7 @@ import type { Media, TravelMemory, TravelPlan } from '../payload/payload-types'
 import type { SeedContent } from './seed-content'
 import { mediaRecordMatchesSeed } from './seed-media-compare'
 import { attachSourceSectionMediaIds } from './travel-section-media'
+import { buildPhase19TravelMemoryBackfillPlan } from './phase19-travel-memory-backfill'
 import {
   buildTravelSeedTarget,
   travelSeedBaseProjection,
@@ -19,7 +20,7 @@ import {
 } from './travel-seed-reconciliation'
 
 export type DryRunAction = {
-  collection: 'media' | 'travel-memories' | 'travel-plans' | 'users'
+  collection: 'media' | 'travel-memories' | 'travel-memory-days' | 'travel-plans' | 'users'
   key: string
   action: 'conflict' | 'create' | 'preserve' | 'skip' | 'update'
   existingId?: number
@@ -115,6 +116,95 @@ export async function buildPayloadDryRun(
         collection,
       })),
     )
+  }
+
+  const completedTravels = seedContent.travels.filter((travel) => travel.status === 'completed')
+  if (completedTravels.length) {
+    onProgress?.('travel-memory-days:start')
+    const currentDaysResult = await payload.find({
+      collection: 'travel-memory-days',
+      depth: 0,
+      limit: 500,
+      pagination: false,
+    })
+    onProgress?.('travel-memory-days:complete')
+    const memoryInventory = travelDocs.flatMap((travel) =>
+      travel.collection === 'travel-memories'
+        ? [{
+            id: Number(travel.id),
+            slug: travel.slug,
+            presentationStyle:
+              'presentationStyle' in travel && typeof travel.presentationStyle === 'string'
+                ? travel.presentationStyle
+                : null,
+          }]
+        : [],
+    )
+    const mediaIdsBySourcePath = new Map(
+      catalog.media.flatMap((item) =>
+        item.sourcePath ? [[item.sourcePath, Number(item.id)] as const] : [],
+      ),
+    )
+    const childPlan = buildPhase19TravelMemoryBackfillPlan({
+      memories: memoryInventory,
+      travels: completedTravels,
+      mediaItems: seedContent.media,
+      mediaIdsBySourcePath,
+      currentDays: currentDaysResult.docs.map((day) => day as unknown as Record<string, unknown> & {
+        id: number
+        dayIdentity: string
+        sourceMetadata?: { baseProjection?: unknown } | null
+      }),
+    })
+    const existingDayId = new Map(
+      currentDaysResult.docs.map((day) => [day.dayIdentity, Number(day.id)]),
+    )
+    for (const plan of childPlan.dayPlans) {
+      actions.push({
+        collection: 'travel-memory-days',
+        key: plan.slug,
+        action:
+          plan.action === 'create'
+            ? 'create'
+            : plan.action === 'apply-source'
+              ? 'update'
+              : plan.action === 'conflict'
+                ? 'conflict'
+                : plan.action === 'preserve-current'
+                  ? 'preserve'
+                  : 'skip',
+        existingId: existingDayId.get(plan.slug),
+        conflicts: plan.conflicts.length ? plan.conflicts : undefined,
+      })
+    }
+    for (const sourcePath of childPlan.duplicatePlacements) {
+      actions.push({
+        collection: 'travel-memory-days',
+        key: sourcePath,
+        action: 'conflict',
+        conflicts: [{
+          field: 'moments.placements',
+          category: 'media-projection',
+          base: null,
+          source: sourcePath,
+          current: 'duplicate source placement identity',
+        }],
+      })
+    }
+    for (const sourcePath of childPlan.missingMedia) {
+      actions.push({
+        collection: 'travel-memory-days',
+        key: sourcePath,
+        action: 'conflict',
+        conflicts: [{
+          field: 'moments.placements.media',
+          category: 'media-projection',
+          base: null,
+          source: sourcePath,
+          current: 'unmatched or missing media record',
+        }],
+      })
+    }
   }
   const userIdBySlug = new Map(catalog.users.map((user) => [user.slug, user.id]))
   const travelBySlug = new Map(travelDocs.map((travel) => [travel.slug, travel]))

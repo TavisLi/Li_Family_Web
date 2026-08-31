@@ -51,8 +51,13 @@ const hainanPhotos = hainanProjection.days.flatMap((day) =>
 assert.equal(hainanProjection.days.length, 8)
 assert.equal(hainanPhotos.length, 11)
 assert.deepEqual(hainanProjection.unmatchedMedia, [])
+assert.deepEqual(hainanProjection.duplicatePlacements, [])
 assert.deepEqual(hainanProjection.unassignedVideos, [])
 assert.equal('presentationStyle' in hainanProjection, false)
+assert.equal(hainanProjection.days[0]?.date, '2013-07-27T00:00:00.000Z')
+assert.equal(hainanProjection.days[0]?.dateLabel, '7月27日（週六）')
+assert.equal(hainanProjection.days[0]?.title, '抵達三亞·入住美高梅')
+assert.equal(hainanProjection.days[0]?.moments[0]?.transport, '飛機')
 
 const day3 = hainanProjection.days.find((day) => day.dayKey === 'day-03')
 assert.ok(day3)
@@ -100,7 +105,15 @@ const australia = await parseTravelMarkdown(
   path.join(projectRoot, 'content-source/travels/202308東澳全覽9日.md'),
 )
 const australiaProjection = buildTravelMemoryDayProjections(australia, [])
-assert.equal(australiaProjection.unassignedVideos.length, 6)
+assert.equal(australiaProjection.unassignedVideos.length, 0)
+assert.equal(
+  australiaProjection.days.flatMap((day) =>
+    day.moments.flatMap((moment) =>
+      moment.placements.filter((item) => item.type === 'youtube'),
+    ),
+  ).length,
+  6,
+)
 for (const day of australiaProjection.days) {
   const keys = day.moments.map((moment) => moment.momentKey)
   assert.equal(

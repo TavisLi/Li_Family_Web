@@ -34,6 +34,12 @@ for (const [slug, style] of [
   assert.match(html, /完整相簿/)
   assert.match(html, /8 chapters/)
   assert.doesNotMatch(html, /Eight chapters/)
+  assert.match(html, /同行成員/)
+  assert.match(html, /CI001/)
+  assert.match(html, /海邊家庭旅館/)
+  assert.match(html, /最難忘的一天/)
+  assert.match(html, /全旅程影片/)
+  assert.match(html, /補充資訊與提醒/)
 }
 
 for (const [style, layout, landmark, structure] of [
@@ -71,6 +77,7 @@ const day: TravelMemoryDay = {
       time: '11:00',
       location: '南山文化旅遊區',
       title: '海上觀音',
+      transport: '遊園車',
       placements: [
         {
           placementKey: 'guanyin-photo',
@@ -93,6 +100,8 @@ const day: TravelMemoryDay = {
       ],
     },
   ],
+  meals: { breakfast: '飯店早餐', lunch: '海南料理', dinner: '海鮮' },
+  lodging: '三亞家庭旅館',
   updatedAt: '2026-08-02T00:00:00.000Z',
   createdAt: '2026-08-02T00:00:00.000Z',
 }
@@ -153,8 +162,11 @@ for (const style of styles) {
   const html = renderToStaticMarkup(
     <TravelMemoryDayPage view={{ ...dayView, day: photoOnlyDay, memory: overview(style) }} />,
   )
-  assert.match(html, /這一天沒有已配置的旅行影片/)
+  assert.doesNotMatch(html, /這一天沒有已配置的旅行影片/)
   assert.doesNotMatch(html, /youtube-nocookie\.com/)
+  assert.match(html, /交通 · 遊園車|Transport · 遊園車/)
+  assert.match(html, /飯店早餐/)
+  assert.match(html, /三亞家庭旅館/)
 }
 
 const missingUrlDay: TravelMemoryDay = {
@@ -171,7 +183,7 @@ for (const style of styles) {
   const html = renderToStaticMarkup(
     <TravelMemoryDayPage view={{ ...dayView, day: missingUrlDay, memory: overview(style) }} />,
   )
-  assert.match(html, /這一天沒有已配置的旅行影片/)
+  assert.doesNotMatch(html, /這一天沒有已配置的旅行影片/)
 }
 
 const day8: TravelMemoryDay = {
@@ -319,6 +331,20 @@ function overview(style: TravelMemoryPresentationStyle): TravelMemoryOverview {
     slug: '201307-hainan',
     startDate: '2013-07-27T00:00:00.000Z',
     endDate: '2013-08-03T00:00:00.000Z',
+    guestParticipants: [{ name: 'Tavis' }, { name: 'Grandma' }],
+    travelLedger: {
+      flights: [{ flightNumber: 'CI001', route: '台北 → 三亞' }],
+      lodgings: [{ hotel: '海邊家庭旅館', dateRange: '7/27–8/3' }],
+    },
+    storySections: [{
+      level: 2,
+      title: '最難忘的一天',
+      anchor: 'unforgettable-day',
+      role: 'unforgettable-day',
+      body: '全家在海邊一起看夕陽。',
+    }],
+    externalVideos: [{ title: '全旅程剪影', url: 'https://youtu.be/lYP3m2N8yvs' }],
+    reminders: [{ category: '回憶補充', items: [{ text: '記得寫下照片背後的故事。' }] }],
     presentationStyle: style,
     days: Array.from({ length: 8 }, (_, index) => ({
       dayKey: `day-${String(index + 1).padStart(2, '0')}`,

@@ -87,6 +87,23 @@ assert.equal(gallery.items.length, 1)
 assert.equal(gallery.items[0]?.caption, '南山文化旅遊區的海上觀音。')
 assert.equal(gallery.items[0]?.media.altText, '海上觀音替代文字')
 assert.equal(toTravelMemoryGallery(memory, days, { dayKey: 'day-04' }).items.length, 0)
+const duplicateAssetGallery = toTravelMemoryGallery(memory, [
+  days[0],
+  {
+    ...days[1],
+    moments: [{
+      momentKey: 'same-asset-second-placement',
+      title: '同一資產的重複 placement',
+      placements: [{
+        placementKey: 'duplicate-guanyin.jpeg',
+        type: 'photo',
+        media,
+        caption: '不應在 Photos 重複顯示。',
+      }],
+    }],
+  },
+])
+assert.equal(duplicateAssetGallery.items.length, 1)
 
 const galleryOnlyMedia: Media = {
   id: 999,
@@ -101,6 +118,7 @@ const galleryWithLegacy = toTravelMemoryGallery(
   days,
 )
 assert.ok(galleryWithLegacy.items.some((item) => item.unclassified))
+assert.equal(galleryWithLegacy.items.find((item) => item.unclassified)?.caption, undefined)
 
 const locationPage = toTravelMemoryGallery(
   { ...memory, galleryImages: [galleryOnlyMedia] },

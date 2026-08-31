@@ -34,6 +34,7 @@ export type Phase19BackfillPlan = {
   dayUpdates: { id: number; patch: TravelProjection }[]
   missingMemories: string[]
   missingMedia: string[]
+  duplicatePlacements: string[]
   unassignedVideos: { slug: string; title?: string; youtubeUrl: string }[]
 }
 
@@ -49,6 +50,7 @@ export function buildPhase19TravelMemoryBackfillPlan(input: {
   mediaItems: MediaSeed[]
   mediaIdsBySourcePath: Map<string, number>
   currentDays: Phase19DayInventory[]
+  mode?: 'payload-wins' | 'safe' | 'source-wins'
 }): Phase19BackfillPlan {
   const memoriesBySlug = new Map(input.memories.map((memory) => [memory.slug, memory]))
   const completedTravels = input.travels.filter((travel) => travel.status === 'completed')
@@ -59,6 +61,7 @@ export function buildPhase19TravelMemoryBackfillPlan(input: {
   const missingMemories: string[] = []
   const missingMedia: string[] = []
   const unassignedVideos: Phase19BackfillPlan['unassignedVideos'] = []
+  const duplicatePlacements: string[] = []
   const currentDaysByIdentity = new Map(
     input.currentDays.map((day) => [day.dayIdentity, day]),
   )
@@ -85,6 +88,7 @@ export function buildPhase19TravelMemoryBackfillPlan(input: {
       ...projection.unassignedVideos.map((video) => ({ slug: travel.slug, ...video })),
     )
     missingMedia.push(...projection.unmatchedMedia)
+    duplicatePlacements.push(...projection.duplicatePlacements)
 
     for (const day of projection.days) {
       const materialized = materializeDay(day, memory.id, input.mediaIdsBySourcePath)
@@ -95,6 +99,7 @@ export function buildPhase19TravelMemoryBackfillPlan(input: {
         base: asProjection(currentDay?.sourceMetadata?.baseProjection),
         source: materialized.projection,
         current: currentDay ? dayProjection(currentDay) : undefined,
+        mode: input.mode,
       })
       dayPlans.push(plan)
 
@@ -120,6 +125,7 @@ export function buildPhase19TravelMemoryBackfillPlan(input: {
     dayUpdates,
     missingMemories: [...new Set(missingMemories)].sort(),
     missingMedia: [...new Set(missingMedia)].sort(),
+    duplicatePlacements: [...new Set(duplicatePlacements)].sort(),
     unassignedVideos,
   }
 }
@@ -133,6 +139,7 @@ function materializeDay(
   const projection = buildTravelProjection({
     dayKey: source.dayKey,
     day: source.day,
+    date: source.date,
     dateLabel: source.dateLabel,
     title: source.title,
     theme: source.theme,
@@ -143,6 +150,7 @@ function materializeDay(
       location: moment.location,
       title: moment.title,
       body: moment.body,
+      transport: moment.transport,
       placements: moment.placements.flatMap<TravelMemoryDayPlacement>((placement) => {
         if (placement.type === 'photo') {
           const sourcePath = placement.mediaSourcePath

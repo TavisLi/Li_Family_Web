@@ -15,12 +15,14 @@ export type TravelMemoryMomentSourceProjection = {
   location?: string
   title: string
   body?: string
+  transport?: string
   placements: TravelMemoryPlacementSourceProjection[]
 }
 
 export type TravelMemoryDaySourceProjection = {
   dayKey: string
   day: number
+  date: string
   dateLabel?: string
   title: string
   theme?: string
@@ -32,6 +34,7 @@ export type TravelMemoryDaySourceProjection = {
 
 export type TravelMemoryDayProjectionResult = {
   days: TravelMemoryDaySourceProjection[]
+  duplicatePlacements: string[]
   unmatchedMedia: string[]
   unassignedVideos: { title?: string; youtubeUrl: string }[]
 }
@@ -46,13 +49,15 @@ export function buildTravelMemoryDayProjections(
       item.ownerSlug === travel.slug &&
       item.usage === 'itinerary',
   )
+  const validDays = new Set((travel.dailyItinerary ?? []).map((item) => item.day))
   const unmatchedMedia = itineraryMedia
-    .filter((item) => !item.day || !item.sectionId)
+    .filter((item) => !item.day || !item.sectionId || !validDays.has(item.day))
     .map((item) => item.sourcePath)
+  const duplicatePlacements = duplicateValues(itineraryMedia.map((item) => item.sourcePath))
 
   const mediaByDay = new Map<number, MediaSeed[]>()
   for (const item of itineraryMedia) {
-    if (!item.day || !item.sectionId) continue
+    if (!item.day || !item.sectionId || !validDays.has(item.day)) continue
     const items = mediaByDay.get(item.day) ?? []
     items.push(item)
     mediaByDay.set(item.day, items)
@@ -77,6 +82,7 @@ export function buildTravelMemoryDayProjections(
       ...(segment.time ? { time: segment.time } : {}),
       title: segment.activity,
       ...(segment.notes ? { body: segment.notes } : {}),
+      ...(segment.transport ? { transport: segment.transport } : {}),
       placements: [],
     }))
 
@@ -88,7 +94,7 @@ export function buildTravelMemoryDayProjections(
             momentKey: 'daily-videos',
             title: '當日影片',
             placements: videos.map((video) => ({
-              placementKey: `youtube:${video.youtubeUrl}`,
+              placementKey: `youtube:${canonicalYouTubeIdentity(video.youtubeUrl)}`,
               type: 'youtube',
               role: 'inline',
               youtubeUrl: video.youtubeUrl,
@@ -101,16 +107,39 @@ export function buildTravelMemoryDayProjections(
     return {
       dayKey: `day-${String(sourceDay.day).padStart(2, '0')}`,
       day: sourceDay.day,
-      ...(sourceDay.date ? { dateLabel: sourceDay.date } : {}),
+      ...(sourceDay.dateLabel ? { dateLabel: sourceDay.dateLabel } : {}),
+      date: dateForDay(travel.startDate, sourceDay.day),
       title: sourceDay.title,
       ...(sourceDay.theme ? { theme: sourceDay.theme } : {}),
+      ...(sourceDay.story ? { story: sourceDay.story } : {}),
       moments: [...segmentMoments, ...photoMoments, ...videoMoments].sort(compareMoments),
       ...(sourceDay.meals ? { meals: sourceDay.meals } : {}),
       ...(sourceDay.lodging ? { lodging: sourceDay.lodging } : {}),
     }
   })
 
-  return { days, unmatchedMedia, unassignedVideos }
+  return { days, duplicatePlacements, unmatchedMedia, unassignedVideos }
+}
+
+function duplicateValues(values: string[]): string[] {
+  const seen = new Set<string>()
+  const duplicates = new Set<string>()
+  for (const value of values) {
+    if (seen.has(value)) duplicates.add(value)
+    seen.add(value)
+  }
+  return [...duplicates].sort()
+}
+
+function canonicalYouTubeIdentity(url: string): string {
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|shorts\/|embed\/))([A-Za-z0-9_-]{6,})/)
+  return match?.[1] ?? url
+}
+
+function dateForDay(startDate: string, day: number): string {
+  const date = new Date(`${startDate.slice(0, 10)}T00:00:00.000Z`)
+  date.setUTCDate(date.getUTCDate() + day - 1)
+  return date.toISOString()
 }
 
 function mediaMoments(media: MediaSeed[]): TravelMemoryMomentSourceProjection[] {
