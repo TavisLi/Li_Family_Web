@@ -22,8 +22,8 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 - Branch：`codex/phase-21-travel-memory-vnext`
 - Base：`origin/main` at `4805a33`
-- Commits：`35ffbc5`（implementation）、`b87ec35`（Production inventory evidence）
-- PR：[#103](https://github.com/TavisLi/Li_Family_Web/pull/103)，Draft／OPEN／MERGEABLE；Vercel check 建立時為 PENDING
+- Commits：以 PR #103 Git history 為準；核心 implementation commit 為 `35ffbc5`
+- PR：[#103](https://github.com/TavisLi/Li_Family_Web/pull/103)，Draft／OPEN；mergeability 與 Vercel checks 依最新 head 重新計算
 - Merge：N/A
 
 ## Delivered work
