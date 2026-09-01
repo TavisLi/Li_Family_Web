@@ -1,7 +1,7 @@
 # Phase 21 Travel Memory vNext 完成報告
 
 日期：2026-09-01
-狀態：**Draft PR open；Production read-only inventoried；Preview／write gates pending**
+狀態：**Draft PR open；Production read-only inventoried；Preview BLOCKED_AT_SCHEMA_GATE**
 
 ## Scope
 
@@ -13,7 +13,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 ## Out of scope／未授權
 
-- 未執行 Preview deployment。
+- Preview 已以 branch-scoped Production DB connection 重新部署並執行 GET-only QA；因 Production 缺少 Phase 21 schema 欄位而 BLOCK，未完成視覺驗收。
 - 未執行 Production migration、content／media write 或 destructive cleanup。
 - 未 merge 或關閉 Issue。
 - 未納入工作樹中既有的七個 `202702-thailand-phuket/itinerary/` untracked media。
@@ -97,7 +97,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 ## Browser／Preview／Production QA
 
 - Local browser：PASS，詳見 `docs/phase-artifacts/phase-21/phase-21-browser-qa.md`。
-- Preview：pending。
+- Preview：環境與 redeploy 已完成；`/travel` HTTP `200` 的 RSC response 含 Digest `91166848`，runtime root cause 為 Production 缺少 `travel_memories_story_sections.role`。狀態為 **BLOCKED_AT_SCHEMA_GATE**，詳見 `docs/phase-artifacts/phase-21/phase-21-preview-production-db-read-only-qa.md`。
 - Production read-only inventory：PASS；`202602` Memory／`202702` Plan ownership 與 Production records 均已確認。
 - Production browser/content QA：pending。
 
@@ -105,8 +105,9 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 1. 本機沒有可用的 disposable PostgreSQL，migration 尚未 rehearsal。
 2. 前次 `202702` Memory missing 判定已撤回；修正版 read-back 證明 `202602` Memory 與 `202702` Plan 均存在，不需要 create。
-3. Preview QA、migration、content write、cleanup 與 merge 均需要各自授權或對應 gate 證據。
+3. Preview 已取得 branch-scoped GET-only QA 授權並完成環境配置，但 Production schema 尚未包含 `storySections.role`，因此無法完成真實資料 render；HTTP `200` 不構成 PASS。
 4. #101 的 destructive cleanup 不能由「完成 Phase」或 Issue closeout 隱含批准。
+5. Production migration、content write、cleanup 與 merge 仍需各自授權；Preview blocker 不授權自動 migration。
 
 ## Rollback
 
@@ -133,7 +134,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 下一個安全 gate 是：
 
 1. 提供可用的 disposable PostgreSQL，完成 migration rehearsal；
-2. 等待 PR #103 CI／Preview，取得 Preview QA 批准後驗證；
-3. 依修正版 Production 基線準備 migration／content dry-run approval package；
+2. 依修正版 Production 基線與 Preview `42703` 證據完成 migration rehearsal／approval package；
+3. 取得獨立 Production migration 批准後才可套用，並重新執行 PR #103 GET-only Preview QA；
 4. 依證據分別批准 migration、content apply、read-back；
 5. #101 cleanup 保持獨立 Human approval。

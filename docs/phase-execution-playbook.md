@@ -375,6 +375,21 @@ Preview QA 至少按適用範圍覆蓋：
 
 Vercel `READY` 只證明 deployment build 完成，不證明 route、database、metadata 或 access 正確。
 
+### 11.1 Branch-scoped Preview 連線 Production database 的唯讀 QA 基準
+
+只有在沒有可用的 Preview database，且 Human 明確理解 Preview 將取得可能具有寫入權限的 Production `DATABASE_URI` 時，才可使用此例外路徑。此批准只涵蓋指定 PR branch 的 GET-only Browser QA，不等同 Production migration、content／media write、Admin 操作或一般 Preview 環境授權。
+
+執行條件：
+
+1. 將 `DATABASE_URI`、`PAYLOAD_SECRET` 與 route 所需環境變數限制在指定 Preview branch；不得套用到所有 Preview 或 Production environment。
+2. 必須明確設定 `PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=false`，並以環境變數清單 read-back 確認 branch scope；證據只記錄變數名稱、scope 與狀態，不記錄 secret value。
+3. 只允許 public GET route、runtime log 與 rendered response 檢查；不得開啟 Admin、提交登入、呼叫 write API、執行 seed／migration，或觸發任何 schema／data mutation。
+4. 重新部署後確認 deployment commit 與 PR head 相同。Vercel `READY` 或 HTTP `200` 均不足以判定 PASS；還要確認 RSC／HTML 沒有 server error digest、runtime logs 無錯誤，且適用的 desktop／mobile route 能完成 render。
+5. 若 runtime query 因缺少欄位、table 或 migration 而失敗，立即 BLOCK。不得為了完成 Preview QA 推導或執行 Production migration；回到 H5，以 inventory、rehearsal 與獨立批准處理。
+6. PR merge、放棄或不再需要此例外路徑時，將 branch-scoped Production credential 移除列為 closeout action，並保存無 secret value 的 scope read-back。
+
+每次使用時，Phase artifact 必須記錄 Human approval、branch、deployment／commit、允許與排除動作、環境變數名稱、QA 結果、runtime evidence、data effect 與停止原因。
+
 ## 12. Gate 8：Merge 與 Production
 
 1. 確認 PR checks、review 與 mergeability。
