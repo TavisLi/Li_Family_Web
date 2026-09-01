@@ -1,7 +1,7 @@
 # Phase 21 Travel Memory vNext 完成報告
 
 日期：2026-09-01
-狀態：**Locally verified；Production read-only inventoried；PR／Preview／write gates pending**
+狀態：**Draft PR open；Production read-only inventoried；Preview／write gates pending**
 
 ## Scope
 
@@ -15,15 +15,15 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 - 未執行 Preview deployment。
 - 未執行 Production migration、content／media write 或 destructive cleanup。
-- 未 push、建立 PR、merge 或關閉 Issue。
+- 未 merge 或關閉 Issue。
 - 未納入工作樹中既有的七個 `202702-thailand-phuket/itinerary/` untracked media。
 
 ## Branch／commit／PR／merge
 
 - Branch：`codex/phase-21-travel-memory-vnext`
 - Base：`origin/main` at `4805a33`
-- Commit：本 Phase-21 local commit（hash 以 Git history 為準）
-- PR：N/A（尚未授權 push／PR）
+- Commits：`35ffbc5`（implementation）、`b87ec35`（Production inventory evidence）
+- PR：[#103](https://github.com/TavisLi/Li_Family_Web/pull/103)，Draft／OPEN／MERGEABLE；Vercel check 建立時為 PENDING
 - Merge：N/A
 
 ## Delivered work
@@ -105,7 +105,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 1. 本機沒有可用的 disposable PostgreSQL，migration 尚未 rehearsal。
 2. Production 缺少 Phuket parent record；建立該 record 屬於 content write，不能由 inventory 自動補建。
-3. Preview、migration、content write、cleanup、push／PR／merge 均需要各自授權。
+3. Preview QA、migration、content write、cleanup 與 merge 均需要各自授權或對應 gate 證據。
 4. #101 的 destructive cleanup 不能由「完成 Phase」或 Issue closeout 隱含批准。
 
 ## Rollback
@@ -133,7 +133,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 下一個安全 gate 是：
 
 1. 提供可用的 disposable PostgreSQL，完成 migration rehearsal；
-2. 批准 push／PR，進行 CI 與 Preview QA；
+2. 等待 PR #103 CI／Preview，取得 Preview QA 批准後驗證；
 3. 決定 Phuket Production parent/content create 是否另行批准；
 4. 依證據分別批准 migration、content apply、read-back；
 5. #101 cleanup 保持獨立 Human approval。
