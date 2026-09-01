@@ -1,7 +1,7 @@
 # Phase 21 Travel Memory vNext 完成報告
 
 日期：2026-09-01
-狀態：**Locally verified；PR／Preview／Production gates pending**
+狀態：**Locally verified；Production read-only inventoried；PR／Preview／write gates pending**
 
 ## Scope
 
@@ -13,7 +13,6 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 ## Out of scope／未授權
 
-- 未執行 Production read-only inventory。
 - 未執行 Preview deployment。
 - 未執行 Production migration、content／media write 或 destructive cleanup。
 - 未 push、建立 PR、merge 或關閉 Issue。
@@ -91,20 +90,23 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 - Migration：additive-only，新增 live/version story role enum column 與 Moment locale transport column。
 - Migration package static test：PASS；拒絕 CASCADE、unrelated table 與 data DML。
 - Disposable database rehearsal：未完成；本機 Docker daemon 不可用。
-- Production inventory/read-back：未執行；已提供只讀、SELECT-only、無內容輸出的 `travel:phase-21:inventory` 工具等待獨立批准。
+- Production inventory：2026-09-01 已執行 SELECT-only inventory；海南／澳洲存在且 stable keys 無缺漏，Phuket parent record 不存在。詳見 `docs/phase-artifacts/phase-21/phase-21-production-read-only-inventory.md`。
+- Production content read-back：尚未執行，因 migration/content apply 未獲授權。
 - Production data effect：0。
 
 ## Browser／Preview／Production QA
 
 - Local browser：PASS，詳見 `docs/phase-artifacts/phase-21/phase-21-browser-qa.md`。
 - Preview：pending。
-- Production：pending。
+- Production read-only inventory：完成；發現 `202702-thailand-phuket` 缺少 parent record。
+- Production browser/content QA：pending。
 
 ## Known limitations／blockers
 
 1. 本機沒有可用的 disposable PostgreSQL，migration 尚未 rehearsal。
-2. Production inventory、Preview、migration、content write、cleanup、push／PR／merge 均需要各自授權。
-3. #101 的 destructive cleanup 不能由「完成 Phase」或 Issue closeout 隱含批准。
+2. Production 缺少 Phuket parent record；建立該 record 屬於 content write，不能由 inventory 自動補建。
+3. Preview、migration、content write、cleanup、push／PR／merge 均需要各自授權。
+4. #101 的 destructive cleanup 不能由「完成 Phase」或 Issue closeout 隱含批准。
 
 ## Rollback
 
@@ -130,8 +132,8 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 下一個安全 gate 是：
 
-1. 批准並執行 Production read-only inventory；
-2. 提供可用的 disposable PostgreSQL，完成 migration rehearsal；
-3. 批准 push／PR，進行 CI 與 Preview QA；
+1. 提供可用的 disposable PostgreSQL，完成 migration rehearsal；
+2. 批准 push／PR，進行 CI 與 Preview QA；
+3. 決定 Phuket Production parent/content create 是否另行批准；
 4. 依證據分別批准 migration、content apply、read-back；
 5. #101 cleanup 保持獨立 Human approval。
