@@ -1,7 +1,7 @@
 # Phase 21 Travel Memory vNext 完成報告
 
 日期：2026-09-01
-狀態：**Draft PR open；Production read-only inventoried；Preview BLOCKED_AT_SCHEMA_GATE**
+狀態：**Draft PR open；migration rehearsed；Production approval package ready；Preview BLOCKED_AT_SCHEMA_GATE**
 
 ## Scope
 
@@ -89,7 +89,8 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 - Migration：additive-only，新增 live/version story role enum column 與 Moment locale transport column。
 - Migration package static test：PASS；拒絕 CASCADE、unrelated table 與 data DML。
-- Disposable database rehearsal：未完成；本機 Docker daemon 不可用。
+- Disposable PostgreSQL 17 rehearsal：PASS；committed SQL match 與 `up → down → up`、nullable／enum、synthetic sentinel row count／checksum read-back 全部通過。詳見 `docs/phase-artifacts/phase-21/phase-21-migration-rehearsal.md`。
+- Production migration approval package：READY／AWAITING HUMAN APPROVAL；fresh schema-only inventory 確認四欄位、兩 enum 與 Phase 21 migration record 全部不存在。詳見 `docs/phase-artifacts/phase-21/phase-21-production-migration-approval-package.md`。
 - Production inventory：修正版 SELECT-only read-back 已確認三筆 Memories（含 `202602-thailand-phuket`）與 `202702-thailand-phuket` Plan 全部存在；三筆 Memory stable keys 無缺漏。前次把 `202702` 當 Memory target 的 missing 判定已撤回。詳見 `docs/phase-artifacts/phase-21/phase-21-production-read-only-inventory.md`。
 - Production content read-back：尚未執行，因 migration/content apply 未獲授權。
 - Production data effect：0。
@@ -103,7 +104,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 ## Known limitations／blockers
 
-1. 本機沒有可用的 disposable PostgreSQL，migration 尚未 rehearsal。
+1. Disposable PostgreSQL rehearsal 已 PASS；Production migration 仍未批准，不得因 Preview blocker 自動 apply。
 2. 前次 `202702` Memory missing 判定已撤回；修正版 read-back 證明 `202602` Memory 與 `202702` Plan 均存在，不需要 create。
 3. Preview 已取得 branch-scoped GET-only QA 授權並完成環境配置，但 Production schema 尚未包含 `storySections.role`，因此無法完成真實資料 render；HTTP `200` 不構成 PASS。
 4. #101 的 destructive cleanup 不能由「完成 Phase」或 Issue closeout 隱含批准。
@@ -133,8 +134,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 下一個安全 gate 是：
 
-1. 提供可用的 disposable PostgreSQL，完成 migration rehearsal；
-2. 依修正版 Production 基線與 Preview `42703` 證據完成 migration rehearsal／approval package；
-3. 取得獨立 Production migration 批准後才可套用，並重新執行 PR #103 GET-only Preview QA；
-4. 依證據分別批准 migration、content apply、read-back；
-5. #101 cleanup 保持獨立 Human approval。
+1. 由 Human 審閱 `phase-21-production-migration-approval-package.md`；
+2. 取得獨立 Production migration 批准後才可套用，並重新執行 PR #103 GET-only Preview QA；
+3. 依證據分別批准 content apply、read-back；
+4. #101 cleanup 保持獨立 Human approval。
