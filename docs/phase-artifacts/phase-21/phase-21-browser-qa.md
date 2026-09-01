@@ -11,7 +11,7 @@
 | --- | --- | --- | --- | --- | --- |
 | 2013 海南 | family-scrapbook | PASS | PASS | PASS | PASS |
 | 2023 澳洲東岸 | cinematic-timeline | PASS | PASS | PASS | PASS |
-| 2027 普吉島 | editorial-journal | PASS | PASS | PASS | PASS |
+| 2026 普吉島 | editorial-journal | PASS | PASS | PASS | PASS |
 
 共 12 個 route／viewport 組合。每個組合均確認：
 

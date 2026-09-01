@@ -45,6 +45,12 @@ type InventoryRow = {
   media_related_member_link_count: string
 }
 
+type PlanInventoryRow = {
+  slug: string
+  status: string | null
+  planning_section_count: string
+}
+
 export const phase21InventorySql = `
 select
   memory.slug,
@@ -74,6 +80,16 @@ where memory.slug = any($1::text[])
 order by memory.slug
 `
 
+export const phase21PlanInventorySql = `
+select
+  plan.slug,
+  plan._status::text as status,
+  (select count(*) from travel_plans_planning_sections section where section._parent_id = plan.id) as planning_section_count
+from travel_plans plan
+where plan.slug = any($1::text[])
+order by plan.slug
+`
+
 async function run() {
   await loadLocalEnv(process.cwd())
   if (process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH === 'true') {
@@ -84,20 +100,29 @@ async function run() {
   const databaseUri = process.env.DATABASE_URI
   if (!databaseUri) throw new Error('DATABASE_URI is required')
 
-  const slugs = ['201307-hainan', '202308-east-australia', '202702-thailand-phuket']
+  const memorySlugs = ['201307-hainan', '202308-east-australia', '202602-thailand-phuket']
+  const planSlugs = ['202702-thailand-phuket']
   const pool = new Pool({ connectionString: databaseUri, max: 1 })
   const client = await pool.connect()
 
   try {
-    const result = await client.query<InventoryRow>(phase21InventorySql, [slugs])
+    const memoryResult = await client.query<InventoryRow>(phase21InventorySql, [memorySlugs])
+    const planResult = await client.query<PlanInventoryRow>(phase21PlanInventorySql, [planSlugs])
     console.log(
       JSON.stringify(
         {
           mode: 'read-only',
           targetFingerprint: databaseFingerprint(databaseUri),
-          expectedSlugs: slugs,
-          missingSlugs: slugs.filter((slug) => !result.rows.some((row) => row.slug === slug)),
-          memories: result.rows.map(normalizeCounts),
+          expectedMemorySlugs: memorySlugs,
+          missingMemorySlugs: memorySlugs.filter(
+            (slug) => !memoryResult.rows.some((row) => row.slug === slug),
+          ),
+          memories: memoryResult.rows.map(normalizeCounts),
+          expectedPlanSlugs: planSlugs,
+          missingPlanSlugs: planSlugs.filter(
+            (slug) => !planResult.rows.some((row) => row.slug === slug),
+          ),
+          plans: planResult.rows.map(normalizeCounts),
         },
         null,
         2,
@@ -109,7 +134,7 @@ async function run() {
   }
 }
 
-function normalizeCounts(row: InventoryRow) {
+function normalizeCounts(row: InventoryRow | PlanInventoryRow) {
   return Object.fromEntries(
     Object.entries(row).map(([key, value]) => [
       key,
