@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { parseTravelMarkdown } from '@/scripts/seed-content'
+import { toTravelMemoryOverview } from '@/lib/travel-memory'
 
 import type { Media, TravelMemoryDay } from '@/payload/payload-types'
 import type {
@@ -51,6 +53,78 @@ for (const [style, layout, landmark, structure] of [
   assert.match(html, new RegExp(`data-travel-memory-layout="${layout}"`))
   assert.match(html, new RegExp(landmark))
   assert.match(html, structure)
+}
+
+for (const style of styles) {
+  const memory: TravelMemoryOverview = {
+    title: 'Markdown overview',
+    slug: 'markdown-overview',
+    startDate: '2026-02-10',
+    endDate: '2026-02-17',
+    presentationStyle: style,
+    days: [],
+    storySections: [{
+      level: 2,
+      title: '格式化補充資訊',
+      anchor: 'formatted-additional-information',
+      role: null,
+      body: [
+        '這是 **重要內容**。',
+        '',
+        '- 第一項',
+        '- 第二項',
+        '',
+        '| 日期 | 地點 |',
+        '| --- | --- |',
+        '| 7/27 | 三亞 |',
+        '',
+        '> 請保留這項提醒。',
+        '',
+        '`原始值` 與 <script>alert(1)</script>',
+        '',
+        '__SECTION_BOUNDARY__',
+      ].join('\n'),
+    }, {
+      level: 1, title: '結構占位標題', anchor: 'boundary', body: '__SECTION_BOUNDARY__',
+    }, {
+      level: 2, title: '空正文標題', anchor: 'empty', body: '  ',
+    }],
+    reminders: [{ category: '提醒', items: [{ text: '# 行前準備\n\n**備份票券**' }] }],
+  }
+  const projected = toTravelMemoryOverview(memory, [])
+  assert.equal(projected.storySections, memory.storySections, 'view model must preserve published Markdown')
+  const html = renderToStaticMarkup(<TravelMemoryOverviewPage memory={projected} />)
+  assert.match(html, /<strong[^>]*>重要內容<\/strong>/)
+  assert.match(html, /<ul[^>]*>[\s\S]*<li[^>]*>[\s\S]*第一項[\s\S]*<\/li>[\s\S]*<li[^>]*>[\s\S]*第二項[\s\S]*<\/li>[\s\S]*<\/ul>/)
+  assert.match(html, /<table[^>]*>[\s\S]*<th[^>]*>日期<\/th>[\s\S]*<td[^>]*>三亞<\/td>[\s\S]*<\/table>/)
+  assert.match(html, /<blockquote[^>]*>請保留這項提醒。<\/blockquote>/)
+  assert.match(html, /<code[^>]*>原始值<\/code>/)
+  assert.match(html, /<strong[^>]*>備份票券<\/strong>/)
+  assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/)
+  assert.doesNotMatch(html, /\*\*|\| --- \| --- \||__SECTION_BOUNDARY__|結構占位標題|空正文標題|# 行前準備|<script>/)
+  assert.equal((html.match(/<article /g) ?? []).length, 1)
+}
+
+for (const [file, style] of [
+  ['201307海南島8日.md', 'family-scrapbook'],
+  ['202308東澳全覽9日.md', 'cinematic-timeline'],
+  ['202602泰國普吉島8日.md', 'editorial-journal'],
+] as const) {
+  const source = await parseTravelMarkdown(`content-source/travels/${file}`)
+  assert.ok(source.startDate && source.endDate)
+  const memory = toTravelMemoryOverview({
+    title: source.title,
+    slug: source.slug,
+    startDate: source.startDate,
+    endDate: source.endDate,
+    presentationStyle: style,
+    storySections: source.sourceSections,
+    reminders: source.reminders,
+  }, [])
+  const html = renderToStaticMarkup(<TravelMemoryOverviewPage memory={memory} />)
+  assert.ok(html.includes('<table '), `${source.slug}: real-source tables render`)
+  assert.ok(html.includes('<strong '), `${source.slug}: real-source emphasis renders`)
+  assert.ok(!/__SECTION_BOUNDARY__|\*\*|\|\s*---\s*\|/.test(html), `${source.slug}: no raw Markdown or boundary marker`)
 }
 
 const photo: Media = {

@@ -12,6 +12,7 @@ import type {
 import type { Media, TravelMemoryDay } from '@/payload/payload-types'
 import { cn } from '@/lib/utils'
 import { toSafeYouTubeExternalUrl, toYouTubeEmbedUrl } from './youtube'
+import { SourceBody } from './travel-source-sections'
 
 type OverviewRenderer = ComponentType<{ memory: TravelMemoryOverview }>
 type DayRenderer = ComponentType<{ view: TravelMemoryDayView }>
@@ -278,7 +279,9 @@ function MemoryOverviewArchive({
   const flights = memory.travelLedger?.flights ?? []
   const lodgings = memory.travelLedger?.lodgings ?? []
   const stories = (memory.storySections ?? []).filter(
-    (section) => !/每日行程|daily itinerary/i.test(section.title),
+    (section) => !/每日行程|daily itinerary/i.test(section.title)
+      && section.body.trim()
+      && section.body.trim() !== '__SECTION_BOUNDARY__',
   )
   const videos = (memory.externalVideos ?? []).flatMap((video) => {
     const url = toSafeYouTubeExternalUrl(video.url)
@@ -368,10 +371,10 @@ function MemoryOverviewArchive({
         {stories.length ? (
           <div className="mt-12 grid gap-7 lg:grid-cols-2">
             {stories.map((story) => (
-              <article className={cn('p-6', card)} key={story.anchor}>
+              <article className={cn('min-w-0 p-6', card)} key={story.anchor}>
                 <p className={cn('text-[10px] font-semibold uppercase tracking-[0.18em]', accent)}>{storyRoleLabel(story.role)}</p>
                 <h3 className={cn('mt-3 text-2xl tracking-tight', !cinematic && 'font-serif')}>{story.title}</h3>
-                <p className={cn('mt-4 whitespace-pre-wrap text-sm leading-7', muted)}>{story.body}</p>
+                <SourceBody body={story.body} layout="single" tone={cinematic ? 'dark' : 'light'} />
               </article>
             ))}
           </div>
@@ -385,7 +388,11 @@ function MemoryOverviewArchive({
                 <section key={reminder.id ?? `${reminder.category}:${index}`}>
                   <h4 className="font-semibold">{reminder.category}</h4>
                   <ul className={cn('mt-2 list-disc space-y-1 pl-5 text-sm leading-6', muted)}>
-                    {(reminder.items ?? []).map((item, itemIndex) => <li key={item.id ?? itemIndex}>{item.text}</li>)}
+                    {(reminder.items ?? []).map((item, itemIndex) => (
+                      <li className="min-w-0 [&>div]:mt-0" key={item.id ?? itemIndex}>
+                        <SourceBody body={item.text} layout="single" tone={cinematic ? 'dark' : 'light'} />
+                      </li>
+                    ))}
                   </ul>
                 </section>
               ))}
