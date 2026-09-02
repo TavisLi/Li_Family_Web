@@ -1,11 +1,13 @@
 # Phase 21 Production Migration Approval Package
 
 日期：2026-09-02
-狀態：**AWAITING HUMAN APPROVAL — DO NOT APPLY**
+狀態：**BLOCKED_PENDING_SET_DRIFT — APPROVAL CONSUMED WITHOUT APPLY**
 
 ## Requested decision
 
-本 package 只請求未來是否批准 Production 執行 migration `20260831_120000_phase_21_travel_memory_contract`。目前沒有 Production mutation 授權；文件完成、disposable rehearsal PASS、Preview schema blocker 或 Vercel `READY` 都不能取代 Human approval。
+本 package 原只請求批准 Production 執行 migration `20260831_120000_phase_21_travel_memory_contract`。目前沒有仍有效的 Production mutation 授權；文件完成、disposable rehearsal PASS、Preview schema blocker 或 Vercel `READY` 都不能取代新的 Human approval。
+
+2026-09-02 Human 已批准本 package，但 fresh `migrate:status` 發現 unrelated historical no-op migration 同時 pending，命中 stop condition，因此沒有執行 Production migration。本次批准已消耗於被阻擋的 execution attempt，不得重播；後續處理見 `phase-21-production-migration-blocker.md`。
 
 批准所鎖定的 migration SHA-256：`dd187293e6866f19eb788383bdd11673b22fc0f52f8aa9f087d4a5ef45febf55`。
 
@@ -102,6 +104,6 @@ DDL 會短暫取得四張 table 的 PostgreSQL lock；若無法在執行窗口�
 
 ## Human approval token
 
-若要進入正式 Production migration gate，請明確回覆：
+下列原批准文字已於 2026-09-02 使用並因 stop condition 終止，不得重播：
 
 > 批准依 `phase-21-production-migration-approval-package.md` 執行 Phase 21 Production additive migration；只新增兩個 enum 與四個 nullable 欄位，`PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=false`，不執行 content/media write、cleanup、merge；任何 stop condition 命中立即 BLOCK。
