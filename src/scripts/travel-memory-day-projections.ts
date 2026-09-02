@@ -85,6 +85,7 @@ export function buildTravelMemoryDayProjections(
       ...(segment.transport ? { transport: segment.transport } : {}),
       placements: [],
     }))
+    preserveAustraliaDay3Keys(travel.slug, sourceDay.day, segmentMoments)
 
     const photoMoments = mediaMoments(mediaByDay.get(sourceDay.day) ?? [])
     const videos = videosByDay.get(sourceDay.day) ?? []
@@ -171,6 +172,31 @@ function mediaMoments(media: MediaSeed[]): TravelMemoryMomentSourceProjection[] 
       })),
     }
   })
+}
+
+// Published identities predate removal of a repeated table header. Keep that
+// obsolete key reserved; never renumber the four real afternoon activities.
+function preserveAustraliaDay3Keys(
+  slug: string,
+  day: number,
+  moments: TravelMemoryMomentSourceProjection[],
+) {
+  if (slug !== '202308-east-australia' || day !== 3) return
+  const identities = [
+    ['⭐ 城市懷舊電車 City Circle Tram', 'itinerary-7'],
+    ['聯邦廣場 Federation Square', 'itinerary-8'],
+    ['聖派翠克大教堂 St. Patrick’s Cathedral', 'itinerary-9'],
+    ['義大利街', 'itinerary-10'],
+  ] as const
+  for (const [title, key] of identities) {
+    const matches = moments.filter((moment) => moment.title === title && moment.time === '下午')
+    if (matches.length !== 1) throw new Error(`BLOCK: Australia Day 3 identity drift: ${key}`)
+    matches[0].momentKey = key
+  }
+  const keys = moments.map((moment) => moment.momentKey)
+  if (keys.includes('itinerary-6') || new Set(keys).size !== keys.length) {
+    throw new Error('BLOCK: Australia Day 3 reserved or duplicate itinerary key')
+  }
 }
 
 function segmentMomentKey(time: string | undefined, index: number): string {

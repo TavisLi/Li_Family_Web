@@ -732,6 +732,27 @@ export async function buildTravelSeedContent(projectRoot: string): Promise<Trave
   return parseTravelDirectory(travelDirectory, catalog)
 }
 
+// Scope before parsing Markdown or walking assets; read-only audits must not
+// ingest unrelated Plans or user-owned untracked media.
+export async function buildScopedMemorySeedContent(
+  projectRoot: string,
+  slugs: readonly string[],
+): Promise<SeedContent> {
+  const directory = path.join(projectRoot, 'content-source/travels')
+  const catalog = await parseTravelCatalog(path.join(projectRoot, 'docs/travel-projects.md'), directory)
+  if (!slugs.length || new Set(slugs).size !== slugs.length) throw new Error('Invalid Memory scope')
+  const entries = slugs.map((slug) => {
+    const entry = catalog.find((item) => item.slug === slug)
+    if (!entry || entry.status !== 'completed') throw new Error(`Not a catalog Memory: ${slug}`)
+    return entry
+  })
+  return {
+    members: [], blogCategories: [], blogPosts: [],
+    travels: await Promise.all(entries.map((entry) => parseTravelMarkdown(path.join(directory, entry.sourceFile), entry))),
+    media: await scanMediaAssets(projectRoot, slugs),
+  }
+}
+
 export async function parseBloggerTakeoutArchive(
   archivePath: string,
   options: {
@@ -860,10 +881,12 @@ async function parseTravelDirectory(
   )
 }
 
-async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
+async function scanMediaAssets(projectRoot: string, memorySlugs?: readonly string[]): Promise<MediaSeed[]> {
   const assetRoot = path.join(projectRoot, 'content-source/assets')
-  const manifest = await readAssetManifest(projectRoot, assetRoot)
-  const files = await walkFiles(assetRoot)
+  const manifest = await readAssetManifest(projectRoot, assetRoot, memorySlugs)
+  const files = memorySlugs
+    ? (await Promise.all(memorySlugs.map((slug) => walkFiles(path.join(assetRoot, 'travels', slug))))).flat()
+    : await walkFiles(assetRoot)
 
   return files
     .filter((file) => imageExtensions.has(path.extname(file).toLowerCase()))
@@ -903,11 +926,13 @@ async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
 async function readAssetManifest(
   projectRoot: string,
   assetRoot: string,
+  memorySlugs?: readonly string[],
 ): Promise<Map<string, z.infer<typeof manifestEntrySchema>>> {
   const globalManifestPath = path.join(projectRoot, 'content-source/assets/manifest.json')
   const manifests = new Map<string, z.infer<typeof manifestEntrySchema>>()
   const addEntries = (entries: z.infer<typeof manifestEntrySchema>[]) => {
     for (const entry of entries) {
+      if (memorySlugs && (entry.ownerType !== 'travel' || !memorySlugs.includes(entry.ownerSlug))) continue
       const absolutePath = path.join(assetRoot, entry.sourcePath)
 
       manifests.set(toAssetRelativePath(assetRoot, absolutePath), entry)
@@ -920,7 +945,7 @@ async function readAssetManifest(
   try {
     const travelDirs = await fs.readdir(travelAssetRoot, { withFileTypes: true })
     const localManifestPaths = travelDirs
-      .filter((entry) => entry.isDirectory())
+      .filter((entry) => entry.isDirectory() && (!memorySlugs || memorySlugs.includes(entry.name)))
       .map((entry) => path.join(travelAssetRoot, entry.name, 'manifest.json'))
       .sort((left, right) => left.localeCompare(right))
 
@@ -1328,7 +1353,7 @@ function parseDailyItinerary(
   startDate?: string,
 ): NonNullable<TravelSeed['dailyItinerary']> {
   const matches = [
-    ...markdown.matchAll(/##\s+\**(?:[^\n]*?)Day\s+(\d+)\s*[·．.-]\s*([^\n*]+)\**([\s\S]*?)(?=\n##\s+\**(?:[^\n]*?)Day\s+\d+|$)/gi),
+    ...markdown.matchAll(/(?:^|\n)##[ \t]+\**(?:[^\n]*?)Day\s+(\d+)\s*[·．.-]\s*([^\n*]+)\**([\s\S]*?)(?=\n#{1,2}[ \t]+|$)/gi),
   ]
 
   return matches.map((match) => {
@@ -1371,27 +1396,25 @@ function labeledDailyValue(content: string, label: string): string | undefined {
 function parseDailySegments(
   content: string,
 ): NonNullable<NonNullable<TravelSeed['dailyItinerary']>[number]['segments']> {
-  const tableRows = markdownTableRows(content)
-  const header = tableRows[0] ?? []
-  const hasItineraryTable = header.some((cell) => cell.includes('時間')) && header.some((cell) => cell.includes('安排'))
+  const tables = (content.match(/(?:^[ \t]*\|[^\n]*(?:\n|$))+/gm) ?? [])
+    .map((table) => markdownTableRows(table).filter((cells) => !cells.every((cell) => /^:?-+:?$/.test(cell))))
+    .filter(([header = []]) => header.some((cell) => cell.includes('時間')) && header.some((cell) => cell.includes('安排')))
 
-  if (hasItineraryTable) {
-    return tableRows
-      .slice(1)
-      .filter((cells) => Boolean(cells[1]))
-      .slice(0, 12)
+  if (tables.length) {
+    return tables.flatMap(([header = [], ...rows]) => rows
+      .filter((cells) => Boolean(cellByHeader(header, cells, ['安排'])))
+      .filter((cells) => !cells.every((cell, index) => cell === header[index]))
       .map((cells) => ({
-        time: cells[0],
-        activity: cells[1] ?? '',
-        transport: cells[2],
-        notes: cells[3],
-      }))
+        time: cellByHeader(header, cells, ['時間']),
+        activity: cellByHeader(header, cells, ['安排'])!,
+        transport: cellByHeader(header, cells, ['交通']),
+        notes: cellByHeader(header, cells, ['備注', '備註']),
+      })))
   }
 
   return content
     .split('\n')
     .filter((line) => line.trim().startsWith('- '))
-    .slice(0, 12)
     .map((line) => ({ activity: cleanMarkdown(line.replace(/^\s*-\s*/, '').trim()) }))
 }
 
