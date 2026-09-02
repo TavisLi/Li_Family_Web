@@ -1,7 +1,7 @@
 # Phase 21 Travel Memory vNext 完成報告
 
 日期：2026-09-02
-狀態：**Draft PR open；Production additive migration PASS；Preview schema blocker removed，GET-only re-QA pending**
+狀態：**Draft PR open；Production additive migration PASS；Preview runtime PASS；true-data overview presentation BLOCKED**
 
 ## Scope
 
@@ -13,7 +13,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 ## Out of scope／未授權
 
-- Preview 已以 branch-scoped Production DB connection 重新部署並執行 GET-only QA；當時因 Production 缺少 Phase 21 schema 欄位而 BLOCK。Production additive migration 現已完成，但尚未重跑 Preview 視覺驗收。
+- Preview 已以 branch-scoped Production DB connection 重新部署；Production additive migration 後已重跑 GET-only Browser QA。schema/runtime blocker 已解除，但三筆 true-data Memory overview 仍顯示 raw Markdown，presentation 驗收 BLOCK。
 - 已執行經 Human 批准的 Production additive schema migration；未執行 content／media write 或 destructive cleanup。
 - 未 merge 或關閉 Issue。
 - 未納入工作樹中既有的七個 `202702-thailand-phuket/itinerary/` untracked media。
@@ -99,7 +99,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 ## Browser／Preview／Production QA
 
 - Local browser：PASS，詳見 `docs/phase-artifacts/phase-21/phase-21-browser-qa.md`。
-- Preview：環境與 redeploy 已完成；先前 `/travel` RSC Digest `91166848` 的缺欄位 root cause 已由 Production additive migration解除。GET-only Preview re-QA 尚未執行，因此不能沿用舊 HTTP `200` 宣告 render PASS。
+- Preview：環境與 redeploy 已完成；先前 `/travel` RSC Digest `91166848` 的缺欄位 root cause 已由 Production additive migration 解除。2026-09-02 使用已登入 Chrome 對 exact Preview 執行 GET-only re-QA：`/travel`、Australia Daily 與 Contact Sheet runtime render PASS，console errors `0`、無水平溢位；三筆 Memory overview 均能載入，但補充內容仍暴露 Markdown table、`**bold**` 與 `__SECTION_BOUNDARY__` 等純文字，故 true-data overview presentation BLOCK。詳見 `docs/phase-artifacts/phase-21/phase-21-preview-production-db-read-only-qa.md`。
 - Production read-only inventory：PASS；`202602` Memory／`202702` Plan ownership 與 Production records 均已確認。
 - Production browser/content QA：pending。
 
@@ -107,7 +107,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 1. Disposable PostgreSQL rehearsal與 Production additive migration／read-back 均已 PASS；content backfill 仍未批准或執行。
 2. 前次 `202702` Memory missing 判定已撤回；修正版 read-back 證明 `202602` Memory 與 `202702` Plan 均存在，不需要 create。
-3. Preview 已取得 branch-scoped GET-only QA 授權並完成環境配置；schema blocker 已解除，但必須重跑 GET-only QA，舊 HTTP `200` 不構成新 PASS。
+3. Preview GET-only Browser re-QA 已完成；schema/runtime blocker 已解除，但三筆 true-data Memory overview 的 raw Markdown presentation 是新的明確 blocker。
 4. #101 的 destructive cleanup 不能由「完成 Phase」或 Issue closeout 隱含批准。
 5. Production migration 已完成；content write、cleanup 與 merge 仍需各自授權。
 
@@ -135,7 +135,7 @@ Phase 21 定義為 GitHub Issues #94–#102，依賴順序為：
 
 下一個安全 gate 是：
 
-1. 重新執行 PR #103 GET-only Preview Browser QA，確認 `/travel` 與三套 Travel Memory renderers 不再出現 schema digest；
+1. 先診斷三筆 true-data Memory overview 為何把 Markdown table、strong marker 與 `__SECTION_BOUNDARY__` 當純文字呈現，提出不寫 Production 的最小修正與驗證方案；
 2. 依 true-data dry-run／read-back 證據，另行決定是否批准 content apply；
 3. PR review／merge 保持獨立 Human gate；
 4. #101 cleanup 保持獨立 Human approval。

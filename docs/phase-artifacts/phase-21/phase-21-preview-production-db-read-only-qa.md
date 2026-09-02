@@ -3,7 +3,8 @@
 - 日期：2026-09-01
 - PR：[#103](https://github.com/TavisLi/Li_Family_Web/pull/103)
 - Branch：`codex/phase-21-travel-memory-vnext`
-- PR head／deployment source：`d5873e2`
+- Initial PR head／deployment source：`d5873e2`
+- Post-migration Browser QA deployment source：`6e6fbe0`
 - Preview alias：`https://li-family-web-git-codex-phase-21-tra-8ea7ad-tavis-li-s-projects.vercel.app`
 
 ## Human approval 與界線
@@ -65,3 +66,24 @@ column travel_memories_storySections.role does not exist
 - `PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=false` 保持生效。
 - 不得為解除此 blocker 自動執行 Production migration；下一步必須回到 H5，先完成 disposable database rehearsal、migration approval package 與獨立 Human approval。
 - Branch-scoped Production credential 目前保留給尚未完成的 PR #103 QA；PR merge、放棄或不再需要時，依 closeout gate 移除並 read-back scope。
+
+## 2026-09-02 post-migration GET-only Browser re-QA
+
+Human 明確批准使用已登入的 Chrome Vercel session，只對 PR #103 exact Preview URL 執行 GET-only Browser QA；允許導航經過 Vercel authentication surface，但不開 Admin、不呼叫寫入 API、不修改環境變數、資料或 schema，也不 merge。
+
+檢查結果：**PARTIAL PASS／BLOCKED_AT_TRUE_DATA_OVERVIEW_PRESENTATION**。
+
+已通過：
+
+- exact `/travel` 可完整 render，title 為 `Travel | Web Li`，不再出現 `Application error`、server-side exception 或 Digest；console errors `0`，無水平溢位。
+- 索引正確分類 `202602-thailand-phuket` 為「旅行回憶」、`202702-thailand-phuket` 為「規劃中」；另列出 `202308-east-australia` 與 `201307-hainan` 兩筆 Memory。
+- `202308-east-australia/day/day-02` Daily renderer 完整 render，包含 9 個內容 heading、25 張 main image；無 raw Markdown marker、console error 或水平溢位。
+- `202308-east-australia/photos` Contact Sheet 完整 render，顯示 `164 FRAMES`、分頁與篩選；首屏 lazy-load 後有 12 張 main image、69 個 main link；無 console error 或水平溢位。
+- 三筆 Memory overview 都已解除先前 PostgreSQL `42703` schema blocker，能完成 server render。
+
+阻擋項：
+
+- `202602-thailand-phuket`、`202308-east-australia`、`201307-hainan` 三筆 true-data overview 的補充內容仍把 Markdown table、`**bold**`、list marker、blockquote marker 與 `__SECTION_BOUNDARY__` 顯示成純文字。
+- 因此 schema/runtime recovery 已 PASS，但 #94／#95／#100 所需的 true-data overview presentation 尚不能宣告 PASS；不得以 Daily／Photos PASS 或 HTTP 200 代替。
+
+本輪 data／schema／environment effect 為 `0`。未開啟 Admin、未提交表單、未呼叫 write API、未修改 Preview／Production environment、未執行 migration／seed／content 或 media write、未 merge。
