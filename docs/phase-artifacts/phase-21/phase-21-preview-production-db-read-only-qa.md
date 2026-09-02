@@ -87,3 +87,11 @@ Human 明確批准使用已登入的 Chrome Vercel session，只對 PR #103 exac
 - 因此 schema/runtime recovery 已 PASS，但 #94／#95／#100 所需的 true-data overview presentation 尚不能宣告 PASS；不得以 Daily／Photos PASS 或 HTTP 200 代替。
 
 本輪 data／schema／environment effect 為 `0`。未開啟 Admin、未提交表單、未呼叫 write API、未修改 Preview／Production environment、未執行 migration／seed／content 或 media write、未 merge。
+
+## 2026-09-02 renderer fix re-QA closeout
+
+`BLOCKED_AT_TRUE_DATA_OVERVIEW_PRESENTATION` 已由 renderer-only commit `37ad364` 解除。根因是 `MemoryOverviewArchive` 直接輸出儲存的 Markdown text，且未使用既有 boundary guard；不是 Production content 或 view model 遺失。
+
+新 Preview deployment `dpl_DMS7V1LY1ZWsYVM5b1LvWKTokWJr` 已鎖定 `37ad364` 並為 `READY`。三筆 Memory × desktop/mobile 共六組 GET-only Chrome QA 全部 PASS，semantic table／strong／blockquote 可見、raw Markdown 與 boundary marker 均不存在、console errors 0、無頁面或 table wrapper 越界。完整矩陣與修復證據見 `phase-21-overview-markdown-fix.md`。
+
+此 closeout 只代表 PR #103 Preview 的 Overview Markdown presentation PASS；不推導 merge、Production deployment、Production content mutation 或 Issue closeout。

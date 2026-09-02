@@ -39,7 +39,23 @@ node --import tsx src/features/travel/travel-memory-pages.test.tsx
 
 ## Preview QA
 
-待修復 commit 的 Vercel Preview READY 後，使用已批准的 Chrome session 與 exact PR #103 Preview alias 進行 GET-only re-QA。不得將舊 deployment 的結果列作修復後證據。
+修復 commit `37ad364` 的 Vercel deployment `dpl_DMS7V1LY1ZWsYVM5b1LvWKTokWJr` 已確認 `READY`，alias 為 PR #103 exact Preview URL。使用已批准的 Chrome session 執行 GET-only re-QA，未開 Admin、未呼叫 write API。
+
+| Memory | Style | Tables | Strong | Quotes | Desktop `1440×1000` | Mobile `390×844` |
+| --- | --- | ---: | ---: | ---: | --- | --- |
+| `202602-thailand-phuket` | editorial-journal | 11 | 26 | 2 | PASS | PASS |
+| `202308-east-australia` | cinematic-timeline | 18 | 119 | 5 | PASS | PASS |
+| `201307-hainan` | family-scrapbook | 17 | 84 | 15 | PASS | PASS |
+
+六組均確認：
+
+- `rawMarkdown=false`，未見 `**`、table delimiter、heading marker 或 `__SECTION_BOUNDARY__`；
+- `Application error`／server exception／Digest 均不存在；
+- console errors `0`；
+- document 無水平溢位，table scroll wrapper 沒有超出 viewport；
+- Hainan 手機實際畫面確認寬表格留在卡片內，以橫向捲動閱讀。
+
+本輪 Preview QA 沒有環境變數、schema、data 或 media effect，也沒有 merge。
 
 ## 預防與 rollback
 
