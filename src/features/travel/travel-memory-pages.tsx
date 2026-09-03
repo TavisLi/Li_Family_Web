@@ -6,6 +6,7 @@ import { PayloadImage } from '@/components/ui/payload-image'
 import type {
   TravelMemoryDayView,
   TravelMemoryGallery,
+  TravelMemoryGalleryItem,
   TravelMemoryOverview,
   TravelMemoryPresentationStyle,
 } from '@/lib/travel-memory'
@@ -703,16 +704,16 @@ function EditorialGallery({ gallery }: { gallery: TravelMemoryGallery }) {
             <p className="font-serif text-lg italic text-[#a34031]">視覺檔案</p>
             <h1 className="mt-3 max-w-4xl text-balance font-serif text-5xl leading-[0.96] tracking-[-0.04em] md:text-8xl">{gallery.memory.title}・完整相簿</h1>
           </div>
-          <p className="max-w-sm text-sm leading-7 text-[#625a50]">依日期與地點閱讀照片；每張影像仍保留返回每日故事的位置。</p>
+          <p className="max-w-sm text-sm leading-7 text-[#625a50]">依日期、類型與地點閱讀照片及影片；每日影像仍保留返回故事的位置。</p>
         </header>
         <GalleryFilters gallery={gallery} visual={visual} />
         {gallery.items.length ? (
           <div className="mt-16 grid gap-x-10 gap-y-16 md:grid-cols-2">
             {gallery.items.map((item, index) => (
               <figure className={cn(index % 3 === 1 && 'md:mt-20')} key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
-                <PayloadImage className="rounded-none border border-[#cfc2ae]" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
+                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <PayloadImage className="rounded-none border border-[#cfc2ae]" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />}
                 <figcaption className="mt-4 grid gap-2 border-t border-[#cfc2ae] pt-4 sm:grid-cols-[7rem_1fr]">
-                  <p className="font-mono text-xs tabular-nums text-[#a34031]">{item.unclassified ? 'ARCHIVE' : `DAY ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
+                  <p className="font-mono text-xs tabular-nums text-[#a34031]">{item.unclassified ? (item.type === 'youtube' ? '全旅程影片' : 'ARCHIVE') : `DAY ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
                   <div>
                     <p className="font-serif text-base italic leading-7 text-[#625a50]">{item.caption || '此影像未附敘事說明。'}</p>
                     {item.dayKey && item.momentKey ? <Link className="mt-3 inline-flex text-xs font-semibold text-[#a34031]" href={`/travel/${gallery.memory.slug}/day/${item.dayKey}#moment-${item.momentKey}`}>回到每日故事</Link> : null}
@@ -721,7 +722,7 @@ function EditorialGallery({ gallery }: { gallery: TravelMemoryGallery }) {
               </figure>
             ))}
           </div>
-        ) : <EmptyState text="這個篩選條件尚未有已發布照片。" visual={visual} />}
+        ) : <EmptyState text="這個篩選條件尚未有已發布照片或影片。" visual={visual} />}
         <GalleryPagination gallery={gallery} visual={visual} />
       </div>
     </main>
@@ -746,9 +747,9 @@ function CinematicGallery({ gallery }: { gallery: TravelMemoryGallery }) {
           <div className="mt-12 grid gap-px bg-white/10 md:grid-cols-2">
             {gallery.items.map((item) => (
               <figure className="bg-[#0d1211] p-3" key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
-                <PayloadImage className="aspect-video rounded-none border-0" fallbackLabel={item.caption || item.media.altText} fit="cover" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
+                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <PayloadImage className="aspect-video rounded-none border-0" fallbackLabel={item.caption || item.media.altText} fit="cover" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />}
                 <figcaption className="grid grid-cols-[5rem_1fr] gap-4 px-1 py-4">
-                  <p className="font-mono text-xs tabular-nums text-[#ddae73]">{item.unclassified ? 'ARCHIVE' : `${String(item.day).padStart(2, '0')}:${item.time || '—'}`}</p>
+                  <p className="font-mono text-xs tabular-nums text-[#ddae73]">{item.unclassified ? (item.type === 'youtube' ? '全旅程影片' : 'ARCHIVE') : `${String(item.day).padStart(2, '0')}:${item.time || '—'}`}</p>
                   <div>
                     <p className="text-xs leading-6 text-white/60">{item.caption || 'No scene note.'}</p>
                     {item.dayKey && item.momentKey ? <Link className="mt-2 inline-flex text-xs font-semibold text-[#ddae73]" href={`/travel/${gallery.memory.slug}/day/${item.dayKey}#moment-${item.momentKey}`}>回到每日故事</Link> : null}
@@ -757,7 +758,7 @@ function CinematicGallery({ gallery }: { gallery: TravelMemoryGallery }) {
               </figure>
             ))}
           </div>
-        ) : <EmptyState text="這個篩選條件尚未有已發布照片。" visual={visual} />}
+        ) : <EmptyState text="這個篩選條件尚未有已發布照片或影片。" visual={visual} />}
         <GalleryPagination gallery={gallery} visual={visual} />
       </div>
     </main>
@@ -771,7 +772,7 @@ function ScrapbookGallery({ gallery }: { gallery: TravelMemoryGallery }) {
       <div className="mx-auto w-full max-w-6xl">
         <Link className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.16em] text-[#76664f] transition hover:text-[#9e3e2e]" href={`/travel/${gallery.memory.slug}`}><ArrowLeft className="size-4" aria-hidden="true" />回到旅行首頁</Link>
         <header className="mt-12 border-b-2 border-[#7a6749]/30 pb-10">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#9e3e2e]">照片信封 · {gallery.totalItems} 張</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#9e3e2e]">照片信封與影片 · {gallery.totalItems} 項</p>
           <h1 className="mt-4 max-w-4xl text-balance font-serif text-5xl leading-tight tracking-[-0.035em] md:text-7xl">{gallery.memory.title}・完整相簿</h1>
           <p className="mt-5 max-w-2xl font-serif text-xl italic leading-8 text-[#76664f]">日期、地點，以及每張照片背面會寫下的那句話。</p>
         </header>
@@ -780,16 +781,16 @@ function ScrapbookGallery({ gallery }: { gallery: TravelMemoryGallery }) {
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {gallery.items.map((item, index) => (
               <figure className={cn('bg-[#fffaf0] p-3 pb-8 shadow-[5px_8px_0_rgba(98,75,43,0.14)]', scrapbookTilt('family-scrapbook', index))} key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
-                <PayloadImage className="rounded-none border-0" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" tone="travel" />
+                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <PayloadImage className="rounded-none border-0" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" tone="travel" />}
                 <figcaption className="px-3 pt-5">
-                  <p className="font-serif text-lg italic leading-7 text-[#695b47]">{item.caption || '照片背面沒有留下文字。'}</p>
-                  <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-[#9e3e2e]">{item.unclassified ? '未分類照片' : `Day ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
+                  <p className="font-serif text-lg italic leading-7 text-[#695b47]">{item.caption || (item.type === 'youtube' ? '影片沒有附上文字。' : '照片背面沒有留下文字。')}</p>
+                  <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-[#9e3e2e]">{item.unclassified ? (item.type === 'youtube' ? '全旅程影片' : '未分類照片') : `Day ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
                   {item.dayKey && item.momentKey ? <Link className="mt-3 inline-flex font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9e3e2e]" href={`/travel/${gallery.memory.slug}/day/${item.dayKey}#moment-${item.momentKey}`}>回到每日故事</Link> : null}
                 </figcaption>
               </figure>
             ))}
           </div>
-        ) : <EmptyState text="這個篩選條件尚未有已發布照片。" visual={visual} />}
+        ) : <EmptyState text="這個篩選條件尚未有已發布照片或影片。" visual={visual} />}
         <GalleryPagination gallery={gallery} visual={visual} />
       </div>
     </main>
@@ -854,22 +855,37 @@ function MemoryPlacement({ placement, priority = false, style, visual }: { place
   )
 }
 
+function GalleryVideo({ item, visual }: { item: Extract<TravelMemoryGalleryItem, { type: 'youtube' }>; visual: VisualProfile }) {
+  const embedUrl = toYouTubeEmbedUrl(item.youtubeUrl)
+  const externalUrl = toSafeYouTubeExternalUrl(item.youtubeUrl)
+  return embedUrl ? (
+    <iframe allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="aspect-video w-full bg-black" loading="lazy" src={embedUrl} title={item.caption || '旅行影片'} />
+  ) : externalUrl ? (
+    <a className={cn('flex aspect-video items-center justify-center gap-2 border p-5 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4', visual.border, visual.accent)} href={externalUrl} rel="noreferrer noopener" target="_blank"><Play className="size-5" aria-hidden="true" />在 YouTube 開啟影片</a>
+  ) : null
+}
+
 function GalleryFilters({ gallery, visual }: { gallery: TravelMemoryGallery; visual: VisualProfile }) {
   return (
-    <div className="mt-8 grid gap-3">
-      <div className="flex flex-wrap gap-2" aria-label="按日期篩選照片">
-        <Link className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedDayKey === null ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: null, page: 1 })}>全部</Link>
-        {gallery.memory.days.map((day) => (
-          <Link className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedDayKey === day.dayKey ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: day.dayKey, page: 1 })} key={day.dayKey}>Day {day.day}</Link>
+    <div className="mt-8 grid gap-3 [&_a:focus-visible]:outline [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-4">
+      <nav className="flex flex-wrap gap-2" aria-label="按類型篩選媒體">
+        {([{ type: null, label: '全部' }, { type: 'photo', label: '照片' }, { type: 'youtube', label: '影片' }] as const).map(({ type, label }) => (
+          <Link aria-current={gallery.selectedType === type ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedType === type ? visual.button : visual.card)} href={galleryHref(gallery, { type, page: 1 })} key={type ?? 'all'}>{label}</Link>
         ))}
-      </div>
+      </nav>
+      <nav className="flex flex-wrap gap-2" aria-label="按日期篩選媒體">
+        <Link aria-current={gallery.selectedDayKey === null ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedDayKey === null ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: null, page: 1 })}>所有日期</Link>
+        {gallery.memory.days.map((day) => (
+          <Link aria-current={gallery.selectedDayKey === day.dayKey ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedDayKey === day.dayKey ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: day.dayKey, page: 1 })} key={day.dayKey}>Day {day.day}</Link>
+        ))}
+      </nav>
       {gallery.locations.length ? (
-        <div className="flex flex-wrap gap-2" aria-label="按地點篩選照片">
-          <Link className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedLocation === null ? visual.button : visual.card)} href={galleryHref(gallery, { location: null, page: 1 })}>所有地點</Link>
+        <nav className="flex flex-wrap gap-2" aria-label="按地點篩選媒體">
+          <Link aria-current={gallery.selectedLocation === null ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedLocation === null ? visual.button : visual.card)} href={galleryHref(gallery, { location: null, page: 1 })}>所有地點</Link>
           {gallery.locations.map((location) => (
-            <Link className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedLocation === location ? visual.button : visual.card)} href={galleryHref(gallery, { location, page: 1 })} key={location}>{location}</Link>
+            <Link aria-current={gallery.selectedLocation === location ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedLocation === location ? visual.button : visual.card)} href={galleryHref(gallery, { location, page: 1 })} key={location}>{location}</Link>
           ))}
-        </div>
+        </nav>
       ) : null}
     </div>
   )
@@ -941,14 +957,16 @@ function firstDayPhoto(day: TravelMemoryDay): Media | null {
 
 function galleryHref(
   gallery: TravelMemoryGallery,
-  changes: { dayKey?: string | null; location?: string | null; page?: number },
+  changes: { dayKey?: string | null; location?: string | null; type?: TravelMemoryGallery['selectedType']; page?: number },
 ) {
   const dayKey = changes.dayKey === undefined ? gallery.selectedDayKey : changes.dayKey
   const location = changes.location === undefined ? gallery.selectedLocation : changes.location
+  const type = changes.type === undefined ? gallery.selectedType : changes.type
   const page = changes.page ?? gallery.page
   const search = new URLSearchParams()
   if (dayKey) search.set('day', dayKey)
   if (location) search.set('location', location)
+  if (type) search.set('type', type)
   if (page > 1) search.set('page', String(page))
   const query = search.toString()
   return `/travel/${gallery.memory.slug}/photos${query ? `?${query}` : ''}`

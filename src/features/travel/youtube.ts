@@ -35,3 +35,17 @@ export function toSafeYouTubeExternalUrl(value: string): string | null {
     return null
   }
 }
+
+// Share identity across watch/shorts/embed/live links without changing whether
+// an existing Daily renderer embeds a video or offers a safe external link.
+export function toYouTubeVideoIdentity(value: string): string | null {
+  const safeUrl = toSafeYouTubeExternalUrl(value)
+  if (!safeUrl) return null
+  const embedUrl = toYouTubeEmbedUrl(safeUrl)
+  if (embedUrl) return embedUrl
+  const url = new URL(safeUrl)
+  const liveId = url.hostname.replace(/^www\./, '') === 'youtube.com'
+    ? url.pathname.match(/^\/live\/([A-Za-z0-9_-]{6,})\/?$/)?.[1]
+    : undefined
+  return liveId ? `https://www.youtube-nocookie.com/embed/${liveId}` : safeUrl
+}

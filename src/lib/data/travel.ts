@@ -7,6 +7,7 @@ import {
   toTravelMemoryOverview,
   type TravelMemoryDayView,
   type TravelMemoryGallery,
+  type TravelMemoryGalleryFilters,
   type TravelMemoryOverview,
 } from '@/lib/travel-memory'
 import {
@@ -224,7 +225,7 @@ export async function getTravelMemoryDayBySlug(
 
 export async function getTravelMemoryGalleryBySlug(
   slug: string,
-  filters: { dayKey?: string | null; location?: string | null; page?: number } = {},
+  filters: Omit<TravelMemoryGalleryFilters, 'pageSize'> = {},
 ): Promise<TravelMemoryGallery | null> {
   return readTravelMemoryChildAfterOwner({
     readOwner: () => getTravelMemoryReadContext(slug, true),

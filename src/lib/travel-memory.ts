@@ -1,4 +1,5 @@
 import type { Media, TravelMemory, TravelMemoryDay } from '@/payload/payload-types'
+import { toSafeYouTubeExternalUrl, toYouTubeVideoIdentity } from '@/features/travel/youtube'
 
 export const travelMemoryPresentationStyles = [
   'editorial-journal',
@@ -89,14 +90,17 @@ export type TravelMemoryGalleryItem = Pick<
   momentKey: TravelMemoryMoment['momentKey'] | null
   location?: TravelMemoryMoment['location']
   time?: TravelMemoryMoment['time']
-  media: Media
   unclassified: boolean
-}
+} & (
+  | { type: Extract<NonNullable<TravelMemoryPlacement['type']>, 'photo'>; media: Media }
+  | { type: Extract<NonNullable<TravelMemoryPlacement['type']>, 'youtube'>; youtubeUrl: NonNullable<TravelMemoryPlacement['youtubeUrl']> }
+)
 
 export type TravelMemoryGallery = {
   memory: TravelMemoryOverview
   selectedDayKey: string | null
   selectedLocation: string | null
+  selectedType: TravelMemoryGalleryItem['type'] | null
   locations: string[]
   page: number
   pageSize: number
@@ -105,9 +109,10 @@ export type TravelMemoryGallery = {
   items: TravelMemoryGalleryItem[]
 }
 
-type TravelMemoryGalleryFilters = {
+export type TravelMemoryGalleryFilters = {
   dayKey?: string | null
   location?: string | null
+  type?: string | null
   page?: number
   pageSize?: number
 }
@@ -184,15 +189,11 @@ export function toTravelMemoryGallery(
   const selectedDayKey = filters.dayKey && days.some((day) => day.dayKey === filters.dayKey)
     ? filters.dayKey
     : null
+  const selectedType = filters.type === 'photo' || filters.type === 'youtube' ? filters.type : null
   const classifiedItems = days.flatMap((day) =>
     (day.moments ?? []).flatMap((moment) =>
-      (moment.placements ?? []).flatMap((placement) => {
-        if (
-          placement.type !== 'photo' ||
-          !placement.media ||
-          typeof placement.media !== 'object'
-        ) return []
-        return [{
+      (moment.placements ?? []).flatMap<TravelMemoryGalleryItem>((placement) => {
+        const context = {
           placementKey: placement.placementKey,
           role: placement.role,
           caption: placement.caption,
@@ -201,16 +202,19 @@ export function toTravelMemoryGallery(
           momentKey: moment.momentKey,
           location: moment.location,
           time: moment.time,
-          media: placement.media,
           unclassified: false,
-        } satisfies TravelMemoryGalleryItem]
+        }
+        if (placement.type === 'photo' && placement.media && typeof placement.media === 'object') {
+          return [{ ...context, type: 'photo', media: placement.media }]
+        }
+        const youtubeUrl = placement.type === 'youtube' && placement.youtubeUrl
+          ? toSafeYouTubeExternalUrl(placement.youtubeUrl)
+          : null
+        return youtubeUrl ? [{ ...context, type: 'youtube', youtubeUrl }] : []
       }),
     ),
   )
-  const uniqueClassifiedItems = [...new Map(
-    classifiedItems.map((item) => [item.media.id, item] as const),
-  ).values()]
-  const classifiedMediaIds = new Set(uniqueClassifiedItems.map((item) => item.media.id))
+  const classifiedMediaIds = new Set(classifiedItems.flatMap((item) => item.type === 'photo' ? [item.media.id] : []))
   const unclassifiedItems = (memory.galleryImages ?? []).flatMap((item) => {
     if (typeof item !== 'object' || classifiedMediaIds.has(item.id)) return []
     return [{
@@ -220,21 +224,38 @@ export function toTravelMemoryGallery(
       dayKey: null,
       day: null,
       momentKey: null,
+      type: 'photo',
       media: item,
       unclassified: true,
     } satisfies TravelMemoryGalleryItem]
   })
-  const allItems: TravelMemoryGalleryItem[] = [...uniqueClassifiedItems, ...unclassifiedItems]
+  const globalVideos = (memory.externalVideos ?? []).flatMap<TravelMemoryGalleryItem>((video) => {
+    const youtubeUrl = toSafeYouTubeExternalUrl(video.url)
+    return youtubeUrl ? [{
+      type: 'youtube', youtubeUrl, placementKey: `global:${toYouTubeVideoIdentity(youtubeUrl)}`,
+      caption: video.title, dayKey: null, day: null, momentKey: null, unclassified: true,
+    }] : []
+  })
+  const allItems: TravelMemoryGalleryItem[] = [...classifiedItems, ...unclassifiedItems, ...globalVideos]
   const locations = [...new Set(
-    uniqueClassifiedItems.flatMap((item) => item.location ? [item.location] : []),
+    classifiedItems.flatMap((item) => item.location ? [item.location] : []),
   )].sort((left, right) => left.localeCompare(right, 'zh-Hant'))
   const selectedLocation = filters.location && locations.includes(filters.location)
     ? filters.location
     : null
-  const filteredItems = allItems.filter((item) =>
+  const matchingItems = allItems.filter((item) =>
     (!selectedDayKey || item.dayKey === selectedDayKey) &&
-    (!selectedLocation || item.location === selectedLocation),
+    (!selectedLocation || item.location === selectedLocation) &&
+    (!selectedType || item.type === selectedType),
   )
+  // Filter usages before deduplicating assets: another day's placement must
+  // never hide the selected day's return link. Daily usage wins over global.
+  const uniqueItems = new Map<string, TravelMemoryGalleryItem>()
+  for (const item of matchingItems) {
+    const identity = galleryItemIdentity(item)
+    if (!uniqueItems.has(identity)) uniqueItems.set(identity, item)
+  }
+  const filteredItems = [...uniqueItems.values()]
   const pageSize = Math.min(Math.max(filters.pageSize ?? 24, 1), 60)
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize))
   const page = Math.min(Math.max(filters.page ?? 1, 1), totalPages)
@@ -244,6 +265,7 @@ export function toTravelMemoryGallery(
     memory: toTravelMemoryOverview(memory, days),
     selectedDayKey,
     selectedLocation,
+    selectedType,
     locations,
     page,
     pageSize,
@@ -251,6 +273,12 @@ export function toTravelMemoryGallery(
     totalPages,
     items: filteredItems.slice(offset, offset + pageSize),
   }
+}
+
+function galleryItemIdentity(item: TravelMemoryGalleryItem): string {
+  return item.type === 'photo'
+    ? `photo:${item.media.id}`
+    : `youtube:${toYouTubeVideoIdentity(item.youtubeUrl)}`
 }
 
 function sortDays<T extends { day: number }>(days: T[]): T[] {

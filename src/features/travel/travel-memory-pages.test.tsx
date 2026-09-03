@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { parseTravelMarkdown } from '@/scripts/seed-content'
-import { toTravelMemoryOverview } from '@/lib/travel-memory'
+import { toTravelMemoryGallery, toTravelMemoryOverview } from '@/lib/travel-memory'
 
 import type { Media, TravelMemoryDay } from '@/payload/payload-types'
 import type {
@@ -315,6 +315,7 @@ const gallery: TravelMemoryGallery = {
   memory: overview('family-scrapbook'),
   selectedDayKey: null,
   selectedLocation: null,
+  selectedType: null,
   locations: ['南山文化旅遊區'],
   page: 1,
   pageSize: 24,
@@ -330,6 +331,7 @@ const gallery: TravelMemoryGallery = {
       time: '11:00',
       caption: '南山文化旅遊區的海上觀音。',
       unclassified: false,
+      type: 'photo',
       media: photo,
     },
   ],
@@ -396,6 +398,34 @@ const duplicatePlacementGalleryHtml = renderToStaticMarkup(
   />,
 )
 assert.equal((duplicatePlacementGalleryHtml.match(/南山文化旅遊區的海上觀音。/g) ?? []).length, 2)
+
+for (const style of styles) {
+  const mixedGallery = toTravelMemoryGallery({
+    ...overview(style), externalVideos: [{ url: 'https://youtu.be/abcdefghijk', title: '全旅程影片測試' }],
+  }, [day])
+  const html = renderToStaticMarkup(<TravelMemoryGalleryPage gallery={mixedGallery} />)
+  assert.match(html, /aria-label="按類型篩選媒體"/)
+  assert.match(html, /type=photo/)
+  assert.match(html, /type=youtube/)
+  assert.match(html, /youtube-nocookie\.com\/embed\/lYP3m2N8yvs/)
+  assert.match(html, /youtube-nocookie\.com\/embed\/abcdefghijk/)
+  assert.match(html, /全旅程影片測試/)
+  assert.doesNotMatch(html, /autoplay=1/)
+  assert.match(html, /回到每日故事/)
+
+  const selectedGallery = toTravelMemoryGallery(overview(style), [day], { dayKey: 'day-03', location: '南山文化旅遊區', type: 'youtube', page: 2, pageSize: 1 })
+  const selectedHtml = renderToStaticMarkup(<TravelMemoryGalleryPage gallery={selectedGallery} />)
+  const links = [...selectedHtml.matchAll(/<a\b([^>]+)>([^<]*)<\/a>/g)].map((match) => ({ attributes: match[1], label: match[2] }))
+  const photoLink = links.find((link) => link.label === '照片')!
+  const photoUrl = new URL(photoLink.attributes.match(/href="([^"]+)"/)![1].replaceAll('&amp;', '&'), 'https://example.test')
+  assert.equal(photoUrl.searchParams.get('day'), 'day-03')
+  assert.equal(photoUrl.searchParams.get('location'), '南山文化旅遊區')
+  assert.equal(photoUrl.searchParams.get('type'), 'photo')
+  assert.equal(photoUrl.searchParams.get('page'), null, 'changing type resets pagination')
+  assert.match(links.find((link) => link.label === '影片')!.attributes, /aria-current="page"/)
+  assert.match(links.find((link) => link.label === '上一頁')!.attributes, /type=youtube/)
+  assert.doesNotMatch(selectedHtml, /<img/)
+}
 
 console.log('travel memory page tests passed')
 
