@@ -6,6 +6,7 @@ import type { SeedContent } from './seed-content'
 import { mediaRecordMatchesSeed } from './seed-media-compare'
 import { attachSourceSectionMediaIds } from './travel-section-media'
 import { buildPhase19TravelMemoryBackfillPlan } from './phase19-travel-memory-backfill'
+import { buildTravelMemoryDayProjections } from './travel-memory-day-projections'
 import {
   buildTravelSeedTarget,
   travelSeedBaseProjection,
@@ -25,6 +26,7 @@ export type DryRunAction = {
   action: 'conflict' | 'create' | 'preserve' | 'skip' | 'update'
   existingId?: number
   conflicts?: ReconciliationConflict[]
+  dependsOn?: { collection: 'media' | 'travel-memories'; key: string }[]
 }
 
 export type DryRunSummary = {
@@ -145,6 +147,51 @@ export async function buildPayloadDryRun(
         item.sourcePath ? [[item.sourcePath, Number(item.id)] as const] : [],
       ),
     )
+    const memoryBySlug = new Map(memoryInventory.map((memory) => [memory.slug, memory]))
+    const missingDatabaseMedia = new Set(
+      seedContent.media
+        .filter((media) => !mediaIdsBySourcePath.has(media.sourcePath))
+        .map((media) => media.sourcePath),
+    )
+    const dependenciesByDayIdentity = new Map<string, DryRunAction['dependsOn']>()
+    const dependencyMediaPaths = new Set<string>()
+    for (const travel of completedTravels) {
+      if (crossCollectionCollisionBySlug.has(travel.slug)) continue
+      const memory = memoryBySlug.get(travel.slug)
+      const projection = buildTravelMemoryDayProjections(travel, seedContent.media)
+      for (const day of projection.days) {
+        const dependencies: NonNullable<DryRunAction['dependsOn']> = []
+        if (!memory) dependencies.push({ collection: 'travel-memories', key: travel.slug })
+        for (const sourcePath of day.moments.flatMap((moment) =>
+          moment.placements.flatMap((placement) => placement.type === 'photo' && placement.mediaSourcePath
+            ? [placement.mediaSourcePath]
+            : []),
+        )) {
+          if (missingDatabaseMedia.has(sourcePath)) {
+            dependencies.push({ collection: 'media', key: sourcePath })
+            dependencyMediaPaths.add(sourcePath)
+          }
+        }
+        const key = memory ? `${memory.id}:${day.dayKey}` : `${travel.slug}:${day.dayKey}`
+        dependenciesByDayIdentity.set(key, uniqueDependencies(dependencies))
+        if (!memory) {
+          actions.push({
+            collection: 'travel-memory-days',
+            key,
+            action: 'create',
+            ...(dependencies.length ? { dependsOn: uniqueDependencies(dependencies) } : {}),
+          })
+        }
+      }
+      if (!memory) {
+        for (const sourcePath of projection.duplicatePlacements) {
+          actions.push(mediaProjectionConflict(sourcePath, 'duplicate source placement identity'))
+        }
+        for (const sourcePath of projection.unmatchedMedia) {
+          actions.push(mediaProjectionConflict(sourcePath, 'unmatched media placement'))
+        }
+      }
+    }
     const childPlan = buildPhase19TravelMemoryBackfillPlan({
       memories: memoryInventory,
       travels: completedTravels,
@@ -160,11 +207,12 @@ export async function buildPayloadDryRun(
       currentDaysResult.docs.map((day) => [day.dayIdentity, Number(day.id)]),
     )
     for (const plan of childPlan.dayPlans) {
-      actions.push({
-        collection: 'travel-memory-days',
-        key: plan.slug,
-        action:
-          plan.action === 'create'
+      const dependencies = dependenciesByDayIdentity.get(plan.slug) ?? []
+      const dependencyRequiresUpdate = dependencies.some((item) => item.collection === 'media')
+      const plannedAction =
+        dependencyRequiresUpdate && plan.action !== 'conflict'
+          ? (existingDayId.has(plan.slug) ? 'update' : 'create')
+          : plan.action === 'create'
             ? 'create'
             : plan.action === 'apply-source'
               ? 'update'
@@ -172,9 +220,14 @@ export async function buildPayloadDryRun(
                 ? 'conflict'
                 : plan.action === 'preserve-current'
                   ? 'preserve'
-                  : 'skip',
+                  : 'skip'
+      actions.push({
+        collection: 'travel-memory-days',
+        key: plan.slug,
+        action: plannedAction,
         existingId: existingDayId.get(plan.slug),
         conflicts: plan.conflicts.length ? plan.conflicts : undefined,
+        ...(dependencies.length ? { dependsOn: dependencies } : {}),
       })
     }
     for (const sourcePath of childPlan.duplicatePlacements) {
@@ -192,6 +245,7 @@ export async function buildPayloadDryRun(
       })
     }
     for (const sourcePath of childPlan.missingMedia) {
+      if (dependencyMediaPaths.has(sourcePath)) continue
       actions.push({
         collection: 'travel-memory-days',
         key: sourcePath,
@@ -453,6 +507,28 @@ async function readDryRunCatalog(
               : [],
           }]
         }),
+  }
+}
+
+function uniqueDependencies(dependencies: NonNullable<DryRunAction['dependsOn']>) {
+  return [...new Map(dependencies.map((dependency) => [
+    `${dependency.collection}:${dependency.key}`,
+    dependency,
+  ])).values()]
+}
+
+function mediaProjectionConflict(sourcePath: string, reason: string): DryRunAction {
+  return {
+    collection: 'travel-memory-days',
+    key: sourcePath,
+    action: 'conflict',
+    conflicts: [{
+      field: reason.startsWith('duplicate') ? 'moments.placements' : 'moments.placements.media',
+      category: 'media-projection',
+      base: null,
+      source: sourcePath,
+      current: reason,
+    }],
   }
 }
 

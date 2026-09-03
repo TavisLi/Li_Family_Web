@@ -1,4 +1,22 @@
-# Synthetic tables
+---
+startDate: "2026-01-01"
+endDate: "2026-01-02"
+isPrivate: true
+---
+
+# 核心信息速覽
+
+Synthetic tables
+
+# 航班信息
+
+無航班。
+
+# 住宿安排
+
+無住宿。
+
+# 每日行程詳解
 
 ## Day 1 · 1/1 — Tables
 

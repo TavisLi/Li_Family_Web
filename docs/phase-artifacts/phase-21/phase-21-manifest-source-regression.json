@@ -1,0 +1,39 @@
+{
+  "status": "LOCAL_MANIFEST_REGRESSION_PASS_NOT_PRODUCTION",
+  "observedAt": "2026-09-03T12:57:41.699Z",
+  "baselineCommit": "4d49261",
+  "baselineParserSHA256": "fea5156216f34b6a8aa25fd53bd0b1eb9c6613d32103edeace38554cd52377e3",
+  "parserSHA256": "e4d02bedf63357df168305768c8c3a0325cb6d35db539620ec9bc9d97445a76c",
+  "comparison": "deepStrictEqual entire scoped SeedContent including MediaSeed altText/caption/tags/ownership; baseline parent and full Day hashes also equal",
+  "records": [
+    {
+      "slug": "201307-hainan",
+      "sourceHash": "502823cdaf29c898362233e8710b443770f321f9f6a5a612d2400adadf14a168",
+      "dailyProjectionHash": "357e42d97c2ea7d0f0282ef3b5459cc2438ad6f9993e01e74a0aebfa451c19a3",
+      "fullMediaHash": "217e64ad09fff009affab355a208941b2ca8025c7a28876c8194e9788b38cafd",
+      "mediaCount": 357,
+      "dayCount": 8,
+      "changedFields": []
+    },
+    {
+      "slug": "202308-east-australia",
+      "sourceHash": "09be247401d8708162ab85e4aebdf088d59235c4a66f5bf17f9d86c48ed7437c",
+      "dailyProjectionHash": "36931fb98b787bf68e416da14fbd1f640598858c7703e9a97524d59b977e5830",
+      "fullMediaHash": "ff655861ce294acd636127854bb9062ae3d68ecf0993f291bad22d3cb7d54077",
+      "mediaCount": 134,
+      "dayCount": 9,
+      "changedFields": []
+    },
+    {
+      "slug": "202602-thailand-phuket",
+      "sourceHash": "81ca559581dc33ba9b1c62989eb59b400ff65b6454aa9d3be561e2c2c787ad0c",
+      "dailyProjectionHash": "78ed2c25e0f3f8445eea8a22108ba0d0b8abd9b413970fe0587161375e91d1e3",
+      "fullMediaHash": "af0f2ccd2a11ba32991bb9cd0a1ebd2d2eaa1ad45d29ae4d6e590eb9d9acc624",
+      "mediaCount": 233,
+      "dayCount": 8,
+      "changedFields": []
+    }
+  ],
+  "productionConnections": 0,
+  "productionWrites": 0
+}

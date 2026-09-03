@@ -2,6 +2,9 @@
 title: "Clean-room Family Coast Memory"
 author: "Synthetic fixture"
 date: "2026-08-31"
+startDate: "2026-04-01"
+endDate: "2026-04-02"
+isPrivate: true
 ---
 
 # 👥 核心信息速覽
@@ -77,8 +80,20 @@ Clean-room journey [https://youtu.be/dQw4w9WgXcQ]
 
 <!--
 Canonical media manifest rules:
-- asset altText is accessibility copy and belongs to the Media asset;
+- manifest altText is required nonblank accessibility copy for every new Memory asset;
 - visible caption belongs to one Moment placement;
 - itinerary assets require day plus sectionId; Source sectionId becomes momentKey;
 - editors never type momentKey or placementKey in Payload Admin.
+
+Travel-local manifest entry example (sourcePath is relative to content-source/assets):
+{
+  "sourcePath": "travels/YOUR-CANONICAL-SLUG/itinerary/dawn.png",
+  "ownerType": "travel",
+  "ownerSlug": "YOUR-CANONICAL-SLUG",
+  "usage": "itinerary",
+  "day": 2,
+  "sectionId": "dawn",
+  "altText": "三位家人站在退潮的沙灘上",
+  "caption": "這趟旅程最後一張全家合照"
+}
 -->
