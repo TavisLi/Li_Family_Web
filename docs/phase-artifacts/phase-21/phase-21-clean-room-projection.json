@@ -35,6 +35,14 @@
     "conflicts": 0,
     "deletes": 0
   },
+  "preservedCurrentAndNewMedia": {
+    "creates": 2,
+    "updates": 0,
+    "skips": 0,
+    "preserves": 2,
+    "conflicts": 0,
+    "deletes": 0
+  },
   "collision": {
     "creates": 0,
     "updates": 0,
@@ -84,5 +92,5 @@
     "R2/YouTube requests",
     "Production"
   ],
-  "observedAt": "2026-09-03T23:56:09.891Z"
+  "observedAt": "2026-09-04T00:03:07.000Z"
 }

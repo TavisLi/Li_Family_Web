@@ -208,19 +208,16 @@ export async function buildPayloadDryRun(
     )
     for (const plan of childPlan.dayPlans) {
       const dependencies = dependenciesByDayIdentity.get(plan.slug) ?? []
-      const dependencyRequiresUpdate = dependencies.some((item) => item.collection === 'media')
       const plannedAction =
-        dependencyRequiresUpdate && plan.action !== 'conflict'
-          ? (existingDayId.has(plan.slug) ? 'update' : 'create')
-          : plan.action === 'create'
-            ? 'create'
-            : plan.action === 'apply-source'
-              ? 'update'
-              : plan.action === 'conflict'
-                ? 'conflict'
-                : plan.action === 'preserve-current'
-                  ? 'preserve'
-                  : 'skip'
+        plan.action === 'create'
+          ? 'create'
+          : plan.action === 'apply-source'
+            ? 'update'
+            : plan.action === 'conflict'
+              ? 'conflict'
+              : plan.action === 'preserve-current'
+                ? 'preserve'
+                : 'skip'
       actions.push({
         collection: 'travel-memory-days',
         key: plan.slug,

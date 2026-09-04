@@ -96,7 +96,12 @@ try {
   assert.equal(plan.dayCreates.length, 2)
   assert.ok(plan.dayPlans.every(day => day.action === 'create'))
 
-  async function dryRun(parentCollection: 'travel-memories' | 'travel-plans' | null, mediaExists = true, seed = content) {
+  async function dryRun(
+    parentCollection: 'travel-memories' | 'travel-plans' | null,
+    mediaExists = true,
+    seed = content,
+    currentDays: Record<string, unknown>[] = [],
+  ) {
     let queries = 0
     const fakePayload = {
       db: { drizzle: { async execute() {
@@ -109,7 +114,7 @@ try {
       } } },
       async find(args: { collection: string }) {
         assert.equal(args.collection, 'travel-memory-days')
-        return { docs: [] }
+        return { docs: currentDays }
       },
     } as unknown as Payload // Fake only at the DB boundary, not domain helpers.
     const result = await buildPayloadDryRun(fakePayload, seed)
@@ -144,6 +149,14 @@ try {
     existingParentNewMedia.actions.find(action => action.key === `${parentId}:day-02`)?.dependsOn,
     [{ collection: 'media', key: asset.sourcePath }],
   )
+  const currentOnlyDay = {
+    ...plan.dayCreates[1], id: 999, dayIdentity: `${parentId}:day-02`,
+    title: 'Admin-only preserved title', sourceMetadata: null,
+  }
+  const preservedWithNewMedia = await dryRun('travel-memories', false, content, [currentOnlyDay])
+  const preservedDay = preservedWithNewMedia.actions.find(action => action.key === `${parentId}:day-02`)
+  assert.equal(preservedDay?.action, 'preserve')
+  assert.deepEqual(preservedDay?.dependsOn, [{ collection: 'media', key: asset.sourcePath }])
   const collision = await dryRun('travel-plans')
   assert.equal(collision.summary.conflicts, 1)
   assert.equal(collision.actions.filter(action => action.collection === 'travel-memory-days').length, 0)
@@ -204,6 +217,7 @@ try {
     newParentAndMedia: newMedia.summary,
     existingParent: existingParent.summary,
     existingParentAndNewMedia: existingParentNewMedia.summary,
+    preservedCurrentAndNewMedia: preservedWithNewMedia.summary,
     collision: collision.summary,
     invalidMedia: { unmatched: unmatched.summary, duplicate: duplicated.summary },
     dependencyContract: 'collection+stable key only; no synthetic database IDs',

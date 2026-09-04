@@ -24,6 +24,7 @@
 - 只修改 `buildPayloadDryRun` 的報告層與 tests／clean-room check；不修改實際 seed executor 或 materializer 的 missing-ID gate。
 - 尚無 parent ID 的 Day 使用 `Memory slug:dayKey` 作報告 key，不是 persisted `dayIdentity`。
 - 沿用 create／preserve／conflict／skip／update action；加 optional `dependsOn`，以 collection＋key 明示 parent／media 必須先成功建立。不得用0、負數或其他假 ID 產生可寫入 payload。
+- `dependsOn` 只補充執行順序，不得把既有 `preserve-current`、`already-converged` 或 conflict reconciliation 結果改寫成 update／create。
 - 只對未發現同 slug Plan collision、確實將 create 的 parent列出預計 Day create；有跨 collection conflict 不能出現無條件成功的 Day 計畫。
 - Manifest／Source 無效、unmatched／duplicate placement 與真正缺少 media source，繼續明列 conflict；DB 尚缺但本次 Source 明確會建立的 media，與上述錯誤分開表達。
 - 既有 parent／media 都存在時維持舊 key／reconciliation 行為與輸出；不以報告修復批准任何 Production apply。
@@ -44,6 +45,7 @@
 - `DryRunAction` 增加 optional `dependsOn`，只包含 `collection` 與 stable key；不保存不存在的 DB ID，也不被 write executor 消費。
 - 新 parent 的 Daily report key 為 `slug:dayKey`。parent／media 已存在後，仍使用真實 `parentId:dayKey`。
 - Source 內存在、DB 尚未建立的 media 轉成依賴；其 placement 所屬 Day 列 create／update，不再產生假的 missing-media conflict。unmatched 或 duplicate placement 仍分別保留 conflict。
+- 若既有 Daily 是 missing-Base／Current-only 狀態，即使其 Source placement 依賴本次新 media，報告仍維持 `preserve` 並另列 media dependency，不暗示可寫入。
 - Plan／Memory slug collision 時不列 child create；原 identity-publication conflict 保留。
 - `phase19-travel-memory-backfill` 和 `seed.ts` 寫入流程沒有修改；missing-ID fail-closed 邏輯不放寬。
 

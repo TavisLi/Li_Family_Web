@@ -706,6 +706,27 @@ export function validateCanonicalTravelMemoryMarkdown(markdown: string): string[
     if (!pattern.test(markdown)) errors.push(`缺少必要章節：${label}`)
   }
 
+  if (/#{1,2}[^\n]*航班信息/.test(markdown)) {
+    const flightTable = markdownTableRows(sectionAfterHeading(markdown, '航班信息'))
+    if (flightTable.length) {
+      const [flightHeaders = [], ...flightRows] = flightTable
+      const requiredFlightHeaders = ['日期', '航空公司', '航班', '航線', '起飛', '抵達', '備註']
+      for (const header of requiredFlightHeaders) {
+        if (!flightHeaders.includes(header)) errors.push(`航班表格缺少必要欄位：${header}`)
+      }
+      if (!flightRows.length) errors.push('航班表格至少需要一筆資料。')
+      const requiredFlightValues = requiredFlightHeaders.filter((header) => header !== '備註')
+      for (const [rowIndex, row] of flightRows.entries()) {
+        for (const header of requiredFlightValues) {
+          const columnIndex = flightHeaders.indexOf(header)
+          if (columnIndex >= 0 && !row[columnIndex]?.trim()) {
+            errors.push(`航班表格第 ${rowIndex + 1} 筆缺少必要值：${header}`)
+          }
+        }
+      }
+    }
+  }
+
   const days = [...markdown.matchAll(/^##\s+\**[^\n]*?Day\s+(\d+)\s*[·．.-]/gim)]
   if (!days.length) errors.push('至少需要一個 `## Day N · 日期 — 標題` 每日章節。')
   const numbers = days.map((match) => Number(match[1]))

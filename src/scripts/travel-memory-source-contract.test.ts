@@ -55,6 +55,8 @@ try {
     markdown.replace('isPrivate: true', 'isPrivate: "false"'),
     markdown.replace('isPrivate: true', 'isPrivate: null'),
     markdown.replace('# ✈️ 航班信息', '# 交通'),
+    markdown.replace('航班 | 航線', '班號 | 航線'),
+    markdown.replace('| 08:00 | 09:10 | Synthetic data only |', '|  | 09:10 | Synthetic data only |'),
     markdown.replace('## Day 2', '## Day 3'),
   ]) {
     assert.ok(validateCanonicalTravelMemoryMarkdown(invalid).length > 0)
