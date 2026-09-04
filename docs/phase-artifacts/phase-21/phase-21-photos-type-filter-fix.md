@@ -73,3 +73,10 @@ QA server／browser 已停止；合成 harness 保留於本機 `/private/tmp/pha
 - 海南 Production 恢復檢查於 `2026-09-03T12:15:49.450Z` CONNECT 失敗後已停止；本修復不恢復其正文或發布狀態，不重試 DB。
 - 185 項 apply、#101 destructive cleanup、#102 完整 clean-room 與 Phase closeout 均未因本修復完成。
 - Rollback 為另行批准後 revert `e1a96db`；本修復沒有 DB changes，因此沒有資料回滾或 schema migration。
+
+## 2026-09-04 current-HEAD Browser recheck
+
+- 在本地 HEAD `70961a8` 完成 build 後，重用相同 localhost synthetic harness 與實際 build CSS，以獨立 `phase21-current-head` Playwright session 重跑三套風格 × `1440×900`、`768×1024`、`390×900`，共 9 組流程，結果 `SYNTHETIC_PHOTOS_BROWSER_PASS`。
+- 每組均重新驗證 keyboard Enter 類型篩選、可見 focus、日期／類型 URL、Day 2 回跳、daily／global video ownership、分頁保留 type、圖片載入、單一 H1 與無水平溢位；`pageerror=[]`。
+- browser interception 與 CSP 只允許 `127.0.0.1:55440`，外部媒體持續封鎖；沒有連 Payload／Preview／Production。session 與 localhost server 均已關閉。
+- 此 recheck 證明本地後續 #102 parser／dry-run commits 未回歸 Photos；仍不能代替新 head push 後的真實 Preview、R2 bytes、YouTube 播放或 access QA。
