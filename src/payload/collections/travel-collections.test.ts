@@ -105,6 +105,7 @@ assert.deepEqual(fieldNames(moments.fields), [
   'location',
   'title',
   'body',
+  'transport',
   'placements',
 ])
 const placements = namedField(moments.fields, 'placements')
@@ -130,6 +131,7 @@ assert.deepEqual(
     'displayDay',
     'displayDate',
     'displaySubtitle',
+    'role',
     'body',
     'links',
     'mediaItems',

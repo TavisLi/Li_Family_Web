@@ -1,0 +1,120 @@
+{
+  "status": "LOCAL_DRY_RUN_GAP_REPRODUCED",
+  "productionConnections": 0,
+  "productionWrites": 0,
+  "cases": [
+    {
+      "case": "new-parent-media-ready",
+      "summary": {
+        "creates": 1,
+        "updates": 0,
+        "skips": 1,
+        "preserves": 0,
+        "conflicts": 0,
+        "deletes": 0
+      },
+      "actions": [
+        {
+          "collection": "travel-memories",
+          "key": "209904-report-probe",
+          "action": "create"
+        },
+        {
+          "collection": "media",
+          "key": "content-source/assets/travels/209904-report-probe/day-2.png",
+          "action": "skip"
+        }
+      ]
+    },
+    {
+      "case": "new-parent-new-media",
+      "summary": {
+        "creates": 2,
+        "updates": 0,
+        "skips": 0,
+        "preserves": 0,
+        "conflicts": 0,
+        "deletes": 0
+      },
+      "actions": [
+        {
+          "collection": "travel-memories",
+          "key": "209904-report-probe",
+          "action": "create"
+        },
+        {
+          "collection": "media",
+          "key": "content-source/assets/travels/209904-report-probe/day-2.png",
+          "action": "create"
+        }
+      ]
+    },
+    {
+      "case": "existing-parent-new-media",
+      "summary": {
+        "creates": 3,
+        "updates": 0,
+        "skips": 0,
+        "preserves": 1,
+        "conflicts": 1,
+        "deletes": 0
+      },
+      "actions": [
+        {
+          "collection": "travel-memory-days",
+          "key": "90:day-01",
+          "action": "create"
+        },
+        {
+          "collection": "travel-memory-days",
+          "key": "90:day-02",
+          "action": "create"
+        },
+        {
+          "collection": "travel-memory-days",
+          "key": "content-source/assets/travels/209904-report-probe/day-2.png",
+          "action": "conflict",
+          "conflictFields": [
+            "moments.placements.media"
+          ]
+        },
+        {
+          "collection": "travel-memories",
+          "key": "209904-report-probe",
+          "action": "preserve"
+        },
+        {
+          "collection": "media",
+          "key": "content-source/assets/travels/209904-report-probe/day-2.png",
+          "action": "create"
+        }
+      ]
+    },
+    {
+      "case": "plan-slug-collision",
+      "summary": {
+        "creates": 0,
+        "updates": 0,
+        "skips": 1,
+        "preserves": 0,
+        "conflicts": 1,
+        "deletes": 0
+      },
+      "actions": [
+        {
+          "collection": "travel-memories",
+          "key": "209904-report-probe",
+          "action": "conflict",
+          "conflictFields": [
+            "collection"
+          ]
+        },
+        {
+          "collection": "media",
+          "key": "content-source/assets/travels/209904-report-probe/day-2.png",
+          "action": "skip"
+        }
+      ]
+    }
+  ]
+}

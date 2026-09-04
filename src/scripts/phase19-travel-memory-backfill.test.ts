@@ -73,6 +73,7 @@ assert.deepEqual(plan.styleUpdates.map(({ slug, after }) => ({ slug, after })), 
 assert.equal(plan.dayCreates.length, 3)
 assert.deepEqual(plan.missingMemories, [])
 assert.deepEqual(plan.missingMedia, [])
+assert.deepEqual(plan.duplicatePlacements, [])
 const hainanMoments = plan.dayCreates[0]?.moments as Array<{
   momentKey: string
   placements: Array<{ media: number }>

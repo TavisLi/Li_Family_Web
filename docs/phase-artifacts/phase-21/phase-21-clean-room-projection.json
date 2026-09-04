@@ -1,0 +1,96 @@
+{
+  "status": "LOCAL_CLEAN_ROOM_PROJECTION_PASS",
+  "scope": "209904-clean-room-coast",
+  "requestedAlt": "Synthetic blue square above a white line",
+  "actualAlt": "Synthetic blue square above a white line",
+  "mediaReadyBeforeParent": {
+    "creates": 3,
+    "updates": 0,
+    "skips": 1,
+    "preserves": 0,
+    "conflicts": 0,
+    "deletes": 0
+  },
+  "newParentAndMedia": {
+    "creates": 4,
+    "updates": 0,
+    "skips": 0,
+    "preserves": 0,
+    "conflicts": 0,
+    "deletes": 0
+  },
+  "existingParent": {
+    "creates": 2,
+    "updates": 0,
+    "skips": 1,
+    "preserves": 1,
+    "conflicts": 0,
+    "deletes": 0
+  },
+  "existingParentAndNewMedia": {
+    "creates": 3,
+    "updates": 0,
+    "skips": 0,
+    "preserves": 1,
+    "conflicts": 0,
+    "deletes": 0
+  },
+  "preservedCurrentAndNewMedia": {
+    "creates": 2,
+    "updates": 0,
+    "skips": 0,
+    "preserves": 2,
+    "conflicts": 0,
+    "deletes": 0
+  },
+  "collision": {
+    "creates": 0,
+    "updates": 0,
+    "skips": 1,
+    "preserves": 0,
+    "conflicts": 1,
+    "deletes": 0
+  },
+  "invalidMedia": {
+    "unmatched": {
+      "creates": 3,
+      "updates": 0,
+      "skips": 1,
+      "preserves": 0,
+      "conflicts": 1,
+      "deletes": 0
+    },
+    "duplicate": {
+      "creates": 3,
+      "updates": 0,
+      "skips": 2,
+      "preserves": 0,
+      "conflicts": 1,
+      "deletes": 0
+    }
+  },
+  "dependencyContract": "collection+stable key only; no synthetic database IDs",
+  "rendered": [
+    "editorial-journal/day/day-01",
+    "editorial-journal/day/day-02",
+    "editorial-journal/overview",
+    "editorial-journal/photos",
+    "cinematic-timeline/day/day-01",
+    "cinematic-timeline/day/day-02",
+    "cinematic-timeline/overview",
+    "cinematic-timeline/photos",
+    "family-scrapbook/day/day-01",
+    "family-scrapbook/day/day-02",
+    "family-scrapbook/overview",
+    "family-scrapbook/photos"
+  ],
+  "productionConnections": 0,
+  "persistentWrites": 0,
+  "exclusions": [
+    "real Payload import/hooks/access",
+    "browser/layout/image loading",
+    "R2/YouTube requests",
+    "Production"
+  ],
+  "observedAt": "2026-09-04T00:03:07.000Z"
+}

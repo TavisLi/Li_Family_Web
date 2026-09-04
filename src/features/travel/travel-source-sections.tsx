@@ -119,7 +119,7 @@ export function SourceBody({
   const bodyGridClass = layout === 'auto' && layoutBlocks.some(({ forceWide }) => !forceWide) ? 'min-[560px]:grid-cols-2' : ''
 
   return (
-    <div className={`mt-4 grid gap-4 text-sm leading-7 ${bodyGridClass} ${mutedText}`}>
+    <div className={`mt-4 grid min-w-0 gap-4 text-sm leading-7 ${bodyGridClass} ${mutedText}`}>
       {layoutBlocks.map(({ block, forceWide }, index) => {
         const spanClass = layout === 'auto' ? sourceBlockSpanClass(block, forceWide) : ''
 
@@ -153,7 +153,7 @@ export function SourceBody({
                         className={`${sourceTableColumnClass(cell, header)} whitespace-normal break-words px-4 py-3`}
                         key={`${cell}-${cellIndex}`}
                       >
-                        {cell}
+                        {renderSourceInline(cell)}
                       </th>
                     ))}
                   </tr>
@@ -169,7 +169,7 @@ export function SourceBody({
                           className={tone === 'dark' ? 'break-words px-4 py-3 align-top text-slate-300' : 'break-words px-4 py-3 align-top text-slate-600'}
                           key={`${rowIndex}-${cellIndex}`}
                         >
-                          {cell}
+                          {renderSourceInline(cell)}
                         </td>
                       ))}
                     </tr>
@@ -187,7 +187,7 @@ export function SourceBody({
               data-planning-heading-level={block.level}
               key={`heading-${index}`}
             >
-              {block.text}
+              {renderSourceInline(block.text)}
             </h5>
           )
         }
@@ -201,7 +201,7 @@ export function SourceBody({
                     className={tone === 'dark' ? 'mt-2 size-1.5 shrink-0 rounded-full bg-cyan-200' : 'mt-2 size-1.5 shrink-0 rounded-full bg-cyan-500'}
                     aria-hidden="true"
                   />
-                  <span>{item}</span>
+                  <span>{renderSourceInline(item)}</span>
                 </li>
               ))}
             </ul>
@@ -218,14 +218,14 @@ export function SourceBody({
               }
               key={`quote-${index}`}
             >
-              {block.text}
+              {renderSourceInline(block.text)}
             </blockquote>
           )
         }
 
         return (
           <p className={`whitespace-pre-wrap ${spanClass}`} key={`paragraph-${index}`}>
-            {block.text}
+            {renderSourceInline(block.text)}
           </p>
         )
       })}
@@ -962,7 +962,9 @@ function normalizeSourceText(text: string): string {
 
 function parseSourceBlocks(body: string): SourceBlock[] {
   const blocks: SourceBlock[] = []
-  const lines = body.split('\n')
+  const lines = body.split('\n').map((line) =>
+    line.trim() === SOURCE_SECTION_BOUNDARY_BODY ? '' : line,
+  )
   let index = 0
 
   while (index < lines.length) {
@@ -1125,8 +1127,18 @@ function sourceTableColumnClass(header: string, headers: string[]): string {
 
 function cleanInline(value: string) {
   return value
-    .replace(/\*\*/g, '')
-    .replace(/`/g, '')
     .replace(/\\\|/g, '|')
     .trim()
+}
+
+function renderSourceInline(text: string): ReactNode {
+  return text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g).map((part, index) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong className="font-semibold" key={index}>{part.slice(2, -2)}</strong>
+    }
+    if (part.startsWith('`') && part.endsWith('`')) {
+      return <code className="rounded px-1 font-mono text-[0.9em]" key={index}>{part.slice(1, -1)}</code>
+    }
+    return part
+  })
 }

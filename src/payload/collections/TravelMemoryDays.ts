@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto'
+
 import type { CollectionBeforeValidateHook, CollectionConfig, Where } from 'payload'
 
 import { canManageContent } from '../access/is-admin'
@@ -9,13 +11,13 @@ const setDayIdentity: CollectionBeforeValidateHook = ({ data, originalDoc }) => 
   const memory = relationshipId(data?.memory ?? originalDoc?.memory)
   const dayKey = normalizeDayKey(data?.dayKey ?? originalDoc?.dayKey)
 
-  if (!memory || !dayKey) return data
+  if (!memory || !dayKey) return withGeneratedTravelMemoryKeys(data)
 
-  return {
+  return withGeneratedTravelMemoryKeys({
     ...data,
     dayIdentity: `${memory}:${dayKey}`,
     dayKey,
-  }
+  })
 }
 
 export const TravelMemoryDays: CollectionConfig = {
@@ -89,11 +91,20 @@ export const TravelMemoryDays: CollectionConfig = {
       required: false,
       validate: uniqueKey('momentKey', 'Moment keys must be unique within a day.'),
       fields: [
-        { name: 'momentKey', type: 'text', required: true },
+        {
+          name: 'momentKey',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Stable identity generated automatically for Admin-created moments.',
+            readOnly: true,
+          },
+        },
         { name: 'time', type: 'text', required: false },
         { name: 'location', type: 'text', required: false, localized: true },
         { name: 'title', type: 'text', required: true, localized: true },
         { name: 'body', type: 'textarea', required: false, localized: true },
+        { name: 'transport', type: 'text', required: false, localized: true },
         {
           name: 'placements',
           type: 'array',
@@ -103,7 +114,16 @@ export const TravelMemoryDays: CollectionConfig = {
             'Placement keys must be unique within a moment.',
           ),
           fields: [
-            { name: 'placementKey', type: 'text', required: true },
+            {
+              name: 'placementKey',
+              type: 'text',
+              required: true,
+              admin: {
+                description:
+                  'Stable usage identity generated automatically for Admin-created placements.',
+                readOnly: true,
+              },
+            },
             {
               name: 'type',
               type: 'select',
@@ -144,6 +164,48 @@ export const TravelMemoryDays: CollectionConfig = {
     { name: 'lodging', type: 'text', required: false, localized: true },
     sourceMetadataField(),
   ],
+}
+
+export function withGeneratedTravelMemoryKeys<T>(value: T): T {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return value
+  const data = value as Record<string, unknown>
+  if (!Array.isArray(data.moments)) return value
+
+  return {
+    ...data,
+    moments: data.moments.map((candidate) => {
+      if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate)) {
+        return candidate
+      }
+      const moment = candidate as Record<string, unknown>
+      return {
+        ...moment,
+        momentKey: stableKey(moment.momentKey, 'moment'),
+        ...(Array.isArray(moment.placements)
+          ? {
+              placements: moment.placements.map((placementCandidate) => {
+                if (
+                  !placementCandidate ||
+                  typeof placementCandidate !== 'object' ||
+                  Array.isArray(placementCandidate)
+                ) return placementCandidate
+                const placement = placementCandidate as Record<string, unknown>
+                return {
+                  ...placement,
+                  placementKey: stableKey(placement.placementKey, 'placement'),
+                }
+              }),
+            }
+          : {}),
+      }
+    }),
+  } as T
+}
+
+function stableKey(value: unknown, prefix: 'moment' | 'placement'): string {
+  return typeof value === 'string' && value.trim()
+    ? value.trim()
+    : `${prefix}:${randomUUID()}`
 }
 
 function normalizeDayKey(value: unknown): string | null | undefined {

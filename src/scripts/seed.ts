@@ -34,6 +34,7 @@ import {
   type TravelSeedCollection,
   type TravelSeedStore,
 } from './travel-seed-target'
+import { buildPhase19TravelMemoryBackfillPlan } from './phase19-travel-memory-backfill'
 
 interface SeedStats {
   created: number
@@ -133,6 +134,7 @@ async function run() {
   if (travelOnly) {
     await seedMedia(payload, seedContent.media, context, stats)
     await seedTravelProjects(payload, seedContent.travels, context, stats, reconciliationMode)
+    await seedTravelMemoryDays(payload, seedContent.travels, seedContent.media, context, stats, reconciliationMode)
 
     console.log('Travel-only seed completed')
     console.table(stats)
@@ -171,6 +173,69 @@ async function run() {
   console.log('Seed completed')
   console.table(stats)
   process.exit(0)
+}
+
+async function seedTravelMemoryDays(
+  payload: Payload,
+  travels: TravelSeed[],
+  mediaItems: MediaSeed[],
+  context: SeedContext,
+  stats: SeedStats,
+  mode: ReconciliationMode,
+) {
+  const completedTravels = travels.filter((travel) => travel.status === 'completed')
+  if (!completedTravels.length) return
+
+  const memories = await payload.find({
+    collection: 'travel-memories',
+    depth: 0,
+    limit: 100,
+    pagination: false,
+    where: { slug: { in: completedTravels.map((travel) => travel.slug) } },
+  })
+  const currentDays = await payload.find({
+    collection: 'travel-memory-days',
+    depth: 0,
+    limit: 500,
+    pagination: false,
+  })
+  const plan = buildPhase19TravelMemoryBackfillPlan({
+    memories: memories.docs.map((memory) => ({
+      id: Number(memory.id),
+      slug: memory.slug,
+      presentationStyle: memory.presentationStyle,
+    })),
+    travels: completedTravels,
+    mediaItems,
+    mediaIdsBySourcePath: context.mediaBySourcePath,
+    currentDays: currentDays.docs.map((day) => day as unknown as Record<string, unknown> & {
+      id: number
+      dayIdentity: string
+      sourceMetadata?: { baseProjection?: unknown } | null
+    }),
+    mode,
+  })
+
+  if (plan.missingMemories.length || plan.missingMedia.length || plan.duplicatePlacements.length) {
+    throw new Error(
+      `Travel Memory child sync blocked: missing memories=${plan.missingMemories.join(',') || 'none'}; missing media=${plan.missingMedia.join(',') || 'none'}; duplicate placements=${plan.duplicatePlacements.join(',') || 'none'}`,
+    )
+  }
+
+  const conflicts = plan.dayPlans.filter((dayPlan) => dayPlan.action === 'conflict')
+  if (conflicts.length) {
+    throw new Error(
+      `Travel Memory child sync blocked by reconciliation conflicts: ${conflicts.map((dayPlan) => `${dayPlan.slug} (${dayPlan.conflicts.map((item) => item.field).join(', ')})`).join('; ')}`,
+    )
+  }
+  for (const data of plan.dayCreates) {
+    await payload.create({ collection: 'travel-memory-days', data: data as never })
+    stats.created += 1
+  }
+  for (const update of plan.dayUpdates) {
+    await payload.update({ collection: 'travel-memory-days', id: update.id, data: update.patch as never })
+    stats.updated += 1
+  }
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {

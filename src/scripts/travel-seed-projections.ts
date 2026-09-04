@@ -9,6 +9,7 @@ type TravelSectionProjection = {
   displayDay?: unknown
   displayDate?: unknown
   displaySubtitle?: unknown
+  role?: 'featured-memory' | 'travel-reflection' | 'unforgettable-day' | 'family-story' | 'additional-information'
   body: unknown
   links?: { label?: unknown; url: string }[]
   mediaItems?: unknown[]
@@ -210,6 +211,7 @@ function mapSection(section: unknown, target: 'Memory' | 'Plan'): TravelSectionP
       thumbsDownEnabled: section.enableThumbsDown !== false,
     },
   }
+  if (target === 'Memory') mapped.role = storySectionRole(section.title)
   copyFields(mapped, section, ['displayDay', 'displayDate', 'displaySubtitle'])
 
   const links = mapRecords(section.links, (link) => {
@@ -221,6 +223,23 @@ function mapSection(section: unknown, target: 'Memory' | 'Plan'): TravelSectionP
     mapped.mediaItems = section.mediaItems
   }
   return mapped
+}
+
+function storySectionRole(value: unknown): NonNullable<TravelSectionProjection['role']> {
+  const title = localizedText(value).toLowerCase()
+  if (/最難忘|unforgettable/.test(title)) return 'unforgettable-day'
+  if (/家庭故事|family stor/.test(title)) return 'family-story'
+  if (/旅行回憶|旅途回憶|travel reflection/.test(title)) return 'travel-reflection'
+  if (/精選|亮點|featured/.test(title)) return 'featured-memory'
+  return 'additional-information'
+}
+
+function localizedText(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return Object.values(value).find((item): item is string => typeof item === 'string') ?? ''
+  }
+  return ''
 }
 
 function mapDailyHighlight(day: Record<string, unknown>): DailyHighlightProjection {

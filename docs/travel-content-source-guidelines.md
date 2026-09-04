@@ -1,5 +1,10 @@
 # Travel Content Source Guidelines
 
+> Completed Travel Memory 的唯一 canonical template 是
+> `docs/templates/travel-memory-source-template.md`，人類流程見
+> `docs/travel-memory-source-sop.md`。`docs/templates/planning-travel-source-template.md`
+> 只適用 Travel Plan；歷史 completion reports 不作 template。
+
 本文件定義新增旅遊項目的內容交付包規格。目標是讓新的旅行 Markdown、照片與影片可以穩定進入 seed pipeline，再由 Payload CMS 與前台 `/travel/[slug]` 動態頁面使用。
 
 ---

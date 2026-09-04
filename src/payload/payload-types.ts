@@ -543,6 +543,9 @@ export interface TravelMemory {
         displayDay?: string | null;
         displayDate?: string | null;
         displaySubtitle?: string | null;
+        role?:
+          | ('featured-memory' | 'travel-reflection' | 'unforgettable-day' | 'family-story' | 'additional-information')
+          | null;
         body: string;
         links?:
           | {
@@ -623,13 +626,20 @@ export interface TravelMemoryDay {
   story?: string | null;
   moments?:
     | {
+        /**
+         * Stable identity generated automatically for Admin-created moments.
+         */
         momentKey: string;
         time?: string | null;
         location?: string | null;
         title: string;
         body?: string | null;
+        transport?: string | null;
         placements?:
           | {
+              /**
+               * Stable usage identity generated automatically for Admin-created placements.
+               */
               placementKey: string;
               type: 'photo' | 'youtube';
               role?: ('hero' | 'inline' | 'gallery') | null;
@@ -1254,6 +1264,7 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
         displayDay?: T;
         displayDate?: T;
         displaySubtitle?: T;
+        role?: T;
         body?: T;
         links?:
           | T
@@ -1326,6 +1337,7 @@ export interface TravelMemoryDaysSelect<T extends boolean = true> {
         location?: T;
         title?: T;
         body?: T;
+        transport?: T;
         placements?:
           | T
           | {

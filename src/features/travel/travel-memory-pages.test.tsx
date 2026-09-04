@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
 import React from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { parseTravelMarkdown } from '@/scripts/seed-content'
+import { toTravelMemoryGallery, toTravelMemoryOverview } from '@/lib/travel-memory'
 
 import type { Media, TravelMemoryDay } from '@/payload/payload-types'
 import type {
@@ -34,6 +36,12 @@ for (const [slug, style] of [
   assert.match(html, /完整相簿/)
   assert.match(html, /8 chapters/)
   assert.doesNotMatch(html, /Eight chapters/)
+  assert.match(html, /同行成員/)
+  assert.match(html, /CI001/)
+  assert.match(html, /海邊家庭旅館/)
+  assert.match(html, /最難忘的一天/)
+  assert.match(html, /全旅程影片/)
+  assert.match(html, /補充資訊與提醒/)
 }
 
 for (const [style, layout, landmark, structure] of [
@@ -45,6 +53,78 @@ for (const [style, layout, landmark, structure] of [
   assert.match(html, new RegExp(`data-travel-memory-layout="${layout}"`))
   assert.match(html, new RegExp(landmark))
   assert.match(html, structure)
+}
+
+for (const style of styles) {
+  const memory: TravelMemoryOverview = {
+    title: 'Markdown overview',
+    slug: 'markdown-overview',
+    startDate: '2026-02-10',
+    endDate: '2026-02-17',
+    presentationStyle: style,
+    days: [],
+    storySections: [{
+      level: 2,
+      title: '格式化補充資訊',
+      anchor: 'formatted-additional-information',
+      role: null,
+      body: [
+        '這是 **重要內容**。',
+        '',
+        '- 第一項',
+        '- 第二項',
+        '',
+        '| 日期 | 地點 |',
+        '| --- | --- |',
+        '| 7/27 | 三亞 |',
+        '',
+        '> 請保留這項提醒。',
+        '',
+        '`原始值` 與 <script>alert(1)</script>',
+        '',
+        '__SECTION_BOUNDARY__',
+      ].join('\n'),
+    }, {
+      level: 1, title: '結構占位標題', anchor: 'boundary', body: '__SECTION_BOUNDARY__',
+    }, {
+      level: 2, title: '空正文標題', anchor: 'empty', body: '  ',
+    }],
+    reminders: [{ category: '提醒', items: [{ text: '# 行前準備\n\n**備份票券**' }] }],
+  }
+  const projected = toTravelMemoryOverview(memory, [])
+  assert.equal(projected.storySections, memory.storySections, 'view model must preserve published Markdown')
+  const html = renderToStaticMarkup(<TravelMemoryOverviewPage memory={projected} />)
+  assert.match(html, /<strong[^>]*>重要內容<\/strong>/)
+  assert.match(html, /<ul[^>]*>[\s\S]*<li[^>]*>[\s\S]*第一項[\s\S]*<\/li>[\s\S]*<li[^>]*>[\s\S]*第二項[\s\S]*<\/li>[\s\S]*<\/ul>/)
+  assert.match(html, /<table[^>]*>[\s\S]*<th[^>]*>日期<\/th>[\s\S]*<td[^>]*>三亞<\/td>[\s\S]*<\/table>/)
+  assert.match(html, /<blockquote[^>]*>請保留這項提醒。<\/blockquote>/)
+  assert.match(html, /<code[^>]*>原始值<\/code>/)
+  assert.match(html, /<strong[^>]*>備份票券<\/strong>/)
+  assert.match(html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/)
+  assert.doesNotMatch(html, /\*\*|\| --- \| --- \||__SECTION_BOUNDARY__|結構占位標題|空正文標題|# 行前準備|<script>/)
+  assert.equal((html.match(/<article /g) ?? []).length, 1)
+}
+
+for (const [file, style] of [
+  ['201307海南島8日.md', 'family-scrapbook'],
+  ['202308東澳全覽9日.md', 'cinematic-timeline'],
+  ['202602泰國普吉島8日.md', 'editorial-journal'],
+] as const) {
+  const source = await parseTravelMarkdown(`content-source/travels/${file}`)
+  assert.ok(source.startDate && source.endDate)
+  const memory = toTravelMemoryOverview({
+    title: source.title,
+    slug: source.slug,
+    startDate: source.startDate,
+    endDate: source.endDate,
+    presentationStyle: style,
+    storySections: source.sourceSections,
+    reminders: source.reminders,
+  }, [])
+  const html = renderToStaticMarkup(<TravelMemoryOverviewPage memory={memory} />)
+  assert.ok(html.includes('<table '), `${source.slug}: real-source tables render`)
+  assert.ok(html.includes('<strong '), `${source.slug}: real-source emphasis renders`)
+  assert.ok(!/__SECTION_BOUNDARY__|\*\*|\|\s*---\s*\|/.test(html), `${source.slug}: no raw Markdown or boundary marker`)
 }
 
 const photo: Media = {
@@ -71,6 +151,7 @@ const day: TravelMemoryDay = {
       time: '11:00',
       location: '南山文化旅遊區',
       title: '海上觀音',
+      transport: '遊園車',
       placements: [
         {
           placementKey: 'guanyin-photo',
@@ -93,6 +174,8 @@ const day: TravelMemoryDay = {
       ],
     },
   ],
+  meals: { breakfast: '飯店早餐', lunch: '海南料理', dinner: '海鮮' },
+  lodging: '三亞家庭旅館',
   updatedAt: '2026-08-02T00:00:00.000Z',
   createdAt: '2026-08-02T00:00:00.000Z',
 }
@@ -153,8 +236,11 @@ for (const style of styles) {
   const html = renderToStaticMarkup(
     <TravelMemoryDayPage view={{ ...dayView, day: photoOnlyDay, memory: overview(style) }} />,
   )
-  assert.match(html, /這一天沒有已配置的旅行影片/)
+  assert.doesNotMatch(html, /這一天沒有已配置的旅行影片/)
   assert.doesNotMatch(html, /youtube-nocookie\.com/)
+  assert.match(html, /交通 · 遊園車|Transport · 遊園車/)
+  assert.match(html, /飯店早餐/)
+  assert.match(html, /三亞家庭旅館/)
 }
 
 const missingUrlDay: TravelMemoryDay = {
@@ -171,7 +257,7 @@ for (const style of styles) {
   const html = renderToStaticMarkup(
     <TravelMemoryDayPage view={{ ...dayView, day: missingUrlDay, memory: overview(style) }} />,
   )
-  assert.match(html, /這一天沒有已配置的旅行影片/)
+  assert.doesNotMatch(html, /這一天沒有已配置的旅行影片/)
 }
 
 const day8: TravelMemoryDay = {
@@ -229,6 +315,7 @@ const gallery: TravelMemoryGallery = {
   memory: overview('family-scrapbook'),
   selectedDayKey: null,
   selectedLocation: null,
+  selectedType: null,
   locations: ['南山文化旅遊區'],
   page: 1,
   pageSize: 24,
@@ -244,6 +331,7 @@ const gallery: TravelMemoryGallery = {
       time: '11:00',
       caption: '南山文化旅遊區的海上觀音。',
       unclassified: false,
+      type: 'photo',
       media: photo,
     },
   ],
@@ -311,6 +399,34 @@ const duplicatePlacementGalleryHtml = renderToStaticMarkup(
 )
 assert.equal((duplicatePlacementGalleryHtml.match(/南山文化旅遊區的海上觀音。/g) ?? []).length, 2)
 
+for (const style of styles) {
+  const mixedGallery = toTravelMemoryGallery({
+    ...overview(style), externalVideos: [{ url: 'https://youtu.be/abcdefghijk', title: '全旅程影片測試' }],
+  }, [day])
+  const html = renderToStaticMarkup(<TravelMemoryGalleryPage gallery={mixedGallery} />)
+  assert.match(html, /aria-label="按類型篩選媒體"/)
+  assert.match(html, /type=photo/)
+  assert.match(html, /type=youtube/)
+  assert.match(html, /youtube-nocookie\.com\/embed\/lYP3m2N8yvs/)
+  assert.match(html, /youtube-nocookie\.com\/embed\/abcdefghijk/)
+  assert.match(html, /全旅程影片測試/)
+  assert.doesNotMatch(html, /autoplay=1/)
+  assert.match(html, /回到每日故事/)
+
+  const selectedGallery = toTravelMemoryGallery(overview(style), [day], { dayKey: 'day-03', location: '南山文化旅遊區', type: 'youtube', page: 2, pageSize: 1 })
+  const selectedHtml = renderToStaticMarkup(<TravelMemoryGalleryPage gallery={selectedGallery} />)
+  const links = [...selectedHtml.matchAll(/<a\b([^>]+)>([^<]*)<\/a>/g)].map((match) => ({ attributes: match[1], label: match[2] }))
+  const photoLink = links.find((link) => link.label === '照片')!
+  const photoUrl = new URL(photoLink.attributes.match(/href="([^"]+)"/)![1].replaceAll('&amp;', '&'), 'https://example.test')
+  assert.equal(photoUrl.searchParams.get('day'), 'day-03')
+  assert.equal(photoUrl.searchParams.get('location'), '南山文化旅遊區')
+  assert.equal(photoUrl.searchParams.get('type'), 'photo')
+  assert.equal(photoUrl.searchParams.get('page'), null, 'changing type resets pagination')
+  assert.match(links.find((link) => link.label === '影片')!.attributes, /aria-current="page"/)
+  assert.match(links.find((link) => link.label === '上一頁')!.attributes, /type=youtube/)
+  assert.doesNotMatch(selectedHtml, /<img/)
+}
+
 console.log('travel memory page tests passed')
 
 function overview(style: TravelMemoryPresentationStyle): TravelMemoryOverview {
@@ -319,6 +435,20 @@ function overview(style: TravelMemoryPresentationStyle): TravelMemoryOverview {
     slug: '201307-hainan',
     startDate: '2013-07-27T00:00:00.000Z',
     endDate: '2013-08-03T00:00:00.000Z',
+    guestParticipants: [{ name: 'Tavis' }, { name: 'Grandma' }],
+    travelLedger: {
+      flights: [{ flightNumber: 'CI001', route: '台北 → 三亞' }],
+      lodgings: [{ hotel: '海邊家庭旅館', dateRange: '7/27–8/3' }],
+    },
+    storySections: [{
+      level: 2,
+      title: '最難忘的一天',
+      anchor: 'unforgettable-day',
+      role: 'unforgettable-day',
+      body: '全家在海邊一起看夕陽。',
+    }],
+    externalVideos: [{ title: '全旅程剪影', url: 'https://youtu.be/lYP3m2N8yvs' }],
+    reminders: [{ category: '回憶補充', items: [{ text: '記得寫下照片背後的故事。' }] }],
     presentationStyle: style,
     days: Array.from({ length: 8 }, (_, index) => ({
       dayKey: `day-${String(index + 1).padStart(2, '0')}`,

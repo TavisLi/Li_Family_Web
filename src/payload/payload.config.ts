@@ -21,7 +21,7 @@ import { Users } from './collections/Users'
 import { WrappedSnapshots } from './collections/WrappedSnapshots'
 import { HomeConfig } from './globals/HomeConfig'
 import { SiteConfig } from './globals/SiteConfig'
-import { r2PublicFileUrl } from './r2'
+import { r2PublicFileUrl, readPublicR2Media } from './r2'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -58,7 +58,15 @@ export default buildConfig({
     BucketItems,
     WrappedSnapshots,
     Comments,
-    Media,
+    !r2Enabled && r2PublicUrl
+      ? {
+          ...Media,
+          hooks: {
+            ...Media.hooks,
+            afterRead: [...(Media.hooks?.afterRead ?? []), readPublicR2Media(r2PublicUrl)],
+          },
+        }
+      : Media,
   ],
   globals: [SiteConfig, HomeConfig],
   editor: lexicalEditor(),

@@ -15,6 +15,7 @@ import * as migration_20260717_121714_phase_17_secure_travel_data_api from './20
 import * as migration_20260724_153813_phase_member_timeline_intro from './20260724_153813_phase_member_timeline_intro';
 import * as migration_20260730_140837_phase_18_member_external_profile_url from './20260730_140837_phase_18_member_external_profile_url';
 import * as migration_20260802_061812_phase_19_travel_memory_multi_page from './20260802_061812_phase_19_travel_memory_multi_page';
+import * as migration_20260831_120000_phase_21_travel_memory_contract from './20260831_120000_phase_21_travel_memory_contract';
 
 export const migrations = [
   {
@@ -101,5 +102,10 @@ export const migrations = [
     up: migration_20260802_061812_phase_19_travel_memory_multi_page.up,
     down: migration_20260802_061812_phase_19_travel_memory_multi_page.down,
     name: '20260802_061812_phase_19_travel_memory_multi_page'
+  },
+  {
+    up: migration_20260831_120000_phase_21_travel_memory_contract.up,
+    down: migration_20260831_120000_phase_21_travel_memory_contract.down,
+    name: '20260831_120000_phase_21_travel_memory_contract'
   },
 ];

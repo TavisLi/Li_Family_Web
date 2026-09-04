@@ -1,0 +1,57 @@
+{
+  "status": "LOCAL_SOURCE_REGRESSION_PASS_NOT_PRODUCTION",
+  "observedAt": "2026-09-03T12:50:24.153Z",
+  "node": "v20.20.2",
+  "baselinePath": "docs/phase-artifacts/phase-21/phase-21-canonical-source-before.json",
+  "baselineSHA256": "ce45b9526330cca3e73d2510341c881a7b9f496c297de443aeb6cd55648a9e4a",
+  "productionConnections": 0,
+  "productionWrites": 0,
+  "hashDefinition": "sourceHash: travelProjectionHash(travel); dailyProjectionHash: travelProjectionHash(full DayProjectionResult); mediaSourcePathsHash: travelProjectionHash({paths: sorted sourcePaths})",
+  "scope": [
+    "201307-hainan",
+    "202308-east-australia",
+    "202602-thailand-phuket"
+  ],
+  "checksums": {
+    "src/scripts/seed-content.ts": "7c3860b39f089fdf58364f8b151036a377c75219dd0e29f0521086984e26d350",
+    "src/scripts/travel-memory-day-projections.ts": "b62030cb52adb255970ee30d0c0040f7f97eb4ab6a6d50e8c488fedf07c64b8c",
+    "src/scripts/travel-seed-reconciliation.ts": "8806fd81d5b3b19824ac044a28aa026fb6849df16eecbec187d8707c32b1a3be",
+    "docs/templates/travel-memory-source-template.md": "0d1edd8404121d93f569babfe3851c726af9f164a267f44e54b7960fb1d677b7",
+    "docs/travel-projects.md": "82d9fe5f6108fb6d36cf320f307f7664a05f5a4387e759e5272991e57d0ea117",
+    "content-source/travels/201307海南島8日.md": "afba0f0c34317ed7391a41f5165b42a33e6ea97ba2105f39d1cc37239b84703c",
+    "content-source/travels/202308東澳全覽9日.md": "ecda148b81ccac38eebae273ca3cea0fbed198fd8ab3450b6d2191f0626eb8e2",
+    "content-source/travels/202602泰國普吉島8日.md": "802be0d5c9cdc931e4a34aba9f8fa4a05686508f87015d082ce8a062c56f9124"
+  },
+  "records": [
+    {
+      "slug": "201307-hainan",
+      "sourceHash": "502823cdaf29c898362233e8710b443770f321f9f6a5a612d2400adadf14a168",
+      "dailyProjectionHash": "357e42d97c2ea7d0f0282ef3b5459cc2438ad6f9993e01e74a0aebfa451c19a3",
+      "dayCount": 8,
+      "mediaCount": 357,
+      "mediaSourcePathsHash": "cfa6d08b2f976d65b162417130996fa54b1802ec8c94dcb1f45a87d46db594f1",
+      "changedFields": [],
+      "comparison": "UNCHANGED"
+    },
+    {
+      "slug": "202308-east-australia",
+      "sourceHash": "09be247401d8708162ab85e4aebdf088d59235c4a66f5bf17f9d86c48ed7437c",
+      "dailyProjectionHash": "36931fb98b787bf68e416da14fbd1f640598858c7703e9a97524d59b977e5830",
+      "dayCount": 9,
+      "mediaCount": 134,
+      "mediaSourcePathsHash": "62f2b8ef2f493d67ac2d38087a4d42695ffa8dee8a7fbfd98d74a239cb1604de",
+      "changedFields": [],
+      "comparison": "UNCHANGED"
+    },
+    {
+      "slug": "202602-thailand-phuket",
+      "sourceHash": "81ca559581dc33ba9b1c62989eb59b400ff65b6454aa9d3be561e2c2c787ad0c",
+      "dailyProjectionHash": "78ed2c25e0f3f8445eea8a22108ba0d0b8abd9b413970fe0587161375e91d1e3",
+      "dayCount": 8,
+      "mediaCount": 233,
+      "mediaSourcePathsHash": "e5a248607328c7a56e7e82a7ddf6839a1ee2ea20a4db658c62ab45f957472d9c",
+      "changedFields": [],
+      "comparison": "UNCHANGED"
+    }
+  ]
+}

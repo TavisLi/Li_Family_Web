@@ -14,7 +14,9 @@ supersedes: null
 
 一筆 Travel Memory 以 Overview、Daily chapter 與 Photos 多頁呈現。每筆 `travel-memories` record 保存一個 `presentationStyle`，可選 `editorial-journal`、`cinematic-timeline` 或 `family-scrapbook`；三種 renderer 必須消費同一組 style-neutral view models，不建立三套 schema 或內容副本。
 
-每日章節保存於獨立 `travel-memory-days` collection，以 owning Memory＋`dayKey` 形成 stable identity。Day 內嵌有序 Moments；Moment 使用 `momentKey`，其 photo／YouTube placements 使用 `placementKey`。媒體 asset metadata 與 narrative placement caption 分開，manifest 的事件 `sectionId` 轉成 `momentKey`，不得再與 Markdown parser anchor 做 equality matching。
+每日章節保存於獨立 `travel-memory-days` collection，以 owning Memory＋`dayKey` 形成 stable identity。Day 內嵌有序 Moments；Moment 使用 `momentKey` 並可保存交通資訊，其 photo／YouTube placements 使用 `placementKey`。媒體 asset metadata 與 narrative placement caption 分開，manifest 的事件 `sectionId` 轉成 `momentKey`，不得再與 Markdown parser anchor 做 equality matching。Admin 新增 Moment／Placement 時由系統生成 technical key並唯讀；Source photo使用 source path、YouTube使用 canonical video id作 stable usage identity。
+
+Overview 使用同一份 canonical view model呈現 participants、travel ledger、具 role 的 story sections、reminders與 global videos；三套 presentation不得各自重建內容規則。
 
 `presentationStyle` 由 Payload Admin 管理，不屬於 `content-source` projection。Day／Moment／Placement 的 source-managed fields 使用 Base／Source／Current reconciliation；Admin-only修改不得被 seed 靜默覆寫。
 

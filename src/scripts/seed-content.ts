@@ -76,8 +76,8 @@ const travelStatusBySlug = {
 
 const travelDatesBySlug = {
   '201307-hainan': {
-    startDate: '2013-07-01',
-    endDate: '2013-07-08',
+    startDate: '2013-07-27',
+    endDate: '2013-08-03',
   },
   '202308-east-australia': {
     startDate: '2023-08-07',
@@ -169,6 +169,8 @@ const familyMemberSeedSchema = z.object({
 })
 
 const travelSeedSchema = z.object({
+  // Parser-only discriminator; runtime projection does not persist this field.
+  sourceFormat: z.literal('canonical-memory').optional(),
   slug: z.string().min(1),
   title: z.string().min(1),
   status: z.enum(['planning', 'completed']),
@@ -182,6 +184,7 @@ const travelSeedSchema = z.object({
     .array(
       z.object({
         date: z.string().optional(),
+        airline: z.string().optional(),
         flightNumber: z.string().min(1),
         route: z.string().min(1),
         passengers: z.string().optional(),
@@ -232,8 +235,10 @@ const travelSeedSchema = z.object({
       z.object({
         day: z.number().min(1),
         date: z.string().optional(),
+        dateLabel: z.string().optional(),
         title: z.string().min(1),
         theme: z.string().optional(),
+        story: z.string().optional(),
         segments: z
           .array(
             z.object({
@@ -417,6 +422,7 @@ const manifestEntrySchema = z.object({
   ownerType: z.literal('travel'),
   ownerSlug: z.string().min(1),
   usage: z.enum(['cover', 'gallery', 'itinerary']),
+  altText: z.string().trim().min(1).optional(),
   caption: z.string().optional(),
   sortOrder: z.number().int().min(0).optional(),
   day: z.number().int().min(1).optional(),
@@ -615,6 +621,20 @@ export async function parseResumeMarkdown(filePath: string, slug: string): Promi
   })
 }
 
+const canonicalMemoryDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
+  const date = new Date(`${value}T00:00:00.000Z`)
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value
+}, '必須是有效的 YYYY-MM-DD 日期')
+
+const canonicalMemoryMetadataSchema = z.object({
+  startDate: canonicalMemoryDateSchema,
+  endDate: canonicalMemoryDateSchema,
+  isPrivate: z.boolean(),
+}).refine((value) => value.endDate >= value.startDate, {
+  message: 'endDate 不得早於 startDate',
+  path: ['endDate'],
+})
+
 export async function parseTravelMarkdown(
   filePath: string,
   catalogEntry?: TravelCatalogEntry,
@@ -623,7 +643,20 @@ export async function parseTravelMarkdown(
   const parsed = matter(raw)
   const filename = path.basename(filePath)
   const slug = catalogEntry?.slug ?? travelSlugByFilename.get(filename) ?? slugify(filename.replace(/\.md$/, ''))
-  const dates = travelDatesBySlug[slug as keyof typeof travelDatesBySlug] ?? {
+  const status = catalogEntry?.status ?? travelStatusBySlug[slug as keyof typeof travelStatusBySlug] ?? 'completed'
+  // Only existing mapped sources retain the legacy contract. New Memories must
+  // declare dates and privacy; any explicit metadata opts into the new contract.
+  const canonicalMemory = status === 'completed' && (
+    travelStatusBySlug[slug as keyof typeof travelStatusBySlug] !== 'completed' ||
+    travelSlugByFilename.get(filename) !== slug ||
+    ['startDate', 'endDate', 'isPrivate'].some((key) => Object.hasOwn(parsed.data, key))
+  )
+  if (canonicalMemory) {
+    const errors = validateCanonicalTravelMemoryMarkdown(raw)
+    if (errors.length) throw new Error(`Invalid canonical Travel Memory: ${errors.join('; ')}`)
+  }
+  const metadata = canonicalMemory ? canonicalMemoryMetadataSchema.parse(parsed.data) : undefined
+  const dates = metadata ?? travelDatesBySlug[slug as keyof typeof travelDatesBySlug] ?? {
     startDate: '2026-01-01',
     endDate: '2026-01-01',
   }
@@ -633,20 +666,21 @@ export async function parseTravelMarkdown(
       : firstHeading(parsed.content) ?? filename.replace(/\.md$/, '')
 
   return travelSeedSchema.parse({
+    ...(canonicalMemory ? { sourceFormat: 'canonical-memory' } : {}),
     slug,
     title: catalogEntry?.title ?? markdownTitle,
-    status: catalogEntry?.status ?? travelStatusBySlug[slug as keyof typeof travelStatusBySlug] ?? 'completed',
-    isPrivate: false,
+    status,
+    isPrivate: metadata?.isPrivate ?? false,
     startDate: dates.startDate,
     endDate: dates.endDate,
     externalDocIdentifier: filename,
     summary: parseSummary(parsed.content),
-    party: parseParty(parsed.content),
-    flights: parseFlights(parsed.content),
+    party: parseParty(parsed.content, canonicalMemory),
+    flights: parseFlights(parsed.content, canonicalMemory),
     railSegments: parseRailSegments(parsed.content),
     lodgings: parseLodgings(parsed.content),
     cabinAssignments: parseCabinAssignments(parsed.content),
-    dailyItinerary: parseDailyItinerary(parsed.content),
+    dailyItinerary: parseDailyItinerary(parsed.content, dates.startDate),
     foodRecommendations: parseFoodRecommendations(parsed.content),
     costItems: parseCostItems(parsed.content),
     optionalActivities: parseOptionalActivities(parsed.content),
@@ -656,8 +690,70 @@ export async function parseTravelMarkdown(
   })
 }
 
+export function validateCanonicalTravelMemoryMarkdown(markdown: string): string[] {
+  const errors: string[] = []
+  const metadata = canonicalMemoryMetadataSchema.safeParse(matter(markdown).data)
+  if (!metadata.success) {
+    errors.push(...metadata.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`))
+  }
+  const requiredSections = [
+    ['核心信息速覽', /#{1,2}[^\n]*核心信息速覽/],
+    ['航班信息', /#{1,2}[^\n]*航班信息/],
+    ['住宿安排', /#{1,2}[^\n]*住宿安排/],
+    ['每日行程詳解', /#{1,2}[^\n]*每日行程詳解/],
+  ] as const
+  for (const [label, pattern] of requiredSections) {
+    if (!pattern.test(markdown)) errors.push(`缺少必要章節：${label}`)
+  }
+
+  if (/#{1,2}[^\n]*航班信息/.test(markdown)) {
+    const flightTable = markdownTableRows(sectionAfterHeading(markdown, '航班信息'))
+    if (flightTable.length) {
+      const [flightHeaders = [], ...flightRows] = flightTable
+      const requiredFlightHeaders = ['日期', '航空公司', '航班', '航線', '起飛', '抵達', '備註']
+      for (const header of requiredFlightHeaders) {
+        if (!flightHeaders.includes(header)) errors.push(`航班表格缺少必要欄位：${header}`)
+      }
+      if (!flightRows.length) errors.push('航班表格至少需要一筆資料。')
+      const requiredFlightValues = requiredFlightHeaders.filter((header) => header !== '備註')
+      for (const [rowIndex, row] of flightRows.entries()) {
+        for (const header of requiredFlightValues) {
+          const columnIndex = flightHeaders.indexOf(header)
+          if (columnIndex >= 0 && !row[columnIndex]?.trim()) {
+            errors.push(`航班表格第 ${rowIndex + 1} 筆缺少必要值：${header}`)
+          }
+        }
+      }
+    }
+  }
+
+  const days = [...markdown.matchAll(/^##\s+\**[^\n]*?Day\s+(\d+)\s*[·．.-]/gim)]
+  if (!days.length) errors.push('至少需要一個 `## Day N · 日期 — 標題` 每日章節。')
+  const numbers = days.map((match) => Number(match[1]))
+  for (let index = 0; index < numbers.length; index += 1) {
+    if (numbers[index] !== index + 1) {
+      errors.push(`Day 編號必須從 1 連續排列；第 ${index + 1} 筆為 Day ${numbers[index]}。`)
+      break
+    }
+  }
+
+  const allowedDailyLabels = new Set(['主題', '當日故事', '早餐', '午餐', '晚餐', '住宿'])
+  for (const match of markdown.matchAll(/^\s*-\s*\*\*([^*]+)\*\*：/gm)) {
+    const label = match[1]?.trim()
+    if (label && !allowedDailyLabels.has(label) && daySectionAt(markdown, match.index ?? 0)) {
+      errors.push(`未知的 Daily 欄位：${label}`)
+    }
+  }
+  return [...new Set(errors)]
+}
+
+function daySectionAt(markdown: string, index: number): boolean {
+  const precedingHeading = markdown.slice(0, index).match(/^##\s+([^\n]+)$/gim)?.at(-1) ?? ''
+  return /Day\s+\d+/i.test(precedingHeading)
+}
+
 export async function buildSeedContent(projectRoot: string): Promise<SeedContent> {
-  const [members, tavisResume, lynnResume, catalog, media, bloggerSample] = await Promise.all([
+  const [members, tavisResume, lynnResume, catalog, bloggerSample] = await Promise.all([
     parseFamilyMembersConfig(path.join(projectRoot, 'docs/family-members.md')),
     parseResumeMarkdown(path.join(projectRoot, 'content-source/profiles/tavis_resume.md'), 'tavis'),
     parseResumeMarkdown(path.join(projectRoot, 'content-source/profiles/lynn_resume.md'), 'lynn'),
@@ -665,10 +761,10 @@ export async function buildSeedContent(projectRoot: string): Promise<SeedContent
       path.join(projectRoot, 'docs/travel-projects.md'),
       path.join(projectRoot, 'content-source/travels'),
     ),
-    scanMediaAssets(projectRoot),
     parseBloggerSeedSource(projectRoot, { limit: 8 }),
   ])
   const travels = await parseTravelDirectory(path.join(projectRoot, 'content-source/travels'), catalog)
+  const media = await scanMediaAssets(projectRoot, undefined, travels)
 
   const memberMap = new Map(members.map((member) => [member.slug, member]))
   memberMap.set('tavis', mergeMemberSeeds(memberMap.get('tavis'), tavisResume))
@@ -691,6 +787,28 @@ export async function buildTravelSeedContent(projectRoot: string): Promise<Trave
   )
 
   return parseTravelDirectory(travelDirectory, catalog)
+}
+
+// Scope before parsing Markdown or walking assets; read-only audits must not
+// ingest unrelated Plans or user-owned untracked media.
+export async function buildScopedMemorySeedContent(
+  projectRoot: string,
+  slugs: readonly string[],
+): Promise<SeedContent> {
+  const directory = path.join(projectRoot, 'content-source/travels')
+  const catalog = await parseTravelCatalog(path.join(projectRoot, 'docs/travel-projects.md'), directory)
+  if (!slugs.length || new Set(slugs).size !== slugs.length) throw new Error('Invalid Memory scope')
+  const entries = slugs.map((slug) => {
+    const entry = catalog.find((item) => item.slug === slug)
+    if (!entry || entry.status !== 'completed') throw new Error(`Not a catalog Memory: ${slug}`)
+    return entry
+  })
+  const travels = await Promise.all(entries.map((entry) => parseTravelMarkdown(path.join(directory, entry.sourceFile), entry)))
+  return {
+    members: [], blogCategories: [], blogPosts: [],
+    travels,
+    media: await scanMediaAssets(projectRoot, slugs, travels),
+  }
 }
 
 export async function parseBloggerTakeoutArchive(
@@ -821,10 +939,13 @@ async function parseTravelDirectory(
   )
 }
 
-async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
+async function scanMediaAssets(projectRoot: string, memorySlugs?: readonly string[], travels: TravelSeed[] = []): Promise<MediaSeed[]> {
   const assetRoot = path.join(projectRoot, 'content-source/assets')
-  const manifest = await readAssetManifest(projectRoot, assetRoot)
-  const files = await walkFiles(assetRoot)
+  const canonicalSlugs = new Set(travels.filter((travel) => travel.sourceFormat === 'canonical-memory').map((travel) => travel.slug))
+  const manifest = await readAssetManifest(projectRoot, assetRoot, memorySlugs)
+  const files = memorySlugs
+    ? (await Promise.all(memorySlugs.map((slug) => walkFiles(path.join(assetRoot, 'travels', slug))))).flat()
+    : await walkFiles(assetRoot)
 
   return files
     .filter((file) => imageExtensions.has(path.extname(file).toLowerCase()))
@@ -836,11 +957,14 @@ async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
       const usage = manifestEntry?.usage ?? mediaUsageFromPath(segments, filename)
       const owner = manifestEntry ?? mediaOwnerFromPath(segments)
       const sortOrder = manifestEntry?.sortOrder
+      if (canonicalSlugs.has(owner.ownerSlug) && !manifestEntry?.altText) {
+        throw new Error(`Canonical Memory media requires manifest altText: ${sourcePath}`)
+      }
 
       return mediaSeedSchema.parse({
         sourcePath,
         absolutePath,
-        altText: manifestEntry?.caption?.trim() || humanizeFilename(filename),
+        altText: manifestEntry?.altText || manifestEntry?.caption?.trim() || humanizeFilename(filename),
         caption: manifestEntry?.caption,
         tags: [
           { tag: owner.ownerType },
@@ -864,11 +988,13 @@ async function scanMediaAssets(projectRoot: string): Promise<MediaSeed[]> {
 async function readAssetManifest(
   projectRoot: string,
   assetRoot: string,
+  memorySlugs?: readonly string[],
 ): Promise<Map<string, z.infer<typeof manifestEntrySchema>>> {
   const globalManifestPath = path.join(projectRoot, 'content-source/assets/manifest.json')
   const manifests = new Map<string, z.infer<typeof manifestEntrySchema>>()
   const addEntries = (entries: z.infer<typeof manifestEntrySchema>[]) => {
     for (const entry of entries) {
+      if (memorySlugs && (entry.ownerType !== 'travel' || !memorySlugs.includes(entry.ownerSlug))) continue
       const absolutePath = path.join(assetRoot, entry.sourcePath)
 
       manifests.set(toAssetRelativePath(assetRoot, absolutePath), entry)
@@ -881,7 +1007,7 @@ async function readAssetManifest(
   try {
     const travelDirs = await fs.readdir(travelAssetRoot, { withFileTypes: true })
     const localManifestPaths = travelDirs
-      .filter((entry) => entry.isDirectory())
+      .filter((entry) => entry.isDirectory() && (!memorySlugs || memorySlugs.includes(entry.name)))
       .map((entry) => path.join(travelAssetRoot, entry.name, 'manifest.json'))
       .sort((left, right) => left.localeCompare(right))
 
@@ -1178,9 +1304,9 @@ function parseSummary(markdown: string): string | undefined {
     .trim()
 }
 
-function parseParty(markdown: string): TravelSeed['party'] {
+function parseParty(markdown: string, canonicalMemory = false): TravelSeed['party'] {
   const line = markdown.split('\n').find((item) => item.includes('出行人'))
-  const names = line?.match(/：(.+?)（/)?.[1]
+  const names = canonicalMemory ? line?.match(/：([^（\n]+)/)?.[1] : line?.match(/：(.+?)（/)?.[1]
 
   return names
     ?.split('、')
@@ -1189,9 +1315,28 @@ function parseParty(markdown: string): TravelSeed['party'] {
     .map((name) => ({ name }))
 }
 
-function parseFlights(markdown: string): NonNullable<TravelSeed['flights']> {
+function parseFlights(markdown: string, canonicalMemory = false): NonNullable<TravelSeed['flights']> {
   const section = sectionAfterHeading(markdown, '航班信息')
 
+  if (canonicalMemory) {
+    const [headers = [], ...rows] = markdownTableRows(section)
+    return rows.map((cells) => {
+      const field = (label: string) => cells[headers.indexOf(label)] || undefined
+      return {
+        date: field('日期'),
+        airline: field('航空公司'),
+        flightNumber: field('航班') ?? '',
+        route: field('航線') ?? '',
+        passengers: field('乘客'),
+        departureTime: field('起飛'),
+        arrivalTime: field('抵達'),
+        notes: field('備註'),
+      }
+    }).filter((flight) => flight.flightNumber)
+  }
+
+  // Preserve legacy output, including the absence of airline (previously
+  // discarded by travelSeedSchema), until each old Source migration is reviewed.
   return markdownTableRows(section)
     .filter((cells) => isFlightRow(cells))
     .map((cells) => {
@@ -1204,7 +1349,6 @@ function parseFlights(markdown: string): NonNullable<TravelSeed['flights']> {
 
       return {
         date: cells[0],
-        airline: isHainanFormat ? cells[1] : flightNumber.match(/\(([^)]+)\)/)?.[1],
         flightNumber,
         route: route ?? (isHainanFormat ? `${cells[2] ?? ''}→${cells[3] ?? ''}` : cells[2] ?? ''),
         passengers: flightIndex === 2 ? cells[0] : undefined,
@@ -1284,17 +1428,30 @@ function parseExternalVideos(markdown: string): TravelSeed['externalVideos'] {
     })
 }
 
-function parseDailyItinerary(markdown: string): NonNullable<TravelSeed['dailyItinerary']> {
+function parseDailyItinerary(
+  markdown: string,
+  startDate?: string,
+): NonNullable<TravelSeed['dailyItinerary']> {
   const matches = [
-    ...markdown.matchAll(/##\s+\**(?:[^\n]*?)Day\s+(\d+)\s*[·．.-]\s*([^\n*]+)\**([\s\S]*?)(?=\n##\s+\**(?:[^\n]*?)Day\s+\d+|$)/gi),
+    ...markdown.matchAll(/(?:^|\n)##[ \t]+\**(?:[^\n]*?)Day\s+(\d+)\s*[·．.-]\s*([^\n*]+)\**([\s\S]*?)(?=\n#{1,2}[ \t]+|$)/gi),
   ]
 
   return matches.map((match) => {
     const content = match[3] ?? ''
 
+    const day = Number(match[1])
+    const heading = cleanMarkdown(match[2] ?? '').trim()
+    const headingParts = heading.split(/\s*[—–]\s*/, 2)
+    const dateLabel = headingParts.length > 1 ? headingParts[0]?.trim() : undefined
+    const title = headingParts.length > 1 ? headingParts[1]?.trim() : heading
+
     return {
-      day: Number(match[1]),
-      title: cleanMarkdown(match[2] ?? '').trim(),
+      day,
+      ...(startDate ? { date: dateForTravelDay(startDate, day) } : {}),
+      ...(dateLabel ? { dateLabel } : {}),
+      title: title || heading,
+      theme: labeledDailyValue(content, '主題'),
+      story: labeledDailyValue(content, '當日故事'),
       segments: parseDailySegments(content),
       meals: parseDailyMeals(content),
       lodging: parseDailyLodging(content),
@@ -1302,30 +1459,42 @@ function parseDailyItinerary(markdown: string): NonNullable<TravelSeed['dailyIti
   })
 }
 
+function dateForTravelDay(startDate: string, day: number): string {
+  const value = new Date(`${startDate.slice(0, 10)}T00:00:00.000Z`)
+  value.setUTCDate(value.getUTCDate() + day - 1)
+  return value.toISOString()
+}
+
+function labeledDailyValue(content: string, label: string): string | undefined {
+  return content
+    .split('\n')
+    .find((line) => new RegExp(`^\\s*-\\s*\\*\\*${escapeRegExp(label)}\\*\\*：`).test(line))
+    ?.replace(new RegExp(`^\\s*-\\s*\\*\\*${escapeRegExp(label)}\\*\\*：`), '')
+    .trim()
+}
+
 function parseDailySegments(
   content: string,
 ): NonNullable<NonNullable<TravelSeed['dailyItinerary']>[number]['segments']> {
-  const tableRows = markdownTableRows(content)
-  const header = tableRows[0] ?? []
-  const hasItineraryTable = header.some((cell) => cell.includes('時間')) && header.some((cell) => cell.includes('安排'))
+  const tables = (content.match(/(?:^[ \t]*\|[^\n]*(?:\n|$))+/gm) ?? [])
+    .map((table) => markdownTableRows(table).filter((cells) => !cells.every((cell) => /^:?-+:?$/.test(cell))))
+    .filter(([header = []]) => header.some((cell) => cell.includes('時間')) && header.some((cell) => cell.includes('安排')))
 
-  if (hasItineraryTable) {
-    return tableRows
-      .slice(1)
-      .filter((cells) => Boolean(cells[1]))
-      .slice(0, 12)
+  if (tables.length) {
+    return tables.flatMap(([header = [], ...rows]) => rows
+      .filter((cells) => Boolean(cellByHeader(header, cells, ['安排'])))
+      .filter((cells) => !cells.every((cell, index) => cell === header[index]))
       .map((cells) => ({
-        time: cells[0],
-        activity: cells[1] ?? '',
-        transport: cells[2],
-        notes: cells[3],
-      }))
+        time: cellByHeader(header, cells, ['時間']),
+        activity: cellByHeader(header, cells, ['安排'])!,
+        transport: cellByHeader(header, cells, ['交通']),
+        notes: cellByHeader(header, cells, ['備注', '備註']),
+      })))
   }
 
   return content
     .split('\n')
     .filter((line) => line.trim().startsWith('- '))
-    .slice(0, 12)
     .map((line) => ({ activity: cleanMarkdown(line.replace(/^\s*-\s*/, '').trim()) }))
 }
 

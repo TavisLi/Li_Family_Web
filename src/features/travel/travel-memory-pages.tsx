@@ -6,12 +6,14 @@ import { PayloadImage } from '@/components/ui/payload-image'
 import type {
   TravelMemoryDayView,
   TravelMemoryGallery,
+  TravelMemoryGalleryItem,
   TravelMemoryOverview,
   TravelMemoryPresentationStyle,
 } from '@/lib/travel-memory'
 import type { Media, TravelMemoryDay } from '@/payload/payload-types'
 import { cn } from '@/lib/utils'
 import { toSafeYouTubeExternalUrl, toYouTubeEmbedUrl } from './youtube'
+import { SourceBody } from './travel-source-sections'
 
 type OverviewRenderer = ComponentType<{ memory: TravelMemoryOverview }>
 type DayRenderer = ComponentType<{ view: TravelMemoryDayView }>
@@ -86,6 +88,8 @@ function EditorialOverview({ memory }: { memory: TravelMemoryOverview }) {
         </div>
       </section>
 
+      <MemoryOverviewArchive memory={memory} style="editorial-journal" />
+
       <section className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-20 md:grid-cols-[0.7fr_1.3fr] md:px-10 md:py-28">
         <header className="md:sticky md:top-28 md:self-start">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a34031]">{memory.days.length} chapters</p>
@@ -154,6 +158,8 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
         </div>
       </section>
 
+      <MemoryOverviewArchive memory={memory} style="cinematic-timeline" />
+
       <section className="border-y border-white/10 py-8">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-5 md:px-10">
           <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.2em] text-[#ddae73]">場次導覽</p>
@@ -179,7 +185,7 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
       </section>
 
       <section className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-24 md:grid-cols-2 md:px-10 md:py-32">
-        {memory.days.slice(0, 4).map((day, index) => (
+        {memory.days.map((day, index) => (
           <Link className={cn('group relative min-h-[26rem] overflow-hidden bg-[#151b1a]', index % 2 === 1 && 'md:mt-24')} href={`/travel/${memory.slug}/day/${day.dayKey}`} key={day.dayKey}>
             <PayloadImage className="absolute inset-0 min-h-[26rem] rounded-none" fallbackLabel={day.title} fit="cover" imageClassName="opacity-80 transition duration-700 group-hover:scale-[1.03]" media={day.heroMedia} sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0d1211] via-transparent to-transparent" />
@@ -224,6 +230,8 @@ function ScrapbookOverview({ memory }: { memory: TravelMemoryOverview }) {
         </figure>
       </section>
 
+      <MemoryOverviewArchive memory={memory} style="family-scrapbook" />
+
       <section className="mx-auto w-full max-w-7xl px-5 py-16 md:px-10">
         <header className="max-w-xl">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#9e3e2e]">{memory.days.length} chapters</p>
@@ -253,6 +261,156 @@ function ScrapbookOverview({ memory }: { memory: TravelMemoryOverview }) {
       </section>
     </main>
   )
+}
+
+function MemoryOverviewArchive({
+  memory,
+  style,
+}: {
+  memory: TravelMemoryOverview
+  style: TravelMemoryPresentationStyle
+}) {
+  const participants = [
+    ...(memory.participants ?? []).flatMap((participant) => {
+      if (typeof participant !== 'object' || !participant) return []
+      return [participant.displayName || participant.slug]
+    }),
+    ...(memory.guestParticipants ?? []).map((participant) => participant.name),
+  ]
+  const flights = memory.travelLedger?.flights ?? []
+  const lodgings = memory.travelLedger?.lodgings ?? []
+  const stories = (memory.storySections ?? []).filter(
+    (section) => !/每日行程|daily itinerary/i.test(section.title)
+      && section.body.trim()
+      && section.body.trim() !== '__SECTION_BOUNDARY__',
+  )
+  const videos = (memory.externalVideos ?? []).flatMap((video) => {
+    const url = toSafeYouTubeExternalUrl(video.url)
+    return url ? [{ ...video, url }] : []
+  })
+  const reminders = memory.reminders ?? []
+  const hasArchive =
+    participants.length || flights.length || lodgings.length || stories.length || videos.length || reminders.length
+  if (!hasArchive) return null
+
+  const cinematic = style === 'cinematic-timeline'
+  const scrapbook = style === 'family-scrapbook'
+  const shell = cinematic
+    ? 'border-y border-white/10 bg-[#101716] text-white'
+    : scrapbook
+      ? 'mx-auto my-12 max-w-7xl bg-[#fff8e8]/80 text-[#383126] shadow-[8px_10px_0_rgba(98,75,43,0.14)]'
+      : 'border-y border-[#cfc2ae] bg-[#fbf7ef] text-[#29251f]'
+  const card = cinematic
+    ? 'border-l border-white/15 bg-white/[0.035]'
+    : scrapbook
+      ? 'border border-[#caae88] bg-[#fffaf0]'
+      : 'border-t border-[#cfc2ae]'
+  const muted = cinematic ? 'text-white/55' : scrapbook ? 'text-[#76664f]' : 'text-[#675f55]'
+  const accent = cinematic ? 'text-[#ddae73]' : scrapbook ? 'text-[#9e3e2e]' : 'text-[#a34031]'
+
+  return (
+    <section className={cn(shell, scrapbook ? 'px-5 py-12 md:px-10' : 'py-16 md:py-24')} data-memory-overview-archive={style}>
+      <div className="mx-auto w-full max-w-7xl px-5 md:px-10">
+        <header className="max-w-3xl">
+          <p className={cn('text-xs font-semibold uppercase tracking-[0.22em]', accent)}>
+            {cinematic ? 'Route ledger · story reels' : scrapbook ? '家庭旅行資料夾' : '旅行資料簿'}
+          </p>
+          <h2 className={cn('mt-4 text-4xl tracking-[-0.035em] md:text-6xl', !cinematic && 'font-serif')}>
+            旅程資料與旅行故事
+          </h2>
+        </header>
+
+        <div className="mt-10 grid gap-8 lg:grid-cols-2">
+          {participants.length ? (
+            <section className={cn('p-6', card)}>
+              <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>同行成員</h3>
+              <p className={cn('mt-4 text-base leading-8', muted)}>{participants.join('、')}</p>
+            </section>
+          ) : null}
+          {flights.length ? (
+            <section className={cn('p-6', card)}>
+              <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>航班</h3>
+              <ul className="mt-4 grid gap-4">
+                {flights.map((flight, index) => (
+                  <li className={cn('text-sm leading-7', muted)} key={flight.id ?? `${flight.flightNumber}:${index}`}>
+                    <strong className="block text-current">{flight.flightNumber || flight.airline || `航段 ${index + 1}`}</strong>
+                    {[flight.route, [flight.departureTime, flight.arrivalTime].filter(Boolean).join(' → ')].filter(Boolean).join(' · ')}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+          {lodgings.length ? (
+            <section className={cn('p-6', card)}>
+              <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>住宿</h3>
+              <ul className="mt-4 grid gap-4">
+                {lodgings.map((lodging, index) => (
+                  <li className={cn('text-sm leading-7', muted)} key={lodging.id ?? `${lodging.hotel}:${index}`}>
+                    <strong className="block text-current">{lodging.hotel}</strong>
+                    {[lodging.dateRange, lodging.city, lodging.roomType].filter(Boolean).join(' · ')}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+          {videos.length ? (
+            <section className={cn('p-6', card)}>
+              <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>全旅程影片</h3>
+              <ul className="mt-4 grid gap-3">
+                {videos.map((video, index) => (
+                  <li key={`${video.url}:${index}`}>
+                    <a className={cn('inline-flex items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline', accent)} href={video.url} rel="noreferrer noopener" target="_blank">
+                      <Play className="size-4" aria-hidden="true" />{video.title || `旅行影片 ${index + 1}`}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+        </div>
+
+        {stories.length ? (
+          <div className="mt-12 grid gap-7 lg:grid-cols-2">
+            {stories.map((story) => (
+              <article className={cn('min-w-0 p-6', card)} key={story.anchor}>
+                <p className={cn('text-[10px] font-semibold uppercase tracking-[0.18em]', accent)}>{storyRoleLabel(story.role)}</p>
+                <h3 className={cn('mt-3 text-2xl tracking-tight', !cinematic && 'font-serif')}>{story.title}</h3>
+                <SourceBody body={story.body} layout="single" tone={cinematic ? 'dark' : 'light'} />
+              </article>
+            ))}
+          </div>
+        ) : null}
+
+        {reminders.length ? (
+          <aside className={cn('mt-10 p-6', card)}>
+            <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>補充資訊與提醒</h3>
+            <div className="mt-4 grid gap-5 md:grid-cols-2">
+              {reminders.map((reminder, index) => (
+                <section key={reminder.id ?? `${reminder.category}:${index}`}>
+                  <h4 className="font-semibold">{reminder.category}</h4>
+                  <ul className={cn('mt-2 list-disc space-y-1 pl-5 text-sm leading-6', muted)}>
+                    {(reminder.items ?? []).map((item, itemIndex) => (
+                      <li className="min-w-0 [&>div]:mt-0" key={item.id ?? itemIndex}>
+                        <SourceBody body={item.text} layout="single" tone={cinematic ? 'dark' : 'light'} />
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          </aside>
+        ) : null}
+      </div>
+    </section>
+  )
+}
+
+function storyRoleLabel(role: NonNullable<TravelMemoryOverview['storySections']>[number]['role']) {
+  if (role === 'featured-memory') return 'Featured memory'
+  if (role === 'travel-reflection') return '旅行回憶'
+  if (role === 'unforgettable-day') return '最難忘的一天'
+  if (role === 'family-story') return 'Family story'
+  return '補充資訊'
 }
 
 function EditorialDay({ view }: { view: TravelMemoryDayView }) {
@@ -290,6 +448,8 @@ function EditorialDay({ view }: { view: TravelMemoryDayView }) {
         </div>
       </header>
 
+      <DayLogistics day={view.day} style="editorial-journal" />
+
       <article className="mx-auto grid w-full max-w-7xl gap-12 px-5 md:grid-cols-[0.34fr_1fr] md:px-10">
         <aside className="md:sticky md:top-28 md:self-start">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a34031]">今日札記</p>
@@ -318,19 +478,19 @@ function EditorialDay({ view }: { view: TravelMemoryDayView }) {
                       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#897d6e]">{moment.location}</p>
                     ) : null}
                     <h2 className="mt-2 font-serif text-3xl leading-tight tracking-[-0.02em] md:text-4xl">{moment.title}</h2>
+                    {moment.transport ? <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#a34031]">交通 · {moment.transport}</p> : null}
                     {moment.body ? <p className="mt-4 max-w-2xl whitespace-pre-wrap text-sm leading-7 text-[#625a50]">{moment.body}</p> : null}
                   </div>
                 </header>
                 <div className={cn('grid gap-7', placements.length > 1 && (index % 2 ? 'md:grid-cols-[0.8fr_1.2fr]' : 'md:grid-cols-[1.15fr_0.85fr]'))}>
-                  {placements.map((placement) => (
-                    <MemoryPlacement key={placement.placementKey} placement={placement} style="editorial-journal" visual={visual} />
+                  {placements.map((placement, placementIndex) => (
+                    <MemoryPlacement key={placement.placementKey} placement={placement} priority={index === 0 && placementIndex === 0} style="editorial-journal" visual={visual} />
                   ))}
                 </div>
               </section>
             )
           })}
           {!moments.length ? <EmptyState text="這一天尚未整理成每日札記。" visual={visual} /> : null}
-          {!hasYouTubePlacement(view.day) ? <NoVideoState style="editorial-journal" /> : null}
         </div>
       </article>
 
@@ -382,6 +542,8 @@ function CinematicDay({ view }: { view: TravelMemoryDayView }) {
         </div>
       </section>
 
+      <DayLogistics day={view.day} style="cinematic-timeline" />
+
       <article className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-20 md:grid-cols-[15rem_1fr] md:px-10 md:py-28">
         <aside className="md:sticky md:top-28 md:self-start">
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#ddae73]">當日時間軸</p>
@@ -405,6 +567,7 @@ function CinematicDay({ view }: { view: TravelMemoryDayView }) {
                   {moment.time || '—'}{moment.location ? ` · ${moment.location}` : ''}
                 </p>
                 <h2 className="mt-3 text-balance text-3xl font-semibold leading-tight tracking-[-0.035em] md:text-5xl">{moment.title}</h2>
+                {moment.transport ? <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[#ddae73]">Transport · {moment.transport}</p> : null}
                 {moment.body ? <p className="mt-5 max-w-2xl whitespace-pre-wrap text-sm leading-7 text-white/55">{moment.body}</p> : null}
               </header>
               <div className="grid gap-8">
@@ -415,7 +578,6 @@ function CinematicDay({ view }: { view: TravelMemoryDayView }) {
             </section>
           ))}
           {!moments.length ? <EmptyState text="這一天尚未剪接成時間軸。" visual={visual} /> : null}
-          {!hasYouTubePlacement(view.day) ? <NoVideoState style="cinematic-timeline" /> : null}
         </div>
       </article>
 
@@ -455,6 +617,8 @@ function ScrapbookDay({ view }: { view: TravelMemoryDayView }) {
           </div>
         </header>
 
+        <DayLogistics day={view.day} style="family-scrapbook" />
+
         <div className="mt-14 grid gap-16">
           {moments.map((moment, index) => (
             <section
@@ -467,11 +631,12 @@ function ScrapbookDay({ view }: { view: TravelMemoryDayView }) {
                   {moment.time || '—'}{moment.location ? ` · ${moment.location}` : ''}
                 </p>
                 <h2 className="mt-3 font-serif text-3xl leading-tight tracking-[-0.02em]">{moment.title}</h2>
+                {moment.transport ? <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-[#9e3e2e]">交通 · {moment.transport}</p> : null}
                 {moment.body ? <p className="mt-5 whitespace-pre-wrap text-sm leading-7 text-[#6b604f]">{moment.body}</p> : null}
               </div>
               <div className={cn('grid gap-7', index % 2 === 1 && 'md:order-1')}>
-                {(moment.placements ?? []).map((placement) => (
-                  <MemoryPlacement key={placement.placementKey} placement={placement} style="family-scrapbook" visual={visual} />
+                {(moment.placements ?? []).map((placement, placementIndex) => (
+                  <MemoryPlacement key={placement.placementKey} placement={placement} priority={index === 0 && placementIndex === 0} style="family-scrapbook" visual={visual} />
                 ))}
                 {!(moment.placements ?? []).length ? (
                   <div className="min-h-24 border-t border-[#7a6749]/25 pt-4 font-serif text-lg italic text-[#80715c]">
@@ -482,12 +647,49 @@ function ScrapbookDay({ view }: { view: TravelMemoryDayView }) {
             </section>
           ))}
           {!moments.length ? <EmptyState text="這一天尚未配置照片或影片。" visual={visual} /> : null}
-          {!hasYouTubePlacement(view.day) ? <NoVideoState style="family-scrapbook" /> : null}
         </div>
 
         <DayNavigation view={view} visual={visual} />
       </article>
     </main>
+  )
+}
+
+function DayLogistics({
+  day,
+  style,
+}: {
+  day: TravelMemoryDay
+  style: TravelMemoryPresentationStyle
+}) {
+  const meals = [
+    day.meals?.breakfast ? `早餐：${day.meals.breakfast}` : null,
+    day.meals?.lunch ? `午餐：${day.meals.lunch}` : null,
+    day.meals?.dinner ? `晚餐：${day.meals.dinner}` : null,
+  ].filter((value): value is string => Boolean(value))
+  if (!meals.length && !day.lodging) return null
+
+  if (style === 'cinematic-timeline') {
+    return (
+      <aside className="border-b border-white/10 bg-[#101716]">
+        <dl className="mx-auto grid w-full max-w-7xl gap-5 px-5 py-8 text-sm md:grid-cols-2 md:px-10">
+          {meals.length ? <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ddae73]">Meals</dt><dd className="mt-2 leading-7 text-white/60">{meals.join(' · ')}</dd></div> : null}
+          {day.lodging ? <div><dt className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ddae73]">Lodging</dt><dd className="mt-2 leading-7 text-white/60">{day.lodging}</dd></div> : null}
+        </dl>
+      </aside>
+    )
+  }
+
+  const scrapbook = style === 'family-scrapbook'
+  return (
+    <aside className={cn(
+      scrapbook
+        ? 'mt-8 border border-[#caae88] bg-[#fff8e8] p-5 shadow-[4px_5px_0_rgba(93,64,42,0.12)]'
+        : 'mx-auto mb-12 grid w-full max-w-7xl gap-5 border-y border-[#cfc2ae] px-5 py-7 md:grid-cols-2 md:px-10',
+    )}>
+      {meals.length ? <section><h2 className={cn('text-xs font-semibold uppercase tracking-[0.16em]', scrapbook ? 'text-[#9e3e2e]' : 'text-[#a34031]')}>餐食</h2><p className="mt-2 text-sm leading-7">{meals.join(' · ')}</p></section> : null}
+      {day.lodging ? <section><h2 className={cn('text-xs font-semibold uppercase tracking-[0.16em]', scrapbook ? 'text-[#9e3e2e]' : 'text-[#a34031]')}>住宿</h2><p className="mt-2 text-sm leading-7">{day.lodging}</p></section> : null}
+    </aside>
   )
 }
 
@@ -502,16 +704,16 @@ function EditorialGallery({ gallery }: { gallery: TravelMemoryGallery }) {
             <p className="font-serif text-lg italic text-[#a34031]">視覺檔案</p>
             <h1 className="mt-3 max-w-4xl text-balance font-serif text-5xl leading-[0.96] tracking-[-0.04em] md:text-8xl">{gallery.memory.title}・完整相簿</h1>
           </div>
-          <p className="max-w-sm text-sm leading-7 text-[#625a50]">依日期與地點閱讀照片；每張影像仍保留返回每日故事的位置。</p>
+          <p className="max-w-sm text-sm leading-7 text-[#625a50]">依日期、類型與地點閱讀照片及影片；每日影像仍保留返回故事的位置。</p>
         </header>
         <GalleryFilters gallery={gallery} visual={visual} />
         {gallery.items.length ? (
           <div className="mt-16 grid gap-x-10 gap-y-16 md:grid-cols-2">
             {gallery.items.map((item, index) => (
               <figure className={cn(index % 3 === 1 && 'md:mt-20')} key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
-                <PayloadImage className="rounded-none border border-[#cfc2ae]" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
+                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <PayloadImage className="rounded-none border border-[#cfc2ae]" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />}
                 <figcaption className="mt-4 grid gap-2 border-t border-[#cfc2ae] pt-4 sm:grid-cols-[7rem_1fr]">
-                  <p className="font-mono text-xs tabular-nums text-[#a34031]">{item.unclassified ? 'ARCHIVE' : `DAY ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
+                  <p className="font-mono text-xs tabular-nums text-[#a34031]">{item.unclassified ? (item.type === 'youtube' ? '全旅程影片' : 'ARCHIVE') : `DAY ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
                   <div>
                     <p className="font-serif text-base italic leading-7 text-[#625a50]">{item.caption || '此影像未附敘事說明。'}</p>
                     {item.dayKey && item.momentKey ? <Link className="mt-3 inline-flex text-xs font-semibold text-[#a34031]" href={`/travel/${gallery.memory.slug}/day/${item.dayKey}#moment-${item.momentKey}`}>回到每日故事</Link> : null}
@@ -520,7 +722,7 @@ function EditorialGallery({ gallery }: { gallery: TravelMemoryGallery }) {
               </figure>
             ))}
           </div>
-        ) : <EmptyState text="這個篩選條件尚未有已發布照片。" visual={visual} />}
+        ) : <EmptyState text="這個篩選條件尚未有已發布照片或影片。" visual={visual} />}
         <GalleryPagination gallery={gallery} visual={visual} />
       </div>
     </main>
@@ -545,9 +747,9 @@ function CinematicGallery({ gallery }: { gallery: TravelMemoryGallery }) {
           <div className="mt-12 grid gap-px bg-white/10 md:grid-cols-2">
             {gallery.items.map((item) => (
               <figure className="bg-[#0d1211] p-3" key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
-                <PayloadImage className="aspect-video rounded-none border-0" fallbackLabel={item.caption || item.media.altText} fit="cover" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
+                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <PayloadImage className="aspect-video rounded-none border-0" fallbackLabel={item.caption || item.media.altText} fit="cover" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />}
                 <figcaption className="grid grid-cols-[5rem_1fr] gap-4 px-1 py-4">
-                  <p className="font-mono text-xs tabular-nums text-[#ddae73]">{item.unclassified ? 'ARCHIVE' : `${String(item.day).padStart(2, '0')}:${item.time || '—'}`}</p>
+                  <p className="font-mono text-xs tabular-nums text-[#ddae73]">{item.unclassified ? (item.type === 'youtube' ? '全旅程影片' : 'ARCHIVE') : `${String(item.day).padStart(2, '0')}:${item.time || '—'}`}</p>
                   <div>
                     <p className="text-xs leading-6 text-white/60">{item.caption || 'No scene note.'}</p>
                     {item.dayKey && item.momentKey ? <Link className="mt-2 inline-flex text-xs font-semibold text-[#ddae73]" href={`/travel/${gallery.memory.slug}/day/${item.dayKey}#moment-${item.momentKey}`}>回到每日故事</Link> : null}
@@ -556,7 +758,7 @@ function CinematicGallery({ gallery }: { gallery: TravelMemoryGallery }) {
               </figure>
             ))}
           </div>
-        ) : <EmptyState text="這個篩選條件尚未有已發布照片。" visual={visual} />}
+        ) : <EmptyState text="這個篩選條件尚未有已發布照片或影片。" visual={visual} />}
         <GalleryPagination gallery={gallery} visual={visual} />
       </div>
     </main>
@@ -570,7 +772,7 @@ function ScrapbookGallery({ gallery }: { gallery: TravelMemoryGallery }) {
       <div className="mx-auto w-full max-w-6xl">
         <Link className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.16em] text-[#76664f] transition hover:text-[#9e3e2e]" href={`/travel/${gallery.memory.slug}`}><ArrowLeft className="size-4" aria-hidden="true" />回到旅行首頁</Link>
         <header className="mt-12 border-b-2 border-[#7a6749]/30 pb-10">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#9e3e2e]">照片信封 · {gallery.totalItems} 張</p>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#9e3e2e]">照片信封與影片 · {gallery.totalItems} 項</p>
           <h1 className="mt-4 max-w-4xl text-balance font-serif text-5xl leading-tight tracking-[-0.035em] md:text-7xl">{gallery.memory.title}・完整相簿</h1>
           <p className="mt-5 max-w-2xl font-serif text-xl italic leading-8 text-[#76664f]">日期、地點，以及每張照片背面會寫下的那句話。</p>
         </header>
@@ -579,16 +781,16 @@ function ScrapbookGallery({ gallery }: { gallery: TravelMemoryGallery }) {
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {gallery.items.map((item, index) => (
               <figure className={cn('bg-[#fffaf0] p-3 pb-8 shadow-[5px_8px_0_rgba(98,75,43,0.14)]', scrapbookTilt('family-scrapbook', index))} key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
-                <PayloadImage className="rounded-none border-0" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" tone="travel" />
+                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <PayloadImage className="rounded-none border-0" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" tone="travel" />}
                 <figcaption className="px-3 pt-5">
-                  <p className="font-serif text-lg italic leading-7 text-[#695b47]">{item.caption || '照片背面沒有留下文字。'}</p>
-                  <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-[#9e3e2e]">{item.unclassified ? '未分類照片' : `Day ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
+                  <p className="font-serif text-lg italic leading-7 text-[#695b47]">{item.caption || (item.type === 'youtube' ? '影片沒有附上文字。' : '照片背面沒有留下文字。')}</p>
+                  <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-[#9e3e2e]">{item.unclassified ? (item.type === 'youtube' ? '全旅程影片' : '未分類照片') : `Day ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
                   {item.dayKey && item.momentKey ? <Link className="mt-3 inline-flex font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9e3e2e]" href={`/travel/${gallery.memory.slug}/day/${item.dayKey}#moment-${item.momentKey}`}>回到每日故事</Link> : null}
                 </figcaption>
               </figure>
             ))}
           </div>
-        ) : <EmptyState text="這個篩選條件尚未有已發布照片。" visual={visual} />}
+        ) : <EmptyState text="這個篩選條件尚未有已發布照片或影片。" visual={visual} />}
         <GalleryPagination gallery={gallery} visual={visual} />
       </div>
     </main>
@@ -598,7 +800,7 @@ function ScrapbookGallery({ gallery }: { gallery: TravelMemoryGallery }) {
 type VisualProfile = ReturnType<typeof styleProfile>
 type Placement = NonNullable<NonNullable<TravelMemoryDay['moments']>[number]['placements']>[number]
 
-function MemoryPlacement({ placement, style, visual }: { placement: Placement; style: TravelMemoryPresentationStyle; visual: VisualProfile }) {
+function MemoryPlacement({ placement, priority = false, style, visual }: { placement: Placement; priority?: boolean; style: TravelMemoryPresentationStyle; visual: VisualProfile }) {
   if (placement.type === 'photo') {
     return (
       <figure className={cn('overflow-hidden p-3', visual.card, style === 'family-scrapbook' && 'rotate-[-1deg]')}>
@@ -608,6 +810,7 @@ function MemoryPlacement({ placement, style, visual }: { placement: Placement; s
           layout="intrinsic"
           media={placement.media}
           preferOriginal
+          priority={priority}
           sizes="(min-width: 768px) 45vw, 100vw"
           tone="travel"
         />
@@ -652,22 +855,37 @@ function MemoryPlacement({ placement, style, visual }: { placement: Placement; s
   )
 }
 
+function GalleryVideo({ item, visual }: { item: Extract<TravelMemoryGalleryItem, { type: 'youtube' }>; visual: VisualProfile }) {
+  const embedUrl = toYouTubeEmbedUrl(item.youtubeUrl)
+  const externalUrl = toSafeYouTubeExternalUrl(item.youtubeUrl)
+  return embedUrl ? (
+    <iframe allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="aspect-video w-full bg-black" loading="lazy" src={embedUrl} title={item.caption || '旅行影片'} />
+  ) : externalUrl ? (
+    <a className={cn('flex aspect-video items-center justify-center gap-2 border p-5 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4', visual.border, visual.accent)} href={externalUrl} rel="noreferrer noopener" target="_blank"><Play className="size-5" aria-hidden="true" />在 YouTube 開啟影片</a>
+  ) : null
+}
+
 function GalleryFilters({ gallery, visual }: { gallery: TravelMemoryGallery; visual: VisualProfile }) {
   return (
-    <div className="mt-8 grid gap-3">
-      <div className="flex flex-wrap gap-2" aria-label="按日期篩選照片">
-        <Link className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedDayKey === null ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: null, page: 1 })}>全部</Link>
-        {gallery.memory.days.map((day) => (
-          <Link className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedDayKey === day.dayKey ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: day.dayKey, page: 1 })} key={day.dayKey}>Day {day.day}</Link>
+    <div className="mt-8 grid gap-3 [&_a:focus-visible]:outline [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-4">
+      <nav className="flex flex-wrap gap-2" aria-label="按類型篩選媒體">
+        {([{ type: null, label: '全部' }, { type: 'photo', label: '照片' }, { type: 'youtube', label: '影片' }] as const).map(({ type, label }) => (
+          <Link aria-current={gallery.selectedType === type ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedType === type ? visual.button : visual.card)} href={galleryHref(gallery, { type, page: 1 })} key={type ?? 'all'}>{label}</Link>
         ))}
-      </div>
+      </nav>
+      <nav className="flex flex-wrap gap-2" aria-label="按日期篩選媒體">
+        <Link aria-current={gallery.selectedDayKey === null ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedDayKey === null ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: null, page: 1 })}>所有日期</Link>
+        {gallery.memory.days.map((day) => (
+          <Link aria-current={gallery.selectedDayKey === day.dayKey ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedDayKey === day.dayKey ? visual.button : visual.card)} href={galleryHref(gallery, { dayKey: day.dayKey, page: 1 })} key={day.dayKey}>Day {day.day}</Link>
+        ))}
+      </nav>
       {gallery.locations.length ? (
-        <div className="flex flex-wrap gap-2" aria-label="按地點篩選照片">
-          <Link className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedLocation === null ? visual.button : visual.card)} href={galleryHref(gallery, { location: null, page: 1 })}>所有地點</Link>
+        <nav className="flex flex-wrap gap-2" aria-label="按地點篩選媒體">
+          <Link aria-current={gallery.selectedLocation === null ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedLocation === null ? visual.button : visual.card)} href={galleryHref(gallery, { location: null, page: 1 })}>所有地點</Link>
           {gallery.locations.map((location) => (
-            <Link className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedLocation === location ? visual.button : visual.card)} href={galleryHref(gallery, { location, page: 1 })} key={location}>{location}</Link>
+            <Link aria-current={gallery.selectedLocation === location ? 'page' : undefined} className={cn('px-3 py-2 text-sm font-semibold transition active:translate-y-px', gallery.selectedLocation === location ? visual.button : visual.card)} href={galleryHref(gallery, { location, page: 1 })} key={location}>{location}</Link>
           ))}
-        </div>
+        </nav>
       ) : null}
     </div>
   )
@@ -700,33 +918,6 @@ function DayNavigation({ view, visual }: { view: TravelMemoryDayView; visual: Vi
       {view.previousDay ? <DayNavigationLink day={view.previousDay} direction="previous" slug={view.memory.slug} visual={visual} /> : <span />}
       {view.nextDay ? <DayNavigationLink day={view.nextDay} direction="next" slug={view.memory.slug} visual={visual} /> : null}
     </nav>
-  )
-}
-
-function NoVideoState({ style }: { style: TravelMemoryPresentationStyle }) {
-  if (style === 'cinematic-timeline') {
-    return (
-      <aside className="border border-white/15 bg-white/[0.035] px-6 py-10 text-center">
-        <Play className="mx-auto size-6 text-[#ddae73]" aria-hidden="true" />
-        <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.2em] text-[#ddae73]">No daily footage</p>
-        <p className="mt-3 text-sm text-white/55">這一天沒有已配置的旅行影片。</p>
-      </aside>
-    )
-  }
-  if (style === 'family-scrapbook') {
-    return (
-      <aside className="rotate-[0.4deg] border border-dashed border-[#9e3e2e]/35 bg-[#fff8e8]/70 px-6 py-10 text-center">
-        <Play className="mx-auto size-6 text-[#9e3e2e]" aria-hidden="true" />
-        <p className="mt-5 font-mono text-[10px] uppercase tracking-[0.18em] text-[#9e3e2e]">當日影片</p>
-        <p className="mt-3 font-serif text-lg italic text-[#76664f]">這一天沒有已配置的旅行影片。</p>
-      </aside>
-    )
-  }
-  return (
-    <aside className="border-y border-[#cfc2ae] py-9 text-center">
-      <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a34031]">當日影片</p>
-      <p className="mt-3 font-serif text-lg italic text-[#625a50]">這一天沒有已配置的旅行影片。</p>
-    </aside>
   )
 }
 
@@ -764,22 +955,18 @@ function firstDayPhoto(day: TravelMemoryDay): Media | null {
   return null
 }
 
-function hasYouTubePlacement(day: TravelMemoryDay) {
-  return (day.moments ?? []).some((moment) =>
-    (moment.placements ?? []).some((placement) => placement.type === 'youtube' && Boolean(placement.youtubeUrl)),
-  )
-}
-
 function galleryHref(
   gallery: TravelMemoryGallery,
-  changes: { dayKey?: string | null; location?: string | null; page?: number },
+  changes: { dayKey?: string | null; location?: string | null; type?: TravelMemoryGallery['selectedType']; page?: number },
 ) {
   const dayKey = changes.dayKey === undefined ? gallery.selectedDayKey : changes.dayKey
   const location = changes.location === undefined ? gallery.selectedLocation : changes.location
+  const type = changes.type === undefined ? gallery.selectedType : changes.type
   const page = changes.page ?? gallery.page
   const search = new URLSearchParams()
   if (dayKey) search.set('day', dayKey)
   if (location) search.set('location', location)
+  if (type) search.set('type', type)
   if (page > 1) search.set('page', String(page))
   const query = search.toString()
   return `/travel/${gallery.memory.slug}/photos${query ? `?${query}` : ''}`

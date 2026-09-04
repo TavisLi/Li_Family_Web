@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 
-import { toSafeYouTubeExternalUrl, toYouTubeEmbedUrl } from './youtube'
+import { toSafeYouTubeExternalUrl, toYouTubeEmbedUrl, toYouTubeVideoIdentity } from './youtube'
 
 assert.equal(
   toYouTubeEmbedUrl('https://youtu.be/lYP3m2N8yvs'),
@@ -22,3 +22,15 @@ assert.equal(
 )
 assert.equal(toSafeYouTubeExternalUrl('javascript:alert(1)'), null)
 assert.equal(toSafeYouTubeExternalUrl('https://example.com/video'), null)
+
+for (const url of [
+  'https://youtu.be/lYP3m2N8yvs?si=tracking',
+  'https://www.youtube.com/watch?v=lYP3m2N8yvs&feature=share',
+  'https://youtube.com/shorts/lYP3m2N8yvs',
+  'https://youtube.com/embed/lYP3m2N8yvs',
+  'https://youtube.com/live/lYP3m2N8yvs?si=tracking',
+]) assert.equal(toYouTubeVideoIdentity(url), 'https://www.youtube-nocookie.com/embed/lYP3m2N8yvs')
+assert.equal(toYouTubeVideoIdentity('https://youtube.com.evil.test/watch?v=lYP3m2N8yvs'), null)
+assert.equal(toYouTubeVideoIdentity('javascript:alert(1)'), null)
+assert.equal(toYouTubeVideoIdentity('http://youtube.com/watch?v=lYP3m2N8yvs'), null)
+assert.equal(toYouTubeEmbedUrl('https://youtube.com/live/example123'), null, 'existing live fallback behavior stays unchanged')
