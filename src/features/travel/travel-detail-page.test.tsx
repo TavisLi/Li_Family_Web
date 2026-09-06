@@ -24,7 +24,6 @@ const completedProject: TravelRuntimeRecord = {
   summary: '從曼谷轉機到普吉的家庭旅行。',
   coverImage: null,
   galleryImages: [],
-  itineraryImages: [],
   flights: [
     {
       id: 'flight-1',
@@ -42,21 +41,6 @@ const completedProject: TravelRuntimeRecord = {
       roomType: '三臥住宅',
     },
   ],
-  dailyItinerary: [
-    {
-      id: 'day-1',
-      day: 1,
-      title: '抵達普吉',
-      segments: [
-        {
-          id: 'segment-1',
-          time: '上午',
-          activity: '前往機場',
-          transport: '飛機',
-        },
-      ],
-    },
-  ],
   externalVideos: [
     {
       id: 'video-1',
@@ -69,6 +53,7 @@ const completedProject: TravelRuntimeRecord = {
 const html = renderToStaticMarkup(
   createElement(CompletedTravelLedger, { project: completedProject }),
 )
+
 
 assert.match(html, /旅程資料簿/)
 assert.match(html, /BR211/)
@@ -88,7 +73,6 @@ const planningProject: TravelRuntimeRecord = {
   summary: '雙度假會體驗',
   coverImage: null,
   galleryImages: [],
-  itineraryImages: [],
   party: [{ id: 'party-1', name: 'Tavis' }],
   flights: [
     {
@@ -103,14 +87,6 @@ const planningProject: TravelRuntimeRecord = {
       id: 'lodging-1',
       dateRange: '2/2 – 2/5',
       hotel: 'Anantara Vacation Club Mai Khao Phuket',
-    },
-  ],
-  dailyItinerary: [
-    {
-      id: 'day-1',
-      day: 1,
-      title: '台北 → 普吉島 · 安納塔拉入住',
-      segments: [{ id: 'segment-1', activity: '抵達普吉島' }],
     },
   ],
   sourceSections: [

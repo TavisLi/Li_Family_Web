@@ -295,7 +295,6 @@ export async function buildPayloadDryRun(
       ...attachSourceSectionMediaIds({ mediaBySourcePath: mediaIdBySourcePath, mediaItems: assets, travel }),
       coverImage,
       galleryImages: idsFor(['gallery', 'cover']),
-      itineraryImages: idsFor(['itinerary']),
     })
     const crossCollectionCollision = crossCollectionCollisionBySlug.get(travel.slug)
 

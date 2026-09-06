@@ -14,6 +14,7 @@ import {
   mergeTravelRuntimeRecords,
   resolveTravelRuntimeRelationship,
   toTravelRuntimeRecord,
+  travelRuntimeMemorySelect,
   type TravelRuntimeRecord,
 } from '@/lib/travel-runtime'
 import {
@@ -63,6 +64,7 @@ export async function getFeaturedTravelProjects(
     depth: 1,
     limit,
     overrideAccess: false,
+    select: travelRuntimeMemorySelect,
     sort: '-startDate',
     ...userReq(user),
   })
@@ -112,6 +114,7 @@ export async function getTravelRecordByRelationship(
     depth: 1,
     limit: 1,
     overrideAccess: false,
+    select: travelRuntimeMemorySelect,
     where: {
       id: {
         equals: sourceId,
@@ -150,6 +153,7 @@ export async function getTravelProjectBySlug(slug: string): Promise<TravelRuntim
         depth: 1,
         limit: 1,
         overrideAccess: false,
+        select: travelRuntimeMemorySelect,
         where: {
           slug: {
             equals: slug,

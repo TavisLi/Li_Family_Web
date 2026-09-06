@@ -25,24 +25,8 @@ type TravelPlanProjection = TravelProjection & {
   planningSections?: TravelSectionProjection[]
 }
 
-type DailyHighlightProjection = {
-  day?: number
-  dateLabel?: unknown
-  title: unknown
-  theme?: unknown
-  segments?: {
-    time?: unknown
-    activity: unknown
-    transport?: unknown
-    notes?: unknown
-  }[]
-  meals?: { breakfast?: unknown; lunch?: unknown; dinner?: unknown }
-  lodging?: unknown
-}
-
 type TravelMemoryProjection = TravelProjection & {
   slug: string
-  dailyHighlights?: DailyHighlightProjection[]
   travelLedger?: {
     flights?: Record<string, unknown>[]
     lodgings?: Record<string, unknown>[]
@@ -101,7 +85,6 @@ export function buildTravelMemoryProjection(
     'summary',
     'coverImage',
     'galleryImages',
-    'itineraryImages',
     '_status',
   ])
 
@@ -146,9 +129,6 @@ export function buildTravelMemoryProjection(
       ...(lodgings.length ? { lodgings } : {}),
     }
   }
-
-  const dailyHighlights = mapRecords(value.dailyItinerary, mapDailyHighlight)
-  if (dailyHighlights.length) projection.dailyHighlights = dailyHighlights
 
   if (Array.isArray(value.sourceSections) && value.sourceSections.length) {
     projection.storySections = value.sourceSections.map((section) =>
@@ -240,37 +220,6 @@ function localizedText(value: unknown): string {
     return Object.values(value).find((item): item is string => typeof item === 'string') ?? ''
   }
   return ''
-}
-
-function mapDailyHighlight(day: Record<string, unknown>): DailyHighlightProjection {
-  if (!hasValue(day.title)) {
-    throw new Error('Travel Memory source 含有無法轉換的 daily itinerary。')
-  }
-  const mapped: DailyHighlightProjection = { title: day.title }
-  copyFields(mapped, day, ['day', ['date', 'dateLabel'], 'theme', 'lodging'])
-
-  const segments = mapRecords(day.segments, (segment) => {
-    if (!hasValue(segment.activity)) {
-      throw new Error('Travel Memory source 含有無法轉換的 itinerary segment。')
-    }
-    return pickRecord(segment, [
-      ['activity', 'activity'],
-      ['time', 'time'],
-      ['transport', 'transport'],
-      ['notes', 'notes'],
-    ]) as NonNullable<DailyHighlightProjection['segments']>[number]
-  })
-  if (segments.length) mapped.segments = segments
-
-  if (isRecord(day.meals)) {
-    const meals = pickRecord(day.meals, [
-      ['breakfast', 'breakfast'],
-      ['lunch', 'lunch'],
-      ['dinner', 'dinner'],
-    ])
-    if (hasValue(meals)) mapped.meals = meals
-  }
-  return mapped
 }
 
 type FieldMapping = string | readonly [source: string, target: string]

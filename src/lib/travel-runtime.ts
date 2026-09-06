@@ -8,6 +8,27 @@ import {
   type TravelMemoryPresentationStyle,
 } from '@/lib/travel-memory'
 
+export const travelRuntimeMemorySelect = {
+  coverImage: true,
+  createdAt: true,
+  endDate: true,
+  externalVideos: true,
+  galleryImages: true,
+  guestParticipants: true,
+  isPrivate: true,
+  originPlan: true,
+  participants: true,
+  presentationStyle: true,
+  slug: true,
+  sourceMetadata: true,
+  startDate: true,
+  storySections: true,
+  summary: true,
+  title: true,
+  travelLedger: true,
+  updatedAt: true,
+} as const
+
 type TravelPlanSection = NonNullable<TravelPlan['planningSections']>[number]
 type TravelSectionLink = NonNullable<TravelPlanSection['links']>[number]
 
@@ -16,13 +37,6 @@ export type TravelRuntimeSection = Omit<TravelPlanSection, 'interactions' | 'lin
   enableComments?: boolean | null
   enableThumbsUp?: boolean | null
   enableThumbsDown?: boolean | null
-}
-
-type TravelRuntimeDailyHighlight = Omit<
-  NonNullable<TravelMemory['dailyHighlights']>[number],
-  'day'
-> & {
-  day: number
 }
 
 type TravelRuntimeFlight = NonNullable<
@@ -58,8 +72,6 @@ type TravelRuntimeBase = Pick<
   party?: TravelMemory['guestParticipants'] | TravelPlan['guestParticipants']
   sourceSections?: TravelRuntimeSection[] | null
   galleryImages?: TravelMemory['galleryImages']
-  itineraryImages?: TravelMemory['itineraryImages']
-  dailyItinerary?: TravelRuntimeDailyHighlight[] | null
   flights?: TravelRuntimeFlight[] | null
   lodgings?: TravelRuntimeLodging[] | null
   externalVideos?: TravelRuntimeVideo[] | null
@@ -152,11 +164,6 @@ export function toTravelRuntimeRecord(
       party: memory.guestParticipants,
       sourceSections: runtimeSections(memory.storySections),
       galleryImages: memory.galleryImages,
-      itineraryImages: memory.itineraryImages,
-      dailyItinerary: memory.dailyHighlights?.map((highlight, index) => ({
-        ...highlight,
-        day: highlight.day ?? index + 1,
-      })),
       flights: memory.travelLedger?.flights,
       lodgings: memory.travelLedger?.lodgings?.map((lodging) => ({
         ...lodging,

@@ -5,6 +5,7 @@ import {
   mergeTravelRuntimeRecords,
   resolveTravelRuntimeRelationship,
   toTravelRuntimeRecord,
+  travelRuntimeMemorySelect,
 } from './travel-runtime'
 
 const plan: TravelPlan = {
@@ -115,8 +116,10 @@ assert.deepEqual(memoryRecord.originPlan, {
   sourceId: plan.id,
 })
 assert.deepEqual(memoryRecord.party, memory.guestParticipants)
-assert.equal(memoryRecord.dailyItinerary?.[0]?.day, 1)
-assert.equal(memoryRecord.dailyItinerary?.[0]?.segments?.[0]?.activity, '抵達飯店')
+assert.equal('dailyItinerary' in memoryRecord, false)
+assert.equal('itineraryImages' in memoryRecord, false)
+assert.equal('dailyHighlights' in travelRuntimeMemorySelect, false)
+assert.equal('itineraryImages' in travelRuntimeMemorySelect, false)
 assert.equal(memoryRecord.flights?.[0]?.flightNumber, 'CI123')
 assert.equal(memoryRecord.lodgings?.[0]?.dateRange, '2013-07-01 - 2013-07-03')
 assert.deepEqual(memoryRecord.externalVideos, [
