@@ -678,7 +678,6 @@ async function seedTravelProjects(
       const assets = ownerMedia(context, 'travel', travel.slug)
       const coverImage = firstMediaId(context, assets, 'cover') ?? firstMediaId(context, assets, 'gallery')
       const galleryImages = mediaIds(context, assets, ['gallery', 'cover'])
-      const itineraryImages = mediaIds(context, assets, ['itinerary'])
       const data = {
         ...attachSourceSectionMediaIds({
           mediaBySourcePath: context.mediaBySourcePath,
@@ -687,7 +686,6 @@ async function seedTravelProjects(
         }),
         coverImage,
         galleryImages,
-        itineraryImages,
       }
       const target = buildTravelSeedTarget(travel, data as TravelProjection)
       const result = await writeTravelSeedTarget({

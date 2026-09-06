@@ -175,34 +175,8 @@ function PlanningTravelView({
 }
 
 function CompletedTravelView({ project }: { project: TravelRuntimeRecord }) {
-  const highlights = (project.dailyItinerary ?? []).slice(0, 6)
-
   return (
     <>
-      <section className="border-y border-white/60 bg-white/35 px-5 py-14 backdrop-blur-xl md:py-20">
-        <div className="mx-auto w-full max-w-7xl">
-          <SectionHeading
-            eyebrow="Memory Journal"
-            title="回憶敘事與旅程里程碑"
-            text="已完成旅程以更 editorial 的節奏呈現，讓圖片、城市節點與文字共同推進。"
-          />
-          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {highlights.map((day) => (
-              <article
-                className="rounded-lg border border-white/60 bg-white/55 p-5 shadow-sm backdrop-blur-xl"
-                key={day.id}
-              >
-                <p className="text-sm font-semibold text-amber-700">Day {day.day}</p>
-                <h3 className="mt-2 text-xl font-semibold tracking-normal">{day.title}</h3>
-                <p className="mt-3 line-clamp-4 text-sm leading-7 text-slate-600">
-                  {day.segments?.[0]?.activity || day.theme || '這一天的旅行記憶已建立，等待照片與心得繼續補齊。'}
-                </p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <CompletedTravelLedger project={project} />
 
       <TravelPhotoGalleryPreview project={project} />

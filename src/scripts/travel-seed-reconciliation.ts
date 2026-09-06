@@ -32,7 +32,9 @@ export type TravelReconciliationPlan = {
 const ignoredProjectionKeys = new Set([
   'collection',
   'createdAt',
+  'dailyHighlights',
   'id',
+  'itineraryImages',
   'sourceMetadata',
   'updatedAt',
 ])

@@ -36,7 +36,6 @@ const projects: TravelRuntimeRecord[] = [
     summary: '已過期但保留討論脈絡',
     coverImage,
     galleryImages: [],
-    itineraryImages: [],
   },
   {
     id: 'travel-plans:1',
@@ -52,7 +51,6 @@ const projects: TravelRuntimeRecord[] = [
     summary: '雙度假會體驗',
     coverImage,
     galleryImages: [],
-    itineraryImages: [],
   },
   {
     id: 'travel-memories:2',
@@ -68,7 +66,6 @@ const projects: TravelRuntimeRecord[] = [
     summary: '墨爾本與悉尼',
     coverImage,
     galleryImages: [],
-    itineraryImages: [],
   },
 ]
 

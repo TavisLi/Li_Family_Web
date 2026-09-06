@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import type { TravelSeed } from './seed-content'
 import {
   buildTravelSeedTarget,
+  travelSeedBaseProjection,
   travelSeedStatBucket,
   writeTravelSeedTarget,
 } from './travel-seed-target'
@@ -104,15 +105,19 @@ const memoryTarget = buildTravelSeedTarget(memoryTravel, {
 
 assert.equal(memoryTarget.collection, 'travel-memories')
 assert.deepEqual(memoryTarget.source.galleryImages, [201, 202])
-assert.equal(
-  (memoryTarget.source.dailyHighlights as { title: string }[] | undefined)?.[0]?.title,
-  '抵達目的地',
-)
+assert.equal('dailyHighlights' in memoryTarget.source, false)
+assert.equal('itineraryImages' in memoryTarget.source, false)
 assert.equal(
   (memoryTarget.source.storySections as { anchor: string }[] | undefined)?.[0]?.anchor,
   'opening',
 )
 assert.equal(memoryTarget.data.sourceMetadata.parserVersion, 'phase-17-memory-v1')
+assert.equal(
+  'dailyHighlights' in (travelSeedBaseProjection({
+    sourceMetadata: { baseProjection: { slug: 'legacy', dailyHighlights: [{ day: 1 }] } },
+  }) ?? {}),
+  false,
+)
 
 const writes: Record<string, unknown>[] = []
 const createResult = await writeTravelSeedTarget({
