@@ -1,0 +1,74 @@
+{
+  "updated": "2026-09-07",
+  "productionWrites": 0,
+  "cleanupExecuted": false,
+  "syntheticRetirementRestore": {
+    "status": "SYNTHETIC_RETIREMENT_RESTORE_PASS_NOT_PRODUCTION_BACKUP",
+    "terminalSession": 45312,
+    "exitCode": 0,
+    "productionConnections": 0,
+    "tables": 8,
+    "relationRowsDeletedAndRestored": 4,
+    "preservedRelationRows": 6,
+    "backupSha256": "9bd2cf73aaa950074a341fcb75c0cce15bb84f2a00cecdd2a9e2a8244bdc5941",
+    "beforeAfterSha256": "57641f6bfafdc037745a824aa7f4fe7cc52ff9acc11392a982281a60293c3010",
+    "productionBackupStatus": "NOT_AUTHORIZED_NOT_EXPORTED"
+  },
+  "productionScopedBackup": {
+    "status": "SCOPED_RETIREMENT_BACKUP_PASS_NOT_CLEANUP_APPROVAL",
+    "runId": "retirement-backup-2026-09-07T09-19-11-293Z",
+    "terminalSession": 77035,
+    "exitCode": 0,
+    "productionWrites": 0,
+    "statementTimeoutMs": 15000,
+    "backupSha256": "7f6041a1a0caf3b3b7b0dccbb575d3b3a3a6c4aa56b648fcc879a2e23b52e46b",
+    "backupBytes": 1688166,
+    "queryCount": 40,
+    "localRowsRestore": {
+      "status": "SCOPED_RETIREMENT_BACKUP_LOCAL_ROWS_RESTORE_PASS",
+      "tables": 10,
+      "rows": 12080,
+      "productionConnections": 0
+    },
+    "cleanupApproval": false
+  },
+  "finalCleanupPlan": {
+    "backupSha256": "7f6041a1a0caf3b3b7b0dccbb575d3b3a3a6c4aa56b648fcc879a2e23b52e46b",
+    "relationDeletes": 1857,
+    "drops": 8,
+    "dropMode": "RESTRICT",
+    "containsCascade": false,
+    "productionApplyApproval": false
+  },
+  "productionCommit": "3f6b2c4c53e684510265e07fb3b4633d71d5a775",
+  "productionDeployment": "dpl_8uLXMLmdXZXmVZMQNhJJqCAUuhmH",
+  "c0": {
+    "runId": "c0-20260907T021545159Z",
+    "status": "C0_INVENTORY_READBACK_PASS_NOT_CLEANUP_APPROVAL",
+    "queries": 22,
+    "snapshotSha256": "fb2c42d0a1c109f27fe4db774a8416307c6d4e43c6527564550921c5e8771759",
+    "restorableBackup": false
+  },
+  "productionBrowser": {
+    "session": "phase21-c2-repair",
+    "nonGetRequestsAborted": true,
+    "adminRequestsAborted": true,
+    "batches": [
+      { "terminalSession": 9653, "routes": 5, "getInterceptionsAtReturn": 117, "adminBlockedAtReturn": 5, "exitCode": 0 },
+      { "terminalSession": 93926, "routes": 9, "getInterceptionsAtReturn": 221, "adminBlockedAtReturn": 9, "exitCode": 0 },
+      { "terminalSession": 43106, "routes": 10, "getInterceptionsAtReturn": 269, "adminBlockedAtReturn": 10, "exitCode": 0 },
+      { "terminalSession": 18909, "routes": 9, "getInterceptionsAtReturn": 273, "adminBlockedAtReturn": 7, "exitCode": 0 }
+    ],
+    "routeErrors": 0,
+    "queryLevelTelemetryVerified": false,
+    "allOffscreenMediaVerified": false
+  },
+  "localContract": {
+    "collectionAndRuntimeTests": "PASS",
+    "workingTreeBuild": "FAIL_UNTRACKED_HISTORICAL_SCRIPT_TYPE_REFERENCE",
+    "workingTreeTsc": "FAIL_UNTRACKED_HISTORICAL_SCRIPT_TYPE_REFERENCE",
+    "isolatedCandidateBuild": "PASS_EXIT_0_SESSION_62872",
+    "isolatedCandidateTsc": "PASS_EXIT_0_SESSION_95971",
+    "diffCheck": "PASS"
+  }
+}
