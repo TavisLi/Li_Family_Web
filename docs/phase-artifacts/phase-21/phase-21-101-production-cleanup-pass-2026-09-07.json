@@ -1,0 +1,24 @@
+{
+  "status": "FINAL_RETIREMENT_PRODUCTION_APPLY_PASS",
+  "preflightRunId": "retirement-final-preflight-2026-09-07T15-46-24-544Z",
+  "applyRunId": "retirement-production-apply-2026-09-07T15-47-53-750Z",
+  "backupSha256": "7f6041a1a0caf3b3b7b0dccbb575d3b3a3a6c4aa56b648fcc879a2e23b52e46b",
+  "statementTimeoutMs": 15000,
+  "preflight": {
+    "queries": 38,
+    "productionWrites": 0,
+    "constraints": 16,
+    "indexes": 20,
+    "sequences": 5
+  },
+  "cleanup": {
+    "relationRowsDeleted": 1857,
+    "relationDeleteStatements": 2,
+    "droppedTables": 8,
+    "dropMode": "RESTRICT"
+  },
+  "readback": "PASS",
+  "contentMediaEnvironmentWrites": 0,
+  "merge": false,
+  "issueCloseout": false
+}
