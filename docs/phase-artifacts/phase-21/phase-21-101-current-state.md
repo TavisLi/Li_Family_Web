@@ -90,3 +90,7 @@ Production logs 另有 `/api/og` 的一次 500，原因為 Payload OG 字型檔�
 ## 2026-09-07 final preflight／DDL rehearsal PASS
 
 Production final preflight `retirement-final-preflight-2026-09-07T09-43-40-368Z` PASS：backup SHA 一致，15 秒 timeout，20 queries，16 constraints、20 indexes、5 sequences，metadata／relation envelope 均無 drift，Production writes 0。Disposable actual-DDL rehearsal 亦 PASS：1,857 exact relation deletes、8 個 `DROP ... RESTRICT`、rollback PASS，4 筆非目標 relations 保留。證據：[phase-21-101-final-preflight-pass-2026-09-07.json](./phase-21-101-final-preflight-pass-2026-09-07.json)。這仍不等於 Production apply approval。
+
+## 2026-09-07 Production apply BLOCK
+
+取得 destructive approval 後，Production apply session 超出 operational wait window，沒有產生成功或 failure receipt；依 fail-closed 原則只中止該唯一 session，不重試。獨立 read-back 確認 8 張 legacy tables 仍存在，`travel_memories_rels` legacy rows 仍為 104、`_travel_memories_v_rels` 仍為 1,753，故未觀測到 Production commit，cleanup 未完成。證據：[phase-21-101-production-apply-block-2026-09-07.json](./phase-21-101-production-apply-block-2026-09-07.json)。下一步只能修正 executor（避免逐筆 Production round-trip）並重新取得一次性批准。
