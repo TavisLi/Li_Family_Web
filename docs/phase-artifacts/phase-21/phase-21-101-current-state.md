@@ -86,3 +86,7 @@ Production logs 另有 `/api/og` 的一次 500，原因為 Payload OG 字型檔�
 這個 restore read-back 證明 scoped raw rows 與欄位形狀可重建；它**不**取代最終 DDL executor 的 FK／index／sequence／security DDL read-back，也不授權 DROP／DELETE。Production cleanup、merge、deploy 均未執行。
 
 最終 target allowlist、RESTRICT DDL review 與未完成 gates 已固定於 [final cleanup readiness](./phase-21-101-final-cleanup-readiness.md)。Drizzle 的原始候選含 `CASCADE`，明確拒絕；最終 contract 一律使用 child-first `DROP ... RESTRICT`。
+
+## 2026-09-07 final preflight／DDL rehearsal PASS
+
+Production final preflight `retirement-final-preflight-2026-09-07T09-43-40-368Z` PASS：backup SHA 一致，15 秒 timeout，20 queries，16 constraints、20 indexes、5 sequences，metadata／relation envelope 均無 drift，Production writes 0。Disposable actual-DDL rehearsal 亦 PASS：1,857 exact relation deletes、8 個 `DROP ... RESTRICT`、rollback PASS，4 筆非目標 relations 保留。證據：[phase-21-101-final-preflight-pass-2026-09-07.json](./phase-21-101-final-preflight-pass-2026-09-07.json)。這仍不等於 Production apply approval。

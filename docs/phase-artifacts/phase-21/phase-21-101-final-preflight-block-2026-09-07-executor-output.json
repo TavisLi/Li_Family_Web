@@ -1,0 +1,8 @@
+{
+  "status": "FINAL_RETIREMENT_PREFLIGHT_BLOCK_NO_RETRY",
+  "productionWrites": 0,
+  "receiptCreated": false,
+  "reason": "The approved executor ended without output and before writing preflight.json; no process remained. Its original implementation did not persist a failure receipt, so the exact database stage cannot be asserted.",
+  "retry": false,
+  "repair": "The runner now writes a private block.json containing stage, query count and redacted error message before a future separately approved run."
+}
