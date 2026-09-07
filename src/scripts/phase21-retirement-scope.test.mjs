@@ -20,6 +20,11 @@ assert.equal(reads.length, 2)
 assert.deepEqual(reads[0].values, [[11]])
 assert.match(reads[0].text, /WHERE id = ANY\(\$1::int\[\]\) ORDER BY id$/)
 assert.doesNotMatch(reads[0].text, /path ~|LIKE/)
+const boundedReads = retirementRelationReads({
+  travel_memories_rels: Array.from({ length: 201 }, (_, index) => ({ id: index + 1, parent_id: 1, path: 'itineraryImages' })),
+})
+assert.equal(boundedReads.length, 3)
+assert.deepEqual(boundedReads.map(read => read.values[0].length), [100, 100, 1])
 assert.throws(() => retirementDeletes({ media: [] }), /Unexpected relation table/)
 assert.throws(() => retirementDeletes({ travel_memories_rels: [{ id: 11, parent_id: 1, path: 'galleryImages' }] }), /Unapproved legacy path/)
 assert.throws(() => retirementDeletes({ travel_memories_rels: [{ id: 11, parent_id: 1, path: 'itineraryImages' }, { id: 11, parent_id: 1, path: 'itineraryImages' }] }), /Duplicate/)

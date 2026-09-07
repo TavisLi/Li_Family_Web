@@ -11,6 +11,7 @@ export const retirementTables = Object.freeze([
   '_travel_memories_v_version_daily_highlights_locales',
   '_travel_memories_v_version_daily_highlights',
 ])
+export const relationReadBatchSize = 100
 
 // Pure statement builder, NOT a Production executor or approval validator.
 // Callers must supply reviewed exact rows; this does not discover/delete by prefix.
@@ -40,10 +41,12 @@ export function retirementRelationReads(relations) {
   const result = []
   for (const [table, rows] of Object.entries(relations)) {
     assert(['travel_memories_rels', '_travel_memories_v_rels'].includes(table), 'Unexpected relation table')
-    const ids = rows.map(row => row.id)
+    const ids = rows.map(row => row.id).sort((left, right) => left - right)
     assert(ids.length > 0 && ids.every(id => Number.isSafeInteger(id) && id > 0), 'Invalid relation read identity')
     assert.equal(new Set(ids).size, ids.length, 'Duplicate relation read identity')
-    result.push({ table, text: `SELECT * FROM public."${table}" WHERE id = ANY($1::int[]) ORDER BY id`, values: [ids] })
+    for (let offset = 0; offset < ids.length; offset += relationReadBatchSize) {
+      result.push({ table, text: `SELECT * FROM public."${table}" WHERE id = ANY($1::int[]) ORDER BY id`, values: [ids.slice(offset, offset + relationReadBatchSize)] })
+    }
   }
   return result
 }

@@ -43,7 +43,8 @@ try {
     await q("SET LOCAL statement_timeout = '15000'")
     assert.deepEqual((await q("SELECT current_setting('transaction_read_only') readonly,current_setting('statement_timeout') timeout")).rows[0], { readonly: 'on', timeout: '15s' }, 'BLOCK: transaction settings')
     stage = 'table-counts'
-    const counts = Object.fromEntries(await Promise.all(legacyTables.map(async table => [table, Number((await q(`SELECT count(*)::int n FROM public."${table}"`)).rows[0].n)])))
+    const counts = {}
+    for (const table of legacyTables) counts[table] = Number((await q(`SELECT count(*)::int n FROM public."${table}"`)).rows[0].n)
     const expectedCounts = {
       travel_memories_daily_highlights: backup.snapshot.allRows.highlights.length,
       travel_memories_daily_highlights_segments: backup.snapshot.allRows.segments.length,
@@ -57,7 +58,7 @@ try {
     assert.deepEqual(counts, expectedCounts, 'BLOCK: legacy table row scope drift')
     stage = 'relations'
     const relations = {}
-    for (const statement of retirementRelationReads(expectedRelations)) relations[statement.table] = (await q(statement.text, statement.values)).rows
+    for (const statement of retirementRelationReads(expectedRelations)) relations[statement.table] = [...(relations[statement.table] ?? []), ...(await q(statement.text, statement.values)).rows]
     assert.equal(digest(relations), digest(expectedRelations), 'BLOCK: exact relation envelope drift')
     stage = 'metadata'
     const columns = (await q(`SELECT table_name,column_name,ordinal_position,data_type,udt_name,is_nullable,column_default FROM information_schema.columns WHERE table_schema='public' AND table_name=ANY($1::text[]) ORDER BY table_name,ordinal_position`, [[...legacyTables, ...relationTables]])).rows

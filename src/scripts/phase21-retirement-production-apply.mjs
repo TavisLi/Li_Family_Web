@@ -83,10 +83,11 @@ try {
     const settings = (await q("SELECT current_setting('transaction_read_only') readonly,current_setting('statement_timeout') timeout")).rows[0]
     assert.deepEqual(settings, { readonly: 'off', timeout: '15s' }, 'BLOCK: transaction settings')
     stage = 'scope'
-    const counts = Object.fromEntries(await Promise.all(legacyTables.map(async table => [table, Number((await q(`SELECT count(*)::int n FROM public."${table}"`)).rows[0].n)])))
+    const counts = {}
+    for (const table of legacyTables) counts[table] = Number((await q(`SELECT count(*)::int n FROM public."${table}"`)).rows[0].n)
     assert.deepEqual(counts, expectedCounts, 'BLOCK: legacy table row scope drift')
     const relations = {}
-    for (const statement of retirementRelationReads(expectedRelations)) relations[statement.table] = (await q(statement.text, statement.values)).rows
+    for (const statement of retirementRelationReads(expectedRelations)) relations[statement.table] = [...(relations[statement.table] ?? []), ...(await q(statement.text, statement.values)).rows]
     assert.equal(digest(relations), digest(expectedRelations), 'BLOCK: exact relation envelope drift')
     stage = 'metadata'
     const metadata = await metadataQuery()
