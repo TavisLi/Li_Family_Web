@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto'
 import { lstat, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { buildRetirementCleanupPlan } from './phase21-retirement-cleanup-plan.mjs'
+import { retirementRelationReads } from './phase21-retirement-scope.mjs'
 
 assert.equal(process.version, 'v20.20.2', 'BLOCK: Node')
 assert.equal(process.env.NODE_ENV, 'production', 'BLOCK: NODE_ENV')
@@ -19,7 +20,6 @@ const legacyTables = [
   '_travel_memories_v_version_daily_highlights_locales', '_travel_memories_v_version_daily_highlights',
 ]
 const relationTables = ['travel_memories_rels', '_travel_memories_v_rels']
-const legacyPath = '^(version\\.)?(itineraryImages|dailyHighlights\\.[0-9]+\\.mediaItems)$'
 const stable = value => Array.isArray(value) ? `[${value.map(stable).sort().join(',')}]` : value && typeof value === 'object' ? `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${stable(value[key])}`).join(',')}}` : JSON.stringify(value)
 const digest = value => createHash('sha256').update(stable(value)).digest('hex')
 const backup = JSON.parse(await readFile(backupPath, 'utf8'))
@@ -86,9 +86,8 @@ try {
     const counts = Object.fromEntries(await Promise.all(legacyTables.map(async table => [table, Number((await q(`SELECT count(*)::int n FROM public."${table}"`)).rows[0].n)])))
     assert.deepEqual(counts, expectedCounts, 'BLOCK: legacy table row scope drift')
     const relations = {}
-    for (const table of relationTables) relations[table] = (await q(`SELECT * FROM public."${table}" WHERE path ~ $1 ORDER BY id`, [legacyPath])).rows
+    for (const statement of retirementRelationReads(expectedRelations)) relations[statement.table] = (await q(statement.text, statement.values)).rows
     assert.equal(digest(relations), digest(expectedRelations), 'BLOCK: exact relation envelope drift')
-    const sentinel = Object.fromEntries(await Promise.all(relationTables.map(async table => [table, Number((await q(`SELECT count(*)::int n FROM public."${table}" WHERE path !~ $1`, [legacyPath])).rows[0].n)])))
     stage = 'metadata'
     const metadata = await metadataQuery()
     for (const key of ['columns', 'security', 'grants', 'policies']) assert.equal(digest(metadata[key]), digest(backup.snapshot.metadata[key]), `BLOCK: ${key} drift`)
@@ -106,12 +105,7 @@ try {
       await readback.query("SET statement_timeout = '15000'")
       const missing = (await readback.query(`SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_name=ANY($1::text[]) ORDER BY table_name`, [legacyTables])).rows
       assert.equal(missing.length, 0, 'BLOCK: dropped table read-back')
-      for (const table of relationTables) {
-        const remaining = Number((await readback.query(`SELECT count(*)::int n FROM public."${table}" WHERE path ~ $1`, [legacyPath])).rows[0].n)
-        const actualSentinel = Number((await readback.query(`SELECT count(*)::int n FROM public."${table}" WHERE path !~ $1`, [legacyPath])).rows[0].n)
-        assert.equal(remaining, 0, `BLOCK: ${table} legacy relation read-back`)
-        assert.equal(actualSentinel, sentinel[table], `BLOCK: ${table} non-target relation drift`)
-      }
+      for (const statement of retirementRelationReads(expectedRelations)) assert.equal((await readback.query(statement.text, statement.values)).rowCount, 0, 'BLOCK: legacy relation read-back')
       for (const table of ['travel_memories', '_travel_memories_v']) assert.equal((await readback.query(`SELECT to_regclass($1) reg`, [`public.${table}`])).rows[0].reg, table, `BLOCK: canonical relation read-back`)
     } finally { await readback.end() }
     await writeReceipt('apply.json', { status: 'FINAL_RETIREMENT_PRODUCTION_APPLY_PASS', runId, backupSha256: expectedBackupSha, statementTimeoutMs: 15000, relationDeletes: plan.invariant.relationDeleteCount, relationDeleteStatements: plan.invariant.relationDeleteStatements, drops: plan.drops.length, dropMode: 'RESTRICT', readback: 'PASS', queryCount })

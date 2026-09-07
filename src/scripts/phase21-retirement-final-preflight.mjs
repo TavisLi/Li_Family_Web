@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { lstat, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
+import { retirementRelationReads } from './phase21-retirement-scope.mjs'
 
 assert.equal(process.version, 'v20.20.2', 'BLOCK: Node')
 assert.equal(process.env.NODE_ENV, 'production', 'BLOCK: NODE_ENV')
@@ -56,7 +57,7 @@ try {
     assert.deepEqual(counts, expectedCounts, 'BLOCK: legacy table row scope drift')
     stage = 'relations'
     const relations = {}
-    for (const table of relationTables) relations[table] = (await q(`SELECT * FROM public."${table}" WHERE path ~ $1 ORDER BY id`, ['^(version\\.)?(itineraryImages|dailyHighlights\\.[0-9]+\\.mediaItems)$'])).rows
+    for (const statement of retirementRelationReads(expectedRelations)) relations[statement.table] = (await q(statement.text, statement.values)).rows
     assert.equal(digest(relations), digest(expectedRelations), 'BLOCK: exact relation envelope drift')
     stage = 'metadata'
     const columns = (await q(`SELECT table_name,column_name,ordinal_position,data_type,udt_name,is_nullable,column_default FROM information_schema.columns WHERE table_schema='public' AND table_name=ANY($1::text[]) ORDER BY table_name,ordinal_position`, [[...legacyTables, ...relationTables]])).rows

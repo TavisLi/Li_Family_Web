@@ -33,3 +33,17 @@ export function retirementDeletes(relations) {
   }
   return result
 }
+
+// Reads use the backup's exact primary keys rather than scanning shared
+// relation tables by path. Callers still compare every returned row.
+export function retirementRelationReads(relations) {
+  const result = []
+  for (const [table, rows] of Object.entries(relations)) {
+    assert(['travel_memories_rels', '_travel_memories_v_rels'].includes(table), 'Unexpected relation table')
+    const ids = rows.map(row => row.id)
+    assert(ids.length > 0 && ids.every(id => Number.isSafeInteger(id) && id > 0), 'Invalid relation read identity')
+    assert.equal(new Set(ids).size, ids.length, 'Duplicate relation read identity')
+    result.push({ table, text: `SELECT * FROM public."${table}" WHERE id = ANY($1::int[]) ORDER BY id`, values: [ids] })
+  }
+  return result
+}
