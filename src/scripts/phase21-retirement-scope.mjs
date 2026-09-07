@@ -24,8 +24,12 @@ export function retirementDeletes(relations) {
       assert(typeof row.path === 'string' && /^(version\.)?(itineraryImages|dailyHighlights\.[0-9]+\.mediaItems)$/.test(row.path), 'Unapproved legacy path')
       assert(!seen.has(row.id), 'Duplicate relation identity')
       seen.add(row.id)
-      result.push({ text: `DELETE FROM public."${table}" WHERE id = $1 AND parent_id = $2 AND path = $3 RETURNING id`, values: [row.id, row.parent_id, row.path] })
     }
+    assert(rows.length > 0, 'Empty relation delete batch')
+    result.push({
+      text: `DELETE FROM public."${table}" target USING jsonb_to_recordset($1::jsonb) AS expected(id integer,parent_id integer,path text) WHERE target.id = expected.id AND target.parent_id = expected.parent_id AND target.path = expected.path RETURNING target.id`,
+      values: [JSON.stringify(rows.map(({ id, parent_id, path }) => ({ id, parent_id, path })))],
+    })
   }
   return result
 }

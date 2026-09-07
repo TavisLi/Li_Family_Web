@@ -94,3 +94,5 @@ Production final preflight `retirement-final-preflight-2026-09-07T09-43-40-368Z`
 ## 2026-09-07 Production apply BLOCK
 
 取得 destructive approval 後，Production apply session 超出 operational wait window，沒有產生成功或 failure receipt；依 fail-closed 原則只中止該唯一 session，不重試。獨立 read-back 確認 8 張 legacy tables 仍存在，`travel_memories_rels` legacy rows 仍為 104、`_travel_memories_v_rels` 仍為 1,753，故未觀測到 Production commit，cleanup 未完成。證據：[phase-21-101-production-apply-block-2026-09-07.json](./phase-21-101-production-apply-block-2026-09-07.json)。下一步只能修正 executor（避免逐筆 Production round-trip）並重新取得一次性批准。
+
+修正版已把 1,857 筆 exact relation DELETE 壓為兩個集合式 tuple batches，disposable actual-DDL rehearsal PASS（8 個 `RESTRICT` drops、rollback、4 個非目標 relations）。但經新的單次批准後，fresh Production preflight 在 `relations` stage 得到 `Query read timeout`，因此在 cleanup transaction 前立即 BLOCK，Production writes 0，未重試。證據：[phase-21-101-corrected-preflight-block-2026-09-07.json](./phase-21-101-corrected-preflight-block-2026-09-07.json)。

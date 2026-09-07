@@ -49,7 +49,7 @@ try {
   const before = {}
   for (const table of ['travel_memories_rels', '_travel_memories_v_rels', ...plan.invariant.tables]) before[table] = (await db.query(`SELECT to_jsonb(t) row FROM ${safe(table)} t`)).rows.map(row => row.row)
   const apply = async () => {
-    for (const statement of plan.relationDeletes) assert.equal((await db.query(statement.text, statement.values)).rowCount, 1)
+    for (const statement of plan.relationDeletes) assert.equal((await db.query(statement.text, statement.values)).rowCount, JSON.parse(statement.values[0]).length)
     for (const statement of plan.drops) await db.query(statement)
   }
   await db.query('BEGIN')
@@ -63,5 +63,5 @@ try {
   for (const table of plan.invariant.tables) assert.equal((await db.query(`SELECT to_regclass('public.${table}') reg`)).rows[0].reg, null, `drop missing ${table}`)
   assert.equal((await db.query('SELECT count(*)::int n FROM travel_memories_rels WHERE path=\'galleryImages\'')).rows[0].n, 2)
   assert.equal((await db.query('SELECT count(*)::int n FROM _travel_memories_v_rels WHERE path=\'galleryImages\'')).rows[0].n, 2)
-  console.log(JSON.stringify({ status: 'FINAL_RETIREMENT_ACTUAL_DDL_REHEARSAL_PASS_NOT_PRODUCTION_APPLY', productionConnections: 0, backupSha256: backup.backupSha256, relationDeletes: plan.relationDeletes.length, drops: plan.drops.length, dropMode: 'RESTRICT', rollback: 'PASS', preservedNonTargetRelations: 4 }))
+  console.log(JSON.stringify({ status: 'FINAL_RETIREMENT_ACTUAL_DDL_REHEARSAL_PASS_NOT_PRODUCTION_APPLY', productionConnections: 0, backupSha256: backup.backupSha256, relationDeletes: plan.invariant.relationDeleteCount, relationDeleteStatements: plan.invariant.relationDeleteStatements, drops: plan.drops.length, dropMode: 'RESTRICT', rollback: 'PASS', preservedNonTargetRelations: 4 }))
 } finally { await db.end() }

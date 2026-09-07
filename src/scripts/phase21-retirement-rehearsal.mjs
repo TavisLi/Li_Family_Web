@@ -73,7 +73,7 @@ try {
   await writeFile(join(privateDir, 'legacy.sql'), dump, { flag: 'wx', mode: 0o600 })
   await writeFile(join(privateDir, 'relations.json'), JSON.stringify(selected), { flag: 'wx', mode: 0o600 })
   const apply = async () => {
-    for (const statement of retirementDeletes(selected)) assert.equal((await client.query(statement.text, statement.values)).rowCount, 1)
+    for (const statement of retirementDeletes(selected)) assert.equal((await client.query(statement.text, statement.values)).rowCount, JSON.parse(statement.values[0]).length)
     for (const table of retirementTables) await client.query(`DROP TABLE public."${table}" RESTRICT`)
   }
   await client.query('BEGIN')

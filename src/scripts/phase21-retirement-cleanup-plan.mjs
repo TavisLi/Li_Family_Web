@@ -11,6 +11,10 @@ export function buildRetirementCleanupPlan({ backupSha256, relations }) {
     // contract intentionally changes each statement to RESTRICT and fixes the
     // dependency-safe order, so unexpected consumers hard-fail the transaction.
     drops: retirementTables.map(table => `DROP TABLE public."${table}" RESTRICT`),
-    invariant: Object.freeze({ tables: [...retirementTables], relationDeleteCount: relationDeletes.length }),
+    invariant: Object.freeze({
+      tables: [...retirementTables],
+      relationDeleteCount: Object.values(relations).reduce((total, rows) => total + rows.length, 0),
+      relationDeleteStatements: relationDeletes.length,
+    }),
   })
 }

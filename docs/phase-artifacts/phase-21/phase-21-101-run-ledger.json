@@ -67,6 +67,18 @@
     "cleanupCompleted": false,
     "retry": false
   },
+  "correctedExecutorPreflight": {
+    "status": "BLOCKED_NO_RETRY",
+    "runId": "retirement-final-preflight-2026-09-07T15-34-56-023Z",
+    "backupSha256": "7f6041a1a0caf3b3b7b0dccbb575d3b3a3a6c4aa56b648fcc879a2e23b52e46b",
+    "statementTimeoutMs": 15000,
+    "stage": "relations",
+    "reason": "Query read timeout",
+    "productionWrites": 0,
+    "cleanupTransactionStarted": false,
+    "retry": false,
+    "disposableRehearsal": { "relationDeletes": 1857, "relationDeleteStatements": 2, "drops": 8, "rollback": "PASS" }
+  },
   "productionCommit": "3f6b2c4c53e684510265e07fb3b4633d71d5a775",
   "productionDeployment": "dpl_8uLXMLmdXZXmVZMQNhJJqCAUuhmH",
   "c0": {
