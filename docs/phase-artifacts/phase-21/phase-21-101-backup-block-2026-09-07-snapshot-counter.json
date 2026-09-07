@@ -1,0 +1,11 @@
+{
+  "status": "SCOPED_RETIREMENT_BACKUP_BLOCK_NO_RETRY",
+  "observedAt": "2026-09-07",
+  "stage": "independent_readonly_snapshot_comparison",
+  "productionWrites": 0,
+  "backupCreated": false,
+  "cleanupExecuted": false,
+  "reason": "The runner included cumulative queryCount in each snapshot object, causing a deterministic hash difference between first and second read-only snapshots. This is executor metadata drift, not evidence of Production content drift.",
+  "retry": false,
+  "repair": "Remove queryCount from the compared snapshot and retain it only in the final receipt; the next attempt requires a new one-shot authorization."
+}

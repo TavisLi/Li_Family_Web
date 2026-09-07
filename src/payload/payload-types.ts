@@ -474,34 +474,6 @@ export interface TravelMemory {
     totalDocs?: number;
   };
   galleryImages?: (number | Media)[] | null;
-  itineraryImages?: (number | Media)[] | null;
-  dailyHighlights?:
-    | {
-        day?: number | null;
-        date?: string | null;
-        dateLabel?: string | null;
-        title: string;
-        theme?: string | null;
-        story?: string | null;
-        segments?:
-          | {
-              time?: string | null;
-              activity: string;
-              transport?: string | null;
-              notes?: string | null;
-              id?: string | null;
-            }[]
-          | null;
-        meals?: {
-          breakfast?: string | null;
-          lunch?: string | null;
-          dinner?: string | null;
-        };
-        lodging?: string | null;
-        mediaItems?: (number | Media)[] | null;
-        id?: string | null;
-      }[]
-    | null;
   travelLedger?: {
     flights?:
       | {
@@ -1190,36 +1162,6 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
   originPlan?: T;
   days?: T;
   galleryImages?: T;
-  itineraryImages?: T;
-  dailyHighlights?:
-    | T
-    | {
-        day?: T;
-        date?: T;
-        dateLabel?: T;
-        title?: T;
-        theme?: T;
-        story?: T;
-        segments?:
-          | T
-          | {
-              time?: T;
-              activity?: T;
-              transport?: T;
-              notes?: T;
-              id?: T;
-            };
-        meals?:
-          | T
-          | {
-              breakfast?: T;
-              lunch?: T;
-              dinner?: T;
-            };
-        lodging?: T;
-        mediaItems?: T;
-        id?: T;
-      };
   travelLedger?:
     | T
     | {

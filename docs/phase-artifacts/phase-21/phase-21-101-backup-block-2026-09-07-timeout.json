@@ -1,0 +1,14 @@
+{
+  "status": "SCOPED_RETIREMENT_BACKUP_BLOCK_NO_RETRY",
+  "observedAt": "2026-09-07",
+  "stage": "first_repeatable_read_only_transaction_preflight",
+  "productionWrites": 0,
+  "transactionReadOnly": "on",
+  "expectedStatementTimeout": "15s",
+  "actualStatementTimeout": "2min",
+  "reason": "Production connection options did not produce the approved 15-second timeout; stop condition matched.",
+  "backupCreated": false,
+  "cleanupExecuted": false,
+  "retry": false,
+  "nextAction": "repair the connection bootstrap so SET LOCAL statement_timeout=15000 is applied before any scoped query, then obtain a fresh one-shot approval"
+}

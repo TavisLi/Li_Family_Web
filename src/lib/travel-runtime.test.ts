@@ -71,15 +71,15 @@ const memory: TravelMemory = {
   presentationStyle: 'family-scrapbook',
   originPlan: plan,
   galleryImages: [],
-  itineraryImages: [],
-  dailyHighlights: [
+  // Residual legacy data must remain ignored after the Collection contract retires it.
+  ...{ itineraryImages: [], dailyHighlights: [
     {
       title: '抵達三亞',
       story: '第一天的回憶。',
       segments: [{ activity: '抵達飯店', id: 'segment-1' }],
       id: 'day-1',
     },
-  ],
+  ] },
   travelLedger: {
     flights: [{ flightNumber: 'CI123', route: 'TPE → SYX', id: 'flight-1' }],
     lodgings: [{ hotel: '亞龍灣飯店', startDate: '2013-07-01', endDate: '2013-07-03' }],
