@@ -178,10 +178,10 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
         </div>
       </section>
 
-      <nav aria-label="場次導覽" className="border-y border-white/10 bg-[#101716] pt-10">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-5 md:px-10">
-          <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.2em] text-[#ddae73]">場次導覽</p>
-          <Link className="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-white/70 transition hover:text-white" href={`/travel/${memory.slug}/photos`}>
+      <nav aria-label="場次導覽" className="border-y border-white/10 bg-black pt-10">
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-6 px-5 md:px-10">
+          <p className="shrink-0 text-xl font-semibold tracking-wide text-[#ddae73] md:text-2xl">場次導覽</p>
+          <Link className="inline-flex items-center gap-2 text-base font-semibold text-white/80 transition hover:text-white md:text-lg" href={`/travel/${memory.slug}/photos`}>
             <Images className="size-4" aria-hidden="true" /> 完整相簿 · Contact sheet
           </Link>
         </div>
@@ -190,7 +190,7 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
             {memory.days.map((day) => (
               <li className="min-w-52 flex-1" key={day.dayKey}>
                 <Link className="group block min-h-48 border-l border-white/20 px-5 py-4 transition hover:bg-white/[0.06]" href={`/travel/${memory.slug}/day/${day.dayKey}`}>
-                  <span className="font-mono text-sm tabular-nums text-[#ddae73]">D{String(day.day).padStart(2, '0')}</span>
+                  <span className="font-mono text-xl font-semibold tabular-nums text-[#ddae73] md:text-2xl">D{String(day.day).padStart(2, '0')}</span>
                   <span className="mt-10 block text-xl font-semibold leading-tight tracking-[-0.02em] md:text-2xl">{day.title}</span>
                   <span className="mt-2 block text-xs leading-5 text-white/45">{day.theme || day.date?.slice(0, 10) || 'Daily scene'}</span>
                 </Link>
@@ -203,10 +203,10 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
       <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 pb-16 pt-12 md:grid-cols-2 md:px-10 md:pb-24" data-memory-day-cards="true">
         {memory.days.map((day, index) => (
           <Link className={cn('group relative min-h-[26rem] overflow-hidden bg-[#151b1a]', index % 2 === 1 && 'md:mt-24')} href={`/travel/${memory.slug}/day/${day.dayKey}`} key={day.dayKey}>
-            <PayloadImage className="absolute inset-0 min-h-[26rem] rounded-none" fallbackLabel={day.title} fit="cover" imageClassName="opacity-80 transition duration-700 group-hover:scale-[1.03]" media={day.heroMedia} sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
+            <PayloadImage className="absolute inset-0 h-full w-full !aspect-auto rounded-none" fallbackLabel={day.title} fit="cover" imageClassName="opacity-80 transition duration-700 group-hover:scale-[1.03]" media={day.heroMedia} sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0d1211] via-transparent to-transparent" />
             <span className="absolute inset-x-0 bottom-0 p-7">
-              <span className="font-mono text-xs text-[#ddae73]">DAY {String(day.day).padStart(2, '0')}</span>
+              <span className="font-mono text-lg font-semibold text-[#ddae73] md:text-xl">DAY {String(day.day).padStart(2, '0')}</span>
               <span className="mt-2 block text-3xl font-semibold tracking-[-0.03em]">{day.title}</span>
             </span>
           </Link>
@@ -457,7 +457,7 @@ function TravelLedger({
         </caption>
         <thead className={cn('text-xs', cinematic ? 'text-white/45' : 'text-[#756b5e]')}>
           <tr className={cn('border-b', cinematic ? 'border-white/15' : 'border-[#cfc2ae]')}>
-            <th className="px-6 py-4 font-medium">類別</th>
+            <th className="px-6 py-4 font-medium">{kind === '航班' ? '航線' : '城市'}</th>
             <th className="px-6 py-4 font-medium">日期／期間</th>
             <th className="px-6 py-4 font-medium">主項目</th>
             <th className="px-6 py-4 font-medium">完整資料</th>
@@ -540,10 +540,12 @@ function LedgerTableRow({
   primary: string
 }) {
   const date = details.find(([label]) => label === '日期' || label === '期間')?.[1] ?? '—'
-  const remainder = details.filter(([label]) => label !== '日期' && label !== '期間')
+  const locationLabel = kind === '航班' ? '航線' : '城市'
+  const location = details.find(([label]) => label === locationLabel)?.[1] ?? '—'
+  const remainder = details.filter(([label]) => label !== '日期' && label !== '期間' && label !== locationLabel)
   return (
     <tr className="align-top">
-      <td className="px-6 py-5 font-semibold">{kind}</td>
+      <td className="px-6 py-5 font-semibold">{location}</td>
       <td className="px-6 py-5 tabular-nums">{date}</td>
       <td className="px-6 py-5 font-semibold">{primary}</td>
       <td className="px-6 py-5 leading-6">
