@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
 const source = await readFile(
-  new URL('./20260908_034257_add_travel_memory_day_hero_image.ts', import.meta.url),
+  new URL('../migrations/20260908_034257_add_travel_memory_day_hero_image.ts', import.meta.url),
   'utf8',
 )
 const up = source.slice(source.indexOf('export async function up'), source.indexOf('export async function down'))
