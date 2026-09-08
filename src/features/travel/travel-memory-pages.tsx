@@ -151,9 +151,9 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
       </div>
 
       <div className="relative">
-      <section className="relative min-h-[86dvh] overflow-hidden">
+      <section className="relative min-h-[100dvh] overflow-hidden">
         <PayloadImage
-          className="absolute inset-0 min-h-[86dvh] rounded-none"
+          className="absolute inset-0 h-full !aspect-auto rounded-none"
           fallbackLabel={memory.title}
           fit="cover"
           imageClassName="opacity-75"
@@ -163,7 +163,7 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
           tone="travel"
         />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_42%,transparent_8%,rgba(13,18,17,0.3)_48%,rgba(13,18,17,0.98)_100%)]" />
-        <div className="relative mx-auto flex min-h-[86dvh] w-full max-w-7xl flex-col justify-between px-5 py-12 md:px-10 md:py-16">
+        <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-7xl flex-col justify-between px-5 py-12 md:px-10 md:py-16">
           <div className="flex justify-between gap-6 text-[10px] font-semibold uppercase tracking-[0.22em] text-white/60">
             <span>{memory.startDate.slice(0, 4)} · Travel film</span>
             <span>{memory.days.length} chapters</span>
@@ -178,7 +178,7 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
         </div>
       </section>
 
-      <section className="border-y border-white/10 py-8">
+      <nav aria-label="場次導覽" className="border-y border-white/10 bg-[#101716] pt-10">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-5 md:px-10">
           <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.2em] text-[#ddae73]">場次導覽</p>
           <Link className="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-white/70 transition hover:text-white" href={`/travel/${memory.slug}/photos`}>
@@ -200,11 +200,7 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
         ) : (
           <p className="mx-auto mt-6 w-full max-w-7xl px-5 text-sm text-white/55 md:px-10">每日章節尚未發布；原有 Travel Memory 內容仍保留作回退。</p>
         )}
-      </section>
-
-      <MemoryOverviewArchive memory={memory} style="cinematic-timeline" />
-
-      <section className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-24 md:grid-cols-2 md:px-10 md:py-32">
+      <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 pb-16 pt-12 md:grid-cols-2 md:px-10 md:pb-24" data-memory-day-cards="true">
         {memory.days.map((day, index) => (
           <Link className={cn('group relative min-h-[26rem] overflow-hidden bg-[#151b1a]', index % 2 === 1 && 'md:mt-24')} href={`/travel/${memory.slug}/day/${day.dayKey}`} key={day.dayKey}>
             <PayloadImage className="absolute inset-0 min-h-[26rem] rounded-none" fallbackLabel={day.title} fit="cover" imageClassName="opacity-80 transition duration-700 group-hover:scale-[1.03]" media={day.heroMedia} sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
@@ -215,7 +211,10 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
             </span>
           </Link>
         ))}
-      </section>
+      </div>
+      </nav>
+
+      <MemoryOverviewArchive memory={memory} style="cinematic-timeline" />
       </div>
     </main>
   )
@@ -345,18 +344,28 @@ function MemoryOverviewArchive({
         <div className="mt-10 grid gap-8 lg:grid-cols-2">
           {participants.length ? (
             <section className={cn('p-6', card)}>
-              <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>同行成員</h3>
+              <h3 className={cn('text-2xl font-semibold tracking-tight md:text-3xl', accent)}>同行成員</h3>
               <p className={cn('mt-4 text-base leading-8', muted)}>{participants.join('、')}</p>
             </section>
           ) : null}
           {videos.length ? (
-            <section className={cn('p-6', card)}>
-              <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>全旅程影片</h3>
-              <ul className="mt-4 grid gap-3">
+            <section className={cn('p-6 lg:col-span-2', card)}>
+              <h3 className={cn('text-2xl font-semibold tracking-tight md:text-3xl', accent)}>全旅程影片</h3>
+              <ul className={cn('mt-6 grid gap-8', videos.length > 1 ? 'md:grid-cols-2' : 'max-w-3xl')}>
                 {videos.map((video, index) => (
                   <li key={`${video.url}:${index}`}>
-                    <a className={cn('inline-flex items-center gap-2 text-sm font-semibold underline-offset-4 hover:underline', accent)} href={video.url} rel="noreferrer noopener" target="_blank">
-                      <Play className="size-4" aria-hidden="true" />{video.title || `旅行影片 ${index + 1}`}
+                    <a className={cn('group block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4', accent, scrapbook && 'border border-[#caae88] bg-[#fffdf5] p-3 shadow-md')} href={video.url} rel="noreferrer noopener" target="_blank">
+                      <span className="relative flex aspect-video items-center justify-center overflow-hidden bg-[#151b1a] text-[#f3efe6]">
+                        {toYouTubeEmbedUrl(video.url) ? (
+                          // YouTube thumbnails are external references, not uploaded media.
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img alt="" loading="lazy" width={480} height={360} className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-[1.03] motion-reduce:transition-none" src={`https://i.ytimg.com/vi/${toYouTubeEmbedUrl(video.url)!.split('/').pop()}/hqdefault.jpg`} />
+                        ) : null}
+                        <span className="absolute inset-0 bg-black/20 transition group-hover:bg-black/35" />
+                        <span className="relative flex size-16 items-center justify-center rounded-full border border-white/70 bg-black/40"><Play className="size-7" aria-hidden="true" /></span>
+                      </span>
+                      <span className={cn('mt-4 block text-xl font-semibold leading-7', !cinematic && 'font-serif')}>{video.title || `旅行影片 ${index + 1}`}</span>
+                      <span className={cn('mt-2 block text-sm', muted)}>在 YouTube 觀看 ↗</span>
                     </a>
                   </li>
                 ))}
@@ -417,6 +426,7 @@ function TravelLedger({
   if (style === 'family-scrapbook') {
     return (
       <section className="mt-10 grid gap-6 lg:grid-cols-2" aria-label="旅程資料簿">
+        <h3 className="font-serif text-2xl font-semibold text-[#9e3e2e] md:text-3xl lg:col-span-2">Travel Ledger · 旅程資料簿</h3>
         {flights?.map((flight, index) => (
           <article className="rotate-[-0.5deg] border border-dashed border-[#af7955] bg-[#fffdf5] p-6 shadow-[4px_5px_0_rgba(98,75,43,0.16)]" key={flight.id ?? `${flight.flightNumber}:${index}`}>
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9e3e2e]">Boarding pass · 航班 {index + 1}</p>
@@ -437,10 +447,13 @@ function TravelLedger({
 
   const cinematic = style === 'cinematic-timeline'
   return (
-    <section className={cn('mt-10 overflow-x-auto', cinematic ? 'border border-white/15 bg-black/20' : 'border-y border-[#cfc2ae]')} aria-label="旅程資料簿">
+    <section className="mt-12 space-y-8" aria-label="旅程資料簿">
+      <h3 className={cn('text-2xl font-semibold tracking-tight md:text-3xl', cinematic ? 'text-[#ddae73]' : 'text-[#a34031]')}>Travel Ledger · 旅程資料簿</h3>
+      {(['航班', '住宿'] as const).map((kind) => (kind === '航班' ? flights?.length : lodgings?.length) ? (
+      <div key={kind} className={cn('overflow-x-auto', cinematic ? 'border border-white/15 bg-black/20' : 'border-y border-[#cfc2ae]')}>
       <table className={cn('w-full min-w-[44rem] border-collapse text-left text-sm', cinematic ? 'text-white/75' : 'text-[#4d463c]')}>
-        <caption className={cn('px-6 pt-6 text-left text-xs font-semibold uppercase tracking-[0.18em]', cinematic ? 'text-[#ddae73]' : 'text-[#a34031]')}>
-          {cinematic ? 'Cue sheet · travel ledger' : '旅程資料簿'}
+        <caption className={cn('px-6 pt-6 text-left text-xl font-semibold', cinematic ? 'text-[#ddae73]' : 'text-[#a34031]')}>
+          {kind}
         </caption>
         <thead className={cn('text-xs', cinematic ? 'text-white/45' : 'text-[#756b5e]')}>
           <tr className={cn('border-b', cinematic ? 'border-white/15' : 'border-[#cfc2ae]')}>
@@ -451,7 +464,7 @@ function TravelLedger({
           </tr>
         </thead>
         <tbody className={cinematic ? 'divide-y divide-white/15' : 'divide-y divide-[#cfc2ae]'}>
-          {flights?.map((flight, index) => (
+          {kind === '航班' && flights?.map((flight, index) => (
             <LedgerTableRow
               details={flightDetails(flight)}
               key={flight.id ?? `${flight.flightNumber}:${index}`}
@@ -459,7 +472,7 @@ function TravelLedger({
               primary={[flight.airline, flight.flightNumber].filter(Boolean).join(' · ') || `航段 ${index + 1}`}
             />
           ))}
-          {lodgings?.map((lodging, index) => (
+          {kind === '住宿' && lodgings?.map((lodging, index) => (
             <LedgerTableRow
               details={lodgingDetails(lodging)}
               key={lodging.id ?? `${lodging.hotel}:${index}`}
@@ -469,6 +482,8 @@ function TravelLedger({
           ))}
         </tbody>
       </table>
+      </div>
+      ) : null)}
     </section>
   )
 }

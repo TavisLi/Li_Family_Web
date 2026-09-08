@@ -71,6 +71,25 @@ for (const [style, layout, landmark, structure] of [
 
 const cinematicHtml = renderToStaticMarkup(<TravelMemoryOverviewPage memory={overview('cinematic-timeline')} />)
 assert.match(cinematicHtml, /data-cinematic-film-canvas="true"/)
+const cinematicNavigation = cinematicHtml.match(/<nav aria-label="場次導覽"[\s\S]*?<\/nav>/)?.[0]
+assert.ok(cinematicNavigation?.includes('data-memory-day-cards="true"'))
+assert.ok(cinematicHtml.indexOf('data-memory-day-cards="true"') < cinematicHtml.indexOf('data-memory-overview-archive='))
+for (const style of styles.slice(0, 2)) {
+  const html = renderToStaticMarkup(<TravelMemoryOverviewPage memory={overview(style)} />)
+  const ledger = html.match(/<section[^>]*aria-label="旅程資料簿"[\s\S]*?<\/section>/)![0]
+  const tables = ledger.match(/<table[\s\S]*?<\/table>/g)!
+  assert.equal(tables.length, 2)
+  assert.match(tables[0], /CI001/)
+  assert.doesNotMatch(tables[0], /海邊家庭旅館/)
+  assert.match(tables[1], /海邊家庭旅館/)
+  assert.doesNotMatch(tables[1], /CI001/)
+}
+for (const style of styles) {
+  const html = renderToStaticMarkup(<TravelMemoryOverviewPage memory={{ ...overview(style), externalVideos: [{ url: 'https://youtu.be/abcdefghijk', title: '影片縮圖測試' }] }} />)
+  assert.match(html, /https:\/\/i.ytimg.com\/vi\/abcdefghijk\/hqdefault.jpg/)
+  assert.match(html, /影片縮圖測試/)
+  assert.doesNotMatch(html, /autoplay=1/)
+}
 
 for (const style of styles) {
   const memory: TravelMemoryOverview = {
