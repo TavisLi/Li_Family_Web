@@ -1,0 +1,18 @@
+{
+  "status": "FINAL_RETIREMENT_PRODUCTION_APPLY_BLOCK_NO_RETRY",
+  "runId": "retirement-production-apply-2026-09-07T10-44-32-414Z",
+  "preflightRunId": "retirement-final-preflight-2026-09-07T10-43-59-336Z",
+  "backupSha256": "7f6041a1a0caf3b3b7b0dccbb575d3b3a3a6c4aa56b648fcc879a2e23b52e46b",
+  "statementTimeoutMs": 15000,
+  "executorFailure": "The single production apply session exceeded the operational wait window without receipt or completion; it was stopped once, with no retry.",
+  "postStopReadback": {
+    "legacyTablesPresent": 8,
+    "travelMemoriesRelsLegacyRows": 104,
+    "versionRelsLegacyRows": 1753,
+    "productionCommitObserved": false
+  },
+  "productionWrites": 0,
+  "cleanupCompleted": false,
+  "merge": false,
+  "rollback": "database connection close confirmed transaction rollback by unchanged target tables and relation envelope"
+}

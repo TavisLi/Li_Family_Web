@@ -86,3 +86,17 @@ Production logs 另有 `/api/og` 的一次 500，原因為 Payload OG 字型檔�
 這個 restore read-back 證明 scoped raw rows 與欄位形狀可重建；它**不**取代最終 DDL executor 的 FK／index／sequence／security DDL read-back，也不授權 DROP／DELETE。Production cleanup、merge、deploy 均未執行。
 
 最終 target allowlist、RESTRICT DDL review 與未完成 gates 已固定於 [final cleanup readiness](./phase-21-101-final-cleanup-readiness.md)。Drizzle 的原始候選含 `CASCADE`，明確拒絕；最終 contract 一律使用 child-first `DROP ... RESTRICT`。
+
+## 2026-09-07 final preflight／DDL rehearsal PASS
+
+Production final preflight `retirement-final-preflight-2026-09-07T09-43-40-368Z` PASS：backup SHA 一致，15 秒 timeout，20 queries，16 constraints、20 indexes、5 sequences，metadata／relation envelope 均無 drift，Production writes 0。Disposable actual-DDL rehearsal 亦 PASS：1,857 exact relation deletes、8 個 `DROP ... RESTRICT`、rollback PASS，4 筆非目標 relations 保留。證據：[phase-21-101-final-preflight-pass-2026-09-07.json](./phase-21-101-final-preflight-pass-2026-09-07.json)。這仍不等於 Production apply approval。
+
+## 2026-09-07 Production apply BLOCK
+
+取得 destructive approval 後，Production apply session 超出 operational wait window，沒有產生成功或 failure receipt；依 fail-closed 原則只中止該唯一 session，不重試。獨立 read-back 確認 8 張 legacy tables 仍存在，`travel_memories_rels` legacy rows 仍為 104、`_travel_memories_v_rels` 仍為 1,753，故未觀測到 Production commit，cleanup 未完成。證據：[phase-21-101-production-apply-block-2026-09-07.json](./phase-21-101-production-apply-block-2026-09-07.json)。下一步只能修正 executor（避免逐筆 Production round-trip）並重新取得一次性批准。
+
+修正版已把 1,857 筆 exact relation DELETE 壓為兩個集合式 tuple batches，disposable actual-DDL rehearsal PASS（8 個 `RESTRICT` drops、rollback、4 個非目標 relations）。但經新的單次批准後，fresh Production preflight 在 `relations` stage 得到 `Query read timeout`，因此在 cleanup transaction 前立即 BLOCK，Production writes 0，未重試。證據：[phase-21-101-corrected-preflight-block-2026-09-07.json](./phase-21-101-corrected-preflight-block-2026-09-07.json)。
+
+## 2026-09-07 Production cleanup PASS
+
+以 batch-bounded exact-ID preflight（38 queries）重新確認 backup SHA、rows、metadata、DDL 與權限 gates 一致後，單一 Production transaction 成功刪除 1,857 筆 exact legacy relation rows（2 個 batch statements），並依 child-first 順序執行 8 個 `DROP ... RESTRICT`。獨立 read-back PASS。沒有內容、媒體、環境變數寫入、merge 或 Issue closeout。證據：[phase-21-101-production-cleanup-pass-2026-09-07.json](./phase-21-101-production-cleanup-pass-2026-09-07.json)。
