@@ -6,6 +6,7 @@ import {
   travelMemoryPresentationStyles,
   toTravelMemoryDayView,
   toTravelMemoryGallery,
+  toTravelMemoryOverview,
 } from './travel-memory'
 import type { Media, TravelMemory, TravelMemoryDay } from '@/payload/payload-types'
 
@@ -31,6 +32,12 @@ const media: Media = {
   url: '/media/guanyin.jpeg',
   updatedAt: '2026-08-02T00:00:00.000Z',
   createdAt: '2026-08-02T00:00:00.000Z',
+}
+const selectedHeroMedia: Media = {
+  ...media,
+  id: 8,
+  altText: '指定的每日首圖替代文字',
+  url: '/media/daily-hero.jpeg',
 }
 const memory = {
   id: 1,
@@ -77,6 +84,16 @@ const days = [
 ] satisfies TravelMemoryDay[]
 
 const dayView = toTravelMemoryDayView(memory, days[0], days)
+assert.equal(
+  toTravelMemoryOverview(memory, days).days[0]?.heroMedia?.id,
+  media.id,
+  'overview uses the first daily photo as the cinematic day panel image',
+)
+assert.equal(
+  toTravelMemoryOverview(memory, [{ ...days[0], dailyHeroImage: selectedHeroMedia }, days[1]]).days[0]?.heroMedia?.id,
+  selectedHeroMedia.id,
+  'overview prefers the explicitly selected daily hero image',
+)
 assert.equal(dayView?.memory.presentationStyle, 'family-scrapbook')
 assert.equal(dayView?.previousDay, null)
 assert.equal(dayView?.nextDay?.dayKey, 'day-04')

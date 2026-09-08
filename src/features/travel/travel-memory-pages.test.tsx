@@ -42,6 +42,19 @@ for (const [slug, style] of [
   assert.match(html, /最難忘的一天/)
   assert.match(html, /全旅程影片/)
   assert.match(html, /補充資訊與提醒/)
+  assert.match(html, /2026年2月10日/)
+  assert.match(html, /第 2 航廈/)
+  assert.match(html, /全家同遊/)
+  assert.match(html, /機場接送已安排/)
+  assert.match(html, /三亞灣/)
+  assert.match(html, /海景家庭房/)
+  assert.match(html, /早餐與接機/)
+  if (style === 'family-scrapbook') {
+    assert.match(html, /Boarding pass · 航班 1/)
+    assert.match(html, /Hotel receipt · 住宿 1/)
+  } else {
+    assert.match(html, /<table[^>]*>[\s\S]*完整資料/)
+  }
 }
 
 for (const [style, layout, landmark, structure] of [
@@ -53,7 +66,11 @@ for (const [style, layout, landmark, structure] of [
   assert.match(html, new RegExp(`data-travel-memory-layout="${layout}"`))
   assert.match(html, new RegExp(landmark))
   assert.match(html, structure)
+  assert.ok(html.indexOf('旅程資料與旅行故事') > html.indexOf(landmark), `${style}: archive follows day navigation`)
 }
+
+const cinematicHtml = renderToStaticMarkup(<TravelMemoryOverviewPage memory={overview('cinematic-timeline')} />)
+assert.match(cinematicHtml, /data-cinematic-film-canvas="true"/)
 
 for (const style of styles) {
   const memory: TravelMemoryOverview = {
@@ -186,6 +203,13 @@ const dayView: TravelMemoryDayView = {
   previousDay: { dayKey: 'day-02', title: '亞龍灣' },
   nextDay: { dayKey: 'day-04', title: '鳥巢度假村' },
 }
+const explicitDailyHero: Media = {
+  ...photo,
+  id: 32,
+  altText: '指定每日封面的替代文字',
+  url: '/media/daily-hero.jpeg',
+}
+const dayWithExplicitHero: TravelMemoryDay = { ...day, dailyHeroImage: explicitDailyHero }
 for (const [slug, style] of [
   ['201307-hainan', 'family-scrapbook'],
   ['202308-east-australia', 'cinematic-timeline'],
@@ -197,6 +221,24 @@ for (const [slug, style] of [
   )
   assert.match(configuredDayHtml, new RegExp(`data-travel-memory-style="${style}"`))
   assert.match(configuredDayHtml, /南山文化旅遊區的海上觀音。/)
+}
+
+for (const style of styles) {
+  const html = renderToStaticMarkup(
+    <TravelMemoryDayPage view={{ ...dayView, day: dayWithExplicitHero, memory: overview(style) }} />,
+  )
+  assert.match(html, /src="\/media\/daily-hero\.jpeg"/, `${style}: selected daily hero is the Daily cover`)
+}
+
+for (const style of styles) {
+  const memory = overview(style)
+  const html = renderToStaticMarkup(
+    <TravelMemoryOverviewPage memory={{
+      ...memory,
+      days: memory.days.map((item, index) => index === 0 ? { ...item, heroMedia: explicitDailyHero } : item),
+    }} />,
+  )
+  assert.match(html, /src="\/media\/daily-hero\.jpeg"/, `${style}: selected daily hero is the Overview day image`)
 }
 
 for (const [style, layout, landmark, structure] of [
@@ -288,7 +330,8 @@ const day8Html = renderToStaticMarkup(
 assert.match(day8Html, /data-travel-memory-layout="scrapbook-day"/)
 assert.match(day8Html, /旅程最後一天的度假亮點。/)
 assert.match(day8Html, /為八日旅程留下安靜的尾聲。/)
-assert.equal((day8Html.match(/<figcaption/g) ?? []).length, 2)
+assert.equal((day8Html.match(/<figcaption/g) ?? []).length, 3)
+assert.match(day8Html, /這一天的封面照片/)
 assert.match(day8Html, /href="\/travel\/201307-hainan\/day\/day-07"/)
 
 const nullThenPhotoDay: TravelMemoryDay = {
@@ -437,8 +480,24 @@ function overview(style: TravelMemoryPresentationStyle): TravelMemoryOverview {
     endDate: '2013-08-03T00:00:00.000Z',
     guestParticipants: [{ name: 'Tavis' }, { name: 'Grandma' }],
     travelLedger: {
-      flights: [{ flightNumber: 'CI001', route: '台北 → 三亞' }],
-      lodgings: [{ hotel: '海邊家庭旅館', dateRange: '7/27–8/3' }],
+      flights: [{
+        dateLabel: '2026年2月10日',
+        airline: '長榮航空',
+        flightNumber: 'CI001',
+        route: '台北 → 三亞',
+        passengers: '全家同遊',
+        departureTime: '08:25',
+        arrivalTime: '11:30',
+        terminal: '第 2 航廈',
+        notes: '機場接送已安排',
+      }],
+      lodgings: [{
+        hotel: '海邊家庭旅館',
+        dateRange: '7/27–8/3',
+        city: '三亞灣',
+        roomType: '海景家庭房',
+        highlights: '早餐與接機',
+      }],
     },
     storySections: [{
       level: 2,

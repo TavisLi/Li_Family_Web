@@ -177,10 +177,10 @@ export async function getTravelMemoryOverviewBySlug(
   if (!context) return null
   const days = await context.payload.find({
     collection: 'travel-memory-days',
-    depth: 0,
+    depth: 2,
     limit: 64,
     overrideAccess: false,
-    select: { date: true, day: true, dayKey: true, theme: true, title: true },
+    select: { dailyHeroImage: true, date: true, day: true, dayKey: true, moments: true, theme: true, title: true },
     sort: 'day',
     where: { memory: { equals: context.memory.id } },
     ...userReq(context.user),

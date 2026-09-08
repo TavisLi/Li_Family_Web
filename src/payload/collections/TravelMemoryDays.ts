@@ -86,6 +86,15 @@ export const TravelMemoryDays: CollectionConfig = {
     { name: 'theme', type: 'text', required: false, localized: true },
     { name: 'story', type: 'textarea', required: false, localized: true },
     {
+      name: 'dailyHeroImage',
+      type: 'relationship',
+      relationTo: 'media',
+      required: false,
+      admin: {
+        description: 'Optional Admin-selected cover for this daily chapter and its Overview card.',
+      },
+    },
+    {
       name: 'moments',
       type: 'array',
       required: false,

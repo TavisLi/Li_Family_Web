@@ -12,10 +12,12 @@ import * as migration_20260716_045235_phase_17_align_travel_plan_sections from '
 import * as migration_20260716_091228_phase_17_align_travel_memory_sections from './20260716_091228_phase_17_align_travel_memory_sections';
 import * as migration_20260716_094718_phase_17_add_travel_cutover_relationships from './20260716_094718_phase_17_add_travel_cutover_relationships';
 import * as migration_20260717_121714_phase_17_secure_travel_data_api from './20260717_121714_phase_17_secure_travel_data_api';
+import * as migration_20260719_025401 from './20260719_025401';
 import * as migration_20260724_153813_phase_member_timeline_intro from './20260724_153813_phase_member_timeline_intro';
 import * as migration_20260730_140837_phase_18_member_external_profile_url from './20260730_140837_phase_18_member_external_profile_url';
 import * as migration_20260802_061812_phase_19_travel_memory_multi_page from './20260802_061812_phase_19_travel_memory_multi_page';
 import * as migration_20260831_120000_phase_21_travel_memory_contract from './20260831_120000_phase_21_travel_memory_contract';
+import * as migration_20260908_034257_add_travel_memory_day_hero_image from './20260908_034257_add_travel_memory_day_hero_image';
 
 export const migrations = [
   {
@@ -89,6 +91,11 @@ export const migrations = [
     name: '20260717_121714_phase_17_secure_travel_data_api',
   },
   {
+    up: migration_20260719_025401.up,
+    down: migration_20260719_025401.down,
+    name: '20260719_025401',
+  },
+  {
     up: migration_20260724_153813_phase_member_timeline_intro.up,
     down: migration_20260724_153813_phase_member_timeline_intro.down,
     name: '20260724_153813_phase_member_timeline_intro',
@@ -101,11 +108,16 @@ export const migrations = [
   {
     up: migration_20260802_061812_phase_19_travel_memory_multi_page.up,
     down: migration_20260802_061812_phase_19_travel_memory_multi_page.down,
-    name: '20260802_061812_phase_19_travel_memory_multi_page'
+    name: '20260802_061812_phase_19_travel_memory_multi_page',
   },
   {
     up: migration_20260831_120000_phase_21_travel_memory_contract.up,
     down: migration_20260831_120000_phase_21_travel_memory_contract.down,
-    name: '20260831_120000_phase_21_travel_memory_contract'
+    name: '20260831_120000_phase_21_travel_memory_contract',
+  },
+  {
+    up: migration_20260908_034257_add_travel_memory_day_hero_image.up,
+    down: migration_20260908_034257_add_travel_memory_day_hero_image.down,
+    name: '20260908_034257_add_travel_memory_day_hero_image'
   },
 ];
