@@ -596,6 +596,10 @@ export interface TravelMemoryDay {
   title: string;
   theme?: string | null;
   story?: string | null;
+  /**
+   * Optional Admin-selected cover for this daily chapter and its Overview card.
+   */
+  dailyHeroImage?: (number | null) | Media;
   moments?:
     | {
         /**
@@ -1271,6 +1275,7 @@ export interface TravelMemoryDaysSelect<T extends boolean = true> {
   title?: T;
   theme?: T;
   story?: T;
+  dailyHeroImage?: T;
   moments?:
     | T
     | {

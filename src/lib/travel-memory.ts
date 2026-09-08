@@ -28,7 +28,7 @@ export type TravelMemoryOverviewDay = Pick<
 export type TravelMemoryDaySummary = Pick<TravelMemoryDay, 'day' | 'dayKey' | 'title'>
 type TravelMemoryOverviewDaySource = Pick<
   TravelMemoryDay,
-  'date' | 'day' | 'dayKey' | 'theme' | 'title'
+  'dailyHeroImage' | 'date' | 'day' | 'dayKey' | 'theme' | 'title'
 > & Partial<Pick<TravelMemoryDay, 'moments'>>
 
 export type TravelMemoryOverview = Pick<
@@ -158,7 +158,7 @@ export function toTravelMemoryOverview(
       day: day.day,
       date: day.date,
       theme: day.theme,
-      heroMedia: firstPhoto(day),
+      heroMedia: resolveDailyHeroMedia(day),
     })),
   }
 }
@@ -285,10 +285,16 @@ function sortDays<T extends { day: number }>(days: T[]): T[] {
   return [...days].sort((left, right) => left.day - right.day)
 }
 
-function firstPhoto(day: TravelMemoryOverviewDaySource): Media | null {
+export function resolveDailyHeroMedia(
+  day: Pick<TravelMemoryDay, 'dailyHeroImage'> & Partial<Pick<TravelMemoryDay, 'moments'>>,
+): Media | null {
+  if (typeof day.dailyHeroImage === 'object' && day.dailyHeroImage) {
+    return day.dailyHeroImage
+  }
+
   for (const moment of day.moments ?? []) {
     for (const placement of moment.placements ?? []) {
-      if (placement.type === 'photo' && typeof placement.media === 'object') {
+      if (placement.type === 'photo' && placement.media && typeof placement.media === 'object') {
         return placement.media
       }
     }

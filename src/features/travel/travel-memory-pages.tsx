@@ -3,6 +3,7 @@ import React, { type ComponentType } from 'react'
 import { ArrowLeft, ArrowRight, Images, Play } from 'lucide-react'
 
 import { PayloadImage } from '@/components/ui/payload-image'
+import { resolveDailyHeroMedia } from '@/lib/travel-memory'
 import type {
   TravelMemoryDayView,
   TravelMemoryGallery,
@@ -88,8 +89,6 @@ function EditorialOverview({ memory }: { memory: TravelMemoryOverview }) {
         </div>
       </section>
 
-      <MemoryOverviewArchive memory={memory} style="editorial-journal" />
-
       <section className="mx-auto grid w-full max-w-7xl gap-12 px-5 py-20 md:grid-cols-[0.7fr_1.3fr] md:px-10 md:py-28">
         <header className="md:sticky md:top-28 md:self-start">
           <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#a34031]">{memory.days.length} chapters</p>
@@ -105,12 +104,16 @@ function EditorialOverview({ memory }: { memory: TravelMemoryOverview }) {
           <ol className="border-t border-[#cfc2ae]">
             {memory.days.map((day) => (
               <li className="border-b border-[#cfc2ae]" key={day.dayKey}>
-                <Link className="group grid grid-cols-[3rem_1fr] gap-5 py-6 transition hover:pl-2 md:grid-cols-[4rem_1fr_auto] md:items-baseline" href={`/travel/${memory.slug}/day/${day.dayKey}`}>
+                <Link className={cn(
+                  'group grid grid-cols-[3rem_1fr] gap-5 py-6 transition hover:pl-2 md:items-center',
+                  day.heroMedia ? 'md:grid-cols-[4rem_1fr_10rem_auto]' : 'md:grid-cols-[4rem_1fr_auto]',
+                )} href={`/travel/${memory.slug}/day/${day.dayKey}`}>
                   <span className="font-mono text-sm tabular-nums text-[#a34031]">{String(day.day).padStart(2, '0')}</span>
                   <span>
                     <span className="block font-serif text-2xl tracking-tight md:text-3xl">{day.title}</span>
                     <span className="mt-1 block text-xs text-[#756b5e]">{day.theme || day.date?.slice(0, 10) || '每日回憶'}</span>
                   </span>
+                  {day.heroMedia ? <PayloadImage className="hidden aspect-[4/3] rounded-none border border-[#cfc2ae] md:block" fallbackLabel={day.title} fit="cover" media={day.heroMedia} sizes="10rem" tone="travel" /> : null}
                   <ArrowRight className="hidden size-5 transition-transform group-hover:translate-x-1 md:block" aria-hidden="true" />
                 </Link>
               </li>
@@ -120,6 +123,8 @@ function EditorialOverview({ memory }: { memory: TravelMemoryOverview }) {
           <p className="border-t border-[#cfc2ae] py-8 text-sm text-[#675f55]">每日章節尚未發布；原有 Travel Memory 內容仍保留作回退。</p>
         )}
       </section>
+
+      <MemoryOverviewArchive memory={memory} style="editorial-journal" />
     </main>
   )
 }
@@ -127,10 +132,25 @@ function EditorialOverview({ memory }: { memory: TravelMemoryOverview }) {
 function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
   return (
     <main
-      className="min-h-screen overflow-hidden bg-[#0d1211] pb-28 text-[#f3efe6]"
+      className="relative isolate min-h-screen overflow-hidden bg-[#0d1211] pb-28 text-[#f3efe6]"
       data-travel-memory-layout="cinematic-overview"
       data-travel-memory-style="cinematic-timeline"
     >
+      <div className="pointer-events-none absolute inset-0" data-cinematic-film-canvas="true">
+        <PayloadImage
+          className="absolute inset-0 h-full !aspect-auto rounded-none"
+          fallbackLabel={memory.title}
+          fit="cover"
+          imageClassName="opacity-25"
+          media={memory.coverImage}
+          priority
+          sizes="100vw"
+          tone="travel"
+        />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(13,18,17,0.24),#0d1211_42%,rgba(13,18,17,0.94))]" />
+      </div>
+
+      <div className="relative">
       <section className="relative min-h-[86dvh] overflow-hidden">
         <PayloadImage
           className="absolute inset-0 min-h-[86dvh] rounded-none"
@@ -158,8 +178,6 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
         </div>
       </section>
 
-      <MemoryOverviewArchive memory={memory} style="cinematic-timeline" />
-
       <section className="border-y border-white/10 py-8">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-6 px-5 md:px-10">
           <p className="shrink-0 text-xs font-semibold uppercase tracking-[0.2em] text-[#ddae73]">場次導覽</p>
@@ -170,10 +188,10 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
         {memory.days.length ? (
           <ol className="mx-auto mt-6 flex w-full max-w-7xl gap-px overflow-x-auto px-5 md:px-10">
             {memory.days.map((day) => (
-              <li className="min-w-44 flex-1" key={day.dayKey}>
-                <Link className="group block min-h-44 border-l border-white/20 px-5 py-4 transition hover:bg-white/[0.06]" href={`/travel/${memory.slug}/day/${day.dayKey}`}>
-                  <span className="font-mono text-xs tabular-nums text-[#ddae73]">D{String(day.day).padStart(2, '0')}</span>
-                  <span className="mt-10 block text-lg font-semibold leading-tight tracking-[-0.02em]">{day.title}</span>
+              <li className="min-w-52 flex-1" key={day.dayKey}>
+                <Link className="group block min-h-48 border-l border-white/20 px-5 py-4 transition hover:bg-white/[0.06]" href={`/travel/${memory.slug}/day/${day.dayKey}`}>
+                  <span className="font-mono text-sm tabular-nums text-[#ddae73]">D{String(day.day).padStart(2, '0')}</span>
+                  <span className="mt-10 block text-xl font-semibold leading-tight tracking-[-0.02em] md:text-2xl">{day.title}</span>
                   <span className="mt-2 block text-xs leading-5 text-white/45">{day.theme || day.date?.slice(0, 10) || 'Daily scene'}</span>
                 </Link>
               </li>
@@ -183,6 +201,8 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
           <p className="mx-auto mt-6 w-full max-w-7xl px-5 text-sm text-white/55 md:px-10">每日章節尚未發布；原有 Travel Memory 內容仍保留作回退。</p>
         )}
       </section>
+
+      <MemoryOverviewArchive memory={memory} style="cinematic-timeline" />
 
       <section className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-24 md:grid-cols-2 md:px-10 md:py-32">
         {memory.days.map((day, index) => (
@@ -196,6 +216,7 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
           </Link>
         ))}
       </section>
+      </div>
     </main>
   )
 }
@@ -230,8 +251,6 @@ function ScrapbookOverview({ memory }: { memory: TravelMemoryOverview }) {
         </figure>
       </section>
 
-      <MemoryOverviewArchive memory={memory} style="family-scrapbook" />
-
       <section className="mx-auto w-full max-w-7xl px-5 py-16 md:px-10">
         <header className="max-w-xl">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#9e3e2e]">{memory.days.length} chapters</p>
@@ -248,8 +267,9 @@ function ScrapbookOverview({ memory }: { memory: TravelMemoryOverview }) {
                 href={`/travel/${memory.slug}/day/${day.dayKey}`}
                 key={day.dayKey}
               >
+                {day.heroMedia ? <PayloadImage className="aspect-[4/3] rounded-none border-2 border-[#fffaf0]" fallbackLabel={day.title} fit="cover" media={day.heroMedia} sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw" tone="travel" /> : null}
                 <span className="font-serif text-5xl text-[#9e3e2e]">{day.day}</span>
-                <span className="mt-8 block font-serif text-xl">{day.title}</span>
+                <span className={cn('block font-serif text-xl', day.heroMedia ? 'mt-5' : 'mt-8')}>{day.title}</span>
                 <span className="mt-2 block text-xs leading-5 text-[#776a57]">{day.theme || day.date?.slice(0, 10) || '家庭旅行回憶'}</span>
                 <span className="mt-5 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.14em] text-[#9e3e2e]">閱讀這一頁 <ArrowRight className="size-3 transition group-hover:translate-x-1" aria-hidden="true" /></span>
               </Link>
@@ -259,6 +279,8 @@ function ScrapbookOverview({ memory }: { memory: TravelMemoryOverview }) {
           <p className="mt-10 border-t border-[#7a6749]/25 py-8 text-sm text-[#6b604f]">每日章節尚未發布；原有 Travel Memory 內容仍保留作回退。</p>
         )}
       </section>
+
+      <MemoryOverviewArchive memory={memory} style="family-scrapbook" />
     </main>
   )
 }
@@ -327,32 +349,6 @@ function MemoryOverviewArchive({
               <p className={cn('mt-4 text-base leading-8', muted)}>{participants.join('、')}</p>
             </section>
           ) : null}
-          {flights.length ? (
-            <section className={cn('p-6', card)}>
-              <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>航班</h3>
-              <ul className="mt-4 grid gap-4">
-                {flights.map((flight, index) => (
-                  <li className={cn('text-sm leading-7', muted)} key={flight.id ?? `${flight.flightNumber}:${index}`}>
-                    <strong className="block text-current">{flight.flightNumber || flight.airline || `航段 ${index + 1}`}</strong>
-                    {[flight.route, [flight.departureTime, flight.arrivalTime].filter(Boolean).join(' → ')].filter(Boolean).join(' · ')}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
-          {lodgings.length ? (
-            <section className={cn('p-6', card)}>
-              <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>住宿</h3>
-              <ul className="mt-4 grid gap-4">
-                {lodgings.map((lodging, index) => (
-                  <li className={cn('text-sm leading-7', muted)} key={lodging.id ?? `${lodging.hotel}:${index}`}>
-                    <strong className="block text-current">{lodging.hotel}</strong>
-                    {[lodging.dateRange, lodging.city, lodging.roomType].filter(Boolean).join(' · ')}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
           {videos.length ? (
             <section className={cn('p-6', card)}>
               <h3 className={cn('text-xs font-semibold uppercase tracking-[0.18em]', accent)}>全旅程影片</h3>
@@ -368,6 +364,8 @@ function MemoryOverviewArchive({
             </section>
           ) : null}
         </div>
+
+        <TravelLedger flights={flights} lodgings={lodgings} style={style} />
 
         {stories.length ? (
           <div className="mt-12 grid gap-7 lg:grid-cols-2">
@@ -405,6 +403,141 @@ function MemoryOverviewArchive({
   )
 }
 
+function TravelLedger({
+  flights,
+  lodgings,
+  style,
+}: {
+  flights: NonNullable<TravelMemoryOverview['travelLedger']>['flights']
+  lodgings: NonNullable<TravelMemoryOverview['travelLedger']>['lodgings']
+  style: TravelMemoryPresentationStyle
+}) {
+  if (!flights?.length && !lodgings?.length) return null
+
+  if (style === 'family-scrapbook') {
+    return (
+      <section className="mt-10 grid gap-6 lg:grid-cols-2" aria-label="旅程資料簿">
+        {flights?.map((flight, index) => (
+          <article className="rotate-[-0.5deg] border border-dashed border-[#af7955] bg-[#fffdf5] p-6 shadow-[4px_5px_0_rgba(98,75,43,0.16)]" key={flight.id ?? `${flight.flightNumber}:${index}`}>
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9e3e2e]">Boarding pass · 航班 {index + 1}</p>
+            <h3 className="mt-3 font-serif text-2xl">{[flight.airline, flight.flightNumber].filter(Boolean).join(' · ') || `航段 ${index + 1}`}</h3>
+            <LedgerDetails details={flightDetails(flight)} termClassName="text-[#9e3e2e]" />
+          </article>
+        ))}
+        {lodgings?.map((lodging, index) => (
+          <article className="rotate-[0.5deg] border border-dashed border-[#af7955] bg-[#f8efd9] p-6 shadow-[4px_5px_0_rgba(98,75,43,0.16)]" key={lodging.id ?? `${lodging.hotel}:${index}`}>
+            <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[#9e3e2e]">Hotel receipt · 住宿 {index + 1}</p>
+            <h3 className="mt-3 font-serif text-2xl">{lodging.hotel}</h3>
+            <LedgerDetails details={lodgingDetails(lodging)} termClassName="text-[#9e3e2e]" />
+          </article>
+        ))}
+      </section>
+    )
+  }
+
+  const cinematic = style === 'cinematic-timeline'
+  return (
+    <section className={cn('mt-10 overflow-x-auto', cinematic ? 'border border-white/15 bg-black/20' : 'border-y border-[#cfc2ae]')} aria-label="旅程資料簿">
+      <table className={cn('w-full min-w-[44rem] border-collapse text-left text-sm', cinematic ? 'text-white/75' : 'text-[#4d463c]')}>
+        <caption className={cn('px-6 pt-6 text-left text-xs font-semibold uppercase tracking-[0.18em]', cinematic ? 'text-[#ddae73]' : 'text-[#a34031]')}>
+          {cinematic ? 'Cue sheet · travel ledger' : '旅程資料簿'}
+        </caption>
+        <thead className={cn('text-xs', cinematic ? 'text-white/45' : 'text-[#756b5e]')}>
+          <tr className={cn('border-b', cinematic ? 'border-white/15' : 'border-[#cfc2ae]')}>
+            <th className="px-6 py-4 font-medium">類別</th>
+            <th className="px-6 py-4 font-medium">日期／期間</th>
+            <th className="px-6 py-4 font-medium">主項目</th>
+            <th className="px-6 py-4 font-medium">完整資料</th>
+          </tr>
+        </thead>
+        <tbody className={cinematic ? 'divide-y divide-white/15' : 'divide-y divide-[#cfc2ae]'}>
+          {flights?.map((flight, index) => (
+            <LedgerTableRow
+              details={flightDetails(flight)}
+              key={flight.id ?? `${flight.flightNumber}:${index}`}
+              kind="航班"
+              primary={[flight.airline, flight.flightNumber].filter(Boolean).join(' · ') || `航段 ${index + 1}`}
+            />
+          ))}
+          {lodgings?.map((lodging, index) => (
+            <LedgerTableRow
+              details={lodgingDetails(lodging)}
+              key={lodging.id ?? `${lodging.hotel}:${index}`}
+              kind="住宿"
+              primary={lodging.hotel}
+            />
+          ))}
+        </tbody>
+      </table>
+    </section>
+  )
+}
+
+type LedgerDetail = [label: string, value: string | null | undefined]
+type TravelLedger = NonNullable<TravelMemoryOverview['travelLedger']>
+type TravelLedgerFlight = NonNullable<TravelLedger['flights']>[number]
+type TravelLedgerLodging = NonNullable<TravelLedger['lodgings']>[number]
+
+function flightDetails(flight: TravelLedgerFlight): LedgerDetail[] {
+  return [
+    ['日期', flight.dateLabel || flight.date],
+    ['航線', flight.route],
+    ['時間', [flight.departureTime, flight.arrivalTime].filter(Boolean).join(' → ')],
+    ['乘客', flight.passengers],
+    ['航廈', flight.terminal],
+    ['備註', flight.notes],
+  ].filter((detail): detail is [string, string] => Boolean(detail[1]))
+}
+
+function lodgingDetails(lodging: TravelLedgerLodging): LedgerDetail[] {
+  return [
+    ['期間', lodging.dateRange || [lodging.startDate, lodging.endDate].filter(Boolean).join(' → ')],
+    ['城市', lodging.city],
+    ['房型', lodging.roomType],
+    ['地址', lodging.address],
+    ['訂房', lodging.bookingChannel],
+    ['價格', lodging.price],
+    ['亮點', lodging.highlights],
+    ['備註', lodging.notes],
+  ].filter((detail): detail is [string, string] => Boolean(detail[1]))
+}
+
+function LedgerDetails({ details, termClassName }: { details: LedgerDetail[]; termClassName: string }) {
+  return (
+    <dl className="mt-5 grid gap-x-5 gap-y-2 text-sm leading-6 sm:grid-cols-[4rem_1fr]">
+      {details.map(([label, value]) => (
+        <React.Fragment key={label}>
+          <dt className={cn('font-semibold', termClassName)}>{label}</dt>
+          <dd>{value}</dd>
+        </React.Fragment>
+      ))}
+    </dl>
+  )
+}
+
+function LedgerTableRow({
+  details,
+  kind,
+  primary,
+}: {
+  details: LedgerDetail[]
+  kind: string
+  primary: string
+}) {
+  const date = details.find(([label]) => label === '日期' || label === '期間')?.[1] ?? '—'
+  const remainder = details.filter(([label]) => label !== '日期' && label !== '期間')
+  return (
+    <tr className="align-top">
+      <td className="px-6 py-5 font-semibold">{kind}</td>
+      <td className="px-6 py-5 tabular-nums">{date}</td>
+      <td className="px-6 py-5 font-semibold">{primary}</td>
+      <td className="px-6 py-5 leading-6">
+        {remainder.map(([label, value]) => <span className="mr-3 inline-block" key={label}><span className="opacity-60">{label}</span> {value}</span>)}
+      </td>
+    </tr>
+  )
+}
+
 function storyRoleLabel(role: NonNullable<TravelMemoryOverview['storySections']>[number]['role']) {
   if (role === 'featured-memory') return 'Featured memory'
   if (role === 'travel-reflection') return '旅行回憶'
@@ -416,6 +549,7 @@ function storyRoleLabel(role: NonNullable<TravelMemoryOverview['storySections']>
 function EditorialDay({ view }: { view: TravelMemoryDayView }) {
   const visual = styleProfile('editorial-journal')
   const moments = view.day.moments ?? []
+  const heroMedia = resolveDailyHeroMedia(view.day)
 
   return (
     <main
@@ -445,6 +579,18 @@ function EditorialDay({ view }: { view: TravelMemoryDayView }) {
           {view.day.story ? (
             <p className="mt-7 max-w-2xl text-pretty text-base leading-8 text-[#625a50]">{view.day.story}</p>
           ) : null}
+          <figure className="mt-10 overflow-hidden border-y border-[#cfc2ae] bg-[#ebe2d2] p-3">
+            <PayloadImage
+              className="aspect-[16/8] rounded-none"
+              fallbackLabel={view.day.title}
+              fit="cover"
+              imageClassName="opacity-90"
+              media={heroMedia}
+              priority
+              sizes="(min-width: 768px) 66vw, 100vw"
+              tone="travel"
+            />
+          </figure>
         </div>
       </header>
 
@@ -504,7 +650,7 @@ function EditorialDay({ view }: { view: TravelMemoryDayView }) {
 function CinematicDay({ view }: { view: TravelMemoryDayView }) {
   const visual = styleProfile('cinematic-timeline')
   const moments = view.day.moments ?? []
-  const heroMedia = firstDayPhoto(view.day)
+  const heroMedia = resolveDailyHeroMedia(view.day)
 
   return (
     <main
@@ -591,6 +737,7 @@ function CinematicDay({ view }: { view: TravelMemoryDayView }) {
 function ScrapbookDay({ view }: { view: TravelMemoryDayView }) {
   const visual = styleProfile('family-scrapbook')
   const moments = view.day.moments ?? []
+  const heroMedia = resolveDailyHeroMedia(view.day)
 
   return (
     <main
@@ -616,6 +763,19 @@ function ScrapbookDay({ view }: { view: TravelMemoryDayView }) {
             </div>
           </div>
         </header>
+
+        <figure className="mt-10 rotate-[-0.5deg] bg-[#fffaf0] p-3 pb-10 shadow-[6px_8px_0_rgba(98,75,43,0.16)]">
+          <PayloadImage
+            className="aspect-[16/9] rounded-none"
+            fallbackLabel={view.day.title}
+            fit="cover"
+            media={heroMedia}
+            priority
+            sizes="(min-width: 768px) 70vw, 100vw"
+            tone="travel"
+          />
+          <figcaption className="mt-4 px-3 font-serif text-base italic text-[#76664f]">這一天的封面照片</figcaption>
+        </figure>
 
         <DayLogistics day={view.day} style="family-scrapbook" />
 
@@ -944,16 +1104,6 @@ function formatDateRange(start: string, end: string) {
   return `${start.slice(0, 10)} — ${end.slice(0, 10)}`
 }
 
-function firstDayPhoto(day: TravelMemoryDay): Media | null {
-  for (const moment of day.moments ?? []) {
-    for (const placement of moment.placements ?? []) {
-      if (placement.type === 'photo' && placement.media && typeof placement.media === 'object') {
-        return placement.media
-      }
-    }
-  }
-  return null
-}
 
 function galleryHref(
   gallery: TravelMemoryGallery,
