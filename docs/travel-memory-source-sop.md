@@ -1,45 +1,39 @@
-# Travel Memory completed source 人類操作 SOP
+# Travel Memory 人類操作 SOP
 
-Canonical template：`docs/templates/travel-memory-source-template.md`。它是唯一正式的 completed Travel Memory source template；`docs/templates/planning-travel-source-template.md` 只適用 Travel Plan。
+填寫方法請直接看 [Markdown template](templates/travel-memory-source-template.md) 內的說明。你負責提供材料、確認內容及批准發布；AI 負責整理與執行檢查。
 
-## 1. 準備
+## 全新項目導入
 
-1. 從 canonical template 複製新檔到 `content-source/travels/`，填入不含秘密的標題、日期、同行成員、航班、住宿、摘要、每日內容與故事。
-2. 在 `docs/travel-projects.md` 登記 canonical slug；Markdown、route與 `content-source/assets/travels/[slug]/` 使用同一 slug。
-3. 在 frontmatter 明填 `startDate: "YYYY-MM-DD"`、`endDate: "YYYY-MM-DD"` 及 `isPrivate: true`（Family）或 `isPrivate: false`（Public）。日期必須有效、結束不早於開始；日期使用引號，boolean 不加引號。範本預設 Family；公開必須由編輯者明確選擇。`date` 是文件日期，不能代替旅程日期；正文日期也應同步核對。不要把 token、cookie 或帳密放進 source。
-4. 新 completed Memory 缺少或填錯上述欄位、必要章節或連續 Day 編號，parser 會拒絕匯入，不再默認 2026-01-01／公開。三筆既有正式 Memory 的舊檔名＋slug mapping 暫保留原解析行為；若它們明填任一新 metadata 欄位，即須完整通過新契約。此相容路徑不是新內容範本，Travel Plan 不受本次修改影響。
-5. 有航班時，表格使用範本表頭：`日期／航空公司／航班／航線／起飛／抵達／備註`；可另加 `乘客` 欄，欄位可換順序，名稱不要改寫。起飛／抵達分開填寫；必要值不可留空，`備註` 可空白。沒有航班時保留「航班信息」章節並寫明「無航班。」，不要建立空表格。沒有乘客欄就不產生乘客資料。`出行人` 支援以 `、` 分隔的純名單，也保留名單後的全形括號註記格式。
+1. 複製 template，依其中說明填好旅程。把照片放在一個 photos 資料夾，另附影片網址；不用先挑選或分三種資料夾。
+2. 把材料位置交給 AI，說明「建立新旅行回憶」、公開或家人限定，以及偏好的版型。網址登記、格式整理與 manifest 由 AI 處理。
+3. AI 提供一份附縮圖的配置預覽：Overview 封面、每天代表照片、Daily 各片段照片與影片、完整相簿。每張附檔名、建議位置與文字；不確定的日期或景點集中列出讓你確認。
+4. 直接用白話修正，例如「這張改到第二天下午」「這張只留相簿」「這張不要發布」。你不必看 JSON 或自行發明技術 ID。
+5. AI 完成預演與檢查後，提供網頁預覽及發布清單。你確認內容、手機閱讀與誰能看到，再說「批准發布這份預覽」。
+6. AI 執行批准的匯入後，重新讀取網站資料與頁面，交付正式網址及結果。未成功的步驟須明列，不能把預覽當成已發布。
 
-## 2. 照片與影片
+## 舊有項目更新
 
-- 接受 `.avif/.gif/.jpeg/.jpg/.png/.webp`；先把 HEIC/HEIF 轉換成其中一種。
-- 檔名穩定、描述內容，不用 array index當 identity。
-- Manifest 的 `altText` 描述照片看見什麼，供螢幕閱讀器；新 canonical Memory 每張照片都必填非空白值。`caption` 說明這張照片在此故事中的意義，屬於 placement 可見文案，不可代替 `altText`。既有三筆舊格式 Source 暫保留原回落行為；任何內容修正需另作精確比對及批准，不由此 parser 更新自動回填。
-- `cover/`、`gallery/`、`itinerary/` 是整理慣例，不是 parser 強制資料夾。canonical 判斷以 manifest `usage` 為準。
-- itinerary placement 必須有 `day`、`sectionId`、`sourcePath`；可加 `time/location/caption/sortOrder`。無法匹配就進 unmatched report，不猜。
-- Admin 編輯者不填 `momentKey` 或 `placementKey`；系統自動產生。Source 的 `sectionId` 會成為 semantic Moment identity。
+1. 提供既有網址與這次要改的內容；只交新增照片或文字即可，不必重填整份 template。
+2. 告訴 AI 是否在 Admin 修改過內容。已匯入照片保留原檔名與位置，避免被當成新照片。
+3. AI 比較網站現況、上次匯入內容與這次材料，給你新增／修改清單、前後差異及照片位置預覽。網站單獨改過的內容應保留；不同版本由你確認採用哪份。
+4. 確認後說「批准這批更新」。刪除、覆寫既有編輯或修改公開範圍須在清單中明列。
+5. AI 更新後回讀網站，提供正式網址與變更摘要。若要回復，先說明可回復範圍，再依確認方案處理。
 
-## 3. Local audit
+## 照片怎麼交給 AI
 
-1. 執行 canonical contract test與 seed parser tests。
-   `pnpm run test:clean-room` 使用暫存 synthetic Source／manifest、假的唯讀資料庫回應及三套實際 HTML renderer；不連 DB／R2，不代表 Browser QA 或真正 import／access 已通過。
-2. 執行 `pnpm run seed:travel:dry-run`；確認 parent及 `travel-memory-days` 都有 create/update/preserve/conflict/skip。
-3. 若有 missing media、duplicate placement、missing Base或 conflict，停止並由人類決定 Source/Payload/人工合併。
+- 保留原始照片與 metadata。相機原始檔名可以直接使用；同名檔案要避免互相覆蓋。
+- 想重新命名的新照片，可用「20260402-063000-海邊-001.jpg」；不知道日期就保留原名，不必猜日期。已匯入照片不要任意改名。
+- HEIC/HEIF 可交原檔，由 AI 提出轉檔安排並保留原件。
+- AI 綜合檔名、拍攝時間／時區、GPS 與圖像辨識提出配置。缺少或互相矛盾的資訊列為待確認；不能只靠畫面認定人物身分或精確日期。
+- 日期優先參考原始照片的拍攝時間，依已知時區換算當地日期，再用 GPS 位置與 Markdown 行程交叉核對；檔案修改時間不當作拍攝日期。跨夜、飛行日、時區缺失或 GPS 與行程不符時列為待確認，不直接改寫原始 metadata。
+- 配置預覽附上「建議日期／地點、依據、待確認原因」。證據一致的照片按日批次確認；只逐張詢問有歧義的照片。人類確認後才固定正式配對與 manifest identity。
+- AI 起草 altText（畫面看見什麼）與 caption（這張照片的故事），讓你在配置預覽中一起審閱。
+- 不必分 cover、gallery、itinerary 三個資料夾；既有資料夾也不必搬動。實際展示位置由確認後的 manifest 與媒體關係決定。
 
-## 4. Migration gate
+## AI 應完成的檢查
 
-Schema 變更先產生 types與 migration，人工審查 UP/DOWN，再於 disposable database rehearsal。任何 drop、CASCADE、未批准 collection或 data-loss warning都停止。完成 rehearsal不等於批准 Production。
+AI 處理網址登記、格式檢查、照片清單與 manifest 草案，並執行匯入預演。重複照片、無法配對、缺少上次匯入基準或版本衝突都要先列出。正式更新前給人可閱讀的摘要，執行後獨立回讀資料與網頁。
 
-## 5. Preview與 Human approval
+資料庫結構變更、刪除或額外上傳若超過已批准範圍，要先說明具體影響。遇到資料變動警告、回讀失敗或私密內容外洩，停止並保留證據。程式回退不會自動恢復網站內容；資料回復使用另行確認的方案。
 
-Preview 檢查 Overview、每一個 Daily、Photos；至少 desktop、tablet、390px mobile，並檢查 Public/Family access、alt/caption、heading、keyboard/focus、overflow、broken media與 console error。三套樣式分別用海南、澳洲、普吉島驗收。Human 明確批准後才進下一 gate。
-
-## 6. Production apply/read-back
-
-Production schema migration、content write、media upload、deploy及 destructive cleanup是五個不同批准。獲批准後只執行 approval package列出的 target，隨即獨立 read-back row counts、identity、relationships、visibility與實際 routes。第二次 dry-run不能取代 read-back。
-
-## 7. Rollback與停止條件
-
-- Code rollback使用已知健康 deployment；它不會回復 Payload data。
-- Data rollback只使用已審查方案。
-- inventory drift、unmatched/duplicate、conflict、migration warning、read-back timeout、private leakage或 commit mismatch：立即停止，保留證據，不自行重試或擴大 scope。
+此文件定義 AI 協作流程，尚不代表已有一鍵辨識／發布工具。#102 須在 template/Payload 差距修復及完整新建／更新演練後才可結案。

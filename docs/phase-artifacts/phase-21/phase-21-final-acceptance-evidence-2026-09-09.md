@@ -1,5 +1,7 @@
 # Phase 21 #96／#97／#98／#99／#102 最終 acceptance evidence
 
+> 更正：Human review 指出 #102 的 template/Payload 對應、填寫指引位置、AI 照片配置及新舊項目 SOP 尚未完成。下方 #102 PASS 與五張 Issue 均可關閉的結論撤回；保留為原始審查草稿，不得據此關閉 #102 或 Phase 21。既有 clean-room 只驗證 projection，不能代替完整人類導入流程。
+
 日期：2026-09-09
 
 合併基線：`origin/main` `65640c8`（PR [#111](https://github.com/TavisLi/Li_Family_Web/pull/111)）

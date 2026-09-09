@@ -1,5 +1,7 @@
 # Phase 21 Travel Memory vNext 結案補充
 
+> 審查更正：#102 尚未通過 Human acceptance。Template/Payload 欄位對應與人類新建／更新流程需補齊，先前 PASS 判定撤回；Phase 21 保持未結案。
+
 日期：2026-09-09
 
 適用基線：`main` `65640c8`（PR #111 merged）

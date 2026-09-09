@@ -186,6 +186,7 @@ const travelSeedSchema = z.object({
         date: z.string().optional(),
         airline: z.string().optional(),
         flightNumber: z.string().min(1),
+        calendarDate: z.string().date().optional(),
         route: z.string().min(1),
         passengers: z.string().optional(),
         departureTime: z.string().optional(),
@@ -212,6 +213,9 @@ const travelSeedSchema = z.object({
     .array(
       z.object({
         dateRange: z.string().min(1),
+        startDate: z.string().date().optional(),
+        endDate: z.string().date().optional(),
+        notes: z.string().optional(),
         hotel: z.string().min(1),
         city: z.string().optional(),
         address: z.string().optional(),
@@ -219,6 +223,9 @@ const travelSeedSchema = z.object({
         bookingChannel: z.string().optional(),
         price: z.string().optional(),
         highlights: z.string().optional(),
+      }).refine((lodging) => !lodging.startDate || !lodging.endDate || lodging.endDate >= lodging.startDate, {
+        message: '住宿退房日期不得早於入住日期。',
+        path: ['endDate'],
       }),
     )
     .optional(),
@@ -678,7 +685,7 @@ export async function parseTravelMarkdown(
     party: parseParty(parsed.content, canonicalMemory),
     flights: parseFlights(parsed.content, canonicalMemory),
     railSegments: parseRailSegments(parsed.content),
-    lodgings: parseLodgings(parsed.content),
+    lodgings: parseLodgings(parsed.content, canonicalMemory),
     cabinAssignments: parseCabinAssignments(parsed.content),
     dailyItinerary: parseDailyItinerary(parsed.content, dates.startDate),
     foodRecommendations: parseFoodRecommendations(parsed.content),
@@ -1328,6 +1335,8 @@ function parseFlights(markdown: string, canonicalMemory = false): NonNullable<Tr
         flightNumber: field('航班') ?? '',
         route: field('航線') ?? '',
         passengers: field('乘客'),
+        ...(field('航廈') ? { terminal: field('航廈') } : {}),
+        ...(field('完整日期') ? { calendarDate: field('完整日期') } : {}),
         departureTime: field('起飛'),
         arrivalTime: field('抵達'),
         notes: field('備註'),
@@ -1375,7 +1384,7 @@ function parseRailSegments(markdown: string): TravelSeed['railSegments'] {
     }))
 }
 
-function parseLodgings(markdown: string): TravelSeed['lodgings'] {
+function parseLodgings(markdown: string, canonicalMemory = false): TravelSeed['lodgings'] {
   const section = sectionAfterHeading(markdown, '住宿安排')
   const rows = markdownTableRows(section)
   const headers = rows[0] ?? []
@@ -1385,6 +1394,9 @@ function parseLodgings(markdown: string): TravelSeed['lodgings'] {
     .filter((cells) => cells.length >= 3 && Boolean(cells[0]) && Boolean(cells[1]))
     .map((cells) => ({
       dateRange: cells[0] ?? '',
+      ...(canonicalMemory && cellByHeader(headers, cells, ['入住日期']) ? { startDate: cellByHeader(headers, cells, ['入住日期']) } : {}),
+      ...(canonicalMemory && cellByHeader(headers, cells, ['退房日期']) ? { endDate: cellByHeader(headers, cells, ['退房日期']) } : {}),
+      ...(canonicalMemory && cellByHeader(headers, cells, ['備註']) ? { notes: cellByHeader(headers, cells, ['備註']) } : {}),
       city: cellByHeader(headers, cells, ['城市']),
       hotel: cellByHeader(headers, cells, ['酒店']) ?? cells[1] ?? '',
       address: cellByHeader(headers, cells, ['地址']),

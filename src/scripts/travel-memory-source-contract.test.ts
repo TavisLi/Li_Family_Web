@@ -8,6 +8,7 @@ import {
   validateCanonicalTravelMemoryMarkdown,
 } from './seed-content'
 import { buildTravelMemoryDayProjections } from './travel-memory-day-projections'
+import { buildTravelMemoryProjection } from './travel-seed-projections'
 
 const templatePath = path.resolve('docs/templates/travel-memory-source-template.md')
 const markdown = await readFile(templatePath, 'utf8')
@@ -45,6 +46,23 @@ assert.ok(validateCanonicalTravelMemoryMarkdown(markdown.replace('## Day 2', '##
 const fixtureDirectory = await mkdtemp(path.join(tmpdir(), 'phase21-canonical-contract-'))
 const fixturePath = path.join(fixtureDirectory, 'synthetic-memory.md')
 try {
+  const extendedLedger = markdown
+    .replace('| 日期 | 航空公司 | 航班 | 航線 | 起飛 | 抵達 | 備註 |', '| 日期 | 航空公司 | 航班 | 航線 | 起飛 | 抵達 | 備註 | 航廈 | 完整日期 |')
+    .replace('| 4/1 | Example Air | EX101 | TPE → SEA | 08:00 | 09:10 | Synthetic data only |', '| 4/1 | Example Air | EX101 | TPE → SEA | 08:00 | 09:10 | Synthetic data only | T2 | 2026-04-01 |')
+    .replace('| 日期 | 酒店 | 城市 | 房型 | 預訂管道 | 價格 | 核心亮點 |', '| 日期 | 酒店 | 城市 | 房型 | 預訂管道 | 價格 | 核心亮點 | 入住日期 | 退房日期 | 備註 |')
+    .replace('| 4/1–4/2 | 海風家庭旅店 | 海風鎮 | 家庭房 | Example | N/A | 步行可到海邊 |', '| 4/1–4/2 | 海風家庭旅店 | 海風鎮 | 家庭房 | Example | N/A | 步行可到海邊 | 2026-04-01 | 2026-04-02 | 晚到 |')
+  await writeFile(fixturePath, extendedLedger)
+  const ledger = buildTravelMemoryProjection(await parseTravelMarkdown(fixturePath)).travelLedger
+  assert.equal(ledger?.flights?.[0]?.terminal, 'T2')
+  assert.equal(ledger?.flights?.[0]?.date, '2026-04-01')
+  assert.equal(ledger?.flights?.[0]?.dateLabel, '4/1')
+  assert.equal(ledger?.lodgings?.[0]?.startDate, '2026-04-01')
+  assert.equal(ledger?.lodgings?.[0]?.endDate, '2026-04-02')
+  assert.equal(ledger?.lodgings?.[0]?.notes, '晚到')
+  await writeFile(fixturePath, extendedLedger.replace('| T2 | 2026-04-01 |', '| T2 | 2026-02-30 |'))
+  await assert.rejects(parseTravelMarkdown(fixturePath))
+  await writeFile(fixturePath, extendedLedger.replace('| 2026-04-01 | 2026-04-02 | 晚到 |', '| 2026-04-02 | 2026-04-01 | 晚到 |'))
+  await assert.rejects(parseTravelMarkdown(fixturePath))
   for (const invalid of [
     markdown.replace('startDate: "2026-04-01"\n', ''),
     markdown.replace('endDate: "2026-04-02"\n', ''),
