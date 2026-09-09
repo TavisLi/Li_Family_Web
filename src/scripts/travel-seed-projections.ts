@@ -101,6 +101,7 @@ export function buildTravelMemoryProjection(
   const flights = mapRecords(value.flights, (flight) =>
     pickRecord(flight, [
       ['date', 'dateLabel'],
+      ['calendarDate', 'date'],
       ['airline', 'airline'],
       ['flightNumber', 'flightNumber'],
       ['route', 'route'],
@@ -114,6 +115,9 @@ export function buildTravelMemoryProjection(
   const lodgings = mapRecords(value.lodgings, (lodging) =>
     pickRecord(lodging, [
       ['dateRange', 'dateRange'],
+      ['startDate', 'startDate'],
+      ['endDate', 'endDate'],
+      ['notes', 'notes'],
       ['hotel', 'hotel'],
       ['city', 'city'],
       ['address', 'address'],
