@@ -350,6 +350,7 @@ assert.match(day8Html, /data-travel-memory-layout="scrapbook-day"/)
 assert.match(day8Html, /旅程最後一天的度假亮點。/)
 assert.match(day8Html, /為八日旅程留下安靜的尾聲。/)
 assert.equal((day8Html.match(/<figcaption/g) ?? []).length, 3)
+
 assert.match(day8Html, /這一天的封面照片/)
 assert.match(day8Html, /href="\/travel\/201307-hainan\/day\/day-07"/)
 
