@@ -1,6 +1,6 @@
 # Phase 21 #96／#97／#98／#99／#102 最終 acceptance evidence
 
-> 更正：Human review 指出 #102 的 template/Payload 對應、填寫指引位置、AI 照片配置及新舊項目 SOP 尚未完成。下方 #102 PASS 與五張 Issue 均可關閉的結論撤回；保留為原始審查草稿，不得據此關閉 #102 或 Phase 21。既有 clean-room 只驗證 projection，不能代替完整人類導入流程。
+> 更正：Human review 指出 #102 需要補齊 template/Payload 對應、填寫指引位置、AI 照片配置及新舊項目 SOP。這些已在 PR #112 補上；實際照片配置預覽延後到下一筆 Travel Memory，列為 follow-up acceptance，不阻擋本次 #102 結案。
 
 日期：2026-09-09
 

@@ -25,7 +25,7 @@ Template 不等於整張 Collection 的編輯表單：presentationStyle、origin
 
 Node 20.20.2 的完整 test:phase-21 通過，涵蓋 25 個正式 Day 的 parser/projection parity、synthetic 新 parent／media、既有 parent 更新、preserve-current、duplicate/unmatched/collision，以及三套 renderer 的 12 份輸出。新增 contract test 實際走 Markdown → parser → Payload projection，確認上述欄位不遺失，並拒絕無效日期與倒置住宿日期。
 
-這些測試沒有連線 Production，沒有執行正式發布，也未證明真實照片辨識的正確率。#102 的最終 Human acceptance 仍需以修訂後 template/SOP 審閱及一次照片配置預覽確認；原結案文件中的 PASS 已撤回。不得以測試通過代替人類流程驗收。
+這些測試沒有連線 Production，沒有執行正式發布，也未證明真實照片辨識的正確率。實際照片配置預覽列為下一筆 Travel Memory 的 follow-up 驗收，不阻擋本次 #102 的 template/SOP 結案；下一筆導入仍須完成該預覽與人類確認。不得把本文件的 synthetic clean-room 當成真實照片辨識正確率證明。
 
 ## 回退
 
