@@ -71,6 +71,7 @@ for (const [style, layout, landmark, structure] of [
 
 const cinematicHtml = renderToStaticMarkup(<TravelMemoryOverviewPage memory={overview('cinematic-timeline')} />)
 assert.match(cinematicHtml, /data-cinematic-film-canvas="true"/)
+assert.doesNotMatch(cinematicHtml, /mt-2 list-disc space-y-1 pl-5/, 'one reminder item has no redundant outer bullet')
 const cinematicNavigation = cinematicHtml.match(/<nav aria-label="場次導覽"[\s\S]*?<\/nav>/)?.[0]
 assert.ok(cinematicNavigation?.includes('data-memory-day-cards="true"'))
 assert.ok(cinematicHtml.indexOf('data-memory-day-cards="true"') < cinematicHtml.indexOf('data-memory-overview-archive='))

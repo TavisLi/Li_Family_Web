@@ -395,13 +395,19 @@ function MemoryOverviewArchive({
               {reminders.map((reminder, index) => (
                 <section key={reminder.id ?? `${reminder.category}:${index}`}>
                   <h4 className="font-semibold">{reminder.category}</h4>
-                  <ul className={cn('mt-2 list-disc space-y-1 pl-5 text-sm leading-6', muted)}>
+                  {(reminder.items ?? []).length === 1 ? (
+                    <div className={cn('mt-2 text-sm leading-6', muted)}>
+                      <SourceBody body={reminder.items![0]?.text ?? ''} layout="single" tone={cinematic ? 'dark' : 'light'} />
+                    </div>
+                  ) : (
+                    <ul className={cn('mt-2 list-disc space-y-1 pl-5 text-sm leading-6', muted)}>
                     {(reminder.items ?? []).map((item, itemIndex) => (
                       <li className="min-w-0 [&>div]:mt-0" key={item.id ?? itemIndex}>
                         <SourceBody body={item.text} layout="single" tone={cinematic ? 'dark' : 'light'} />
                       </li>
                     ))}
-                  </ul>
+                    </ul>
+                  )}
                 </section>
               ))}
             </div>
