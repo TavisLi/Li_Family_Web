@@ -71,6 +71,7 @@ for (const [style, layout, landmark, structure] of [
 
 const cinematicHtml = renderToStaticMarkup(<TravelMemoryOverviewPage memory={overview('cinematic-timeline')} />)
 assert.match(cinematicHtml, /data-cinematic-film-canvas="true"/)
+assert.doesNotMatch(cinematicHtml, /mt-2 list-disc space-y-1 pl-5/, 'one reminder item has no redundant outer bullet')
 const cinematicNavigation = cinematicHtml.match(/<nav aria-label="場次導覽"[\s\S]*?<\/nav>/)?.[0]
 assert.ok(cinematicNavigation?.includes('data-memory-day-cards="true"'))
 assert.ok(cinematicHtml.indexOf('data-memory-day-cards="true"') < cinematicHtml.indexOf('data-memory-overview-archive='))
@@ -350,6 +351,7 @@ assert.match(day8Html, /data-travel-memory-layout="scrapbook-day"/)
 assert.match(day8Html, /旅程最後一天的度假亮點。/)
 assert.match(day8Html, /為八日旅程留下安靜的尾聲。/)
 assert.equal((day8Html.match(/<figcaption/g) ?? []).length, 3)
+
 assert.match(day8Html, /這一天的封面照片/)
 assert.match(day8Html, /href="\/travel\/201307-hainan\/day\/day-07"/)
 

@@ -395,13 +395,19 @@ function MemoryOverviewArchive({
               {reminders.map((reminder, index) => (
                 <section key={reminder.id ?? `${reminder.category}:${index}`}>
                   <h4 className="font-semibold">{reminder.category}</h4>
-                  <ul className={cn('mt-2 list-disc space-y-1 pl-5 text-sm leading-6', muted)}>
+                  {(reminder.items ?? []).length === 1 ? (
+                    <div className={cn('mt-2 text-sm leading-6', muted)}>
+                      <SourceBody body={reminder.items![0]?.text ?? ''} layout="single" tone={cinematic ? 'dark' : 'light'} />
+                    </div>
+                  ) : (
+                    <ul className={cn('mt-2 list-disc space-y-1 pl-5 text-sm leading-6', muted)}>
                     {(reminder.items ?? []).map((item, itemIndex) => (
                       <li className="min-w-0 [&>div]:mt-0" key={item.id ?? itemIndex}>
                         <SourceBody body={item.text} layout="single" tone={cinematic ? 'dark' : 'light'} />
                       </li>
                     ))}
-                  </ul>
+                    </ul>
+                  )}
                 </section>
               ))}
             </div>
@@ -450,11 +456,12 @@ function TravelLedger({
     <section className="mt-12 space-y-8" aria-label="旅程資料簿">
       <h3 className={cn('text-2xl font-semibold tracking-tight md:text-3xl', cinematic ? 'text-[#ddae73]' : 'text-[#a34031]')}>Travel Ledger · 旅程資料簿</h3>
       {(['航班', '住宿'] as const).map((kind) => (kind === '航班' ? flights?.length : lodgings?.length) ? (
-      <div key={kind} className={cn('overflow-x-auto', cinematic ? 'border border-white/15 bg-black/20' : 'border-y border-[#cfc2ae]')}>
+      <div key={kind}>
+      <p className={cn('px-6 pt-6 text-left text-xl font-semibold', cinematic ? 'text-[#ddae73]' : 'text-[#a34031]')}>
+        {kind}
+      </p>
+      <div className={cn('overflow-x-auto', cinematic ? 'border border-white/15 bg-black/20' : 'border-y border-[#cfc2ae]')}>
       <table className={cn('w-full min-w-[44rem] border-collapse text-left text-sm', cinematic ? 'text-white/75' : 'text-[#4d463c]')}>
-        <caption className={cn('px-6 pt-6 text-left text-xl font-semibold', cinematic ? 'text-[#ddae73]' : 'text-[#a34031]')}>
-          {kind}
-        </caption>
         <thead className={cn('text-xs', cinematic ? 'text-white/45' : 'text-[#756b5e]')}>
           <tr className={cn('border-b', cinematic ? 'border-white/15' : 'border-[#cfc2ae]')}>
             <th className="px-6 py-4 font-medium">{kind === '航班' ? '航線' : '城市'}</th>
@@ -482,6 +489,7 @@ function TravelLedger({
           ))}
         </tbody>
       </table>
+      </div>
       </div>
       ) : null)}
     </section>
