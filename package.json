@@ -19,6 +19,8 @@
     "seed:dry-run": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/seed.ts --dry-run",
     "seed:phase-9:dry-run": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/seed.ts --phase-9 --dry-run",
     "seed:travel": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/seed.ts --travel-only",
+    "seed:travel:v2:audit": "node --import tsx src/scripts/travel-memory-v2-audit.ts",
+    "test:memory-v2": "node --import tsx src/scripts/travel-memory-source-v2.test.ts",
     "seed:travel:dry-run": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/seed.ts --travel-only --dry-run",
     "seed:travel:read-back": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/travel-readback-probe.ts",
     "seed:travel:conflict-register": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/travel-readback-probe.ts --write-conflict-register",

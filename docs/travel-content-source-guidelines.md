@@ -7,6 +7,18 @@
 
 本文件定義新增旅遊項目的內容交付包規格。目標是讓新的旅行 Markdown、照片與影片可以穩定進入 seed pipeline，再由 Payload CMS 與前台 `/travel/[slug]` 動態頁面使用。
 
+## Travel Memory Source v2（#117）
+
+新 Memory 使用上述唯一模板的 `sourceVersion: 2` 契約；下方舊 Markdown 範例、中文表頭與目錄推斷只供 Travel Plan／既有 v1 資料相容，不可混入 v2。逐欄分類見 [coverage matrix](travel-memory-source-v2-coverage.md)。
+
+- 人類可交一個 `photos/` 資料夾，保留相機檔名與拍攝 metadata；不用分三個資料夾。已匯入檔案不搬移、不改名。
+- AI 在配置確認後整理 v2 的資產宣告與展示位置。`altText` 描述資產畫面，placement `caption` 是這一次展示的故事；兩者不可互相代填。既有 manifest 不會被 v2 指令隱式匯入。
+- v2 指定單份 Markdown，frontmatter 是此指令的 title／slug 來源；catalog 登記仍應一致，但不能假設 v1 的 catalog-title override 適用 v2。既有 v1 catalog 匯入遇到 v2 會拒絕，避免誤解內容。
+- 離線檢查：`pnpm seed:travel:v2:audit <source.md>`。不讀環境或資料庫，不能證明關聯存在。
+- 經目標環境唯讀授權後：`pnpm seed:travel:dry-run --memory-v2 <source.md>`。套用是另一個授權：`pnpm seed:travel --memory-v2 <source.md> --apply-v2`。預設只預演，新建內容為 draft，不自動發布。
+- 省略欄位與空清單不代表刪除。Admin-only 修改保留；雙方不同修改衝突；缺少 v2 Base 的既有項目先保留並阻擋套用，不自動採認新基準。
+- v2 不接受 source-wins／payload-wins。中途上傳／寫入失敗須先檢查現況，不自動重試或宣稱已回復。
+
 ---
 
 ## 1. 交付包總覽
@@ -19,7 +31,7 @@ content-source/assets/travels/[travel-slug]/
 YouTube links written inside the Markdown
 ```
 
-最小交付清單：
+以下是 v1／Plan 的歷史三目錄範例，不是新 Memory 的最小交付要求：
 
 ```text
 content-source/travels/[旅行中文名].md
@@ -84,7 +96,7 @@ docs/templates/planning-travel-source-template.md
 content-source/travels/202610日本關西親子7日.md
 ```
 
-建議結構：
+Travel Plan／既有 v1 建議結構（非 Memory v2）：
 
 ```md
 ---
@@ -163,7 +175,7 @@ date: "2026-06-14"
 content-source/assets/travels/[travel-slug]/
 ```
 
-建議子目錄：
+既有 v1 子目錄範例（新 Memory 可只用 `photos/`）：
 
 ```text
 cover/
@@ -221,7 +233,7 @@ day-05-nara-deer-park-001.jpeg
 - 保留清楚語義：`cover`、`gallery`、`day-03`、`kyoto`、`arrival`。
 - 副檔名保持原始格式即可，例如 `.jpeg`、`.jpg`、`.png`、`.webp`。
 
-避免：
+新 Memory 可保留相機原名；下列是舊 v1 的命名反例，不要求重新命名已匯入資產：
 
 ```text
 IMG_1234.jpeg
@@ -383,7 +395,7 @@ Manifest 範例：
 | `sectionId` | 穩定英文節點 ID，例如 `patong-beach-sunset` |
 | `time` | Markdown 行程中的時間，若有 |
 | `location` | 景點、酒店、餐廳或機場名稱 |
-| `caption` | 前台可用的照片說明與 alt text |
+| `caption` | 舊 manifest 的展示圖說；v2 資產 altText 必須另行撰寫 |
 | `sortOrder` | 建議用 `day * 1000 + sequence * 10`，方便同日排序 |
 
 Seed parser 會保留這些 metadata，並寫入 Media tags，例如 `day-02` 與 `section:mai-khao-flight-viewing`，供後續前台依日程節點分組。
@@ -418,15 +430,15 @@ docs/design/travel/202702-thailand-phuket.design.md
 
 ```bash
 pnpm run test:seed-content
-pnpm run seed
+pnpm run seed:travel:dry-run
 ```
 
 若 seed 或 collection 有更新，再視情況執行：
 
 ```bash
 pnpm exec payload generate:types
-pnpm tsc --noEmit
 pnpm run build
+pnpm tsc --noEmit
 ```
 
 前台驗證：

@@ -649,6 +649,7 @@ export async function parseTravelMarkdown(
   const raw = stripBom(await fs.readFile(filePath, 'utf8'))
   const parsed = matter(raw)
   const filename = path.basename(filePath)
+  if (parsed.data.sourceVersion === 2) throw new Error('Travel Memory Source v2: use seed:travel --memory-v2 <file> --dry-run; v1 catalog import cannot interpret v2.')
   const slug = catalogEntry?.slug ?? travelSlugByFilename.get(filename) ?? slugify(filename.replace(/\.md$/, ''))
   const status = catalogEntry?.status ?? travelStatusBySlug[slug as keyof typeof travelStatusBySlug] ?? 'completed'
   // Only existing mapped sources retain the legacy contract. New Memories must

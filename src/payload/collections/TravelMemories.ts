@@ -37,7 +37,7 @@ export const TravelMemories: CollectionConfig = {
       required: false,
       admin: {
         description:
-          'Published visual style for all routes in this Travel Memory. Source imports do not manage this field.',
+          'Published visual style for all routes. Source v2 may specify it; safe reconciliation preserves Admin-only changes.',
       },
       options: [
         { label: 'Editorial journal', value: 'editorial-journal' },
