@@ -31,7 +31,7 @@
 1. 最終逐欄 fixture 覆蓋與分類計數審查，包含所有 array identity 與跨語系共享欄位案例。
 2. 真正 Payload hooks／upload naming／read-back 路徑驗證；目前匯入測試使用記憶體替身，不是假冒資料庫演練。
 3. Catalog 與 v2 frontmatter 一致性檢查，以及 legacy-to-v2 baseline adoption 的明確限制審查。
-4. 最終 standards／spec review、全套驗證、commit／push／PR。尚未建立 PR，不使用 `Closes #117`。
+4. 最終 standards／spec review 與環境級 Payload/read-back 驗收仍待人工審查。已提交 `c60f528`、推送分支並建立 PR #121；PR 不使用 `Closes #117`。
 
 ## 資料與授權
 
