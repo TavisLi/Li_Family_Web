@@ -18,7 +18,9 @@ supersedes: null
 
 Overview 使用同一份 canonical view model呈現 participants、travel ledger、具 role 的 story sections、reminders與 global videos；三套 presentation不得各自重建內容規則。
 
-`presentationStyle` 由 Payload Admin 管理，不屬於 `content-source` projection。Day／Moment／Placement 的 source-managed fields 使用 Base／Source／Current reconciliation；Admin-only修改不得被 seed 靜默覆寫。
+`presentationStyle` 可由 Payload Admin 或 Travel Memory Source v2 指定。Source v2 的 style 與 Day／Moment／Placement 的 source-managed fields 均使用 Base／Source／Current reconciliation；Admin-only 修改不得被 seed 靜默覆寫。Source 未填 style 時保留 Current；缺少 Base 的既有 record 不自動覆寫。
+
+2026-09-10 決策修訂（Issue #117）：Human 明確批准「允許 Source 指定，更新時保護 Admin 修改」。此修訂擴充作者入口，既有 v1 匯入不開始管理 style，也不授權 Production 寫入。
 
 ## 後果
 

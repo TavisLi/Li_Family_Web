@@ -103,6 +103,10 @@ Travel Memory 著重照片、心得、里程碑、外部 YouTube 與行後分享
 
 ## 7. Source and Seed
 
+- 新 Memory 的唯一作者契約是 [Source v2 template](templates/travel-memory-source-template.md)，人類步驟見 [SOP](travel-memory-source-sop.md)。填寫說明不在 catalog 重複維護。
+- v2 指令以指定 Markdown frontmatter 為 title／slug 來源；登記 catalog 時保持一致。此處現有來源仍為 v1，澳洲 v2 golden fixture 只供測試，不是另一筆 catalog 項目或 Production migration。
+- v2 離線檢查：`pnpm seed:travel:v2:audit <source.md>`；環境預演：`pnpm seed:travel:dry-run --memory-v2 <source.md>`，需目標環境唯讀授權。未有 v2 Base 的既有資料先保留，不自動覆蓋或重設 identity。
+
 - 新增／大量更新旅行依 [`travel-content-source-guidelines.md`](./travel-content-source-guidelines.md)。
 - 日常 Admin 修改不應被 safe seed 靜默覆蓋。
 - Travel-only dry-run：`pnpm run seed:travel:dry-run`。

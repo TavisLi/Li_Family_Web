@@ -10,7 +10,7 @@ import {
 import { buildTravelMemoryDayProjections } from './travel-memory-day-projections'
 import { buildTravelMemoryProjection } from './travel-seed-projections'
 
-const templatePath = path.resolve('docs/templates/travel-memory-source-template.md')
+const templatePath = path.resolve('src/scripts/fixtures/travel-memory-v1-regression.md')
 const markdown = await readFile(templatePath, 'utf8')
 assert.deepEqual(validateCanonicalTravelMemoryMarkdown(markdown), [])
 
@@ -18,7 +18,7 @@ const travel = await parseTravelMarkdown(templatePath, {
   slug: '209904-clean-room-coast',
   title: 'Clean-room Family Coast Memory',
   status: 'completed',
-  sourceFile: 'docs/templates/travel-memory-source-template.md',
+  sourceFile: 'src/scripts/fixtures/travel-memory-v1-regression.md',
 })
 const projection = buildTravelMemoryDayProjections(travel, [])
 assert.equal(travel.startDate, '2026-04-01')

@@ -31,7 +31,7 @@ try {
   await mkdir(assetDirectory, { recursive: true })
   await mkdir(path.join(root, 'content-source/travels'), { recursive: true })
   await mkdir(path.join(root, 'docs'), { recursive: true })
-  const template = (await readFile('docs/templates/travel-memory-source-template.md', 'utf8'))
+  const template = (await readFile('src/scripts/fixtures/travel-memory-v1-regression.md', 'utf8'))
     .replace('Clean-room journey [https://youtu.be/dQw4w9WgXcQ]',
       'Clean-room journey [https://youtu.be/dQw4w9WgXcQ]\n20260402 Daily film [https://youtu.be/aqz-KE-bpKQ]')
   await writeFile(path.join(root, 'content-source/travels/memory.md'), template)

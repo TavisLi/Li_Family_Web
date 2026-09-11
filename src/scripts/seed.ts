@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { tmpdir } from 'node:os'
 import { fileURLToPath } from 'node:url'
-import { copyFile, mkdtemp, rm } from 'node:fs/promises'
+import { copyFile, mkdtemp, rm, readFile } from 'node:fs/promises'
 
 import { getPayload, type Payload } from 'payload'
 
@@ -35,6 +35,9 @@ import {
   type TravelSeedStore,
 } from './travel-seed-target'
 import { buildPhase19TravelMemoryBackfillPlan } from './phase19-travel-memory-backfill'
+import { parseMemorySourceV2 } from './travel-memory-source-v2'
+import { importMemoryV2 } from './travel-memory-v2-import'
+import { memoryV2Args } from './travel-memory-v2-args'
 
 interface SeedStats {
   created: number
@@ -55,10 +58,22 @@ const dirname = path.dirname(fileURLToPath(import.meta.url))
 const projectRoot = path.resolve(dirname, '../..')
 
 async function run() {
+  const v2Options = memoryV2Args(process.argv.slice(2))
+  const v2File = v2Options?.file
+  const v2Source = v2File ? parseMemorySourceV2(await readFile(v2File, 'utf8')) : undefined
   await loadLocalEnv(projectRoot)
+  if (v2Source) process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH = 'false'
   const { default: configPromise } = await import('@payload-config')
   const payload = await getPayload({ config: configPromise })
   console.log('Payload Local API initialized')
+  if (v2Source && v2File) {
+    const result = await importMemoryV2(payload, v2Source, {
+      apply: v2Options!.apply,
+      assetRoot: path.join(projectRoot, 'content-source/assets'), sourceFile: v2File,
+    })
+    console.log(JSON.stringify(result, null, 2))
+    return
+  }
   const blogOnly = process.argv.includes('--blog-only')
   const dryRun = process.argv.includes('--dry-run')
   const phase9Only = process.argv.includes('--phase-9')

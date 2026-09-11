@@ -13,11 +13,11 @@
 1. `content-source/assets/` 只作為 seed 初始資料來源。  
    正式使用時，前台應讀取 Payload Media relationship，不直接讀取 `content-source/assets/` 路徑。
 
-2. 目錄結構代表媒體用途。  
-   Seed pipeline 會依照資料夾與檔名判斷圖片要掛到哪個資料欄位。
+2. 新 Memory 的展示位置以確認後的 Source v2 關係為準。
+   可只用 `photos/`；下方用途目錄是既有 v1／其他 seed 的慣例，不能強迫新 Memory 分三份或複製同一照片。
 
 3. 檔名應穩定、可讀、可排序。  
-   避免使用相機原始檔名、空格、括號、混合大小寫與不明縮寫。
+   新 Memory 可保留相機原始檔名與 metadata；避免同名覆蓋。已匯入的 sourcePath 保持不變。
 
 4. 後台替換優先於修改前台。  
    若日後要替換首頁 hero、成員照片或旅遊封面，應在 Payload Admin 中更換 media relationship 或上傳新照片，而不是修改前台 component。
@@ -116,7 +116,7 @@ lynn-gallery-002.jpeg
 content-source/assets/travels/[travel-slug]/
 ```
 
-每個旅遊專案建議使用以下子目錄：
+既有 v1 的用途子目錄如下；新 Memory 使用 [v2 模板](templates/travel-memory-source-template.md)，不必依此分資料夾：
 
 ```text
 cover/
@@ -235,10 +235,10 @@ lobby-003.jpeg
 
 1. 先判斷照片歸屬：
    - 成員：放到 `members/[member-slug]/`
-   - 旅遊：放到 `travels/[travel-slug]/cover|gallery|itinerary/`
+   - 旅遊 Memory：可放到 `travels/[travel-slug]/photos/`，既有 v1 資料夾不搬動
    - 首頁家庭大廳：放到 `the_grand_family_lobby/`
 
-2. 依照用途命名。
+2. 新 Memory 保留原檔與 metadata，讓 AI 提出日期、GPS 地點及展示位置，依人類確認整理；既有檔名保持穩定。
 
 3. 執行 seed 前，確認檔案不包含 `.DS_Store` 或其他系統暫存檔。
 
@@ -246,7 +246,7 @@ lobby-003.jpeg
 
    ```bash
    pnpm run test:seed-content
-   pnpm run seed
+   pnpm run seed:travel:dry-run
    ```
 
 5. 到 Payload Admin 確認 Media 與 relationship 是否正確建立。
@@ -270,6 +270,8 @@ content-source/assets/...
 ## 9. 何時需要 Seed Manifest
 
 一般照片可以先依賴目錄與檔名語義，不需要立即建立 manifest。
+
+本節為既有 v1 manifest 相容規則。Memory v2 不自動讀此 manifest；AI 依確認後配置整理模板內的 `memory-media` 資產宣告與各展示關係。不要另建第二套互相覆蓋的作者欄位。AI 草擬的 `altText` 描述畫面，`caption` 描述展示故事，須分別確認。v2 離線檢查用 `pnpm seed:travel:v2:audit <source.md>`；環境預演和正式套用依 [來源指南](travel-content-source-guidelines.md) 分開批准。
 
 當出現以下需求時，再建立 manifest：
 
