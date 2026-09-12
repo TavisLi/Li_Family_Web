@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
-  "outputDirectory": null
+  "outputDirectory": null,
+  "git": {
+    "deploymentEnabled": {
+      "codex/docs-104-node24-plan": false
+    }
+  }
 }
