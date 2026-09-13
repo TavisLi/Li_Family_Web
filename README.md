@@ -23,7 +23,7 @@ Web Li 是一個長期營運的家庭數位入口，保存家庭成員故事、�
 | --- | --- |
 | Web framework | Next.js `15.4.11` App Router |
 | CMS | Payload CMS `3.85.1`，嵌入 Next.js |
-| Runtime | Node.js `20.20.2` |
+| Runtime | Node.js `24.21.0` |
 | Database | Supabase PostgreSQL，serverless pooler |
 | Media | Cloudflare R2 S3 adapter |
 | UI | React 19、Tailwind CSS、shadcn/ui |
@@ -55,14 +55,18 @@ docs catalog + content-source Markdown/assets
 
 ### 前置要求
 
-- Node.js `20.20.2`
-- pnpm
+- Node.js `24.21.0`
+- pnpm `10.28.0`
 - 可用的 Supabase PostgreSQL
 - 開發上傳媒體時需要 Cloudflare R2
 
 ```bash
+nvm install
 nvm use
-pnpm install
+corepack prepare pnpm@10.28.0 --activate
+node --version
+pnpm --version
+pnpm install --frozen-lockfile
 cp .env.example .env
 pnpm exec payload migrate
 pnpm dev
@@ -140,3 +144,20 @@ pnpm run seed:travel:read-back
 ## 專案性質
 
 本專案為私人家庭網站，目前不接受外部貢獻。內容可能涉及家庭私密資料；未取得網站擁有者批准，不得擴大公開範圍、執行 Production mutation 或輸出私密資料。
+
+## Runtime contract 與歷史工具
+
+`package.json` 的 `engines.node = 24.x` 是 canonical major；`.nvmrc` 與 `.node-version` 固定本地已選定的 `24.21.0`。Vercel 使用 24.x 並自行更新 patch，部署驗證需另記實際版本。pnpm 固定 `10.28.0`，沿用原鎖檔；#118 的未來 CI 應讀 `.nvmrc`。
+
+`Dockerfile` 與 `docker-compose.yml` 是不支援的歷史範本（Node 18／Mongo／standalone 契約已過時），不得用作目前 runtime baseline。
+
+以下 frozen historical operations 保留 Node 20 guards 與原批准證據，不能在 Node 24 重跑。若需重新使用，必須另製作操作 package、隔離 rehearsal 與取得批准：
+
+- `src/scripts/phase21-c0-package.mjs`
+- `src/scripts/phase21-c0-pg-rehearsal.mjs`
+- `src/scripts/phase21-retirement-rehearsal.mjs`
+- `src/scripts/phase21-retirement-actual-ddl-rehearsal.mjs`
+- `src/scripts/phase21-retirement-final-preflight.mjs`
+- `src/scripts/phase21-retirement-production-backup.mjs`
+- `src/scripts/phase21-retirement-production-apply.mjs`
+- `src/scripts/phase21-retirement-restore-readback.mjs`
