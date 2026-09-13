@@ -1,3 +1,5 @@
+# UNSUPPORTED HISTORICAL TEMPLATE: not a current execution path or runtime baseline.
+# See README.md runtime contract; Node/Mongo/standalone assumptions are obsolete.
 version: '3'
 
 services:

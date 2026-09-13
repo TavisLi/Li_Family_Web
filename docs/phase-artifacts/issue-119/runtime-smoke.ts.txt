@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict'
+import { getPayload } from 'payload'
+import config from './src/payload/payload.config'
+import sharp from 'sharp'
+assert.equal(process.env.DATABASE_URI, 'postgres://postgres:issue119-local-only@127.0.0.1:55419/issue119')
+assert.equal(process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH, 'false')
+const payload = await getPayload({ config })
+try {
+ const client=await payload.db.pool.connect()
+ try { await client.query('BEGIN'); await client.query('CREATE TEMP TABLE node24_rollback (n integer)'); await client.query('INSERT INTO node24_rollback VALUES (24)'); assert.equal((await client.query('SELECT n FROM node24_rollback')).rows[0].n,24); await client.query('ROLLBACK'); assert.equal((await client.query("SELECT to_regclass('pg_temp.node24_rollback') AS relation")).rows[0].relation,null) } finally {client.release()}
+ const email='runtime-fixture@example.invalid', password='local-fixture-password-119'
+ let found=await payload.find({collection:'users',where:{email:{equals:email}},limit:1})
+ if(!found.docs.length) await payload.create({collection:'users',data:{email,password,slug:'runtime-fixture',displayName:'Runtime Fixture',familyRole:'family',role:'family',profileVisibility:'family'}})
+ const visitor=await payload.find({collection:'users',overrideAccess:false,where:{email:{equals:email}}}); assert.equal(visitor.docs.length,0)
+ const login=await payload.login({collection:'users',data:{email,password}}); assert(login.token)
+ const auth=await payload.auth({headers:new Headers({Authorization:`JWT ${login.token}`})}); assert.equal(auth.user?.email,email)
+ await assert.rejects(payload.login({collection:'users',data:{email,password:'wrong-password'}}))
+ const jpg=await sharp({create:{width:32,height:24,channels:3,background:'#234567'}}).jpeg().toBuffer()
+ const webp=await sharp(jpg).resize(16).webp().toBuffer(); const meta=await sharp(webp).metadata(); assert.equal(meta.width,16); assert.equal(meta.format,'webp')
+ console.log(JSON.stringify({node:process.version,postgres:'SELECT/transaction rollback PASS',payload:'config/Local API/access/login/auth/wrong password PASS',sharp:sharp.versions.sharp,webp:'PASS'}))
+} finally {await payload.destroy()}

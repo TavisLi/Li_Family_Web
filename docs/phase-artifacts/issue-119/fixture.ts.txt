@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict'
+import { writeFile } from 'node:fs/promises'
+import { getPayload } from 'payload'
+import config from './src/payload/payload.config'
+assert.equal(process.env.DATABASE_URI, 'postgres://postgres:issue119-local-only@127.0.0.1:55419/issue119')
+assert.equal(process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH, 'false')
+const payload = await getPayload({ config, disableDBConnect: true })
+const db = payload.db
+const { generateDrizzleJson, generateMigration } = db.requireDrizzleKit()
+const statements = await generateMigration(db.defaultDrizzleSnapshot, await generateDrizzleJson(db.schema))
+assert(statements.every((s: string) => /^(CREATE (TYPE|TABLE|INDEX|UNIQUE INDEX)|ALTER TABLE .* ADD CONSTRAINT)/.test(s.trim())))
+await writeFile('/tmp/issue119/fixture-schema.sql', statements.join('\n'))
+console.log('Generated create-only disposable fixture schema:', statements.length)
+await payload.destroy()

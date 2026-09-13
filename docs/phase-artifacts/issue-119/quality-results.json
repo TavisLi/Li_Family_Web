@@ -1,0 +1,496 @@
+{
+  "20": [
+    {
+      "name": "identity",
+      "exit": 0,
+      "log": "quality20-0.log"
+    },
+    {
+      "name": "pnpm",
+      "exit": 0,
+      "log": "quality20-1.log"
+    },
+    {
+      "name": "lint",
+      "exit": 0,
+      "log": "quality20-2.log"
+    },
+    {
+      "name": "src/scripts/seed-content.test.ts",
+      "exit": 0,
+      "log": "quality20-3.log"
+    },
+    {
+      "name": "src/scripts/seed-audit.test.ts",
+      "exit": 0,
+      "log": "quality20-4.log"
+    },
+    {
+      "name": "src/scripts/seed-dry-run.test.ts",
+      "exit": 0,
+      "log": "quality20-5.log"
+    },
+    {
+      "name": "src/scripts/seed-upload-name.test.ts",
+      "exit": 0,
+      "log": "quality20-6.log"
+    },
+    {
+      "name": "src/scripts/seed-media-repair.test.ts",
+      "exit": 0,
+      "log": "quality20-7.log"
+    },
+    {
+      "name": "src/scripts/seed-member-locale.test.ts",
+      "exit": 0,
+      "log": "quality20-8.log"
+    },
+    {
+      "name": "src/scripts/seed-media-context.test.ts",
+      "exit": 0,
+      "log": "quality20-9.log"
+    },
+    {
+      "name": "src/scripts/travel-seed-reconciliation.test.ts",
+      "exit": 0,
+      "log": "quality20-10.log"
+    },
+    {
+      "name": "src/features/travel/travel-detail-page.test.tsx",
+      "exit": 0,
+      "log": "quality20-11.log"
+    },
+    {
+      "name": "src/features/travel/travel-index-page.test.tsx",
+      "exit": 0,
+      "log": "quality20-12.log"
+    },
+    {
+      "name": "src/features/travel/youtube.test.ts",
+      "exit": 0,
+      "log": "quality20-13.log"
+    },
+    {
+      "name": "src/scripts/travel-conflict-register.test.ts",
+      "exit": 0,
+      "log": "quality20-14.log"
+    },
+    {
+      "name": "src/scripts/seed-scope.test.ts",
+      "exit": 0,
+      "log": "quality20-15.log"
+    },
+    {
+      "name": "src/lib/travel-domain.test.ts",
+      "exit": 0,
+      "log": "quality20-16.log"
+    },
+    {
+      "name": "src/lib/travel-runtime.test.ts",
+      "exit": 0,
+      "log": "quality20-17.log"
+    },
+    {
+      "name": "src/lib/travel-interactions.test.ts",
+      "exit": 0,
+      "log": "quality20-18.log"
+    },
+    {
+      "name": "src/payload/collections/travel-collections.test.ts",
+      "exit": 0,
+      "log": "quality20-19.log"
+    },
+    {
+      "name": "src/scripts/travel-seed-target.test.ts",
+      "exit": 0,
+      "log": "quality20-20.log"
+    },
+    {
+      "name": "src/scripts/travel-data-api-security-package.test.ts",
+      "exit": 0,
+      "log": "quality20-21.log"
+    },
+    {
+      "name": "src/scripts/travel-legacy-cleanup-package.test.ts",
+      "exit": 1,
+      "log": "quality20-22.log"
+    },
+    {
+      "name": "src/features/home/member-portal-link.test.ts",
+      "exit": 0,
+      "log": "quality20-23.log"
+    },
+    {
+      "name": "src/payload/collections/users.test.ts",
+      "exit": 0,
+      "log": "quality20-24.log"
+    },
+    {
+      "name": "src/lib/travel-memory.test.ts",
+      "exit": 0,
+      "log": "quality20-25.log"
+    },
+    {
+      "name": "src/lib/travel-memory-rollout.test.ts",
+      "exit": 0,
+      "log": "quality20-26.log"
+    },
+    {
+      "name": "src/lib/data/travel-memory-child-access.test.ts",
+      "exit": 0,
+      "log": "quality20-27.log"
+    },
+    {
+      "name": "src/scripts/travel-memory-day-projections.test.ts",
+      "exit": 0,
+      "log": "quality20-28.log"
+    },
+    {
+      "name": "src/scripts/phase19-travel-memory-backfill.test.ts",
+      "exit": 0,
+      "log": "quality20-29.log"
+    },
+    {
+      "name": "src/features/travel/travel-memory-pages.test.tsx",
+      "exit": 0,
+      "log": "quality20-30.log"
+    },
+    {
+      "name": "src/scripts/travel-memory-source-contract.test.ts",
+      "exit": 0,
+      "log": "quality20-31.log"
+    },
+    {
+      "name": "src/payload/collections/travel-memory-keys.test.ts",
+      "exit": 0,
+      "log": "quality20-32.log"
+    },
+    {
+      "name": "src/scripts/phase21-travel-memory-migration-package.test.ts",
+      "exit": 0,
+      "log": "quality20-33.log"
+    },
+    {
+      "name": "src/scripts/phase21-travel-memory-inventory.test.ts",
+      "exit": 0,
+      "log": "quality20-34.log"
+    },
+    {
+      "name": "src/scripts/phase21-travel-memory-seed-safety.test.ts",
+      "exit": 0,
+      "log": "quality20-35.log"
+    },
+    {
+      "name": "src/scripts/travel-memory-source-v2.test.ts",
+      "exit": 0,
+      "log": "quality20-36.log"
+    },
+    {
+      "name": "src/payload/r2.test.ts",
+      "exit": 0,
+      "log": "quality20-37.log"
+    },
+    {
+      "name": "src/payload/r2-preview.test.ts",
+      "exit": 0,
+      "log": "quality20-38.log"
+    },
+    {
+      "name": "src/scripts/travel-daily-table-boundaries.test.ts",
+      "exit": 0,
+      "log": "quality20-39.log"
+    },
+    {
+      "name": "src/scripts/phase21-clean-room-check.tsx",
+      "exit": 0,
+      "log": "quality20-40.log"
+    },
+    {
+      "name": "src/lib/data/auth-session.test.ts",
+      "exit": 0,
+      "log": "quality20-41.log"
+    },
+    {
+      "name": "src/payload/access/is-admin.test.ts",
+      "exit": 0,
+      "log": "quality20-42.log"
+    },
+    {
+      "name": "src/lib/site-metadata.test.ts",
+      "exit": 0,
+      "log": "quality20-43.log"
+    },
+    {
+      "name": "build",
+      "exit": 0,
+      "log": "quality20-44.log"
+    },
+    {
+      "name": "typecheck",
+      "exit": 0,
+      "log": "quality20-45.log"
+    },
+    {
+      "name": "cli",
+      "exit": 1,
+      "log": "quality20-46.log"
+    },
+    {
+      "name": "types",
+      "exit": 0,
+      "log": "quality20-47.log"
+    },
+    {
+      "name": "importmap",
+      "exit": 0,
+      "log": "quality20-48.log"
+    }
+  ],
+  "24": [
+    {
+      "name": "identity",
+      "exit": 0,
+      "log": "quality24-0.log"
+    },
+    {
+      "name": "pnpm",
+      "exit": 0,
+      "log": "quality24-1.log"
+    },
+    {
+      "name": "lint",
+      "exit": 0,
+      "log": "quality24-2.log"
+    },
+    {
+      "name": "src/scripts/seed-content.test.ts",
+      "exit": 0,
+      "log": "quality24-3.log"
+    },
+    {
+      "name": "src/scripts/seed-audit.test.ts",
+      "exit": 0,
+      "log": "quality24-4.log"
+    },
+    {
+      "name": "src/scripts/seed-dry-run.test.ts",
+      "exit": 0,
+      "log": "quality24-5.log"
+    },
+    {
+      "name": "src/scripts/seed-upload-name.test.ts",
+      "exit": 0,
+      "log": "quality24-6.log"
+    },
+    {
+      "name": "src/scripts/seed-media-repair.test.ts",
+      "exit": 0,
+      "log": "quality24-7.log"
+    },
+    {
+      "name": "src/scripts/seed-member-locale.test.ts",
+      "exit": 0,
+      "log": "quality24-8.log"
+    },
+    {
+      "name": "src/scripts/seed-media-context.test.ts",
+      "exit": 0,
+      "log": "quality24-9.log"
+    },
+    {
+      "name": "src/scripts/travel-seed-reconciliation.test.ts",
+      "exit": 0,
+      "log": "quality24-10.log"
+    },
+    {
+      "name": "src/features/travel/travel-detail-page.test.tsx",
+      "exit": 0,
+      "log": "quality24-11.log"
+    },
+    {
+      "name": "src/features/travel/travel-index-page.test.tsx",
+      "exit": 0,
+      "log": "quality24-12.log"
+    },
+    {
+      "name": "src/features/travel/youtube.test.ts",
+      "exit": 0,
+      "log": "quality24-13.log"
+    },
+    {
+      "name": "src/scripts/travel-conflict-register.test.ts",
+      "exit": 0,
+      "log": "quality24-14.log"
+    },
+    {
+      "name": "src/scripts/seed-scope.test.ts",
+      "exit": 0,
+      "log": "quality24-15.log"
+    },
+    {
+      "name": "src/lib/travel-domain.test.ts",
+      "exit": 0,
+      "log": "quality24-16.log"
+    },
+    {
+      "name": "src/lib/travel-runtime.test.ts",
+      "exit": 0,
+      "log": "quality24-17.log"
+    },
+    {
+      "name": "src/lib/travel-interactions.test.ts",
+      "exit": 0,
+      "log": "quality24-18.log"
+    },
+    {
+      "name": "src/payload/collections/travel-collections.test.ts",
+      "exit": 0,
+      "log": "quality24-19.log"
+    },
+    {
+      "name": "src/scripts/travel-seed-target.test.ts",
+      "exit": 0,
+      "log": "quality24-20.log"
+    },
+    {
+      "name": "src/scripts/travel-data-api-security-package.test.ts",
+      "exit": 0,
+      "log": "quality24-21.log"
+    },
+    {
+      "name": "src/scripts/travel-legacy-cleanup-package.test.ts",
+      "exit": 1,
+      "log": "quality24-22.log"
+    },
+    {
+      "name": "src/features/home/member-portal-link.test.ts",
+      "exit": 0,
+      "log": "quality24-23.log"
+    },
+    {
+      "name": "src/payload/collections/users.test.ts",
+      "exit": 0,
+      "log": "quality24-24.log"
+    },
+    {
+      "name": "src/lib/travel-memory.test.ts",
+      "exit": 0,
+      "log": "quality24-25.log"
+    },
+    {
+      "name": "src/lib/travel-memory-rollout.test.ts",
+      "exit": 0,
+      "log": "quality24-26.log"
+    },
+    {
+      "name": "src/lib/data/travel-memory-child-access.test.ts",
+      "exit": 0,
+      "log": "quality24-27.log"
+    },
+    {
+      "name": "src/scripts/travel-memory-day-projections.test.ts",
+      "exit": 0,
+      "log": "quality24-28.log"
+    },
+    {
+      "name": "src/scripts/phase19-travel-memory-backfill.test.ts",
+      "exit": 0,
+      "log": "quality24-29.log"
+    },
+    {
+      "name": "src/features/travel/travel-memory-pages.test.tsx",
+      "exit": 0,
+      "log": "quality24-30.log"
+    },
+    {
+      "name": "src/scripts/travel-memory-source-contract.test.ts",
+      "exit": 0,
+      "log": "quality24-31.log"
+    },
+    {
+      "name": "src/payload/collections/travel-memory-keys.test.ts",
+      "exit": 0,
+      "log": "quality24-32.log"
+    },
+    {
+      "name": "src/scripts/phase21-travel-memory-migration-package.test.ts",
+      "exit": 0,
+      "log": "quality24-33.log"
+    },
+    {
+      "name": "src/scripts/phase21-travel-memory-inventory.test.ts",
+      "exit": 0,
+      "log": "quality24-34.log"
+    },
+    {
+      "name": "src/scripts/phase21-travel-memory-seed-safety.test.ts",
+      "exit": 0,
+      "log": "quality24-35.log"
+    },
+    {
+      "name": "src/scripts/travel-memory-source-v2.test.ts",
+      "exit": 0,
+      "log": "quality24-36.log"
+    },
+    {
+      "name": "src/payload/r2.test.ts",
+      "exit": 0,
+      "log": "quality24-37.log"
+    },
+    {
+      "name": "src/payload/r2-preview.test.ts",
+      "exit": 0,
+      "log": "quality24-38.log"
+    },
+    {
+      "name": "src/scripts/travel-daily-table-boundaries.test.ts",
+      "exit": 0,
+      "log": "quality24-39.log"
+    },
+    {
+      "name": "src/scripts/phase21-clean-room-check.tsx",
+      "exit": 0,
+      "log": "quality24-40.log"
+    },
+    {
+      "name": "src/lib/data/auth-session.test.ts",
+      "exit": 0,
+      "log": "quality24-41.log"
+    },
+    {
+      "name": "src/payload/access/is-admin.test.ts",
+      "exit": 0,
+      "log": "quality24-42.log"
+    },
+    {
+      "name": "src/lib/site-metadata.test.ts",
+      "exit": 0,
+      "log": "quality24-43.log"
+    },
+    {
+      "name": "build",
+      "exit": 0,
+      "log": "quality24-44.log"
+    },
+    {
+      "name": "typecheck",
+      "exit": 0,
+      "log": "quality24-45.log"
+    },
+    {
+      "name": "cli",
+      "exit": 1,
+      "log": "quality24-46.log"
+    },
+    {
+      "name": "types",
+      "exit": 0,
+      "log": "quality24-47.log"
+    },
+    {
+      "name": "importmap",
+      "exit": 0,
+      "log": "quality24-48.log"
+    }
+  ]
+}
