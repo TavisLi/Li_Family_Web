@@ -102,3 +102,26 @@ Preview準備的最小新增：`src/instrumentation.ts`只在Vercel Preview且`I
 Node24連線驗證：TLS encrypted/authorized均true，`BEGIN READ ONLY`內transaction_read_only=on後ROLLBACK；無business SQL或資料更動。Pooler未採用connection options的default_transaction_read_only，故不把它當server-side寫入保護。上述CA/tracing/probe追加後，本地Node24 build→tsc成功，19/19 Node route traces包含CA；`git diff --check`成功。原locked graph、schema、兩项baseline debts均未改。
 
 本分支限定Preview env：DATABASE_URI、PAYLOAD_SECRET、NEXT_PUBLIC_R2_PUBLIC_URL、PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=false、TRAVEL_MEMORY_MULTIPAGE_ENABLED=true、ISSUE119_RUNTIME_PROBE=true。不提供R2寫入憑證；使用既有public R2 URL讀取。自動部署仍停用，手動指定確切commit建立Preview。Production aliases/Settings不動；回退為停止使用Preview並另行撤除本分支環境與部署，既有Production deployment保留。
+
+## Free Preview results — 2026-09-13 UTC
+
+**已批准的公開唯讀範圍 PASS；完整 #119 acceptance、merge／Production 仍待 Human review。** 本節取代前述「尚無 Preview 環境」的當時狀態。精簡機器結果見 [preview-results.json](./preview-results.json)。
+
+- Tested commit：`c80c7562d67ac345042102714907de92a5bbbf0b`；Preview `dpl_C3qAq9MKMyJFSFmAamsqSWUVe1ph`，[部署頁](https://vercel.com/tavis-li-s-projects/li-family-web/C3qAq9MKMyJFSFmAamsqSWUVe1ph)，[Preview](https://li-family-e21ble440-tavis-li-s-projects.vercel.app)。後續證據提交只改文件，非另一個已測 runtime commit。
+- Fresh cloud install/build：明確 skipping build cache、1019 packages、lockfile up to date / resolution skipped、pnpm10.28.0，install 23.9s；sharp/esbuild/unrs native lifecycle成功，Next15.4.11 build、lint/type validation及functions creation成功。
+- 實際serverless console：`node=v24.19.0 platform=linux arch=x64 openssl=3.5.7`。本地／Linux pin仍24.21.0；Vercel管理24.x實際patch，未擅改平台設定或宣稱patch完全一致。CLI的host Node26不是應用runtime證據。
+- 13項GET均200且無error digest：首頁、Blog索引／文章、Travel索引／Plan／Memory／Day／Photos、Timeline、公開Member、RSC、Edge OG PNG、Next image PNG。確認真實標題、章節與照片，非空白或fallback代替內容。
+- PostgreSQL：Preview Payload Local API透過既有data layer讀取真實公開內容成功；連線使用verify-full／公開CA。先前Node24 bounded SELECT只在READ ONLY transaction執行並ROLLBACK，TLS encrypted/authorized=true。未執行migration／schema push／內容或session寫入。未宣稱使用DB唯讀角色。
+- R2：由Preview HTML選取JPEG/WebP各一張，TLS與憑證驗證成功，1600×1200，374593／248548 bytes；Node24.21.0 sharp0.34.5 stream/decode→32px WebP成功。Browser實圖與雲端Next image endpoint成功。S3 signing/local stream/Linux native證據仍見前節；未測雲端authenticated S3 adapter/upload。
+- Browser：桌機1280×720首頁→Travel→Memory→Day導覽及實圖成功；手機390×844 Day／Photos／Day1篩選成功，Day 7/7、篩選相簿6/6圖載入，scrollWidth=390、無破圖，browser error/warn=0。已還原viewport並關閉測試tab。
+- Logs：本Preview `2026-09-13T13:17:06.987Z`–`13:47:06.987Z` error/fatal查詢0筆。Build只有既有Edge static-generation警告；runtime有未配置email adapter及未配置media upload storage adapter警告，後者是此次只提供public R2 URL的已批准Preview限制，不是完整上傳相容性PASS。
+- Production target回讀仍`dpl_6ss624UGJpHKi3ZRJfKBMfGUG5pr`／main `f1796687d2469319c4a465feada1ffc3cb8b59d8`，Project Node仍24.x。無Production部署／alias更換。沒有dependency、lockfile、schema、兩項baseline debts變更。
+
+診斷指標：build log `/tmp/issue119/preview-build.log`；bounded HTTP bodies/headers與結果 `/tmp/issue119/preview-http/`；R2結果 `/tmp/issue119/r2-preview-results.json`。HTTP重放使用 `vercel curl <path> --deployment <上述Preview URL>`，僅GET；路徑矩陣在JSON。平台runtime查詢限定上述deployment、environment=preview與時間窗。憑證、暫時保護繞過連結及完整HTML不提交Git；回應已掃描DATABASE_URI／password／PAYLOAD_SECRET，無洩漏。
+
+### Human review / lifecycle gates
+
+1. 兩項pre-existing debts維持原狀：41 test files為40 PASS＋同一已接受FAIL；Local API destroy後shutdown不標PASS。
+2. 免費方案只驗公開讀取。Auth入口連結已呈現，但cloud登入頁／session／Admin互動與R2寫入未執行；本地／Linux auth/Admin相關證據不冒稱cloud PASS。Human須接受此覆蓋限制，或另批准隔離環境後補驗，才可完成完整#119 acceptance。
+3. 六項branch-scoped Preview env保留供本PR審查；DB credential可能有寫入能力，並非唯讀角色。合併／放棄／不再需要時須撤除這六項限定env及Preview，因已建立部署保留其環境快照，僅移除project env不會撤銷既有deployment能力。不得將此設定套用其他branch或Production。
+4. 回退：本次Production未切換，停止使用Preview即可停止測試；撤除本次Preview與分支env需按審查決定執行。程式回退仍依前述main/Node20契約與10月1日平台限制；無data rollback。保留branch no-auto-deploy規則，未merge／close Issue／Release／啟動#115。

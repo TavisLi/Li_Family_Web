@@ -1,0 +1,190 @@
+{
+  "testedCommit": "c80c7562d67ac345042102714907de92a5bbbf0b",
+  "deploymentId": "dpl_C3qAq9MKMyJFSFmAamsqSWUVe1ph",
+  "url": "https://li-family-e21ble440-tavis-li-s-projects.vercel.app",
+  "environment": "preview",
+  "branch": "codex/phase-119-node24",
+  "build": {
+    "cache": "skipped",
+    "lockfileResolution": "skipped, lockfile up to date",
+    "packages": 1019,
+    "pnpm": "10.28.0",
+    "installSeconds": 23.9,
+    "build": "PASS",
+    "lintAndTypes": "PASS"
+  },
+  "runtime": {
+    "source": "serverless console process.version",
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64",
+    "openssl": "3.5.7",
+    "localAndLinuxPin": "v24.21.0",
+    "patchParity": "major aligned; Vercel manages deployment patch"
+  },
+  "http": [
+    {
+      "path": "/",
+      "status": 200,
+      "bytes": 101114,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/blog",
+      "status": 200,
+      "bytes": 94507,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/travel",
+      "status": 200,
+      "bytes": 80973,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/timeline",
+      "status": 200,
+      "bytes": 35073,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/api/og-default",
+      "status": 200,
+      "bytes": 24279,
+      "digest": false,
+      "contentType": "image/png"
+    },
+    {
+      "path": "/?_rsc=issue119",
+      "status": 200,
+      "bytes": 55425,
+      "digest": false,
+      "contentType": "text/x-component"
+    },
+    {
+      "path": "/member/tavis",
+      "status": 200,
+      "bytes": 119288,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/travel/202308-east-australia",
+      "status": 200,
+      "bytes": 260100,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/travel/202702-thailand-phuket",
+      "status": 200,
+      "bytes": 257924,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/blog/200902keynote",
+      "status": 200,
+      "bytes": 42068,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/travel/202308-east-australia/day/day-01",
+      "status": 200,
+      "bytes": 49528,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/travel/202308-east-australia/photos",
+      "status": 200,
+      "bytes": 145374,
+      "digest": false,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/_next/image?url=%2Fbrand%2Fweb-li-family-crest-light.png&w=64&q=75",
+      "status": 200,
+      "bytes": 2183,
+      "digest": false,
+      "contentType": "image/png"
+    }
+  ],
+  "database": {
+    "previewPayloadReads": "PASS, populated public pages",
+    "tls": "sslmode=verify-full with official CA; local connection encrypted/authorized true",
+    "safeTransaction": "BEGIN READ ONLY / SELECT transaction_read_only=on / ROLLBACK",
+    "schemaPush": false,
+    "productionWritesPerformed": false,
+    "readOnlyRoleEnforced": false
+  },
+  "media": {
+    "r2PublicGet": [
+      {
+        "status": 200,
+        "bytes": 374593,
+        "tls": true,
+        "authorized": true,
+        "type": "image/jpeg",
+        "format": "jpeg",
+        "width": 1600,
+        "height": 1200,
+        "resizeWebp": true
+      },
+      {
+        "status": 200,
+        "bytes": 248548,
+        "tls": true,
+        "authorized": true,
+        "type": "image/webp",
+        "format": "webp",
+        "width": 1600,
+        "height": 1200,
+        "resizeWebp": true
+      }
+    ],
+    "decoderNode": "v24.21.0",
+    "sharp": "0.34.5",
+    "cloudNextImage": "PNG 64px request PASS",
+    "edge": "PNG signature PASS"
+  },
+  "browser": {
+    "desktop": "1280x720 home / travel / memory / day; real images and navigation PASS",
+    "mobile": "390x844 day / photos / photos?day=day-01 PASS",
+    "dayImages": "7/7 loaded",
+    "filteredPhotosImages": "6/6 loaded",
+    "mobileScrollWidth": 390,
+    "consoleErrorsOrWarnings": 0
+  },
+  "logs": {
+    "errorFatalQueryWindow": "2026-09-13T13:17:06.987Z to 2026-09-13T13:47:06.987Z",
+    "errorFatalResults": 0,
+    "warnings": [
+      "existing Edge static generation warning",
+      "no email adapter configured",
+      "media upload storage adapter absent in approved public-R2-only Preview"
+    ]
+  },
+  "productionReadback": {
+    "deploymentId": "dpl_6ss624UGJpHKi3ZRJfKBMfGUG5pr",
+    "commit": "f1796687d2469319c4a465feada1ffc3cb8b59d8",
+    "unchanged": true,
+    "projectNodeVersion": "24.x"
+  },
+  "unverifiedByApprovedScope": [
+    "cloud authenticated login/session/Admin interactions",
+    "cloud S3 authenticated adapter/upload",
+    "Production deployment and runtime QA"
+  ],
+  "acceptedBaselineDebts": [
+    "legacy migration test: 40/41 test files pass, unchanged baseline failure",
+    "Local API smoke destroy does not exit; unchanged baseline"
+  ],
+  "result": "Approved free Preview public-read scope PASS; full Issue acceptance and merge/Production require human review",
+  "logsLocal": "/tmp/issue119/preview-build.log; /tmp/issue119/preview-http; /tmp/issue119/r2-preview-results.json"
+}

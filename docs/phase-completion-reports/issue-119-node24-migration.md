@@ -48,3 +48,20 @@ Human已接受兩項pre-existing baseline debts（legacy migration test failure�
 **Preview／cloud parity尚未完成，原因是實際環境缺口**：Vercel此branch適用Preview env為空；Supabase只有正式main，沒有隔離branch。尚未取得可供測試users/session的隔離DB，所以未觸發無有效環境的部署，也未複用Production credentials。待Human提供已批准隔離環境，或批准隔離branch成本與本PR限定env後，繼續實際Vercel build/functions、PostgreSQL TLS、R2 read及Preview Browser QA。現有兩項債務不再是此gate的阻擋原因。
 
 證據與具體環境/deployment/rollback package見[continuation evidence](../phase-artifacts/issue-119/README.md)。分支auto-deploy仍停用；PR維持Draft，未merge、未改Production資料、未啟動#115。
+
+## Free Preview completion addendum — 2026-09-13 UTC
+
+**最新狀態：runtime implementation與已批准免費Preview公開唯讀驗證完成；Draft PR #124，停在Human review。** 此節取代前述Preview尚未建立的狀態，不改寫歷史驗證紀錄。
+
+Human拒絕付費隔離branch，已批准本PR限定Preview使用既有Production連線、禁止schema push與一切寫入，只驗公開GET/SSR/RSC/media。已設定六項分支限定env，未修改Vercel Node Settings或Production target。
+
+- Preview實作commit：`c80c7562d67ac345042102714907de92a5bbbf0b`；部署`dpl_C3qAq9MKMyJFSFmAamsqSWUVe1ph`，[Preview](https://li-family-e21ble440-tavis-li-s-projects.vercel.app)。本完成證據的後續commit為docs-only，不冒稱另一個runtime版本已部署。
+- 最小驗證支援：僅指定Preview啟用Node版本console probe，公開Supabase CA納入function trace以支援verify-full TLS。無dependency compatibility修復；原鎖檔、frameworks、schema、兩項baseline debts不變。
+- Cloud fresh install/cache skipped、pnpm10.28.0、native lifecycle、production build與內建lint/types成功。實際function為Node24.19.0/Linux x64/OpenSSL3.5.7；本地/Linux pin24.21.0，明列平台管理patch差異。
+- 13項公開HTTP/RSC/Edge/Next image檢查通過；真實Payload-backed Plan/Memory/Day/Photos、Blog與Member內容成功。R2 JPEG/WebP verified TLS＋stream/sharp解碼成功。桌機／手機實圖、旅行導覽與相簿篩選成功，手機無横向溢出；browser error/warn=0，指定Preview時間窗runtime error/fatal=0。
+- 警告：既有Edge static generation、未配置email adapter；只提供public R2 URL的Preview另有upload storage adapter缺失警告，不宣稱上傳驗證。
+- Production仍main `f1796687d2469319c4a465feada1ffc3cb8b59d8`／`dpl_6ss624UGJpHKi3ZRJfKBMfGUG5pr`。未做Production部署、資料／schema／session寫入、migration、merge、Release或#115。
+
+完整精簡矩陣、runtime與rollback見[Free Preview evidence](../phase-artifacts/issue-119/README.md)及[preview-results.json](../phase-artifacts/issue-119/preview-results.json)。一般完整logs與HTML只留本機診斷目錄，未提交憑證。
+
+**尚未解除的merge／Production gates**：Human review此PR、明確接受免費方案的cloud Auth/Admin／authenticated S3/upload未測限制，或另批准隔離環境補驗；兩项baseline debts不改報PASS。#119不關閉，#115不啟動。Preview/env只供本PR審查，credential不是server-enforced唯讀；合併／放棄後需撤除部署與六項分支env，僅刪env不會撤銷既有部署快照。Production未切換，無data rollback；程式回退遵循前述Node20/main與10月1日限制。
