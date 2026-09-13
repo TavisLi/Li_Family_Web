@@ -71,3 +71,24 @@ Because local suite has a baseline failure, `vercel.json` disables Git auto depl
 Before enabling/deploying, resolve or explicitly accept the baseline gate and obtain the applicable Preview environment approval. Record the exact final PR head SHA, expected **new Preview** for this project and branch, Node **24.x** build/functions (record actual patch), pnpm **10.28.0**, fresh Linux install/native/build, server logs, real SSR/RSC/Payload/Auth/media and desktop/mobile smoke. Prefer isolated Preview DB; live R2 read fixture and PostgreSQL TLS remain required. If Production credentials are necessary, stop for the Playbook's branch-scoped GET-only approval; no Admin or login in that path. No external env/settings mutation has been authorized or performed here.
 
 Rollback of Preview: stop/discard the unpromoted Preview and keep the current Production alias unchanged; restore branch no-deploy rule. Before enabling this branch, announce exact commit, expected deployment/environment, Node version, QA scope, rollback. READY alone does not pass QA.
+
+## 2026-09-13 continuation：baseline accepted / Linux verified / cloud environment blocked
+
+本節是目前狀態，前述第一次驗證記錄保留。Human 明確接受 legacy migration test failure 與 Local API shutdown 為 pre-existing、out of scope；兩者不再阻擋 #119 繼續驗證，但仍保留 FAIL／shutdown 未通過的原始事實，不修測試、不改 migration、不修 shutdown。
+
+- 起點 PR #124 head `295595a38559dfb3a9d8b871f0415b487bf4112b`，fresh main仍`f1796687d2469319c4a465feada1ffc3cb8b59d8`；工作目錄clean。
+- Linux：從確切head重新`git archive`至`/tmp/issue119/linux24`，全新node_modules與容器內`/store`。使用官方`node:24.21.0-bookworm-slim`、`--platform linux/amd64`；image digest `sha256:2fe369e969550cde8e867afc3fe370b260140cab4a23d467074295b42163d553`。這是獨立驗證容器，未使用或現代化repo歷史Dockerfile。
+- 實測`/usr/local/bin/node`、`v24.21.0`、Linux x64、OpenSSL3.5.8；pnpm10.28.0。Frozen install exit0（44.1秒），原lock SHA不變；native lifecycle無blocked-script/engine warning。
+- lint/build/隨後tsc均exit0；41 unique tests仍40 PASS＋1已接受的相同FAIL。`linux-results.json`逐項保留exit/log pointer；不能因runner最後exit0就聲稱所有tests通過。
+- Linux runtime：以build產物啟動真實Next/Payload server（loopback3125），連原專用PostgreSQL fixture；15 GET、RSC、Cookie login/me/logout、錯誤密碼401、Edge PNG成功。S3本機SigV4 GET/stream＋sharp實際解碼exit0；SWC由production build驗證。
+- 在原專用本地DB新增合成published Plan/Memory/Day與sharp產生的實圖，沒有Production資料；Node20/24 macOS及Node24 Linux各驗四個非空旅行routes，title/story/caption marker存在，沒有數字error digest。資料在`followup-http-results.json`。
+- 本地Browser：1280×720和390×844檢查Node20/24每日章節；標題、caption、實圖與responsive layout一致。Node20最初缺少fixture實體檔，補上與Node24逐byte相同的三張合成圖後重驗；此為測試setup差異，無應用碼變更。未宣稱全站pixel parity。
+- 環境回讀：Vercel仍24.x；`codex/phase-119-node24`適用的Preview env keys **0**。Supabase `Li_Family_Web Project`（`iujasyrvypdcmkmorcud`）只有default main，無development branch。只讀metadata，未查Production SQL、資料或logs。
+
+**Cloud gate：BLOCKED on environment provisioning，非上述兩項已接受債務。** 尚無隔離DB endpoint/credentials，故未部署空設定Preview或複用其他branch的Production憑證。真實Vercel build/function identity、雲端PostgreSQL TLS、R2 read及Preview Browser QA尚未完成。Linux Docker PASS不替代Vercel Preview PASS。
+
+可執行的下一步：Human提供已批准隔離PostgreSQL credential file，或批准在現有Supabase organization建立付費隔離branch的成本／生命周期，以及只供本PR的Preview env設定；另指定受控R2 GET fixture。新branch須先核對bootstrap/migration狀態，不自動重跑repo歷史migration。所有測試users/session/schema只存在隔離DB；維持push=false。不改Project Node設定，不接Production，不merge。
+
+部署package：鎖定經上述環境確認後的確切PR head，以Vercel專案`prj_9JnWOR9OEhA3zRZJKXMUh2qVE0v4`建立**Preview**，Node24.x（read-back實際patch）、pnpm10.28.0、fresh install/build/native/functions＋上述route/Auth/media矩陣。啟動前再次公布head、deployment預期、environment、scope與rollback。Rollback為停止使用未promote的Preview並恢復branch no-deploy；Production alias不動。當前`git.deploymentEnabled=false`保留，因此本次evidence push不會部署。
+
+Replay：`linux-runner.cjs.txt`保留精確命令清單；`populated-fixture.mjs.txt`只接受原localhost fixture URI。完整本地logs在`/tmp/issue119/linux*`，正常log不入repo。DB/servers驗證後停止，容器與證據保留；無drop/delete。

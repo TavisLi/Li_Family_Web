@@ -38,3 +38,13 @@
 未部署前撤回本 PR 即可。回到 pre-migration `f1796687d2469319c4a465feada1ffc3cb8b59d8`：engines `>=20.9.0 <21`、兩個 selectors `20.20.2`、移除 packageManager；鎖檔無差異。Vercel Settings 原本24.x，不還原成20。重驗 pnpm10.28.0 frozen install/build/test/smoke。
 
 10月1日前已批准的回退可重新 build Node20；此後不可依賴新 Node20 builds，必須核實保留部署與alias回退能力並另批准，或採Node24 forward fix。保留候選舊部署 `dpl_6ss624UGJpHKi3ZRJfKBMfGUG5pr`；本次只讀metadata，未重新宣稱Production QA。無data rollback需求。
+
+## Continuation addendum — 2026-09-13
+
+Human已接受兩項pre-existing baseline debts（legacy migration test failure、Local API shutdown）為#119 out of scope，原測試與行為未更動。這取代前述要求再次審查兩項債務的阻擋狀態，並不將其改報PASS。
+
+從PR #124 head `295595a38559dfb3a9d8b871f0415b487bf4112b`補完乾淨Linux amd64 Node24.21.0/pnpm10.28.0 frozen install、native、lint、build→tsc；41 tests為40 PASS＋同一已接受FAIL。Linux Next/Payload server的GET/RSC/登入登出/Edge通過；macOS20/24＋Linux24的非空Plan/Memory/Day/Photos marker通過，本地Node20/24桌機1280×720與手機390×844實圖版面一致。沒有dependency/schema/app code delta。
+
+**Preview／cloud parity尚未完成，原因是實際環境缺口**：Vercel此branch適用Preview env為空；Supabase只有正式main，沒有隔離branch。尚未取得可供測試users/session的隔離DB，所以未觸發無有效環境的部署，也未複用Production credentials。待Human提供已批准隔離環境，或批准隔離branch成本與本PR限定env後，繼續實際Vercel build/functions、PostgreSQL TLS、R2 read及Preview Browser QA。現有兩項債務不再是此gate的阻擋原因。
+
+證據與具體環境/deployment/rollback package見[continuation evidence](../phase-artifacts/issue-119/README.md)。分支auto-deploy仍停用；PR維持Draft，未merge、未改Production資料、未啟動#115。
