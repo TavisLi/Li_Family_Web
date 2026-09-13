@@ -92,3 +92,13 @@ Rollback of Preview: stop/discard the unpromoted Preview and keep the current Pr
 部署package：鎖定經上述環境確認後的確切PR head，以Vercel專案`prj_9JnWOR9OEhA3zRZJKXMUh2qVE0v4`建立**Preview**，Node24.x（read-back實際patch）、pnpm10.28.0、fresh install/build/native/functions＋上述route/Auth/media矩陣。啟動前再次公布head、deployment預期、environment、scope與rollback。Rollback為停止使用未promote的Preview並恢復branch no-deploy；Production alias不動。當前`git.deploymentEnabled=false`保留，因此本次evidence push不會部署。
 
 Replay：`linux-runner.cjs.txt`保留精確命令清單；`populated-fixture.mjs.txt`只接受原localhost fixture URI。完整本地logs在`/tmp/issue119/linux*`，正常log不入repo。DB/servers驗證後停止，容器與證據保留；無drop/delete。
+
+## Free Preview preparation addendum — 2026-09-13
+
+Human拒絕付費Supabase branch，明確批准免費方案：僅本PR分支Preview沿用既有Production連線，關閉schema push，僅公開GET/SSR/RSC/media/runtime logs。不得登入、Admin操作、寫入、migration或Production部署。憑證可能具有寫入能力；這是操作範圍限制，不宣稱資料庫唯讀角色。Cloud Auth/Admin互動不在此批准範圍，保留本地/Linux測試證據與merge review gate。
+
+Preview準備的最小新增：`src/instrumentation.ts`只在Vercel Preview且`ISSUE119_RUNTIME_PROBE=true`記錄Node/platform/arch/OpenSSL；`next.config.mjs` tracing納入公開Supabase CA，Preview連線使用`sslmode=verify-full`與`sslrootcert`，未停用TLS驗證。CA來源：[Supabase官方公開CA](https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt)，由Supabase官方studio custom-content配置交叉確認。這是Preview驗證支援，並非應用依賴相容性修復。
+
+Node24連線驗證：TLS encrypted/authorized均true，`BEGIN READ ONLY`內transaction_read_only=on後ROLLBACK；無business SQL或資料更動。Pooler未採用connection options的default_transaction_read_only，故不把它當server-side寫入保護。上述CA/tracing/probe追加後，本地Node24 build→tsc成功，19/19 Node route traces包含CA；`git diff --check`成功。原locked graph、schema、兩项baseline debts均未改。
+
+本分支限定Preview env：DATABASE_URI、PAYLOAD_SECRET、NEXT_PUBLIC_R2_PUBLIC_URL、PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=false、TRAVEL_MEMORY_MULTIPAGE_ENABLED=true、ISSUE119_RUNTIME_PROBE=true。不提供R2寫入憑證；使用既有public R2 URL讀取。自動部署仍停用，手動指定確切commit建立Preview。Production aliases/Settings不動；回退為停止使用Preview並另行撤除本分支環境與部署，既有Production deployment保留。
