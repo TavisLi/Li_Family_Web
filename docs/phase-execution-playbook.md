@@ -220,7 +220,7 @@ HITL 的目的不是讓每個技術步驟都停下等待，而是在人類必須
 2. 確認 `main` 與 `origin/main`。
 3. 執行 `git status --short --branch`。
 4. 記錄使用者既有 dirty／untracked files。
-5. 確認 Node `20.20.2`。
+5. 確認 Node `24.21.0`。
 6. 讀取：
    - `CONTEXT.md`
    - 相關 ADR
@@ -439,7 +439,7 @@ Vercel `READY` 只證明 deployment build 完成，不證明 route、database、
 - Access boundary 在 data／collection layer。
 - Content parity 是 release gate。
 - Media 使用 diff-based sync，避免全量重傳。
-- Node 20.20.2 是 Payload tooling baseline。
+- Node 24.21.0 是 Payload tooling baseline。
 - 視覺 annotation 應在 Preview merge 前收斂。
 - Admin edits 必須受 reconciliation 保護。
 - Plan／Memory 是獨立 aggregate。

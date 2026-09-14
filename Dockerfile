@@ -1,3 +1,5 @@
+# UNSUPPORTED HISTORICAL TEMPLATE: not a current execution path or runtime baseline.
+# See README.md runtime contract; Node/Mongo/standalone assumptions are obsolete.
 # From https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
 
 FROM node:18-alpine AS base

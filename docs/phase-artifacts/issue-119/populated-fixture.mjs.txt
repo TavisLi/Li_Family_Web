@@ -1,0 +1,19 @@
+import assert from 'node:assert/strict'
+import { getPayload } from 'payload'
+import config from './src/payload/payload.config.ts'
+import sharp from 'sharp'
+assert.equal(process.env.DATABASE_URI,'postgres://postgres:issue119-local-only@127.0.0.1:55419/issue119')
+assert.equal(process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH,'false')
+const p=await getPayload({config})
+const upsert=async(collection,slug,data)=>{const r=await p.find({collection,where:{slug:{equals:slug}},limit:1});return r.docs[0]||p.create({collection,data:{slug,...data}})}
+const jpg=await sharp({create:{width:1200,height:800,channels:3,background:'#476d91'}}).jpeg().toBuffer()
+let media=(await p.find({collection:'media',where:{sourcePath:{equals:'issue119/synthetic.jpg'}},limit:1})).docs[0]
+if(!media)media=await p.create({collection:'media',data:{altText:'Issue119 synthetic blue fixture',sourcePath:'issue119/synthetic.jpg'},file:{data:jpg,mimetype:'image/jpeg',name:'issue119-synthetic.jpg',size:jpg.length}})
+const common={startDate:'2026-09-01',endDate:'2026-09-02',isPrivate:false,_status:'published',coverImage:media.id,summary:'Issue119 populated runtime parity fixture'}
+const plan=await upsert('travel-plans','issue119-plan',{...common,title:'Issue119 Plan Fixture',planningSections:[{title:'Fixture plan day',anchor:'fixture-plan-day',body:'Issue119 public planning body',level:2}]})
+const memory=await upsert('travel-memories','issue119-memory',{...common,title:'Issue119 Memory Fixture',originPlan:plan.id,presentationStyle:'editorial-journal',galleryImages:[media.id],storySections:[{title:'Fixture memory story',anchor:'fixture-story',body:'Issue119 memory story body',level:2}]})
+const existing=await p.find({collection:'travel-memory-days',where:{and:[{memory:{equals:memory.id}},{dayKey:{equals:'day-01'}}]},limit:1})
+if(!existing.docs.length)await p.create({collection:'travel-memory-days',data:{memory:memory.id,dayKey:'day-01',day:1,title:'Issue119 Day Fixture',story:'Issue119 daily story marker',dailyHeroImage:media.id,_status:'published',moments:[{momentKey:'fixture-moment',title:'Issue119 Moment Fixture',body:'Issue119 moment body',placements:[{placementKey:'fixture-photo',type:'photo',media:media.id,caption:'Issue119 actual image caption'}]}]}})
+console.log(JSON.stringify({fixture:'populated Plan/Memory/Day/Media',plan:plan.id,memory:memory.id,media:media.id,status:'PASS'}))
+// Fixture setup is a bounded one-shot process; no assertion about Payload shutdown.
+process.exit(0)

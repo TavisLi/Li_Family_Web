@@ -1,0 +1,20 @@
+import urllib.request,urllib.error,json,http.cookiejar,re,pathlib
+results=[]
+for port in [3120,3124]:
+ base=f'http://127.0.0.1:{port}'
+ jar=http.cookiejar.CookieJar(); op=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
+ def req(path,data=None,headers={}):
+  rq=urllib.request.Request(base+path,data=json.dumps(data).encode() if data is not None else None,headers={'Content-Type':'application/json',**headers})
+  try: r=op.open(rq,timeout=40)
+  except urllib.error.HTTPError as e:r=e
+  body=r.read(); return r.status,body,r.headers
+ for path in ['/','/blog','/member/runtime-fixture','/travel','/travel/runtime-fixture','/travel/runtime-fixture/day/day-01','/travel/runtime-fixture/photos','/timeline','/bucket-list','/wrapped','/family/login','/admin','/api/users/me','/api/users','/api/og-default']:
+  status,body,h=req(path); digest=bool(re.search(rb'"digest"\s*:\s*"\d+',body)); results.append({'node':port-3100,'path':path,'status':status,'bytes':len(body),'digest':digest,'contentType':h.get('Content-Type')}); assert status<500 and not digest,(port,path,status)
+ status,body,h=req('/? _rsc=fixture'.replace(' ',''),headers={'RSC':'1'}); assert status==200; results.append({'node':port-3100,'path':'RSC /','status':status,'contentType':h.get('Content-Type')})
+ status,body,h=req('/api/users/login',{'email':'runtime-fixture@example.invalid','password':'wrong-password'}); assert status==401
+ status,body,h=req('/api/users/login',{'email':'runtime-fixture@example.invalid','password':'local-fixture-password-119'}); assert status==200 and len(jar)>0
+ status,body,h=req('/api/users/me'); assert json.loads(body)['user']['email']=='runtime-fixture@example.invalid'
+ status,body,h=req('/api/users/logout',{}); assert status==200
+ status,body,h=req('/api/users/me'); assert not json.loads(body).get('user')
+ results.append({'node':port-3100,'auth':'HTTP wrong password/login/cookie/me/logout PASS'})
+pathlib.Path('/tmp/issue119/http-results.json').write_text(json.dumps(results,indent=2)); print(json.dumps(results))

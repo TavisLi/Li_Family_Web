@@ -19,7 +19,7 @@
 
 - Next.js `15.4.11`，App Router only。
 - Payload CMS `3.85.1`，嵌入 Next.js。
-- Node.js `20.20.2`；使用 `.nvmrc`／`.node-version`。
+- Node.js `24.21.0`；使用 `.nvmrc`／`.node-version`。
 - Payload Admin route：`src/app/(payload)/admin/[[...segments]]/page.tsx`。
 - Payload 必須透過 `withPayload` 注入 Next.js。
 - 不使用 Next.js `pages/` 或 Payload v2 慣例。

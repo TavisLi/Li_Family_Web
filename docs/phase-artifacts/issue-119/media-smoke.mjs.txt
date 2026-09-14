@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict'
+import http from 'node:http'
+import { createRequire } from 'node:module'
+import sharp from 'sharp'
+const require=createRequire(import.meta.resolve('@payloadcms/storage-s3'))
+const { S3Client, GetObjectCommand }=require('@aws-sdk/client-s3')
+const image=await sharp({create:{width:8,height:8,channels:3,background:'#abcdef'}}).png().toBuffer()
+let signed=false
+const server=http.createServer((req,res)=>{signed=String(req.headers.authorization).includes('AWS4-HMAC-SHA256');res.writeHead(200,{'Content-Type':'image/png'});res.end(image)})
+await new Promise(r=>server.listen(0,'127.0.0.1',r))
+const client=new S3Client({endpoint:`http://127.0.0.1:${server.address().port}`,region:'auto',forcePathStyle:true,credentials:{accessKeyId:'fixture',secretAccessKey:'fixture'}})
+try { const result=await client.send(new GetObjectCommand({Bucket:'fixture',Key:'image.png'}));const bytes=await result.Body.transformToByteArray();assert(signed);assert.equal((await sharp(bytes).metadata()).width,8); console.log(JSON.stringify({node:process.version,s3:'SigV4 signed GET + response stream + sharp decode PASS',remoteR2:'NOT TESTED'})) }finally{client.destroy();await new Promise(r=>server.close(r))}

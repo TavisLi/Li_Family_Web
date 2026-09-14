@@ -1,0 +1,13 @@
+const fs=require('fs'),{spawnSync}=require('child_process');
+const root='/app',out='/evidence';
+const pkg=JSON.parse(fs.readFileSync(root+'/package.json'));
+const prior=JSON.parse(fs.readFileSync(root+'/docs/phase-artifacts/issue-119/quality-results.json'));
+const tests=prior.filter(x=>x.name.startsWith('src/')).map(x=>x.name);
+const commands=[['identity',['node','-p','JSON.stringify({exec:process.execPath,version:process.version,arch:process.arch,platform:process.platform,openssl:process.versions.openssl})']],['pnpm',['pnpm','--version']],['install',['pnpm','install','--frozen-lockfile','--store-dir','/store']],['lint',['pnpm','run','lint']],...tests.map(x=>[x,['node','--trace-deprecation','--import','tsx',x]]),['build',['pnpm','run','build']],['typecheck',['pnpm','exec','tsc','--noEmit']]];
+const results=[];
+for(let i=0;i<commands.length;i++){
+ const [name,cmd]=commands[i],log=`linux24-${i}.log`,fd=fs.openSync(out+'/'+log,'w');
+ const r=spawnSync(cmd[0],cmd.slice(1),{cwd:root,env:process.env,stdio:['ignore',fd,fd],timeout:900000});fs.closeSync(fd);
+ results.push({name,exit:r.status,signal:r.signal,error:r.error?.message,log});fs.writeFileSync(out+'/linux-results.json',JSON.stringify(results,null,2));console.log(name,r.status,r.signal||'');
+ if(name==='install'&&r.status!==0)process.exit(1);
+}
