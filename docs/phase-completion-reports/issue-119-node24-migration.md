@@ -75,3 +75,13 @@ PR #123的正式planning baseline與planning completion由`57c01de8588c8221c226b
 清理後Node24.21.0 build（含lint/types）→tsc成功；`git diff --check`成功。Final diff只保留Node24 runtime selectors／pnpm declaration、runtime docs、Docker historical classification，以及#104 planning與#119 evidence。無application source、dependency/lock/schema或歷史guards變更。
 
 本次六項臨時分支env已撤除，其他Preview／Production env不變。既有已驗收Preview快照保留；cleanup push若建立新Preview即取消，不追加runtime驗證。完整scope/read-back與log pointers見artifact末段。PR將設Ready for review，停止等候人工merge；不merge、不關閉#119、不部署Production、不啟動#115。
+
+## Post-merge Production verification addendum — 2026-09-14
+
+**Production read-only verification PASS；等待Human final closeout。** PR #124已合併，merge/main commit `e20bf82f489634112a2c569b5ce5e0ba06616b81`對應Production `dpl_Ayzj9At4fjerKwBNNEdzAjhxcVBG`，canonical alias已指向該READY deployment。
+
+部署artifact的4個Node lambda outputs均明列`nodejs24.x`；build亦因20.x→24.x跳過cache，pnpm10.28.0 frozen graph、native installs、Next build與lint/types成功。Vercel在移除temporary probe後未公開Production patch，因此只確認實際Node24 major，不套用Preview的24.19.0 patch。
+
+Production canonical domain 12項公開GET/RSC/Edge/image均200且無error digest；首頁、Blog、Travel Memory/Day/Photos、Timeline與Member讀到真實Payload內容。兩張公開R2 JPEG/WebP通過TLS、格式解碼與sharp resize。部署專屬兩小時log視窗error/fatal=0、warning=0，動態請求為200。
+
+未登入、未操作Admin、未上傳、未migration、未直接查Production DB，沒有Production data/schema/session mutation。Cloud login/Admin/upload保留為Human已接受的known-unverified scope；兩項baseline debts不變，#115未啟動。完整精簡結果見[Production read-only evidence](../phase-artifacts/issue-119/production-read-only-results.json)。本次只新增closeout文件，等待Human決定Issue #119 final closeout。
