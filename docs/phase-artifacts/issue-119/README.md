@@ -125,3 +125,17 @@ Node24連線驗證：TLS encrypted/authorized均true，`BEGIN READ ONLY`內trans
 2. 免費方案只驗公開讀取。Auth入口連結已呈現，但cloud登入頁／session／Admin互動與R2寫入未執行；本地／Linux auth/Admin相關證據不冒稱cloud PASS。Human須接受此覆蓋限制，或另批准隔離環境後補驗，才可完成完整#119 acceptance。
 3. 六項branch-scoped Preview env保留供本PR審查；DB credential可能有寫入能力，並非唯讀角色。合併／放棄／不再需要時須撤除這六項限定env及Preview，因已建立部署保留其環境快照，僅移除project env不會撤銷既有deployment能力。不得將此設定套用其他branch或Production。
 4. 回退：本次Production未切換，停止使用Preview即可停止測試；撤除本次Preview與分支env需按審查決定執行。程式回退仍依前述main/Node20契約與10月1日平台限制；無data rollback。保留branch no-auto-deploy規則，未merge／close Issue／Release／啟動#115。
+
+## Merge-prep cleanup / Human acceptance — 2026-09-14
+
+Human已接受#119 Preview/Linux/cloud parity；cloud login/Admin/upload為已知未驗證範圍，不再追加高風險驗證。本節取代前述要求再次接受這些覆蓋限制的gate；兩項baseline debts仍保留原結果，不改報PASS。
+
+- 原樣納入PR #123 head `57c01de8588c8221c226b0cbb42099eb2bb560fb` 的[正式planning baseline](../../phase-preparation/issue-104-node24-compatibility-plan.md)及[planning completion](../../phase-completion-reports/issue-104-node24-planning.md)，逐byte比對一致。文件中的當時狀態保留為歷史，不帶入#123的branch no-deploy設定。
+- 移除#119 branch-specific no-deploy rule；`vercel.json`與`next.config.mjs`完全回復main基線。移除`src/instrumentation.ts`及臨時公開CA檔案/tracing；無長期應用需求，不作migration依賴。
+- Accepted Preview仍是`c80c7562d67ac345042102714907de92a5bbbf0b`／`dpl_C3qAq9MKMyJFSFmAamsqSWUVe1ph`。歷史CA/probe證據綁定此commit；cleanup後不聲稱新的cloud runtime驗證。JSON與先前結果原樣保留。
+- 清理後在既有乾淨Node24.21.0驗證sandbox重新build（含lint/types）→tsc成功，僅使用localhost dummy DB設定，未新增DB／Auth／upload測試。診斷logs：`/tmp/issue119/merge-prep-build.log`、`merge-prep-typecheck.log`。
+- 撤除本次建立的六項branch-scoped Preview env，逐一核對原ID；Production及其他分支env不變。已接受Preview保有部署時環境快照；不是憑證撤銷或DB唯讀角色。最終移除舊Preview仍屬獨立生命周期收尾。
+- 因恢復正常Git部署行為，cleanup push若產生新Preview會取消；不把這次推送當成新cloud QA，也不使用已移除的臨時環境。既有驗收部署保留，Production不切換。
+- 最終應用diff僅Node selectors/package manager與現行runtime docs、Docker歷史分類；另含正式計畫與精簡證據。沒有src、Next/Vercel config、dependency/lockfile、schema、generated files、歷史guards或兩項baseline debts差異。
+
+交付狀態：Ready for review準備完成；PR #124狀態以GitHub回讀為準。Human merge與Production部署/驗證仍未授權；#119不關閉、#115不啟動。Rollback維持既有main/Node20契約，無data rollback。

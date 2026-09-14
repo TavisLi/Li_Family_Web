@@ -65,3 +65,13 @@ Human拒絕付費隔離branch，已批准本PR限定Preview使用既有Productio
 完整精簡矩陣、runtime與rollback見[Free Preview evidence](../phase-artifacts/issue-119/README.md)及[preview-results.json](../phase-artifacts/issue-119/preview-results.json)。一般完整logs與HTML只留本機診斷目錄，未提交憑證。
 
 **尚未解除的merge／Production gates**：Human review此PR、明確接受免費方案的cloud Auth/Admin／authenticated S3/upload未測限制，或另批准隔離環境補驗；兩项baseline debts不改報PASS。#119不關閉，#115不啟動。Preview/env只供本PR審查，credential不是server-enforced唯讀；合併／放棄後需撤除部署與六項分支env，僅刪env不會撤銷既有部署快照。Production未切換，無data rollback；程式回退遵循前述Node20/main與10月1日限制。
+
+## Merge-prep / acceptance addendum — 2026-09-14
+
+Human已接受Preview/Linux/cloud parity，以及cloud login/Admin/upload的已知未驗證範圍；不再追加高風險驗證。兩項pre-existing baseline debts仍不修復、不弱化。本節取代前述等待接受覆蓋限制的gate，merge與Production仍需人工執行／另行授權。
+
+PR #123的正式planning baseline與planning completion由`57c01de8588c8221c226b0cbb42099eb2bb560fb`原樣納入#124，保留歷史時間點與狀態；沒有帶入#123的部署限制。#119 branch no-deploy rule、temporary instrumentation／CA及tracing已移除；Next/Vercel config回到main相同內容。原Preview的compact evidence保留，綁定已驗收commit `c80c7562d67ac345042102714907de92a5bbbf0b`，不冒稱cleanup head另經cloud QA。
+
+清理後Node24.21.0 build（含lint/types）→tsc成功；`git diff --check`成功。Final diff只保留Node24 runtime selectors／pnpm declaration、runtime docs、Docker historical classification，以及#104 planning與#119 evidence。無application source、dependency/lock/schema或歷史guards變更。
+
+本次六項臨時分支env已撤除，其他Preview／Production env不變。既有已驗收Preview快照保留；cleanup push若建立新Preview即取消，不追加runtime驗證。完整scope/read-back與log pointers見artifact末段。PR將設Ready for review，停止等候人工merge；不merge、不關閉#119、不部署Production、不啟動#115。
