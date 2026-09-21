@@ -1,0 +1,10 @@
+{
+  "captured_at_utc": "2026-09-19T09:27:36.728750+00:00",
+  "cli_version": "codex-cli 0.155.0-alpha.9",
+  "model": "gpt-6-astra",
+  "reasoning_effort": "low",
+  "host_input_hashes": {
+    "/Users/tien-hsinglee/.codex/config.toml": "7c42953ccd9bba557181f438a9250152ec3ab2aa985e6d377bebaf4b126eea1b",
+    "/Users/tien-hsinglee/.codex/AGENTS.md": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6"
+  }
+}

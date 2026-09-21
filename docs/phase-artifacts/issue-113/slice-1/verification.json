@@ -1,0 +1,16 @@
+{
+  "governance_hashes_unchanged": true,
+  "changed_hashes": [],
+  "inventory_required_fields_valid": true,
+  "missing_fields": [],
+  "all_json_parse": true,
+  "tracked_diff_empty": true,
+  "git_diff_check_exit": 0,
+  "new_files_only_audit_directory": true,
+  "skill_aliases": true,
+  "note": "Static audit checks only; no active governance changes, app tests or model behavior tests.",
+  "status_and_disposition_enums_valid": true,
+  "catalog_count_checked": 173,
+  "owning_paths_and_seams_exist": true,
+  "artifact_whitespace_valid": true
+}

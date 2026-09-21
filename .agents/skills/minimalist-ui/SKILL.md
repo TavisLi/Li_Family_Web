@@ -1,7 +1,13 @@
 ---
 name: minimalist-ui
-description: Clean editorial-style interfaces. Warm monochrome palette, typographic contrast, flat bento grids, muted pastels. No gradients, no heavy shadows.
+description: "Apply an explicitly selected minimalist editorial visual direction; preserve repository UI components and dependencies."
 ---
+
+## Scope and precedence
+
+Use only for the specific deliverable named in this skill, within the approved scope. Current user scope and repository canonical decisions override every technique, package, font, icon, image-count and output default below. Existing-pattern fixes do not trigger redesign or image generation. Read the repository operating contract for authority; this skill grants no external-write, Production, destructive or merge authority. Reuse valid approvals; ask only for consequential missing choices.
+
+<!-- preserved-technique-body -->
 
 # Protocol: Premium Utilitarian Minimalism UI Architect
 

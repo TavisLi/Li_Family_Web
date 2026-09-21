@@ -1,0 +1,10 @@
+{
+  "F-UI-before": [
+    "src/features/member/member-profile-page.tsx"
+  ],
+  "F-UI-after": [],
+  "F-DATA-before": [],
+  "F-DATA-after": [],
+  "F-SENSITIVE-before": [],
+  "F-SENSITIVE-after": []
+}

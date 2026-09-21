@@ -1,0 +1,1131 @@
+{
+  "basis": "STATIC_UTF8_INSTRUCTION_READ_BYTE_PROXY_ONLY",
+  "baseline_commit": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+  "fixtures": [
+    {
+      "id": "F-UI",
+      "task": "既有 member UI spacing fix；不改 data／deploy",
+      "before": {
+        "instruction_read_utf8_bytes_proxy": 34023,
+        "unique_files": 6,
+        "reads": [
+          {
+            "path": "/Users/tien-hsinglee/.codex/AGENTS.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                57
+              ]
+            ],
+            "file_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "selected_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "utf8_bytes": 2226
+          },
+          {
+            "path": "AGENTS.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                168
+              ]
+            ],
+            "file_sha256": "4597b2b02d09aaf9d5605615df78ba776218b546d5ed645d9c3f6158b1d0dd8e",
+            "selected_sha256": "4597b2b02d09aaf9d5605615df78ba776218b546d5ed645d9c3f6158b1d0dd8e",
+            "utf8_bytes": 8413
+          },
+          {
+            "path": "CONTEXT.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                155
+              ]
+            ],
+            "file_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "selected_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "utf8_bytes": 7497
+          },
+          {
+            "path": "docs/全栈系统需求与技术架构说明书.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                403
+              ]
+            ],
+            "file_sha256": "8bf3d01014a29d39b6b425e933290f007c8d4bf22d6aac48d5db679993b10066",
+            "selected_sha256": "8bf3d01014a29d39b6b425e933290f007c8d4bf22d6aac48d5db679993b10066",
+            "utf8_bytes": 13350
+          },
+          {
+            "path": "docs/adr/README.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                38
+              ]
+            ],
+            "file_sha256": "f924bdb39b56114286a50ddd0110dd3087f1e49a34340ccfce2e10a467dc5eb9",
+            "selected_sha256": "f924bdb39b56114286a50ddd0110dd3087f1e49a34340ccfce2e10a467dc5eb9",
+            "utf8_bytes": 1796
+          },
+          {
+            "path": "docs/adr/0002-family-mode-is-an-access-boundary.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                14
+              ]
+            ],
+            "file_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "selected_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "utf8_bytes": 741
+          }
+        ]
+      },
+      "after": {
+        "instruction_read_utf8_bytes_proxy": 28529,
+        "unique_files": 6,
+        "reads": [
+          {
+            "path": "/Users/tien-hsinglee/.codex/AGENTS.md",
+            "revision": "unchanged global snapshot",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                57
+              ]
+            ],
+            "file_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "selected_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "utf8_bytes": 2226
+          },
+          {
+            "path": "AGENTS.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                47
+              ]
+            ],
+            "file_sha256": "bcd65aa50b3734a57b1453efd0fcc024f28177ae1e9002dbf9ee4dcfffd07964",
+            "selected_sha256": "bcd65aa50b3734a57b1453efd0fcc024f28177ae1e9002dbf9ee4dcfffd07964",
+            "utf8_bytes": 9022
+          },
+          {
+            "path": "docs/agent-context-routing.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                38
+              ]
+            ],
+            "file_sha256": "98209a51e7042d2d86dd532dc98d4d5a45df3286f410053ed376b58912aea180",
+            "selected_sha256": "98209a51e7042d2d86dd532dc98d4d5a45df3286f410053ed376b58912aea180",
+            "utf8_bytes": 6624
+          },
+          {
+            "path": "docs/全栈系统需求与技术架构说明书.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "## 3. 現行技術基線",
+              "## 4. 核心架構原則",
+              "## 6. 存取與隱私",
+              "## 11. Git、Preview 與 Production"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                40,
+                99
+              ],
+              [
+                135,
+                166
+              ],
+              [
+                321,
+                341
+              ]
+            ],
+            "file_sha256": "483c508825e4777d32dc4240ec051464fcd799a67e3ab796c0f8cfb6a55d9033",
+            "selected_sha256": "848ccfd3b1e2a93ffcf268302ac277a2703e5e879bf5ebbf3e961ff7569d9005",
+            "utf8_bytes": 4400
+          },
+          {
+            "path": "docs/phase-execution-playbook.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "### 必要輸入",
+              "### 必須寫清楚",
+              "### 授權矩陣",
+              "## 7. Gate 3：實施規格",
+              "### 3.2 PRD、Issue、Phase、PR 的關係",
+              "## 5. Gate 1：Preflight",
+              "## 10. Gate 6：本地驗證",
+              "## 11. Gate 7：PR 與 Preview — prefix before §11.1"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                55,
+                69
+              ],
+              [
+                150,
+                178
+              ],
+              [
+                221,
+                236
+              ],
+              [
+                255,
+                272
+              ],
+              [
+                351,
+                378
+              ],
+              [
+                379,
+                406
+              ]
+            ],
+            "file_sha256": "7e3914601fae852e4dc17157141ca7656601e04d099098a89ffeeaddbeefe09a",
+            "selected_sha256": "3e6859e8354a77c667c6ff3a17da0fa5eceaef48844fc579a2a19442a27caa3f",
+            "utf8_bytes": 5516
+          },
+          {
+            "path": "docs/adr/0002-family-mode-is-an-access-boundary.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                14
+              ]
+            ],
+            "file_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "selected_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "utf8_bytes": 741
+          }
+        ]
+      },
+      "delta_bytes": -5494,
+      "delta_percent": -16.15,
+      "behavior_benchmark": "NOT_RUN_SLICE_3",
+      "model_tokens": null,
+      "tool_calls": null,
+      "repeated_reads": null,
+      "clarification_rounds": null,
+      "duplicate_approval_rounds": null,
+      "completion_quality": null
+    },
+    {
+      "id": "F-DATA",
+      "task": "Travel caption projection fix；不 seed/schema/Production",
+      "before": {
+        "instruction_read_utf8_bytes_proxy": 56688,
+        "unique_files": 11,
+        "reads": [
+          {
+            "path": "/Users/tien-hsinglee/.codex/AGENTS.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                57
+              ]
+            ],
+            "file_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "selected_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "utf8_bytes": 2226
+          },
+          {
+            "path": "AGENTS.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                168
+              ]
+            ],
+            "file_sha256": "4597b2b02d09aaf9d5605615df78ba776218b546d5ed645d9c3f6158b1d0dd8e",
+            "selected_sha256": "4597b2b02d09aaf9d5605615df78ba776218b546d5ed645d9c3f6158b1d0dd8e",
+            "utf8_bytes": 8413
+          },
+          {
+            "path": "CONTEXT.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                155
+              ]
+            ],
+            "file_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "selected_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "utf8_bytes": 7497
+          },
+          {
+            "path": "docs/全栈系统需求与技术架构说明书.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                403
+              ]
+            ],
+            "file_sha256": "8bf3d01014a29d39b6b425e933290f007c8d4bf22d6aac48d5db679993b10066",
+            "selected_sha256": "8bf3d01014a29d39b6b425e933290f007c8d4bf22d6aac48d5db679993b10066",
+            "utf8_bytes": 13350
+          },
+          {
+            "path": "docs/adr/README.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                38
+              ]
+            ],
+            "file_sha256": "f924bdb39b56114286a50ddd0110dd3087f1e49a34340ccfce2e10a467dc5eb9",
+            "selected_sha256": "f924bdb39b56114286a50ddd0110dd3087f1e49a34340ccfce2e10a467dc5eb9",
+            "utf8_bytes": 1796
+          },
+          {
+            "path": "docs/adr/0001-runtime-content-records-are-payload-owned.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                17
+              ]
+            ],
+            "file_sha256": "f145e6cc9ace9b8be28283834a5532b89fb7ce664af766c36dca4d66d860f918",
+            "selected_sha256": "f145e6cc9ace9b8be28283834a5532b89fb7ce664af766c36dca4d66d860f918",
+            "utf8_bytes": 795
+          },
+          {
+            "path": "docs/adr/0002-family-mode-is-an-access-boundary.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                14
+              ]
+            ],
+            "file_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "selected_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "utf8_bytes": 741
+          },
+          {
+            "path": "docs/adr/0003-travel-slugs-own-source-and-asset-identity.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                14
+              ]
+            ],
+            "file_sha256": "a8c5ed0e0358ddf9620f71eac403fb9e45615b850059f27385ac25f685fc8480",
+            "selected_sha256": "a8c5ed0e0358ddf9620f71eac403fb9e45615b850059f27385ac25f685fc8480",
+            "utf8_bytes": 710
+          },
+          {
+            "path": "docs/adr/0006-seed-reconciliation-protects-published-content.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                53
+              ]
+            ],
+            "file_sha256": "a7d0537b03b45457929de229c14638b3c39baddcf88cb4adc347ea259b80cdda",
+            "selected_sha256": "a7d0537b03b45457929de229c14638b3c39baddcf88cb4adc347ea259b80cdda",
+            "utf8_bytes": 3679
+          },
+          {
+            "path": "docs/adr/0007-travel-plans-and-memories-are-separate-records.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                35
+              ]
+            ],
+            "file_sha256": "7ce1cba78d056edf20ecacc43eb32af475026f2686ed7b94ad8a6ec13cca745c",
+            "selected_sha256": "7ce1cba78d056edf20ecacc43eb32af475026f2686ed7b94ad8a6ec13cca745c",
+            "utf8_bytes": 2982
+          },
+          {
+            "path": "docs/travel-content-source-guidelines.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                480
+              ]
+            ],
+            "file_sha256": "303d51e2bcd8b50e800de84d9618cb1dae8e8f583f16e69d95159766ecdb84b1",
+            "selected_sha256": "303d51e2bcd8b50e800de84d9618cb1dae8e8f583f16e69d95159766ecdb84b1",
+            "utf8_bytes": 14499
+          }
+        ]
+      },
+      "after": {
+        "instruction_read_utf8_bytes_proxy": 60845,
+        "unique_files": 12,
+        "reads": [
+          {
+            "path": "/Users/tien-hsinglee/.codex/AGENTS.md",
+            "revision": "unchanged global snapshot",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                57
+              ]
+            ],
+            "file_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "selected_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "utf8_bytes": 2226
+          },
+          {
+            "path": "AGENTS.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                47
+              ]
+            ],
+            "file_sha256": "bcd65aa50b3734a57b1453efd0fcc024f28177ae1e9002dbf9ee4dcfffd07964",
+            "selected_sha256": "bcd65aa50b3734a57b1453efd0fcc024f28177ae1e9002dbf9ee4dcfffd07964",
+            "utf8_bytes": 9022
+          },
+          {
+            "path": "docs/agent-context-routing.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                38
+              ]
+            ],
+            "file_sha256": "98209a51e7042d2d86dd532dc98d4d5a45df3286f410053ed376b58912aea180",
+            "selected_sha256": "98209a51e7042d2d86dd532dc98d4d5a45df3286f410053ed376b58912aea180",
+            "utf8_bytes": 6624
+          },
+          {
+            "path": "docs/全栈系统需求与技术架构说明书.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "## 4. 核心架構原則",
+              "## 5. 內容 Ownership",
+              "## 6. 存取與隱私",
+              "## 8. Travel Domain",
+              "## 11. Git、Preview 與 Production"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                56,
+                166
+              ],
+              [
+                226,
+                277
+              ],
+              [
+                321,
+                341
+              ]
+            ],
+            "file_sha256": "483c508825e4777d32dc4240ec051464fcd799a67e3ab796c0f8cfb6a55d9033",
+            "selected_sha256": "0de34604b3f762c847a41ab4bece88300b8c2e7837c7f0250d1d75ca04ff694a",
+            "utf8_bytes": 6554
+          },
+          {
+            "path": "docs/phase-execution-playbook.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "### 必要輸入",
+              "### 必須寫清楚",
+              "### 授權矩陣",
+              "## 7. Gate 3：實施規格",
+              "### 3.2 PRD、Issue、Phase、PR 的關係",
+              "## 5. Gate 1：Preflight",
+              "## 10. Gate 6：本地驗證",
+              "## 11. Gate 7：PR 與 Preview — prefix before §11.1"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                55,
+                69
+              ],
+              [
+                150,
+                178
+              ],
+              [
+                221,
+                236
+              ],
+              [
+                255,
+                272
+              ],
+              [
+                351,
+                378
+              ],
+              [
+                379,
+                406
+              ]
+            ],
+            "file_sha256": "7e3914601fae852e4dc17157141ca7656601e04d099098a89ffeeaddbeefe09a",
+            "selected_sha256": "3e6859e8354a77c667c6ff3a17da0fa5eceaef48844fc579a2a19442a27caa3f",
+            "utf8_bytes": 5516
+          },
+          {
+            "path": "docs/adr/0001-runtime-content-records-are-payload-owned.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                17
+              ]
+            ],
+            "file_sha256": "f145e6cc9ace9b8be28283834a5532b89fb7ce664af766c36dca4d66d860f918",
+            "selected_sha256": "f145e6cc9ace9b8be28283834a5532b89fb7ce664af766c36dca4d66d860f918",
+            "utf8_bytes": 795
+          },
+          {
+            "path": "docs/adr/0002-family-mode-is-an-access-boundary.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                14
+              ]
+            ],
+            "file_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "selected_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "utf8_bytes": 741
+          },
+          {
+            "path": "docs/adr/0003-travel-slugs-own-source-and-asset-identity.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                14
+              ]
+            ],
+            "file_sha256": "a8c5ed0e0358ddf9620f71eac403fb9e45615b850059f27385ac25f685fc8480",
+            "selected_sha256": "a8c5ed0e0358ddf9620f71eac403fb9e45615b850059f27385ac25f685fc8480",
+            "utf8_bytes": 710
+          },
+          {
+            "path": "docs/adr/0006-seed-reconciliation-protects-published-content.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                53
+              ]
+            ],
+            "file_sha256": "a7d0537b03b45457929de229c14638b3c39baddcf88cb4adc347ea259b80cdda",
+            "selected_sha256": "a7d0537b03b45457929de229c14638b3c39baddcf88cb4adc347ea259b80cdda",
+            "utf8_bytes": 3679
+          },
+          {
+            "path": "docs/adr/0007-travel-plans-and-memories-are-separate-records.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                35
+              ]
+            ],
+            "file_sha256": "7ce1cba78d056edf20ecacc43eb32af475026f2686ed7b94ad8a6ec13cca745c",
+            "selected_sha256": "7ce1cba78d056edf20ecacc43eb32af475026f2686ed7b94ad8a6ec13cca745c",
+            "utf8_bytes": 2982
+          },
+          {
+            "path": "CONTEXT.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                155
+              ]
+            ],
+            "file_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "selected_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "utf8_bytes": 7497
+          },
+          {
+            "path": "docs/travel-content-source-guidelines.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                480
+              ]
+            ],
+            "file_sha256": "303d51e2bcd8b50e800de84d9618cb1dae8e8f583f16e69d95159766ecdb84b1",
+            "selected_sha256": "303d51e2bcd8b50e800de84d9618cb1dae8e8f583f16e69d95159766ecdb84b1",
+            "utf8_bytes": 14499
+          }
+        ]
+      },
+      "delta_bytes": 4157,
+      "delta_percent": 7.33,
+      "behavior_benchmark": "NOT_RUN_SLICE_3",
+      "model_tokens": null,
+      "tool_calls": null,
+      "repeated_reads": null,
+      "clarification_rounds": null,
+      "duplicate_approval_rounds": null,
+      "completion_quality": null
+    },
+    {
+      "id": "F-SENSITIVE",
+      "task": "schema/legacy cleanup preparation；不 live inventory/apply/delete",
+      "before": {
+        "instruction_read_utf8_bytes_proxy": 61862,
+        "unique_files": 11,
+        "reads": [
+          {
+            "path": "/Users/tien-hsinglee/.codex/AGENTS.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                57
+              ]
+            ],
+            "file_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "selected_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "utf8_bytes": 2226
+          },
+          {
+            "path": "AGENTS.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                168
+              ]
+            ],
+            "file_sha256": "4597b2b02d09aaf9d5605615df78ba776218b546d5ed645d9c3f6158b1d0dd8e",
+            "selected_sha256": "4597b2b02d09aaf9d5605615df78ba776218b546d5ed645d9c3f6158b1d0dd8e",
+            "utf8_bytes": 8413
+          },
+          {
+            "path": "CONTEXT.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                155
+              ]
+            ],
+            "file_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "selected_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "utf8_bytes": 7497
+          },
+          {
+            "path": "docs/全栈系统需求与技术架构说明书.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                403
+              ]
+            ],
+            "file_sha256": "8bf3d01014a29d39b6b425e933290f007c8d4bf22d6aac48d5db679993b10066",
+            "selected_sha256": "8bf3d01014a29d39b6b425e933290f007c8d4bf22d6aac48d5db679993b10066",
+            "utf8_bytes": 13350
+          },
+          {
+            "path": "docs/adr/README.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                38
+              ]
+            ],
+            "file_sha256": "f924bdb39b56114286a50ddd0110dd3087f1e49a34340ccfce2e10a467dc5eb9",
+            "selected_sha256": "f924bdb39b56114286a50ddd0110dd3087f1e49a34340ccfce2e10a467dc5eb9",
+            "utf8_bytes": 1796
+          },
+          {
+            "path": "docs/adr/0001-runtime-content-records-are-payload-owned.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                17
+              ]
+            ],
+            "file_sha256": "f145e6cc9ace9b8be28283834a5532b89fb7ce664af766c36dca4d66d860f918",
+            "selected_sha256": "f145e6cc9ace9b8be28283834a5532b89fb7ce664af766c36dca4d66d860f918",
+            "utf8_bytes": 795
+          },
+          {
+            "path": "docs/adr/0002-family-mode-is-an-access-boundary.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                14
+              ]
+            ],
+            "file_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "selected_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "utf8_bytes": 741
+          },
+          {
+            "path": "docs/adr/0006-seed-reconciliation-protects-published-content.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                53
+              ]
+            ],
+            "file_sha256": "a7d0537b03b45457929de229c14638b3c39baddcf88cb4adc347ea259b80cdda",
+            "selected_sha256": "a7d0537b03b45457929de229c14638b3c39baddcf88cb4adc347ea259b80cdda",
+            "utf8_bytes": 3679
+          },
+          {
+            "path": "docs/adr/0007-travel-plans-and-memories-are-separate-records.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                35
+              ]
+            ],
+            "file_sha256": "7ce1cba78d056edf20ecacc43eb32af475026f2686ed7b94ad8a6ec13cca745c",
+            "selected_sha256": "7ce1cba78d056edf20ecacc43eb32af475026f2686ed7b94ad8a6ec13cca745c",
+            "utf8_bytes": 2982
+          },
+          {
+            "path": "docs/adr/0008-phase-17-cleanup-allows-one-time-no-backup-waiver.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                37
+              ]
+            ],
+            "file_sha256": "963ac0f6478816a6db0d8cbde161ab85a903a196f2abd0a1f9bc727105c1dda8",
+            "selected_sha256": "963ac0f6478816a6db0d8cbde161ab85a903a196f2abd0a1f9bc727105c1dda8",
+            "utf8_bytes": 2386
+          },
+          {
+            "path": "docs/phase-execution-playbook.md",
+            "revision": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                446
+              ]
+            ],
+            "file_sha256": "8f85f50dc70d5ad96b604eb8033c2ddefc14a476068efdb096ca594e4f770ca1",
+            "selected_sha256": "8f85f50dc70d5ad96b604eb8033c2ddefc14a476068efdb096ca594e4f770ca1",
+            "utf8_bytes": 17997
+          }
+        ]
+      },
+      "after": {
+        "instruction_read_utf8_bytes_proxy": 54767,
+        "unique_files": 12,
+        "reads": [
+          {
+            "path": "/Users/tien-hsinglee/.codex/AGENTS.md",
+            "revision": "unchanged global snapshot",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                57
+              ]
+            ],
+            "file_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "selected_sha256": "efe983de20e57bf22d200ee759a3903c354ba7adf5be69f85927f09e7702ddc6",
+            "utf8_bytes": 2226
+          },
+          {
+            "path": "AGENTS.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                47
+              ]
+            ],
+            "file_sha256": "bcd65aa50b3734a57b1453efd0fcc024f28177ae1e9002dbf9ee4dcfffd07964",
+            "selected_sha256": "bcd65aa50b3734a57b1453efd0fcc024f28177ae1e9002dbf9ee4dcfffd07964",
+            "utf8_bytes": 9022
+          },
+          {
+            "path": "docs/agent-context-routing.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                38
+              ]
+            ],
+            "file_sha256": "98209a51e7042d2d86dd532dc98d4d5a45df3286f410053ed376b58912aea180",
+            "selected_sha256": "98209a51e7042d2d86dd532dc98d4d5a45df3286f410053ed376b58912aea180",
+            "utf8_bytes": 6624
+          },
+          {
+            "path": "docs/全栈系统需求与技术架构说明书.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "## 4. 核心架構原則",
+              "## 5. 內容 Ownership",
+              "## 6. 存取與隱私",
+              "## 8. Travel Domain",
+              "## 9. Payload Collections 與 Globals",
+              "## 10. Migration 與 Production Data",
+              "## 11. Git、Preview 與 Production"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                56,
+                166
+              ],
+              [
+                226,
+                341
+              ]
+            ],
+            "file_sha256": "483c508825e4777d32dc4240ec051464fcd799a67e3ab796c0f8cfb6a55d9033",
+            "selected_sha256": "bf47ae1656a40df4c063f0bde234295072aeb38a8f2cf664347b3b60423503ce",
+            "utf8_bytes": 7976
+          },
+          {
+            "path": "docs/phase-execution-playbook.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "### 必要輸入",
+              "### 必須寫清楚",
+              "### 授權矩陣",
+              "## 7. Gate 3：實施規格",
+              "### 3.2 PRD、Issue、Phase、PR 的關係",
+              "## 5. Gate 1：Preflight",
+              "## 10. Gate 6：本地驗證",
+              "## 4. Human-in-the-loop（HITL）關鍵節點",
+              "## 9. Gate 5：資料與 Migration",
+              "## 11. Gate 7：PR 與 Preview — prefix before §11.1"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                55,
+                69
+              ],
+              [
+                150,
+                236
+              ],
+              [
+                255,
+                272
+              ],
+              [
+                283,
+                378
+              ],
+              [
+                379,
+                406
+              ]
+            ],
+            "file_sha256": "7e3914601fae852e4dc17157141ca7656601e04d099098a89ffeeaddbeefe09a",
+            "selected_sha256": "46e970875fcf66e1e56d06634d363582e5beea69f5cb4603367fed439733a14f",
+            "utf8_bytes": 10129
+          },
+          {
+            "path": "docs/adr/0001-runtime-content-records-are-payload-owned.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                17
+              ]
+            ],
+            "file_sha256": "f145e6cc9ace9b8be28283834a5532b89fb7ce664af766c36dca4d66d860f918",
+            "selected_sha256": "f145e6cc9ace9b8be28283834a5532b89fb7ce664af766c36dca4d66d860f918",
+            "utf8_bytes": 795
+          },
+          {
+            "path": "docs/adr/0002-family-mode-is-an-access-boundary.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                14
+              ]
+            ],
+            "file_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "selected_sha256": "59938b92cc8cabd94efc8e6e430f9b4a62b6696b0acf1729418fe355b61fc211",
+            "utf8_bytes": 741
+          },
+          {
+            "path": "docs/adr/0003-travel-slugs-own-source-and-asset-identity.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                14
+              ]
+            ],
+            "file_sha256": "a8c5ed0e0358ddf9620f71eac403fb9e45615b850059f27385ac25f685fc8480",
+            "selected_sha256": "a8c5ed0e0358ddf9620f71eac403fb9e45615b850059f27385ac25f685fc8480",
+            "utf8_bytes": 710
+          },
+          {
+            "path": "docs/adr/0006-seed-reconciliation-protects-published-content.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                53
+              ]
+            ],
+            "file_sha256": "a7d0537b03b45457929de229c14638b3c39baddcf88cb4adc347ea259b80cdda",
+            "selected_sha256": "a7d0537b03b45457929de229c14638b3c39baddcf88cb4adc347ea259b80cdda",
+            "utf8_bytes": 3679
+          },
+          {
+            "path": "docs/adr/0007-travel-plans-and-memories-are-separate-records.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                35
+              ]
+            ],
+            "file_sha256": "7ce1cba78d056edf20ecacc43eb32af475026f2686ed7b94ad8a6ec13cca745c",
+            "selected_sha256": "7ce1cba78d056edf20ecacc43eb32af475026f2686ed7b94ad8a6ec13cca745c",
+            "utf8_bytes": 2982
+          },
+          {
+            "path": "docs/adr/0008-phase-17-cleanup-allows-one-time-no-backup-waiver.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                37
+              ]
+            ],
+            "file_sha256": "963ac0f6478816a6db0d8cbde161ab85a903a196f2abd0a1f9bc727105c1dda8",
+            "selected_sha256": "963ac0f6478816a6db0d8cbde161ab85a903a196f2abd0a1f9bc727105c1dda8",
+            "utf8_bytes": 2386
+          },
+          {
+            "path": "CONTEXT.md",
+            "revision": "implemented working tree",
+            "headings": [
+              "FULL"
+            ],
+            "line_ranges_1_based_inclusive": [
+              [
+                1,
+                155
+              ]
+            ],
+            "file_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "selected_sha256": "767aaad4a14540c697af8a3407916df2feffc547f8ac62cb2962c16801844cb6",
+            "utf8_bytes": 7497
+          }
+        ]
+      },
+      "delta_bytes": -7095,
+      "delta_percent": -11.47,
+      "behavior_benchmark": "NOT_RUN_SLICE_3",
+      "model_tokens": null,
+      "tool_calls": null,
+      "repeated_reads": null,
+      "clarification_rounds": null,
+      "duplicate_approval_rounds": null,
+      "completion_quality": null
+    }
+  ],
+  "assumptions": [
+    "Before retains the Slice1 fixed read-set definition and reads actual baseline commit blobs, not current modified files.",
+    "After uses actual implemented AGENTS and full routing text, mandatory common-route sections and applicable domain/safety owners.",
+    "The data and sensitive cases conservatively retain full CONTEXT; no safety context omission is counted as savings.",
+    "Sensitive fixture adds ADR0003 and architecture travel §8 to follow the approved domain route; this safety correction is not hidden.",
+    "File-content selected bytes include headings and original newlines. Overlapping selections are counted once.",
+    "Unchanged host/tool/catalog overhead, task/Issue text, code/test/data/evidence output bytes are excluded on both sides.",
+    "No Skill body assumed loaded for routine UI; metadata change is not counted as automatic token savings.",
+    "Static file selection is not an observed agent read trace, token savings or model performance result."
+  ]
+}

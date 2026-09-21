@@ -1,0 +1,10 @@
+已修正 [projection](/private/tmp/issue113-revision2-f-data-plugins-disabled-final/src/lib/travel-memory.ts:199)：直接使用 placement caption，保留缺值 fallback；媒體 altText、generated type derivation、Public／Family access 與 day/type filters 未改動。
+
+驗證結果：
+- 修正前成功重現 caption 被 altText 取代；修正後通過。
+- 新增缺值、跨日 caption 與媒體不被修改的回歸測試。
+- Gallery domain、child access 測試及 focused diff 檢查通過。
+
+使用現有 Node 26 原生 TypeScript 與臨時解析 hook 執行，未安裝依賴；未執行 build、完整型別檢查或 Browser／Preview。
+
+本次只修改 projection 與 focused test；projection 修正後與固定 HEAD 一致，因此 Git diff 僅顯示新增測試。使用者資產與治理檔案未動，未 stage／commit。

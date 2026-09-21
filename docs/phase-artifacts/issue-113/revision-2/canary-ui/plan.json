@@ -1,0 +1,30 @@
+{
+  "model": "gpt-6-astra",
+  "effort": "low",
+  "wall_seconds": 180,
+  "observable_tool_start_limit": 20,
+  "attempts": 1,
+  "token_limit": "No real-time hard cap; end-of-turn usage only",
+  "cli_version": "codex-cli 0.155.0-alpha.9",
+  "cli_sha256": "2e0918e73319f9a57126a1bf04dcc778e1ff5c1804cac1cbff08ba0853f1c97b",
+  "prompt_sha256": "18da892ef4dcb83e8401bc18b1a70ca69e7d5804b80aa7944bb8c4c58781ae4c",
+  "command": [
+    "/Applications/ChatGPT.app/Contents/Resources/codex",
+    "exec",
+    "--ephemeral",
+    "-m",
+    "gpt-6-astra",
+    "-c",
+    "model_reasoning_effort=\"low\"",
+    "-C",
+    "/private/tmp/issue113-revision2-ui-canary",
+    "-s",
+    "workspace-write",
+    "--json",
+    "-o",
+    "/Users/tien-hsinglee/Project/li-family-web/docs/phase-artifacts/issue-113/revision-2/canary-ui/final.txt",
+    "-"
+  ],
+  "host_configuration": "Existing config/plugins retained; no changes; full resolved catalog not available before startup",
+  "workspace": "/private/tmp/issue113-revision2-ui-canary"
+}
