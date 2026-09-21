@@ -1,0 +1,46 @@
+{
+  "status": "DRAFT_ONLY_NOT_APPROVED_FOR_APPLICATION",
+  "head": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+  "protected_existing_files_checked": 1345,
+  "prior_slice2_receipt_files_unchanged": true,
+  "relative_link_paths_checked": 18,
+  "patch_applies_check_only": true,
+  "diff_check": "PASS",
+  "staged_paths": [],
+  "measurements": {
+    "AGENTS.md": {
+      "current_sha256": "bcd65aa50b3734a57b1453efd0fcc024f28177ae1e9002dbf9ee4dcfffd07964",
+      "candidate_sha256": "85ed555eec2d6d36abed2e29390e0f2eed5ec7a187b24f926f30cc3656851719",
+      "current_utf8_bytes": 9022,
+      "candidate_utf8_bytes": 4792,
+      "delta_utf8_bytes": -4230
+    },
+    "docs/agent-context-routing.md": {
+      "current_sha256": "98209a51e7042d2d86dd532dc98d4d5a45df3286f410053ed376b58912aea180",
+      "candidate_sha256": "2635280d3e8f1f6b4269d9068555875b0fe7271ab775c47c467dabc42b744a85",
+      "current_utf8_bytes": 6624,
+      "candidate_utf8_bytes": 2070,
+      "delta_utf8_bytes": -4554
+    },
+    ".claude/CLAUDE.md": {
+      "current_sha256": "cd1e45591c2d8c0ec515f27e654a875e2d6fa03b1e10a394fd5ba339391227d0",
+      "candidate_sha256": "99a6b5edeaa2cb81b821eb5ccc1f8823705b1d6aea41d3dc578244e4d211e83d",
+      "current_utf8_bytes": 497,
+      "candidate_utf8_bytes": 274,
+      "delta_utf8_bytes": -223
+    },
+    "docs/phase-execution-playbook.md": {
+      "current_sha256": "7e3914601fae852e4dc17157141ca7656601e04d099098a89ffeeaddbeefe09a",
+      "candidate_sha256": "4c20888b3510c82ba981f7f53e8ad8d637018e9fac2423bbe6ee23063a99b3a8",
+      "current_utf8_bytes": 20828,
+      "candidate_utf8_bytes": 21365,
+      "delta_utf8_bytes": 537
+    }
+  },
+  "candidate_patch_sha256": "c84f246b2470311b9b92d792f3e190aba2ca2b55f22fbf5b2a6c2f9c09ce1a36",
+  "limits": [
+    "Path existence does not validate every Markdown anchor.",
+    "Byte counts describe text size only, not runtime reads or token savings.",
+    "No model execution or semantic-equivalence proof. Old governance regression is not run."
+  ]
+}

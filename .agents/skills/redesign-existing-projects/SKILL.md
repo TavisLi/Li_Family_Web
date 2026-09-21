@@ -1,7 +1,13 @@
 ---
 name: redesign-existing-projects
-description: Upgrades existing websites and apps to premium quality. Audits current design, identifies generic AI patterns, and applies high-end design standards without breaking functionality. Works with any CSS framework or vanilla CSS.
+description: "Audit and implement a requested redesign of an existing interface; preserve functionality and task boundaries."
 ---
+
+## Scope and precedence
+
+Use only for the specific deliverable named in this skill, within the approved scope. Current user scope and repository canonical decisions override every technique, package, font, icon, image-count and output default below. Existing-pattern fixes do not trigger redesign or image generation. Read the repository operating contract for authority; this skill grants no external-write, Production, destructive or merge authority. Reuse valid approvals; ask only for consequential missing choices.
+
+<!-- preserved-technique-body -->
 
 # Redesign Skill
 

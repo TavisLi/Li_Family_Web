@@ -1,0 +1,225 @@
+{
+  "scope": "Offline structural checks of reviewed text, owner reachability and preserved content; not natural-language behavioral proof.",
+  "rules": [
+    {
+      "id": "authority",
+      "purpose": "獨立授權",
+      "baseline": [
+        "GitHub Issue／PRD",
+        "Preview deployment",
+        "Production read-only",
+        "Production schema migration",
+        "Destructive cleanup"
+      ],
+      "implemented": [
+        "GitHub Issue／PRD publication or modification",
+        "local repository changes",
+        "Preview deployment",
+        "Production read-only access",
+        "Production migration",
+        "Production content／media writes",
+        "destructive operations",
+        "merge／release",
+        "closeout"
+      ]
+    },
+    {
+      "id": "dirty",
+      "purpose": "既有 scope 外資產",
+      "baseline": [
+        "dirty／untracked",
+        "不得清理、還原、重寫或提交"
+      ],
+      "implemented": [
+        "不得修改、還原、清理、stage 或 commit",
+        "使用者明確將其納入 scope"
+      ]
+    },
+    {
+      "id": "reconciliation",
+      "purpose": "Source/Admin 資料保護",
+      "baseline": [
+        "Base／Source／Current",
+        "Source-only",
+        "Current-only",
+        "Missing Base",
+        "preserve-current"
+      ],
+      "implemented": [
+        "safe mode 預設",
+        "Source-only 可更新",
+        "Current-only 保留",
+        "雙方不同修改產生 conflict",
+        "Missing Base 既有 record 預設 preserve-current"
+      ]
+    },
+    {
+      "id": "privacy",
+      "purpose": "Access 與 secret",
+      "baseline": [
+        "collection／data layer",
+        "Secret 不得",
+        "JSON-LD"
+      ],
+      "implemented": [
+        "Public／Family access 在 collection／data layer 強制，不以 UI 隱藏替代",
+        "Secret 不得進入 client、log、report、fixture、HTML、Git 或 Issue／PR"
+      ]
+    },
+    {
+      "id": "migration",
+      "purpose": "Migration review/rehearsal/read-back",
+      "baseline": [
+        "人工審查 SQL／up／down",
+        "disposable／local database rehearsal",
+        "read-back",
+        "additive、nullable、backward-compatible"
+      ],
+      "implemented": [
+        "人工審查 SQL／up／down（適用時）",
+        "disposable/local rehearsal",
+        "獲准 apply → read-back",
+        "additive、nullable、backward-compatible"
+      ]
+    },
+    {
+      "id": "stops",
+      "purpose": "Fail-closed",
+      "baseline": [
+        "data-loss／dev-schema warning",
+        "未批准 collection",
+        "Read-back timeout",
+        "Preview／Production commit"
+      ],
+      "implemented": [
+        "CLI data-loss／dev-schema warning",
+        "未批准 collection",
+        "read-back timeout／failure",
+        "commit／mutation state 為 UNKNOWN",
+        "不自行 retry／repair mutation"
+      ]
+    },
+    {
+      "id": "ui",
+      "purpose": "既有 UI stack 與媒體",
+      "baseline": [
+        "shadcn/ui",
+        "style={{}}",
+        "loading／error boundary",
+        "ImageFallback",
+        "optional",
+        "禁止 Vercel Blob"
+      ],
+      "implemented": [
+        "shadcn/ui",
+        "style={{}}",
+        "框架自動輸出的 HTML style 例外",
+        "loading／error boundary",
+        "ImageFallback",
+        "optional",
+        "禁止 Vercel Blob"
+      ]
+    },
+    {
+      "id": "validation",
+      "purpose": "完整適用驗證",
+      "baseline": [
+        "Focused unit／regression tests",
+        "pnpm run build",
+        "pnpm tsc --noEmit",
+        "git diff --check",
+        "Prettier",
+        "明確記錄缺口"
+      ],
+      "implemented": [
+        "完整適用驗證規則",
+        "pnpm run build",
+        "pnpm tsc --noEmit",
+        "git diff --check",
+        "不臨時安裝 Prettier",
+        "不代表完整 browser validation",
+        "保留 blocker"
+      ]
+    },
+    {
+      "id": "versions",
+      "purpose": "版本特定 API 驗證",
+      "baseline": [
+        "對應版本的官方文件"
+      ],
+      "implemented": [
+        "repository 實際安裝版本的官方文件",
+        "不能用最新版文件推定舊版行為"
+      ]
+    },
+    {
+      "id": "history",
+      "purpose": "歷史不是權限",
+      "baseline": [
+        "不改寫歷史",
+        "歷史輸入"
+      ],
+      "implemented": [
+        "不作目前 authority",
+        "有效 task specification 仍按其 scope 使用",
+        "不改寫歷史或 memory"
+      ]
+    }
+  ],
+  "precedence": [
+    "目前使用者 task／有效批准",
+    "CONTEXT.md 穩定詞彙",
+    "accepted ADR",
+    "docs/全栈系统需求与技术架构说明书.md 架構契約",
+    "本 AGENTS operating contract",
+    "owning domain／Phase rules",
+    "task-scoped Skills",
+    "historical evidence"
+  ],
+  "implementation_routes": [
+    "documentation-only",
+    "frontend/UI",
+    "ordinary application code",
+    "domain/data projection",
+    "schema/migration",
+    "seed/content/media"
+  ],
+  "owners": [
+    "CONTEXT.md",
+    "docs/adr/README.md",
+    "docs/adr/0002-family-mode-is-an-access-boundary.md",
+    "docs/adr/0006-seed-reconciliation-protects-published-content.md",
+    "docs/全栈系统需求与技术架构说明书.md",
+    "docs/phase-execution-playbook.md",
+    "docs/templates/phase-completion-report-template.md",
+    "docs/travel-content-source-guidelines.md"
+  ],
+  "owner_guards": {
+    "docs/phase-execution-playbook.md": [
+      "H1",
+      "H2",
+      "H3",
+      "H4",
+      "H5",
+      "H6",
+      "H7",
+      "H8",
+      "H9",
+      "H10",
+      "RLS／grants",
+      "Migration／script hash",
+      "Before／after query",
+      "Read-back result",
+      "人工審查 generated migration SQL／up／down",
+      "Browser／Preview coverage",
+      "Closes #...",
+      "Related to #..."
+    ]
+  },
+  "scope_markers": [
+    "Use only for the specific deliverable",
+    "Existing-pattern fixes do not trigger redesign or image generation.",
+    "approved scope",
+    "repository operating contract"
+  ]
+}

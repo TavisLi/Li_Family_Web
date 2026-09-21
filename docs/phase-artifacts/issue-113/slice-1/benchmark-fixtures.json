@@ -1,0 +1,204 @@
+{
+  "measurement": "UTF-8 file content bytes as instruction-read proxy; not token telemetry",
+  "fixtures": [
+    {
+      "id": "F-UI",
+      "task": "既有 member UI 小幅 spacing 修正；保留視覺方向與資料邏輯，不部署",
+      "arch": [
+        3,
+        4,
+        6
+      ],
+      "adrs": [
+        "docs/adr/0002-family-mode-is-an-access-boundary.md"
+      ],
+      "play": [],
+      "seams": [
+        "src/features/member/",
+        "package.json"
+      ],
+      "gates": [
+        "preserve dirty assets",
+        "no dependency/design-system expansion",
+        "access invariant",
+        "focused UI validation",
+        "no deployment authority"
+      ],
+      "basis": "STATIC_PLANNED_READ_SET_NOT_EXECUTED_AGENT_RUN",
+      "before_files": [
+        "/Users/tien-hsinglee/.codex/AGENTS.md",
+        "AGENTS.md",
+        "CONTEXT.md",
+        "docs/全栈系统需求与技术架构说明书.md",
+        "docs/adr/README.md",
+        "docs/adr/0002-family-mode-is-an-access-boundary.md"
+      ],
+      "before": [
+        {
+          "revision": "f1796687d2469319c4a465feada1ffc3cb8b59d8",
+          "file_content_bytes": 33993,
+          "unique_files": 6
+        },
+        {
+          "revision": "audit HEAD",
+          "file_content_bytes": 34023,
+          "unique_files": 6
+        }
+      ],
+      "proposal_file_content_bytes": 14258,
+      "proposal_reduction_percent": 58.1,
+      "proposal_unique_files": 5,
+      "fixed_overhead": "Injected host/tool/plugin metadata not included in fixture delta; remains separate in inventory.json. Code/test/source/Issue/evidence bytes excluded equally, never counted as savings.",
+      "actual_tool_calls": null,
+      "actual_repeated_reads": null,
+      "actual_clarification_rounds": null,
+      "actual_duplicate_approval_rounds": null,
+      "actual_completion_or_blocker_quality": "NOT RUN — Slice 3",
+      "validation": "Same required gates before/after. No application tests run for this audit."
+    },
+    {
+      "id": "F-DATA",
+      "task": "Travel Memory caption projection 修正；不 seed、不改 schema、不讀 Production",
+      "arch": [
+        4,
+        5,
+        6,
+        8
+      ],
+      "adrs": [
+        "docs/adr/0001-runtime-content-records-are-payload-owned.md",
+        "docs/adr/0002-family-mode-is-an-access-boundary.md",
+        "docs/adr/0003-travel-slugs-own-source-and-asset-identity.md",
+        "docs/adr/0006-seed-reconciliation-protects-published-content.md",
+        "docs/adr/0007-travel-plans-and-memories-are-separate-records.md"
+      ],
+      "play": [],
+      "seams": [
+        "src/lib/data/travel.ts",
+        "src/payload/payload-types.ts",
+        "src/features/travel/"
+      ],
+      "gates": [
+        "asset altText vs placement caption",
+        "derived generated types",
+        "access filtering",
+        "focused regression/build then tsc",
+        "no write authority"
+      ],
+      "basis": "STATIC_PLANNED_READ_SET_NOT_EXECUTED_AGENT_RUN",
+      "before_files": [
+        "/Users/tien-hsinglee/.codex/AGENTS.md",
+        "AGENTS.md",
+        "CONTEXT.md",
+        "docs/全栈系统需求与技术架构说明书.md",
+        "docs/adr/README.md",
+        "docs/adr/0001-runtime-content-records-are-payload-owned.md",
+        "docs/adr/0002-family-mode-is-an-access-boundary.md",
+        "docs/adr/0003-travel-slugs-own-source-and-asset-identity.md",
+        "docs/adr/0006-seed-reconciliation-protects-published-content.md",
+        "docs/adr/0007-travel-plans-and-memories-are-separate-records.md",
+        "docs/travel-content-source-guidelines.md"
+      ],
+      "before": [
+        {
+          "revision": "f1796687d2469319c4a465feada1ffc3cb8b59d8",
+          "file_content_bytes": 56658,
+          "unique_files": 11
+        },
+        {
+          "revision": "audit HEAD",
+          "file_content_bytes": 56688,
+          "unique_files": 11
+        }
+      ],
+      "proposal_file_content_bytes": 46574,
+      "proposal_reduction_percent": 17.8,
+      "proposal_unique_files": 11,
+      "fixed_overhead": "Injected host/tool/plugin metadata not included in fixture delta; remains separate in inventory.json. Code/test/source/Issue/evidence bytes excluded equally, never counted as savings.",
+      "actual_tool_calls": null,
+      "actual_repeated_reads": null,
+      "actual_clarification_rounds": null,
+      "actual_duplicate_approval_rounds": null,
+      "actual_completion_or_blocker_quality": "NOT RUN — Slice 3",
+      "validation": "Same required gates before/after. No application tests run for this audit."
+    },
+    {
+      "id": "F-SENSITIVE",
+      "task": "準備 schema/legacy cleanup proposal；不作 live inventory、migration、delete、merge",
+      "arch": [
+        4,
+        5,
+        6,
+        9,
+        10
+      ],
+      "adrs": [
+        "docs/adr/0001-runtime-content-records-are-payload-owned.md",
+        "docs/adr/0002-family-mode-is-an-access-boundary.md",
+        "docs/adr/0006-seed-reconciliation-protects-published-content.md",
+        "docs/adr/0007-travel-plans-and-memories-are-separate-records.md",
+        "docs/adr/0008-phase-17-cleanup-allows-one-time-no-backup-waiver.md"
+      ],
+      "play": [
+        4,
+        9
+      ],
+      "seams": [
+        "src/payload/collections/",
+        "src/migrations/",
+        "approved package only if supplied"
+      ],
+      "gates": [
+        "H4 access before live query",
+        "H5-H8 separate authority",
+        "backup and bounded ADR waiver",
+        "dry-run/rehearsal/read-back required before approved apply",
+        "#105 owns executor",
+        "drift/UNKNOWN fail closed"
+      ],
+      "basis": "STATIC_PLANNED_READ_SET_NOT_EXECUTED_AGENT_RUN",
+      "before_files": [
+        "/Users/tien-hsinglee/.codex/AGENTS.md",
+        "AGENTS.md",
+        "CONTEXT.md",
+        "docs/全栈系统需求与技术架构说明书.md",
+        "docs/adr/README.md",
+        "docs/adr/0001-runtime-content-records-are-payload-owned.md",
+        "docs/adr/0002-family-mode-is-an-access-boundary.md",
+        "docs/adr/0006-seed-reconciliation-protects-published-content.md",
+        "docs/adr/0007-travel-plans-and-memories-are-separate-records.md",
+        "docs/adr/0008-phase-17-cleanup-allows-one-time-no-backup-waiver.md",
+        "docs/phase-execution-playbook.md"
+      ],
+      "before": [
+        {
+          "revision": "f1796687d2469319c4a465feada1ffc3cb8b59d8",
+          "file_content_bytes": 61832,
+          "unique_files": 11
+        },
+        {
+          "revision": "audit HEAD",
+          "file_content_bytes": 61862,
+          "unique_files": 11
+        }
+      ],
+      "proposal_file_content_bytes": 29154,
+      "proposal_reduction_percent": 52.9,
+      "proposal_unique_files": 10,
+      "fixed_overhead": "Injected host/tool/plugin metadata not included in fixture delta; remains separate in inventory.json. Code/test/source/Issue/evidence bytes excluded equally, never counted as savings.",
+      "actual_tool_calls": null,
+      "actual_repeated_reads": null,
+      "actual_clarification_rounds": null,
+      "actual_duplicate_approval_rounds": null,
+      "actual_completion_or_blocker_quality": "NOT RUN — Slice 3",
+      "validation": "Same required gates before/after. No application tests run for this audit."
+    }
+  ],
+  "assumptions": [
+    "Current full-read policy interpreted conservatively: relevant ADR only, no automatic Skill body inflation.",
+    "Global AGENTS is current snapshot for both historical and current comparisons; no historical global version available.",
+    "No historical reports counted as mandatory baseline unless fixture needs them.",
+    "Proposed figures use draft text plus unchanged owning sections; final dedup and actual tool output wrapper cost require Slice 3.",
+    "Skill references are read only for an actual design task. Optional design-taste activation adds 87253 bytes today; not included in ordinary UI fixture."
+  ]
+}

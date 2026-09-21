@@ -1,0 +1,12 @@
+{
+  "exit_code": 1,
+  "stop_reason": null,
+  "elapsed_seconds": 71.37,
+  "visible_operations": 8,
+  "changed_since_fixture": [
+    "src/lib/travel-memory.test.ts",
+    "src/lib/travel-memory.ts"
+  ],
+  "staged_paths": "",
+  "diff_check_exit": 0
+}

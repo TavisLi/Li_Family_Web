@@ -1,0 +1,33 @@
+{
+  "fixture": "F-SENSITIVE",
+  "model": "gpt-6-astra",
+  "effort": "low",
+  "plugins": "disabled for this invocation only",
+  "wall_seconds": 180,
+  "visible_operation_limit": 20,
+  "attempts": 1,
+  "token_limit": "No real-time hard cap; end-of-turn usage only",
+  "cli_version": "codex-cli 0.155.0-alpha.9",
+  "cli_sha256": "2e0918e73319f9a57126a1bf04dcc778e1ff5c1804cac1cbff08ba0853f1c97b",
+  "prompt_sha256": "3ce043c0ff2525bf42f0f56a2430587759a8797c789d0f5f85844fba0cfaa6a1",
+  "command": [
+    "/Applications/ChatGPT.app/Contents/Resources/codex",
+    "exec",
+    "--ephemeral",
+    "--disable",
+    "plugins",
+    "-m",
+    "gpt-6-astra",
+    "-c",
+    "model_reasoning_effort=\"low\"",
+    "-C",
+    "/private/tmp/issue113-revision2-f-sensitive-plugins-disabled",
+    "-s",
+    "workspace-write",
+    "--json",
+    "-o",
+    "/Users/tien-hsinglee/Project/li-family-web/docs/phase-artifacts/issue-113/revision-2/f-sensitive-plugins-disabled/final.txt",
+    "-"
+  ],
+  "workspace": "/private/tmp/issue113-revision2-f-sensitive-plugins-disabled"
+}

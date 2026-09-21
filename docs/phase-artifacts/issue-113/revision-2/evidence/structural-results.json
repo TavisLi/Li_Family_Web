@@ -1,0 +1,46 @@
+{
+  "revision": 2,
+  "runtime": "v26.5.0",
+  "head": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+  "branch": "codex/docs-113-governance-slice2",
+  "passed": true,
+  "checks": [
+    {
+      "name": "Revision 2 candidate sources retain approved hashes",
+      "passed": true
+    },
+    {
+      "name": "active core, routing and Claude entry exactly match Revision 2 candidates",
+      "passed": true
+    },
+    {
+      "name": "active Playbook exactly matches the approved Revision 2 candidate outcome",
+      "passed": true
+    },
+    {
+      "name": "owner documents, required sections and relative links resolve",
+      "passed": true
+    },
+    {
+      "name": "Revision 2 removes mandatory preloading without weakening stated safety checks",
+      "passed": true
+    },
+    {
+      "name": "authority, data and stop boundaries remain explicit",
+      "passed": true
+    },
+    {
+      "name": "existing Skill aliases remain symlinks and historical evidence is not rewritten",
+      "passed": true
+    },
+    {
+      "name": "changed governance surfaces contain no obvious credential signatures",
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "String and hash checks establish exact candidate application, not semantic equivalence or future model behavior.",
+    "Relative-link existence does not validate every Markdown anchor.",
+    "Credential signature checks are non-exhaustive."
+  ]
+}

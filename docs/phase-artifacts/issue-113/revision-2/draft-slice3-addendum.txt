@@ -1,0 +1,13 @@
+# Slice 3 interpretation addendum — DRAFT FOR HUMAN REVIEW
+
+本候選補充 Slice 3 解讀，不改寫原報告、trace、usage 或當時判定。
+
+原報告將 F-UI/F-DATA 判為 FAIL、並將新增讀取歸因為具體治理回歸，證據強度不足。六個完成 run 各只有一次樣本；較大的 logged output 包含 code/test/Git，並不等於較多「無關 instruction」。Before UI 未觀察到完整遵循舊必讀要求；不能把較少遵循規則的 baseline 當成等效驗證成本。
+
+Observed task correctness、scope preservation、routine UI 未啟用設計 Skill、有效批准未重問，以及 synthetic sensitive fail-closed 都有正面證據。比較效率與因果歸屬應記為 INCONCLUSIVE；安全 PASS 限於實際測過的個案。不能宣稱任何未測風險都不退化。
+
+六個完成 run 回報 input=1,532,308、cached input=1,315,712、input minus cached=216,596、output=14,534。數字不含主對話／中斷嘗試，不等於帳單或訂閱額度消耗。Static byte proxies、logged outputs、provider usage 保持分列。
+
+Runtime 證據亦有限制：runtime-before.json 記 CLI 0.155.0-alpha.9，而舊 manifest/README 寫 0.154.0-alpha.6.2；精確逐 run binary identity 未完整保存。Stderr 出現 marketplace 在 auto-upgrade 期間變動及 MCP auth/refresh 警告，不能宣稱整個 host/tool/catalog context 完全固定。F-DATA-before 有未在 JSONL 完整呈現的 rejected patch 診斷；其首次 failing test 沒有 logged diagnostic，不能僅憑 exit=1 認定失敗原因。沒有證據顯示 after 因此新增不當權限或 Production 動作。
+
+後續重設治理的理由是 Human 已選擇更少前置程序、更強模型自主性，加上現有 compulsory routing 可直接觀察到的閱讀義務；不是單次 input 增加已證明因果回歸。重設候選及新行為驗收仍待 Human 接受。

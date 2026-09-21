@@ -1,0 +1,7 @@
+已完成 [cleanup-review.md](cleanup-review.md)。
+
+明確結論：舊批准不能沿用至新基線；`UNKNOWN` 與回讀逾時下必須停止清理，舊報告「已成功」不足以 closeout。
+
+文件涵蓋四個 reconciliation 個案、schema/migration、privacy、回讀、rollback 與缺失證據。僅新增指定文件，既有資產未修改。
+
+本地文件覆蓋與格式檢查通過；未執行 Browser／Preview、Production 或資料操作。

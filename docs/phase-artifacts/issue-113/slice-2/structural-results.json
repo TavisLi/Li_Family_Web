@@ -1,0 +1,687 @@
+{
+  "baseline": {
+    "runtime": "v26.5.0",
+    "mode": "baseline",
+    "passed": true,
+    "checks": [
+      {
+        "name": "approved candidates are immutable; implemented core/routing match exactly",
+        "passed": true
+      },
+      {
+        "name": "preservation: authority — 獨立授權",
+        "passed": true
+      },
+      {
+        "name": "preservation: dirty — 既有 scope 外資產",
+        "passed": true
+      },
+      {
+        "name": "preservation: reconciliation — Source/Admin 資料保護",
+        "passed": true
+      },
+      {
+        "name": "preservation: privacy — Access 與 secret",
+        "passed": true
+      },
+      {
+        "name": "preservation: migration — Migration review/rehearsal/read-back",
+        "passed": true
+      },
+      {
+        "name": "preservation: stops — Fail-closed",
+        "passed": true
+      },
+      {
+        "name": "preservation: ui — 既有 UI stack 與媒體",
+        "passed": true
+      },
+      {
+        "name": "preservation: validation — 完整適用驗證",
+        "passed": true
+      },
+      {
+        "name": "preservation: versions — 版本特定 API 驗證",
+        "passed": true
+      },
+      {
+        "name": "preservation: history — 歷史不是權限",
+        "passed": true
+      },
+      {
+        "name": "explicit ordered precedence",
+        "passed": true
+      },
+      {
+        "name": "approval reuse is bounded; invalidation and #105 ownership remain",
+        "passed": true
+      },
+      {
+        "name": "all implementation routes inherit intake, git/PR and complete validation",
+        "passed": true
+      },
+      {
+        "name": "owners and routed numbered sections exist",
+        "passed": true
+      },
+      {
+        "name": "minimal context and direct UI owner: no missing P04 dependency",
+        "passed": true
+      },
+      {
+        "name": "aliases and out-of-scope files preserved",
+        "passed": true
+      }
+    ],
+    "limitations": [
+      "Structural preservation of reviewed text is not proof of model behavior.",
+      "Credential signature scan does not establish exhaustive secret absence."
+    ]
+  },
+  "implemented": {
+    "runtime": "v24.19.0",
+    "mode": "implemented",
+    "passed": true,
+    "checks": [
+      {
+        "name": "approved candidates are immutable; implemented core/routing match exactly",
+        "passed": true
+      },
+      {
+        "name": "preservation: authority — 獨立授權",
+        "passed": true
+      },
+      {
+        "name": "preservation: dirty — 既有 scope 外資產",
+        "passed": true
+      },
+      {
+        "name": "preservation: reconciliation — Source/Admin 資料保護",
+        "passed": true
+      },
+      {
+        "name": "preservation: privacy — Access 與 secret",
+        "passed": true
+      },
+      {
+        "name": "preservation: migration — Migration review/rehearsal/read-back",
+        "passed": true
+      },
+      {
+        "name": "preservation: stops — Fail-closed",
+        "passed": true
+      },
+      {
+        "name": "preservation: ui — 既有 UI stack 與媒體",
+        "passed": true
+      },
+      {
+        "name": "preservation: validation — 完整適用驗證",
+        "passed": true
+      },
+      {
+        "name": "preservation: versions — 版本特定 API 驗證",
+        "passed": true
+      },
+      {
+        "name": "preservation: history — 歷史不是權限",
+        "passed": true
+      },
+      {
+        "name": "explicit ordered precedence",
+        "passed": true
+      },
+      {
+        "name": "approval reuse is bounded; invalidation and #105 ownership remain",
+        "passed": true
+      },
+      {
+        "name": "all implementation routes inherit intake, git/PR and complete validation",
+        "passed": true
+      },
+      {
+        "name": "owners and routed numbered sections exist",
+        "passed": true
+      },
+      {
+        "name": "minimal context and direct UI owner: no missing P04 dependency",
+        "passed": true
+      },
+      {
+        "name": "aliases and out-of-scope files preserved",
+        "passed": true
+      },
+      {
+        "name": "product/domain truth unchanged and procedural lists preserved verbatim",
+        "passed": true
+      },
+      {
+        "name": "receiving owners contain authority/evidence requirements before deduplication",
+        "passed": true
+      },
+      {
+        "name": "skill bodies preserved and activation narrowed without dependency changes",
+        "passed": true
+      },
+      {
+        "name": "relative Markdown links in modified entry points resolve",
+        "passed": true
+      },
+      {
+        "name": "no reintroduced blanket startup and no extra changed/untracked files",
+        "passed": true
+      },
+      {
+        "name": "added content has no obvious credential signatures",
+        "passed": true
+      }
+    ],
+    "limitations": [
+      "Structural preservation of reviewed text is not proof of model behavior.",
+      "Credential signature scan does not establish exhaustive secret absence."
+    ]
+  },
+  "prior_results": [
+    {
+      "runtime": "v26.5.0",
+      "mode": "implemented",
+      "passed": false,
+      "checks": [
+        {
+          "name": "approved candidates are immutable; implemented core/routing match exactly",
+          "passed": true
+        },
+        {
+          "name": "preservation: authority — 獨立授權",
+          "passed": true
+        },
+        {
+          "name": "preservation: dirty — 既有 scope 外資產",
+          "passed": true
+        },
+        {
+          "name": "preservation: reconciliation — Source/Admin 資料保護",
+          "passed": true
+        },
+        {
+          "name": "preservation: privacy — Access 與 secret",
+          "passed": true
+        },
+        {
+          "name": "preservation: migration — Migration review/rehearsal/read-back",
+          "passed": true
+        },
+        {
+          "name": "preservation: stops — Fail-closed",
+          "passed": true
+        },
+        {
+          "name": "preservation: ui — 既有 UI stack 與媒體",
+          "passed": true
+        },
+        {
+          "name": "preservation: validation — 完整適用驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: versions — 版本特定 API 驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: history — 歷史不是權限",
+          "passed": true
+        },
+        {
+          "name": "explicit ordered precedence",
+          "passed": true
+        },
+        {
+          "name": "approval reuse is bounded; invalidation and #105 ownership remain",
+          "passed": true
+        },
+        {
+          "name": "all implementation routes inherit intake, git/PR and complete validation",
+          "passed": true
+        },
+        {
+          "name": "owners and routed numbered sections exist",
+          "passed": true
+        },
+        {
+          "name": "minimal context and direct UI owner: no missing P04 dependency",
+          "passed": true
+        },
+        {
+          "name": "aliases and out-of-scope files preserved",
+          "passed": true
+        },
+        {
+          "name": "receiving owners contain authority/evidence requirements before deduplication",
+          "passed": true
+        },
+        {
+          "name": "skill bodies preserved and activation narrowed without dependency changes",
+          "passed": true
+        },
+        {
+          "name": "relative Markdown links in modified entry points resolve",
+          "passed": true
+        },
+        {
+          "name": "no reintroduced blanket startup and no extra changed/untracked files",
+          "passed": false,
+          "error": "AssertionError [ERR_ASSERTION]: Outside allowlist: \"docs/\\345\\205\\250\\346\\240\\210\\347\\263\\273\\347\\273\\237\\351\\234\\200\\346\\261\\202\\344\\270\\216\\346\\212\\200\\346\\234\\257\\346\\236\\266\\346\\236\\204\\350\\257\\264\\346\\230\\216\\344\\271\\246.md\""
+        },
+        {
+          "name": "added content has no obvious credential signatures",
+          "passed": true
+        }
+      ],
+      "limitations": [
+        "Structural preservation of reviewed text is not proof of model behavior.",
+        "Credential signature scan does not establish exhaustive secret absence."
+      ]
+    },
+    {
+      "runtime": "v26.5.0",
+      "mode": "implemented",
+      "passed": false,
+      "checks": [
+        {
+          "name": "approved candidates are immutable; implemented core/routing match exactly",
+          "passed": true
+        },
+        {
+          "name": "preservation: authority — 獨立授權",
+          "passed": true
+        },
+        {
+          "name": "preservation: dirty — 既有 scope 外資產",
+          "passed": true
+        },
+        {
+          "name": "preservation: reconciliation — Source/Admin 資料保護",
+          "passed": true
+        },
+        {
+          "name": "preservation: privacy — Access 與 secret",
+          "passed": true
+        },
+        {
+          "name": "preservation: migration — Migration review/rehearsal/read-back",
+          "passed": true
+        },
+        {
+          "name": "preservation: stops — Fail-closed",
+          "passed": true
+        },
+        {
+          "name": "preservation: ui — 既有 UI stack 與媒體",
+          "passed": true
+        },
+        {
+          "name": "preservation: validation — 完整適用驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: versions — 版本特定 API 驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: history — 歷史不是權限",
+          "passed": true
+        },
+        {
+          "name": "explicit ordered precedence",
+          "passed": true
+        },
+        {
+          "name": "approval reuse is bounded; invalidation and #105 ownership remain",
+          "passed": true
+        },
+        {
+          "name": "all implementation routes inherit intake, git/PR and complete validation",
+          "passed": true
+        },
+        {
+          "name": "owners and routed numbered sections exist",
+          "passed": true
+        },
+        {
+          "name": "minimal context and direct UI owner: no missing P04 dependency",
+          "passed": true
+        },
+        {
+          "name": "aliases and out-of-scope files preserved",
+          "passed": true
+        },
+        {
+          "name": "receiving owners contain authority/evidence requirements before deduplication",
+          "passed": true
+        },
+        {
+          "name": "skill bodies preserved and activation narrowed without dependency changes",
+          "passed": true
+        },
+        {
+          "name": "relative Markdown links in modified entry points resolve",
+          "passed": true
+        },
+        {
+          "name": "no reintroduced blanket startup and no extra changed/untracked files",
+          "passed": false,
+          "error": "AssertionError [ERR_ASSERTION]: Outside allowlist: docs/phase-artifacts/issue-113/slice-1/README.md"
+        },
+        {
+          "name": "added content has no obvious credential signatures",
+          "passed": true
+        }
+      ],
+      "limitations": [
+        "Structural preservation of reviewed text is not proof of model behavior.",
+        "Credential signature scan does not establish exhaustive secret absence."
+      ]
+    },
+    {
+      "runtime": "v26.5.0",
+      "mode": "implemented",
+      "passed": true,
+      "checks": [
+        {
+          "name": "approved candidates are immutable; implemented core/routing match exactly",
+          "passed": true
+        },
+        {
+          "name": "preservation: authority — 獨立授權",
+          "passed": true
+        },
+        {
+          "name": "preservation: dirty — 既有 scope 外資產",
+          "passed": true
+        },
+        {
+          "name": "preservation: reconciliation — Source/Admin 資料保護",
+          "passed": true
+        },
+        {
+          "name": "preservation: privacy — Access 與 secret",
+          "passed": true
+        },
+        {
+          "name": "preservation: migration — Migration review/rehearsal/read-back",
+          "passed": true
+        },
+        {
+          "name": "preservation: stops — Fail-closed",
+          "passed": true
+        },
+        {
+          "name": "preservation: ui — 既有 UI stack 與媒體",
+          "passed": true
+        },
+        {
+          "name": "preservation: validation — 完整適用驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: versions — 版本特定 API 驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: history — 歷史不是權限",
+          "passed": true
+        },
+        {
+          "name": "explicit ordered precedence",
+          "passed": true
+        },
+        {
+          "name": "approval reuse is bounded; invalidation and #105 ownership remain",
+          "passed": true
+        },
+        {
+          "name": "all implementation routes inherit intake, git/PR and complete validation",
+          "passed": true
+        },
+        {
+          "name": "owners and routed numbered sections exist",
+          "passed": true
+        },
+        {
+          "name": "minimal context and direct UI owner: no missing P04 dependency",
+          "passed": true
+        },
+        {
+          "name": "aliases and out-of-scope files preserved",
+          "passed": true
+        },
+        {
+          "name": "receiving owners contain authority/evidence requirements before deduplication",
+          "passed": true
+        },
+        {
+          "name": "skill bodies preserved and activation narrowed without dependency changes",
+          "passed": true
+        },
+        {
+          "name": "relative Markdown links in modified entry points resolve",
+          "passed": true
+        },
+        {
+          "name": "no reintroduced blanket startup and no extra changed/untracked files",
+          "passed": true
+        },
+        {
+          "name": "added content has no obvious credential signatures",
+          "passed": true
+        }
+      ],
+      "limitations": [
+        "Structural preservation of reviewed text is not proof of model behavior.",
+        "Credential signature scan does not establish exhaustive secret absence."
+      ]
+    },
+    {
+      "runtime": "v24.19.0",
+      "mode": "implemented",
+      "passed": true,
+      "checks": [
+        {
+          "name": "approved candidates are immutable; implemented core/routing match exactly",
+          "passed": true
+        },
+        {
+          "name": "preservation: authority — 獨立授權",
+          "passed": true
+        },
+        {
+          "name": "preservation: dirty — 既有 scope 外資產",
+          "passed": true
+        },
+        {
+          "name": "preservation: reconciliation — Source/Admin 資料保護",
+          "passed": true
+        },
+        {
+          "name": "preservation: privacy — Access 與 secret",
+          "passed": true
+        },
+        {
+          "name": "preservation: migration — Migration review/rehearsal/read-back",
+          "passed": true
+        },
+        {
+          "name": "preservation: stops — Fail-closed",
+          "passed": true
+        },
+        {
+          "name": "preservation: ui — 既有 UI stack 與媒體",
+          "passed": true
+        },
+        {
+          "name": "preservation: validation — 完整適用驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: versions — 版本特定 API 驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: history — 歷史不是權限",
+          "passed": true
+        },
+        {
+          "name": "explicit ordered precedence",
+          "passed": true
+        },
+        {
+          "name": "approval reuse is bounded; invalidation and #105 ownership remain",
+          "passed": true
+        },
+        {
+          "name": "all implementation routes inherit intake, git/PR and complete validation",
+          "passed": true
+        },
+        {
+          "name": "owners and routed numbered sections exist",
+          "passed": true
+        },
+        {
+          "name": "minimal context and direct UI owner: no missing P04 dependency",
+          "passed": true
+        },
+        {
+          "name": "aliases and out-of-scope files preserved",
+          "passed": true
+        },
+        {
+          "name": "receiving owners contain authority/evidence requirements before deduplication",
+          "passed": true
+        },
+        {
+          "name": "skill bodies preserved and activation narrowed without dependency changes",
+          "passed": true
+        },
+        {
+          "name": "relative Markdown links in modified entry points resolve",
+          "passed": true
+        },
+        {
+          "name": "no reintroduced blanket startup and no extra changed/untracked files",
+          "passed": true
+        },
+        {
+          "name": "added content has no obvious credential signatures",
+          "passed": true
+        }
+      ],
+      "limitations": [
+        "Structural preservation of reviewed text is not proof of model behavior.",
+        "Credential signature scan does not establish exhaustive secret absence."
+      ]
+    },
+    {
+      "runtime": "v24.19.0",
+      "mode": "implemented",
+      "passed": true,
+      "checks": [
+        {
+          "name": "approved candidates are immutable; implemented core/routing match exactly",
+          "passed": true
+        },
+        {
+          "name": "preservation: authority — 獨立授權",
+          "passed": true
+        },
+        {
+          "name": "preservation: dirty — 既有 scope 外資產",
+          "passed": true
+        },
+        {
+          "name": "preservation: reconciliation — Source/Admin 資料保護",
+          "passed": true
+        },
+        {
+          "name": "preservation: privacy — Access 與 secret",
+          "passed": true
+        },
+        {
+          "name": "preservation: migration — Migration review/rehearsal/read-back",
+          "passed": true
+        },
+        {
+          "name": "preservation: stops — Fail-closed",
+          "passed": true
+        },
+        {
+          "name": "preservation: ui — 既有 UI stack 與媒體",
+          "passed": true
+        },
+        {
+          "name": "preservation: validation — 完整適用驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: versions — 版本特定 API 驗證",
+          "passed": true
+        },
+        {
+          "name": "preservation: history — 歷史不是權限",
+          "passed": true
+        },
+        {
+          "name": "explicit ordered precedence",
+          "passed": true
+        },
+        {
+          "name": "approval reuse is bounded; invalidation and #105 ownership remain",
+          "passed": true
+        },
+        {
+          "name": "all implementation routes inherit intake, git/PR and complete validation",
+          "passed": true
+        },
+        {
+          "name": "owners and routed numbered sections exist",
+          "passed": true
+        },
+        {
+          "name": "minimal context and direct UI owner: no missing P04 dependency",
+          "passed": true
+        },
+        {
+          "name": "aliases and out-of-scope files preserved",
+          "passed": true
+        },
+        {
+          "name": "product/domain truth unchanged and procedural lists preserved verbatim",
+          "passed": true
+        },
+        {
+          "name": "receiving owners contain authority/evidence requirements before deduplication",
+          "passed": true
+        },
+        {
+          "name": "skill bodies preserved and activation narrowed without dependency changes",
+          "passed": true
+        },
+        {
+          "name": "relative Markdown links in modified entry points resolve",
+          "passed": true
+        },
+        {
+          "name": "no reintroduced blanket startup and no extra changed/untracked files",
+          "passed": true
+        },
+        {
+          "name": "added content has no obvious credential signatures",
+          "passed": true
+        }
+      ],
+      "limitations": [
+        "Structural preservation of reviewed text is not proof of model behavior.",
+        "Credential signature scan does not establish exhaustive secret absence."
+      ]
+    }
+  ]
+}

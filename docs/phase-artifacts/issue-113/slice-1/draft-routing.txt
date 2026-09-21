@@ -1,0 +1,39 @@
+DRAFT ONLY — Slice 2 候選 docs/agent-context-routing.md；本檔不是生效中的治理指令。
+# Agent context routing
+
+本文件只擁有讀取路由，不授權任何操作。Authority／autonomy 由 AGENTS 擁有；vocabulary、accepted ADR、架構、domain／Phase rules、Skills 與 history 依 AGENTS 的明確優先級處理。下文「架構」指 docs/全栈系统需求与技术架构说明书.md，「Playbook」指 docs/phase-execution-playbook.md。
+
+## Minimal startup
+先讀 task／Issue、AGENTS、git status／HEAD／dirty boundary 及相關 code/document seam。按實際工作選下列 sections，跨域取聯集；已讀且仍適用的相同內容不重讀，source／scope／risk／baseline 變更時重新判定。這不是全量 startup 文件清單。缺 owner、連結失效或政策衝突時不得跳過必要規則；停受影響高風險操作並完成獨立安全部分。
+
+## Common implementation route
+任何文件、UI、application、domain、schema、seed／media 的實作或修改準備，都必須加入此路由；只讀與當前階段有關的 heading sections，不要求整本文件。
+
+1. Intake：Playbook §3 的「必要輸入」「必須寫清楚」「授權矩陣」及 §7 Gate 3 的適用規格，記錄 scope、out of scope、acceptance、預期修改、不可接受回歸與 stop conditions。需產品取捨／批准判定時加入 §4。已充分定義的有效 scope 不重問。
+2. Git／PR：架構 §11、Playbook §3.2 的 PR／Closes 規則及 §5 的 Git/branch/dirty preflight；PR 準備再讀 §11 的 PR 欄位。遵守最新 main、codex 分支、不直推 main、scope-only staging/commit。Audit-only 不因此 fetch／切 branch；操作仍受本次授權限制。§5 的 context 讀取依本路由取相關 sections，不還原全量讀取。
+3. Validation：讀完整 Playbook §10（含「驗證要求」），並讀 §11 的 scope-appropriate QA 清單，決定適用檢查、命令順序、N/A 與 blocker。套用 AGENTS 的純文件適用性及 browser-unavailable fallback 規則；不以節省 context 降低驗證。只有涉及 branch-scoped Preview 連 Production DB 的例外才另讀 §11.1，且先具備必要 authority。
+
+單純唯讀 audit 不啟動實作／部署／mutation 流程；稽核什麼規則就讀其 owner，固定基線與缺口明列。
+
+## Task-specific additions
+以下是共同路由以外的增量；Production read-only／release 等純操作亦須先辨識 task scope、批准與 stop conditions。
+
+| Task | 必讀增量 | 額外條件與 gate |
+| --- | --- | --- |
+| documentation-only | 修改文件、其引用 owner、相關 Issue acceptance | canonical decision 涉及時讀 CONTEXT 對應詞彙、accepted ADR／架構段落；純文件不需 application build，N/A 須說明；runtime/config 影響改走相關路由 |
+| frontend/UI | 架構 §3、§4、§6；AGENTS Minimal UI invariants；package/lockfile、現有 feature/component/styles/tests | media 加架構 §5.3／ADR-0004；Public/Family 行為加 ADR-0002；視覺設計才選主 Skill |
+| ordinary application code | 架構 §3、§4、對應 §7／§8；source/tests | access/data/schema 影響加入相關路由；API 不確定依實際安裝版本查官方文件 |
+| domain/data projection | CONTEXT 對應 domain；架構 §4、§5、§6、對應 §7／§8；相關 accepted ADR、generated types、data query、renderer/tests | Travel 加 ADR-0001/0002/0003/0006/0007；source 涉及時讀 docs/travel-content-source-guidelines.md 相關 sections |
+| schema/migration | domain 路由；架構 §9／§10；Playbook §4／§9；Collection/types/migration history | Production inventory 先有 read authority；generated SQL/up/down 適用部分人工審查、local rehearsal、approval、apply/read-back 不省略；cleanup 的 ADR-0008 只限原 scope，不作新 waiver |
+| seed/content/media | domain 路由；架構 §5；ADR-0004/0006；Playbook §9.1／§9.2 及「Seed-managed published content」；catalog/manifest/parser/reconciliation/tests | 該 seed 小節目前誤編為 §8.3，按 heading 定位；travel-only commands、Source/Current/Missing Base 保護與 full read-back 不省略；read/write authority 分開 |
+| Preview deployment | Playbook §3 授權矩陣、§4、§11；PR/head、deployment target、QA scope | local change 或 PR 準備不自動批准部署；連 Production DB 另讀 §11.1 並取得限定批准，無環境不可自行借用 Production |
+| Production read-only | Playbook §3 授權矩陣、§4 H4；架構 §6；批准 target/query/route/data 範圍、current-state；適用 §11／§12 | 未批准不查 live data/logs；可準備唯讀 plan，缺口明示；不得以 inventory preflight 推導 access |
+| Production mutation | schema／seed 路由；Playbook §4 H5-H8／§9；架構 §10；current approved package | migration/baseline/content/media/relationship/destructive 分別批准；缺 authority、drift、conflict、read-back failure／UNKNOWN 停止；只沿已存在且已審查 evidence 指向 #105 owner，不假設 runner 已完成 |
+| release/closeout | Playbook §2、§3.2、§4 H9/H10、§11–§14；架構 §11–§12；docs/templates/phase-completion-report-template.md；當前 acceptance/commit/PR/批准/evidence | merge/release/closeout 分別判斷有效 authority；Preview/Production 檢查不由 closeout 自動批准；AGENTS 保留報告目錄、中文與狀態語意；歷史只追必要 evidence chain |
+
+## Skill and evidence selection
+一般既有模式小修不自動啟用視覺 Skill；使用者明示 Skill 時仍受 task scope／precedence 約束。Requested redesign、新 landing/portfolio、指定風格、brand boards、web/mobile concept images、image-to-code、Stitch 文件各選對應主 Skill。frontend-design plugin 是可選流程，不與所有 repo Skills 疊加。先讀 metadata，再讀選用 Skill；references 依其任務相關性讀取，不能因名稱近似批次載入正文。
+
+UI invariants 目前由候選 AGENTS 的 Minimal UI invariants 節完整保留；本路由不引用不存在的架構 UI 子節，也不指向將被替換的舊 AGENTS 原文。未來移轉 owner 必須另經審查，先承接、驗證引用，再在同一原子變更刪除重複規則。
+
+Current-state／ledger 指向必要 evidence；不每輪載入全部歷史報告。Preparation 是規格，不是完成證據；有效 task specification 不因屬於 preparation 而被忽略。Completion Report 保存當時事實，後續以 addendum／Phase index 更新。此路由不授權刪檔、覆寫歷史、修改 memory 或實作 #105。#105 機制尚缺時報告缺口，不建立第二份 executor／approval invalidation contract。

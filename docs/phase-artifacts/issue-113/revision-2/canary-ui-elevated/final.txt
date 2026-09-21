@@ -1,0 +1,12 @@
+已完成 [member-profile-page.tsx:442](/private/tmp/issue113-revision2-ui-canary-elevated/src/features/member/member-profile-page.tsx:442) 第一個 hero section 的 spacing 小修：
+
+```diff
+- items-center gap-8 px-5 py-10 lg:grid-cols-[0.92fr_1.08fr]
++ items-center gap-6 px-5 py-10 lg:grid-cols-[0.92fr_1.08fr] lg:gap-8
+```
+
+手機使用 `gap-6`，`lg` 以上維持 `gap-8`；其他程式內容不變，既有使用者資產及治理修改未動。
+
+驗證：`git diff --check` 通過；本地 Node 斷言確認整份檔案相對固定 HEAD 僅有上述 class 變更。
+
+缺口：未安裝 `node_modules`，未執行套件測試或 build；Browser／Preview 不可用，未執行視覺驗證。

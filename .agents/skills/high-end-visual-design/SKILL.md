@@ -1,7 +1,13 @@
 ---
 name: high-end-visual-design
-description: Teaches the AI to design like a high-end agency. Defines the exact fonts, spacing, shadows, card structures, and animations that make a website feel expensive. Blocks all the common defaults that make AI designs look cheap or generic.
+description: "Apply a specifically requested high-end visual redesign; preserve existing stack and asset availability."
 ---
+
+## Scope and precedence
+
+Use only for the specific deliverable named in this skill, within the approved scope. Current user scope and repository canonical decisions override every technique, package, font, icon, image-count and output default below. Existing-pattern fixes do not trigger redesign or image generation. Read the repository operating contract for authority; this skill grants no external-write, Production, destructive or merge authority. Reuse valid approvals; ask only for consequential missing choices.
+
+<!-- preserved-technique-body -->
 
 # Agent Skill: Principal UI/UX Architect & Motion Choreographer (Awwwards-Tier)
 

@@ -1,0 +1,31 @@
+diff --git a/src/lib/travel-memory.test.ts b/src/lib/travel-memory.test.ts
+index 3716bd959..79438344f 100644
+--- a/src/lib/travel-memory.test.ts
++++ b/src/lib/travel-memory.test.ts
+@@ -104,6 +104,26 @@ assert.equal(gallery.items.length, 1)
+ assert.equal(gallery.items[0]?.caption, '南山文化旅遊區的海上觀音。')
+ assert.equal(gallery.items[0]?.type, 'photo')
+ assert.equal(gallery.items[0]?.type === 'photo' && gallery.items[0].media.altText, '海上觀音替代文字')
++const mediaBeforeProjection = structuredClone(media)
++for (const caption of [undefined, null, '', '第二天使用同一照片的敘事。']) {
++  const placementGallery = toTravelMemoryGallery(memory, [days[0], {
++    ...days[1],
++    moments: [{
++      momentKey: 'same-photo-another-day',
++      title: '同一照片的另一個位置',
++      placements: [{ placementKey: 'second-day-photo', type: 'photo', media, caption }],
++    }],
++  }], { dayKey: 'day-04', type: 'photo' })
++  assert.equal(placementGallery.items.length, 1)
++  const item = placementGallery.items[0]!
++  assert.equal(item.dayKey, 'day-04')
++  assert.equal(item.caption, caption, 'preserve the selected placement caption, including missing values for renderer fallback')
++  assert.equal(item.type, 'photo')
++  if (item.type === 'photo') {
++    assert.equal(item.media, media, 'keep the original media asset for accessibility')
++    assert.deepEqual(item.media, mediaBeforeProjection, 'projection must not overwrite media metadata')
++  }
++}
+ assert.equal(toTravelMemoryGallery(memory, days, { dayKey: 'day-04' }).items.length, 0)
+ const duplicateAssetGallery = toTravelMemoryGallery(memory, [
+   days[0],

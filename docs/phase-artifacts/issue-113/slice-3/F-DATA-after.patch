@@ -1,0 +1,44 @@
+--- fixture-input/src/lib/travel-memory.ts
++++ fixture-output/src/lib/travel-memory.ts
+@@ -196,7 +196,7 @@
+         const context = {
+           placementKey: placement.placementKey,
+           role: placement.role,
+-          caption: (placement.media && typeof placement.media === 'object' ? placement.media.altText : undefined) || placement.caption,
++          caption: placement.caption,
+           dayKey: day.dayKey,
+           day: day.day,
+           momentKey: moment.momentKey,
+--- fixture-input/src/lib/travel-memory.test.ts
++++ fixture-output/src/lib/travel-memory.test.ts
+@@ -104,6 +104,30 @@
+ assert.equal(gallery.items[0]?.caption, '南山文化旅遊區的海上觀音。')
+ assert.equal(gallery.items[0]?.type, 'photo')
+ assert.equal(gallery.items[0]?.type === 'photo' && gallery.items[0].media.altText, '海上觀音替代文字')
++for (const caption of [undefined, null, '']) {
++  const withoutCaption = toTravelMemoryGallery(memory, [{
++    ...days[0],
++    moments: [{
++      ...days[0].moments[0],
++      placements: [{ ...days[0].moments[0].placements[0], caption }],
++    }],
++  }])
++  assert.equal(withoutCaption.items[0]?.caption, caption, 'missing captions retain renderer fallback semantics')
++  assert.equal(withoutCaption.items[0]?.type === 'photo' && withoutCaption.items[0].media.altText, media.altText)
++}
++const mediaBeforeProjection = structuredClone(media)
++const secondDayCaption = '同一張照片在第二天的敘事。'
++const selectedDayGallery = toTravelMemoryGallery(memory, [days[0], {
++  ...days[1],
++  moments: [{
++    momentKey: 'second-day',
++    title: '第二天',
++    placements: [{ placementKey: 'second-day-photo', type: 'photo', media, caption: secondDayCaption }],
++  }],
++}], { dayKey: 'day-04', type: 'photo' })
++assert.equal(selectedDayGallery.totalItems, 1)
++assert.equal(selectedDayGallery.items[0]?.caption, secondDayCaption, 'selected day retains its own placement caption')
++assert.deepEqual(media, mediaBeforeProjection, 'projection must not mutate the shared media record')
+ assert.equal(toTravelMemoryGallery(memory, days, { dayKey: 'day-04' }).items.length, 0)
+ const duplicateAssetGallery = toTravelMemoryGallery(memory, [
+   days[0],

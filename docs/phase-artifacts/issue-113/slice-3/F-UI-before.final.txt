@@ -1,0 +1,15 @@
+已完成，僅修改 [member-profile-page.tsx:442](/private/tmp/issue113-slice3/F-UI-before/src/features/member/member-profile-page.tsx:442) 第一個 hero section：
+
+```diff
+- gap-8
++ gap-6 lg:gap-8
+```
+
+手機垂直間距縮小，`lg` 以上保留原間距；其他版面、文案、媒體、動畫及資料邏輯未變。
+
+驗證結果：
+- `git diff --check` 通過；diff 僅一行修改。
+- 既有 member profile 測試因缺少 `tsx` 無法執行，未安裝依賴。
+- 未執行 build、TypeScript、Browser／Preview 驗證。
+
+`README.md`、`personal-note.txt` 及治理文件均未修改；未 stage 或 commit。

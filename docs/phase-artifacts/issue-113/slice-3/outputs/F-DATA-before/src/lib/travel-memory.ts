@@ -1,0 +1,309 @@
+import type { Media, TravelMemory, TravelMemoryDay } from '@/payload/payload-types'
+import { toSafeYouTubeExternalUrl, toYouTubeVideoIdentity } from '@/features/travel/youtube'
+
+export const travelMemoryPresentationStyles = [
+  'editorial-journal',
+  'cinematic-timeline',
+  'family-scrapbook',
+] as const satisfies readonly NonNullable<TravelMemory['presentationStyle']>[]
+
+export type TravelMemoryPresentationStyle =
+  (typeof travelMemoryPresentationStyles)[number]
+
+const presentationStyleSet = new Set<string>(travelMemoryPresentationStyles)
+
+const initialPresentationStyles = {
+  '201307-hainan': 'family-scrapbook',
+  '202308-east-australia': 'cinematic-timeline',
+  '202602-thailand-phuket': 'editorial-journal',
+} as const satisfies Record<string, TravelMemoryPresentationStyle>
+
+export type TravelMemoryOverviewDay = Pick<
+  TravelMemoryDay,
+  'date' | 'day' | 'dayKey' | 'theme' | 'title'
+> & {
+  heroMedia?: Media | null
+}
+
+export type TravelMemoryDaySummary = Pick<TravelMemoryDay, 'day' | 'dayKey' | 'title'>
+type TravelMemoryOverviewDaySource = Pick<
+  TravelMemoryDay,
+  'dailyHeroImage' | 'date' | 'day' | 'dayKey' | 'theme' | 'title'
+> & Partial<Pick<TravelMemoryDay, 'moments'>>
+
+export type TravelMemoryOverview = Pick<
+  TravelMemory,
+  | 'coverImage'
+  | 'endDate'
+  | 'externalVideos'
+  | 'guestParticipants'
+  | 'isPrivate'
+  | 'participants'
+  | 'reminders'
+  | 'slug'
+  | 'startDate'
+  | 'storySections'
+  | 'summary'
+  | 'title'
+  | 'travelLedger'
+> & {
+  presentationStyle: TravelMemoryPresentationStyle
+  days: TravelMemoryOverviewDay[]
+}
+
+export type TravelMemorySource = Pick<
+  TravelMemory,
+  | 'coverImage'
+  | 'endDate'
+  | 'externalVideos'
+  | 'guestParticipants'
+  | 'isPrivate'
+  | 'participants'
+  | 'presentationStyle'
+  | 'reminders'
+  | 'slug'
+  | 'startDate'
+  | 'storySections'
+  | 'summary'
+  | 'title'
+  | 'travelLedger'
+> & {
+  galleryImages?: TravelMemory['galleryImages']
+}
+
+export type TravelMemoryDayView = {
+  memory: TravelMemoryOverview
+  day: TravelMemoryDay
+  previousDay: Pick<TravelMemoryDay, 'dayKey' | 'title'> | null
+  nextDay: Pick<TravelMemoryDay, 'dayKey' | 'title'> | null
+}
+
+type TravelMemoryMoment = NonNullable<TravelMemoryDay['moments']>[number]
+type TravelMemoryPlacement = NonNullable<TravelMemoryMoment['placements']>[number]
+
+export type TravelMemoryGalleryItem = Pick<
+  TravelMemoryPlacement,
+  'caption' | 'placementKey' | 'role'
+> & {
+  dayKey: TravelMemoryDay['dayKey'] | null
+  day: TravelMemoryDay['day'] | null
+  momentKey: TravelMemoryMoment['momentKey'] | null
+  location?: TravelMemoryMoment['location']
+  time?: TravelMemoryMoment['time']
+  unclassified: boolean
+} & (
+  | { type: Extract<NonNullable<TravelMemoryPlacement['type']>, 'photo'>; media: Media }
+  | { type: Extract<NonNullable<TravelMemoryPlacement['type']>, 'youtube'>; youtubeUrl: NonNullable<TravelMemoryPlacement['youtubeUrl']> }
+)
+
+export type TravelMemoryGallery = {
+  memory: TravelMemoryOverview
+  selectedDayKey: string | null
+  selectedLocation: string | null
+  selectedType: TravelMemoryGalleryItem['type'] | null
+  locations: string[]
+  page: number
+  pageSize: number
+  totalItems: number
+  totalPages: number
+  items: TravelMemoryGalleryItem[]
+}
+
+export type TravelMemoryGalleryFilters = {
+  dayKey?: string | null
+  location?: string | null
+  type?: string | null
+  page?: number
+  pageSize?: number
+}
+
+export function resolveTravelMemoryPresentationStyle(
+  value: unknown,
+): TravelMemoryPresentationStyle {
+  return typeof value === 'string' && presentationStyleSet.has(value)
+    ? (value as TravelMemoryPresentationStyle)
+    : 'editorial-journal'
+}
+
+export function presentationStyleForSlug(
+  slug: string,
+): TravelMemoryPresentationStyle | null {
+  return initialPresentationStyles[slug as keyof typeof initialPresentationStyles] ?? null
+}
+
+export function toTravelMemoryOverview(
+  memory: TravelMemorySource,
+  sourceDays: TravelMemoryOverviewDaySource[],
+): TravelMemoryOverview {
+  const days = sortDays(sourceDays)
+
+  return {
+    title: memory.title,
+    slug: memory.slug,
+    isPrivate: memory.isPrivate,
+    startDate: memory.startDate,
+    endDate: memory.endDate,
+    summary: memory.summary,
+    coverImage: memory.coverImage,
+    participants: memory.participants,
+    guestParticipants: memory.guestParticipants,
+    travelLedger: memory.travelLedger,
+    storySections: memory.storySections,
+    externalVideos: memory.externalVideos,
+    reminders: memory.reminders,
+    presentationStyle: resolveTravelMemoryPresentationStyle(memory.presentationStyle),
+    days: days.map((day) => ({
+      title: day.title,
+      dayKey: day.dayKey,
+      day: day.day,
+      date: day.date,
+      theme: day.theme,
+      heroMedia: resolveDailyHeroMedia(day),
+    })),
+  }
+}
+
+export function toTravelMemoryDayView(
+  memory: TravelMemorySource,
+  day: TravelMemoryDay,
+  navigationDays: TravelMemoryDaySummary[],
+): TravelMemoryDayView | null {
+  const days = sortDays(navigationDays)
+  const index = days.findIndex((item) => item.dayKey === day.dayKey)
+  if (index < 0) return null
+
+  return {
+    memory: toTravelMemoryOverview(memory, days),
+    day,
+    previousDay: adjacentDay(days[index - 1]),
+    nextDay: adjacentDay(days[index + 1]),
+  }
+}
+
+export function toTravelMemoryGallery(
+  memory: TravelMemorySource,
+  sourceDays: TravelMemoryDay[],
+  filters: TravelMemoryGalleryFilters = {},
+): TravelMemoryGallery {
+  const days = sortDays(sourceDays)
+  const selectedDayKey = filters.dayKey && days.some((day) => day.dayKey === filters.dayKey)
+    ? filters.dayKey
+    : null
+  const selectedType = filters.type === 'photo' || filters.type === 'youtube' ? filters.type : null
+  const classifiedItems = days.flatMap((day) =>
+    (day.moments ?? []).flatMap((moment) =>
+      (moment.placements ?? []).flatMap<TravelMemoryGalleryItem>((placement) => {
+        const context = {
+          placementKey: placement.placementKey,
+          role: placement.role,
+          caption: placement.caption,
+          dayKey: day.dayKey,
+          day: day.day,
+          momentKey: moment.momentKey,
+          location: moment.location,
+          time: moment.time,
+          unclassified: false,
+        }
+        if (placement.type === 'photo' && placement.media && typeof placement.media === 'object') {
+          return [{ ...context, type: 'photo', media: placement.media }]
+        }
+        const youtubeUrl = placement.type === 'youtube' && placement.youtubeUrl
+          ? toSafeYouTubeExternalUrl(placement.youtubeUrl)
+          : null
+        return youtubeUrl ? [{ ...context, type: 'youtube', youtubeUrl }] : []
+      }),
+    ),
+  )
+  const classifiedMediaIds = new Set(classifiedItems.flatMap((item) => item.type === 'photo' ? [item.media.id] : []))
+  const unclassifiedItems = (memory.galleryImages ?? []).flatMap((item) => {
+    if (typeof item !== 'object' || classifiedMediaIds.has(item.id)) return []
+    return [{
+      placementKey: `gallery:${item.id}`,
+      role: 'gallery',
+      caption: undefined,
+      dayKey: null,
+      day: null,
+      momentKey: null,
+      type: 'photo',
+      media: item,
+      unclassified: true,
+    } satisfies TravelMemoryGalleryItem]
+  })
+  const globalVideos = (memory.externalVideos ?? []).flatMap<TravelMemoryGalleryItem>((video) => {
+    const youtubeUrl = toSafeYouTubeExternalUrl(video.url)
+    return youtubeUrl ? [{
+      type: 'youtube', youtubeUrl, placementKey: `global:${toYouTubeVideoIdentity(youtubeUrl)}`,
+      caption: video.title, dayKey: null, day: null, momentKey: null, unclassified: true,
+    }] : []
+  })
+  const allItems: TravelMemoryGalleryItem[] = [...classifiedItems, ...unclassifiedItems, ...globalVideos]
+  const locations = [...new Set(
+    classifiedItems.flatMap((item) => item.location ? [item.location] : []),
+  )].sort((left, right) => left.localeCompare(right, 'zh-Hant'))
+  const selectedLocation = filters.location && locations.includes(filters.location)
+    ? filters.location
+    : null
+  const matchingItems = allItems.filter((item) =>
+    (!selectedDayKey || item.dayKey === selectedDayKey) &&
+    (!selectedLocation || item.location === selectedLocation) &&
+    (!selectedType || item.type === selectedType),
+  )
+  // Filter usages before deduplicating assets: another day's placement must
+  // never hide the selected day's return link. Daily usage wins over global.
+  const uniqueItems = new Map<string, TravelMemoryGalleryItem>()
+  for (const item of matchingItems) {
+    const identity = galleryItemIdentity(item)
+    if (!uniqueItems.has(identity)) uniqueItems.set(identity, item)
+  }
+  const filteredItems = [...uniqueItems.values()]
+  const pageSize = Math.min(Math.max(filters.pageSize ?? 24, 1), 60)
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / pageSize))
+  const page = Math.min(Math.max(filters.page ?? 1, 1), totalPages)
+  const offset = (page - 1) * pageSize
+
+  return {
+    memory: toTravelMemoryOverview(memory, days),
+    selectedDayKey,
+    selectedLocation,
+    selectedType,
+    locations,
+    page,
+    pageSize,
+    totalItems: filteredItems.length,
+    totalPages,
+    items: filteredItems.slice(offset, offset + pageSize),
+  }
+}
+
+function galleryItemIdentity(item: TravelMemoryGalleryItem): string {
+  return item.type === 'photo'
+    ? `photo:${item.media.id}`
+    : `youtube:${toYouTubeVideoIdentity(item.youtubeUrl)}`
+}
+
+function sortDays<T extends { day: number }>(days: T[]): T[] {
+  return [...days].sort((left, right) => left.day - right.day)
+}
+
+export function resolveDailyHeroMedia(
+  day: Pick<TravelMemoryDay, 'dailyHeroImage'> & Partial<Pick<TravelMemoryDay, 'moments'>>,
+): Media | null {
+  if (typeof day.dailyHeroImage === 'object' && day.dailyHeroImage) {
+    return day.dailyHeroImage
+  }
+
+  for (const moment of day.moments ?? []) {
+    for (const placement of moment.placements ?? []) {
+      if (placement.type === 'photo' && placement.media && typeof placement.media === 'object') {
+        return placement.media
+      }
+    }
+  }
+  return null
+}
+
+function adjacentDay(
+  day: TravelMemoryDaySummary | undefined,
+): Pick<TravelMemoryDay, 'dayKey' | 'title'> | null {
+  return day ? { dayKey: day.dayKey, title: day.title } : null
+}

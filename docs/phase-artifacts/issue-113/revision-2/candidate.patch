@@ -1,0 +1,169 @@
+--- a/AGENTS.md
++++ b/AGENTS.md
+@@ -1,47 +1,29 @@
+ # Web Li Agent Operating Contract
+ 
+-## Authority and precedence
+-遵守平台 system／developer 與 sandbox 規則。Repository 文件的優先級明確為：目前使用者 task／有效批准 → CONTEXT.md 穩定詞彙 → accepted ADR → docs/全栈系统需求与技术架构说明书.md 架構契約 → 本 AGENTS operating contract → owning domain／Phase rules → task-scoped Skills → historical evidence。ADR 的限定例外只適用原 scope，不得泛化；proposed ADR 不是已接受決策。文件與現行 schema／ADR 衝突時，不得靜默選擇或覆寫決策；停受影響高風險動作，提出具體衝突。
++## 自主與查證
++理解 task、核對 Git status／HEAD／既有變更、定位 seam。已批准可逆工作自主完成、簡述假設；只詢問影響 scope、產品、架構、privacy、acceptance 的實質歧義。不重做 intake／批准；受阻仍繼續獨立安全工作。
+ 
+-下列授權彼此獨立，不得推導：GitHub Issue／PRD publication or modification；local repository changes；Preview deployment；Production read-only access；Production migration；Production content／media writes；destructive operations；merge／release；closeout。Migration、baseline metadata、content、media、relationship cutover 與 destructive cleanup 亦須分別報告、分別批准。Skill、工具可用性、可 rollback、歷史成功及「完成 Phase」都不擴權。對話需求不自動批准 GitHub 發布／修改；拆分 Issue 須先確認粒度與依賴，再批准發布。
++自主選 context、方法與驗證；契約不明、變更或衝突時查 owner，不預讀清單。docs/agent-context-routing.md 是可選索引。Skills 按任務／使用者指定啟用，不因 UI 小修觸發 redesign／產圖，不擴權或覆寫 stack。
+ 
+-只重用仍有效的批准：target、allowed/excluded actions、scope、baseline、環境、stop conditions、有效期間／Phase 均須符合，且未被撤回。有效批准不重問；條件變更、失效或證據不足時停受影響操作，說明差異並取得必要的新批准，不自行延長或擴張。細部 gate 由 Playbook §3 授權矩陣、§4、§9、§11–§13 擁有，相關動作前必讀。
++## 權限與保全
++遵守平台 system／developer。Repository precedence：目前使用者 task／有效批准 → CONTEXT 穩定詞彙 → accepted ADR → 架構契約 → AGENTS → owning domain／Phase rules → task-scoped Skills → historical evidence。Proposed ADR 非決策，限定例外不泛化；契約與 schema／ADR 衝突時回報，停受影響高風險動作，不靜默覆寫。
+ 
+-## Work within scope
+-對已批准、低風險、可逆的工作，從現行 repo evidence 作合理假設、簡短說明後持續執行；非關鍵歧義不停止。這是本 repository 對全域「If something is unclear, stop」的具體化。缺失資訊會實質改變產品、技術、privacy、acceptance，或存在 consequential tradeoff 時才詢問。阻塞一條路徑時，繼續可安全完成的獨立工作。
++獨立授權：GitHub Issue／PRD 發布或修改、本地修改、Preview deployment、Production read-only、Production migration、Production content／media writes、destructive operations、merge／release、closeout。Migration、baseline metadata、content、media、relationship cutover、destructive cleanup 分別報告／批准。Phase 完成、工具／Skill、歷史成功、可 rollback 不擴權。
+ 
+-保留既有 dirty／untracked files 與 assets。除非使用者明確將其納入 scope，不得修改、還原、清理、stage 或 commit 既有 scope 外變更。只修改本次 scope，不新增推測需求，不順帶整理相鄰程式。每項變更／commit 必須可追溯至本次 scope。
++批准重用須 target、allowed/excluded actions、scope、baseline、環境、stop conditions、有效期間／Phase 相符且未撤回；有效不重問，失效／證據不足停受影響操作，不擴權。外部／高風險動作前查 Playbook 對應 gate；文件準備不觸發 apply／live access。
+ 
+-## Minimal startup and routing
+-先讀目前 task／Issue，取得 git status --short --branch、HEAD 與 dirty boundary，定位相關 code／document seam。實作前記錄 scope、非目標、可驗證 acceptance、預期修改與 stop conditions。依 docs/agent-context-routing.md 的共同實作路由及任務增量，讀取必要 owner sections；不全量預讀 CONTEXT、ADR、架構、Playbook、history 或 Skills。多領域取聯集；安全、correctness、acceptance 所需 context 不得省略。
++Scope 外既有 dirty／untracked files／assets 不修改、還原、清理、stage、commit，除非使用者明確納入。只改任務所需。既有分支核對、不擅切；新分支用最新已確認 main 的 codex/phase-* 或 codex/docs-*；不直推 main，提交／發布依 authority，audit 可固定 HEAD。
+ 
+-實作採最新已確認 main 的 codex/phase-* 或 codex/docs-* 分支；不直接 push main。既有任務分支先核對基線，不擅自切換或丟棄變更。audit-only 可固定 HEAD 唯讀比較，不為盤點切 branch。Git／PR 規則與適用 QA 依共同路由，讀取規則不等於取得執行權限。
++## 安全底線
++Public／Family access 必須由 collection／data layer 強制，不能只在 UI 隱藏。Secret 不進 client、log、report、fixture、HTML、Git 或 Issue／PR。Payload 是 runtime published truth，content-source 是 seed input；共編採 Base／Source／Current safe mode：Source-only 可更新、Current-only 保留、雙改不同值 conflict、Missing Base 既有 record preserve-current。Travel-only 不以全量 seed 順帶改 Users／member media／Home Config。
+ 
+-技術版本以 package.json、lockfile、.nvmrc／.node-version 及實際安裝證據核對。API／framework behavior 不確定時，查證 repository 實際安裝版本的官方文件；不能用最新版文件推定舊版行為。無法確認時明示缺口，不猜測。
++持久化需求才改 Collection；核對 Collection／types／migration history，預設 additive、nullable、backward-compatible。Schema 變更依 Playbook §9：generate types → generated migration → SQL／up／down 人工審查（適用時）→ disposable/local rehearsal → approval → apply／read-back。Production mutation 須 dry-run、before/after 計畫、rollback、獨立批准與 read-back；inventory 先有 read authority。Cleanup 另列 scope，不借舊 waiver。
+ 
+-## Data, privacy and stop boundaries
+-Payload collections／globals 是 runtime published source of truth；content-source 是版本化 seed input。Source 與 Admin 共編時採 Base／Source／Current：safe mode 預設、Source-only 可更新、Current-only 保留、雙方不同修改產生 conflict、Missing Base 既有 record 預設 preserve-current。Travel-only 使用 seed:travel、seed:travel:dry-run、seed:travel:read-back 的現行適用入口；不以全量 seed 順帶修改 Users、member media 或 Home Config。命令名稱不授予 Production read/write 權限。
++Data-loss／dev-schema warning、資料破壞風險、inventory／deployment／驗證 commit 漂移、未批准 collection／delete／update、reconciliation conflict、read-back timeout／failure、UNKNOWN、私密 response／metadata／JSON-LD 洩漏：保留證據、停受影響操作；不放行 warning、不自行 retry／repair mutation、不將 UNKNOWN 當成功或失敗。
+ 
+-只有真實持久化需求才改 Collection。Schema 工作讀 Collection、generated types、migration history；Production inventory 必須另有 read authority。流程依 Playbook §9：Collection → generate types → generated migration → 人工審查 SQL／up／down（適用時）→ disposable/local rehearsal → approval package → 獲准 apply → read-back。預設 additive、nullable、backward-compatible；cleanup 是獨立 scope。Production mutation 前須有 scope、dry-run、before／after verification 計畫及 rollback，執行後完成 read-back。
++## 既有實作與驗證
++沿用現有架構／stack；data access 經 src/lib/data，projection 派生 generated types，不用 any／第二份 schema。API 不確定時查 repository 實際安裝版本官方文件。UI 沿用 Tailwind／shadcn；禁 React inline style={{}}（框架輸出例外）；保留合適 loading/error boundary；缺圖用 ImageFallback，非內容完成證據；media relation 預設 optional，required 需需求／migration 證據；用 R2 S3 adapter，禁 Vercel Blob。
+ 
+-Public／Family access 在 collection／data layer 強制，不以 UI 隱藏替代。Secret 不得進入 client、log、report、fixture、HTML、Git 或 Issue／PR。資料讀取、目錄與 generated-type derivation 依架構 §4；route／feature 不直接呼叫 Payload Local API，不用 any 或第二份手寫 schema 規避型別。
++按風險／acceptance 充分驗證；不預讀 Playbook §10–§11，有疑問查 owner，不豁免適用要求。檢查 diff／secret；適用 build 完成才 tsc，不並行、不臨時裝 Prettier。文件-only 說明 runtime QA 不適用；executable config/schema/runtime 影響須重判。HTTP／HTML／focused tests 可作 Browser unavailable fallback，明列 Browser／Preview 缺口；acceptance 未滿足保留 blocker。Build／READY／HTTP 200 非 runtime／data／release 完成證據。
+ 
+-以下情況停受影響高風險操作、保留證據並回報：文件與現行 schema／ADR 衝突；migration 顯示可能刪除／改寫既有資料；CLI data-loss／dev-schema warning；inventory／deployment 與批准基線漂移；未批准 collection／delete／unexpected update／reconciliation conflict；read-back timeout／failure；Preview／Production commit 與應驗證基線不一致；commit／mutation state 為 UNKNOWN；private response／metadata／JSON-LD 洩漏；缺少或失效 authority。CLI warning 不互動確認後繼續；UNKNOWN 不當成成功或失敗自行重試。不以舊成功 evidence 取代新失敗，不自行 retry／repair mutation。
+-
+-## Minimal UI invariants
+-下列規則在本 P01 保留，不依賴尚未建立的架構 UI 子節：沿用 Tailwind CSS 與現有 shadcn/ui，不加無必要的第二套 design system；禁 React inline style={{}}，框架自動輸出的 HTML style 例外；關鍵 route segment 保有合適 loading／error boundary；缺圖使用既有 ImageFallback，但不視為最終媒體完成；圖片關聯預設 optional，required business field 需需求與 migration 證據；媒體使用 Cloudflare R2 S3 adapter，禁止 Vercel Blob。
+-
+-只有另經審查、先建立等價 owner 並驗證路由的同一原子變更，才可從本節移除規則。本候選不要求 P04 先完成。
+-
+-## Skills, validation and evidence
+-只啟用任務相關或使用者指定的 Skill，先看 metadata；通常選一個主設計 Skill，其餘技術片段按需讀。Skill 不覆寫較高優先規則、不新增權限或重複批准 gate；字型、icon、動畫、dependency、產圖與 output defaults 均受現有 stack／scope 約束。一般既有模式小修不自動觸發重設計或產圖。
+-
+-所有實作路由必須抵達 Playbook §10 完整適用驗證規則，並判定 §11 的 Browser／HTTP／Preview QA。Focused tests；Collection 改動生成 types；適用時 pnpm run build 完成後才 pnpm tsc --noEmit；git diff --check；secret／credential 與 generated migration 審查；適用 QA。Build 與 tsc 不並行，不臨時安裝 Prettier。純文件變更做內容、引用、語意與 diff／secret 檢查，application build／runtime QA 可列 N/A 並說明；executable config／schema 或 runtime 行為受影響則重新分類，不得假借文件工作省略驗證。
+-
+-Browser unavailable 時，HTTP／rendered HTML／focused tests 可提供 scope-appropriate fallback evidence；必須明列缺少的 Browser／Preview coverage，不代表完整 browser validation。若 acceptance 仍需要該 coverage，保留 blocker。Preview／Production QA 需各自 authority，缺批准時準備計畫並回報缺口，不為驗證擴權。不以 build PASS、READY、HTTP 200、fallback 顯示代替 runtime／data／release acceptance。
+-
+-PR 內容、Closes 條件、Phase lifecycle 與報告依共同／closeout 路由；只有所有 Issue acceptance 完成才使用 Closes。Completion Report 放 docs/phase-completion-reports/，使用中文、採現行模板，完整記錄範圍、Git/PR、交付、檔案、驗證、QA、資料/read-back、限制、rollback、Issue 與 next-phase readiness；N/A 說明原因。Implemented 是實作完成，Implementing 是進行中，不混用為已驗證。
+-
+-CONTEXT 擁有穩定詞彙、架構契約記現行設計、ADR 記持久決策；preparation 是規格非完成證據，artifacts 保存 dry-run／approval／migration evidence。Historical prompts／reports 只按需驗證，不作目前 authority；有效 task specification 仍按其 scope 使用。報告保留當時事實，後續用 addendum／Phase index，不改寫歷史或 memory。
+-
+-#105 擁有 runner、manifest、ledger、receipt、bounded I/O、approval invalidation 執行機制與 Preview QA execution contract。此處只定義讀取／行為邊界，不複製或實作該契約，也不假定尚未完成的 #105 能力存在；缺少必要執行證據時保留 blocker。
++報告實際變更、驗證與缺口；PR／Phase closeout 查 Playbook §11–§14／模板，acceptance 全完成才 Closes。歷史用 addendum 補狀態，不改寫 memory；有效 preparation 是規格非證據。#105 擁有 runner／manifest／ledger／receipt／bounded I/O／approval invalidation／Preview QA execution contract，不複製或假定已完成。
+--- a/docs/agent-context-routing.md
++++ b/docs/agent-context-routing.md
+@@ -1,38 +1,16 @@
+-# Agent context routing
++# Agent context lookup
+ 
+-本文件只擁有讀取路由，不授權任何操作。Authority／autonomy 由 AGENTS 擁有；vocabulary、accepted ADR、架構、domain／Phase rules、Skills 與 history 依 AGENTS 的明確優先級處理。下文「架構」指 docs/全栈系统需求与技术架构说明书.md，「Playbook」指 docs/phase-execution-playbook.md。
++這是按需查詢索引，不是開工清單。先處理 task 與實際 seam；只有需釐清契約、變更契約或控制相關風險時，讀能解答問題的 owner 段落。不要依「UI」「Travel」等標籤載入一組文件；已讀且仍有效的內容不重讀。找不到 owner 或證據衝突時回報，停受影響高風險動作。索引不授權操作；authority 與 precedence 由 [AGENTS](../AGENTS.md) 擁有。
+ 
+-## Minimal startup
+-先讀 task／Issue、AGENTS、git status／HEAD／dirty boundary 及相關 code/document seam。按實際工作選下列 sections，跨域取聯集；已讀且仍適用的相同內容不重讀，source／scope／risk／baseline 變更時重新判定。這不是全量 startup 文件清單。缺 owner、連結失效或政策衝突時不得跳過必要規則；停受影響高風險操作並完成獨立安全部分。
++| 要釐清的問題 | Owner／定位 |
++| --- | --- |
++| 詞彙、持久決策 | [CONTEXT](../CONTEXT.md)；[ADR index](./adr/README.md)，只追相關 accepted 決策 |
++| Stack、目錄、data access／generated types、domain 契約 | [架構](./全栈系统需求与技术架构说明书.md) §3–§9，按問題定位 |
++| Source／Admin reconciliation、media ownership | 架構 §5；[ADR-0006](./adr/0006-seed-reconciliation-protects-published-content.md)；source 格式需釐清時查 [source guideline](./travel-content-source-guidelines.md) |
++| Public／Family enforcement | 架構 §6；[ADR-0002](./adr/0002-family-mode-is-an-access-boundary.md) |
++| Travel placement caption 與多頁共享模型 | [ADR-0009](./adr/0009-travel-memory-pages-share-one-content-model.md)，配合當前 projection／renderer |
++| 授權、scope 取捨、schema／資料或 destructive 動作 | [Playbook](./phase-execution-playbook.md) §3–§4、§9；migration 架構 §10。只查涉及 gate；Production inventory 仍需獨立 read authority |
++| 驗證適用性、Browser fallback、Preview | Playbook §10–§11；只有實際採用獲准的 Production-backed Preview 才用 §11.1 |
++| Git／PR、merge／release、Phase／Issue closeout | 架構 §11；Playbook §2、§5、§11–§14；正式報告用 [模板](./templates/phase-completion-report-template.md) |
+ 
+-## Common implementation route
+-任何文件、UI、application、domain、schema、seed／media 的實作或修改準備，都必須加入此路由；只讀與當前階段有關的 heading sections，不要求整本文件。
+-
+-1. Intake：Playbook §3 的「必要輸入」「必須寫清楚」「授權矩陣」及 §7 Gate 3 的適用規格，記錄 scope、out of scope、acceptance、預期修改、不可接受回歸與 stop conditions。需產品取捨／批准判定時加入 §4。已充分定義的有效 scope 不重問。
+-2. Git／PR：架構 §11、Playbook §3.2 的 PR／Closes 規則及 §5 的 Git/branch/dirty preflight；PR 準備再讀 §11 的 PR 欄位。遵守最新 main、codex 分支、不直推 main、scope-only staging/commit。Audit-only 不因此 fetch／切 branch；操作仍受本次授權限制。§5 的 context 讀取依本路由取相關 sections，不還原全量讀取。
+-3. Validation：讀完整 Playbook §10（含「驗證要求」），並讀 §11 的 scope-appropriate QA 清單，決定適用檢查、命令順序、N/A 與 blocker。套用 AGENTS 的純文件適用性及 browser-unavailable fallback 規則；不以節省 context 降低驗證。只有涉及 branch-scoped Preview 連 Production DB 的例外才另讀 §11.1，且先具備必要 authority。
+-
+-單純唯讀 audit 不啟動實作／部署／mutation 流程；稽核什麼規則就讀其 owner，固定基線與缺口明列。
+-
+-## Task-specific additions
+-以下是共同路由以外的增量；Production read-only／release 等純操作亦須先辨識 task scope、批准與 stop conditions。
+-
+-| Task | 必讀增量 | 額外條件與 gate |
+-| --- | --- | --- |
+-| documentation-only | 修改文件、其引用 owner、相關 Issue acceptance | canonical decision 涉及時讀 CONTEXT 對應詞彙、accepted ADR／架構段落；純文件不需 application build，N/A 須說明；runtime/config 影響改走相關路由 |
+-| frontend/UI | 架構 §3、§4、§6；AGENTS Minimal UI invariants；package/lockfile、現有 feature/component/styles/tests | media 加架構 §5.3／ADR-0004；Public/Family 行為加 ADR-0002；視覺設計才選主 Skill |
+-| ordinary application code | 架構 §3、§4、對應 §7／§8；source/tests | access/data/schema 影響加入相關路由；API 不確定依實際安裝版本查官方文件 |
+-| domain/data projection | CONTEXT 對應 domain；架構 §4、§5、§6、對應 §7／§8；相關 accepted ADR、generated types、data query、renderer/tests | Travel 加 ADR-0001/0002/0003/0006/0007；source 涉及時讀 docs/travel-content-source-guidelines.md 相關 sections |
+-| schema/migration | domain 路由；架構 §9／§10；Playbook §4／§9；Collection/types/migration history | Production inventory 先有 read authority；generated SQL/up/down 適用部分人工審查、local rehearsal、approval、apply/read-back 不省略；cleanup 的 ADR-0008 只限原 scope，不作新 waiver |
+-| seed/content/media | domain 路由；架構 §5；ADR-0004/0006；Playbook §9.1／§9.2 及「Seed-managed published content」；catalog/manifest/parser/reconciliation/tests | 該 seed 小節目前誤編為 §8.3，按 heading 定位；travel-only commands、Source/Current/Missing Base 保護與 full read-back 不省略；read/write authority 分開 |
+-| Preview deployment | Playbook §3 授權矩陣、§4、§11；PR/head、deployment target、QA scope | local change 或 PR 準備不自動批准部署；連 Production DB 另讀 §11.1 並取得限定批准，無環境不可自行借用 Production |
+-| Production read-only | Playbook §3 授權矩陣、§4 H4；架構 §6；批准 target/query/route/data 範圍、current-state；適用 §11／§12 | 未批准不查 live data/logs；可準備唯讀 plan，缺口明示；不得以 inventory preflight 推導 access |
+-| Production mutation | schema／seed 路由；Playbook §4 H5-H8／§9；架構 §10；current approved package | migration/baseline/content/media/relationship/destructive 分別批准；缺 authority、drift、conflict、read-back failure／UNKNOWN 停止；只沿已存在且已審查 evidence 指向 #105 owner，不假設 runner 已完成 |
+-| release/closeout | Playbook §2、§3.2、§4 H9/H10、§11–§14；架構 §11–§12；docs/templates/phase-completion-report-template.md；當前 acceptance/commit/PR/批准/evidence | merge/release/closeout 分別判斷有效 authority；Preview/Production 檢查不由 closeout 自動批准；AGENTS 保留報告目錄、中文與狀態語意；歷史只追必要 evidence chain |
+-
+-## Skill and evidence selection
+-一般既有模式小修不自動啟用視覺 Skill；使用者明示 Skill 時仍受 task scope／precedence 約束。Requested redesign、新 landing/portfolio、指定風格、brand boards、web/mobile concept images、image-to-code、Stitch 文件各選對應主 Skill。frontend-design plugin 是可選流程，不與所有 repo Skills 疊加。先讀 metadata，再讀選用 Skill；references 依其任務相關性讀取，不能因名稱近似批次載入正文。
+-
+-UI invariants 目前由候選 AGENTS 的 Minimal UI invariants 節完整保留；本路由不引用不存在的架構 UI 子節，也不指向將被替換的舊 AGENTS 原文。未來移轉 owner 必須另經審查，先承接、驗證引用，再在同一原子變更刪除重複規則。
+-
+-Current-state／ledger 指向必要 evidence；不每輪載入全部歷史報告。Preparation 是規格，不是完成證據；有效 task specification 不因屬於 preparation 而被忽略。Completion Report 保存當時事實，後續以 addendum／Phase index 更新。此路由不授權刪檔、覆寫歷史、修改 memory 或實作 #105。#105 機制尚缺時報告缺口，不建立第二份 executor／approval invalidation contract。
++Skills 先看 metadata；只讀選用 Skill 及必要 references。歷史 evidence 只沿具體待驗證主張查找，不當現行 authority，不全量掃讀。未知 API 查實際安裝版本的官方文件，不猜最新版本適用性。
+--- a/.claude/CLAUDE.md
++++ b/.claude/CLAUDE.md
+@@ -1,7 +1,3 @@
+ # Claude Code Entry Point
+ 
+-Web Li 的跨代理 operating contract 由 repository root [AGENTS.md](../AGENTS.md) 擁有。
+-
+-先讀 AGENTS，再依 [context routing](../docs/agent-context-routing.md) 的共同實作路由與任務增量取得 owning sections；不全量預讀 CONTEXT、架構、ADR、Playbook 或歷史報告。
+-
+-Authority、autonomy、stack 與 Phase 規則服從該 operating contract 及其明訂的 canonical precedence。本檔不建立第二份規則或新增操作權限。
++遵守 repository root [AGENTS.md](../AGENTS.md)。按 task 自主定位實際 seam；[context lookup](../docs/agent-context-routing.md) 是可選 owner 索引，不是啟動必讀清單。本入口不新增規則、操作權限或批准流程。
+--- a/docs/phase-execution-playbook.md
++++ b/docs/phase-execution-playbook.md
+@@ -3,6 +3,8 @@
+ 版本：1.0
+ 更新日期：2026-07-24
+ 適用範圍：Phase、跨領域功能、schema／seed／Production data、重大文件治理與 release closeout。
++
++本文件是對應工作的程序 owner，不是所有任務的開工必讀。已清楚授權的低風險本地工作依 AGENTS 自主完成，按實際問題查本文件；不強制另造 Phase、逐 gate 填表或重問批准。適用的 acceptance、驗證要求與外部／高風險 authority gates 仍有效，不因未預讀而豁免。
+ 
+ ## 1. 目的
+ 
+@@ -184,7 +186,7 @@
+ 
+ | 節點 | 需要人類決定什麼 | 代理在批准前可以做什麼 |
+ | --- | --- | --- |
+-| H1 需求正規化 | Scope、out of scope、acceptance criteria 是否符合原意 | Repo exploration、草擬需求 |
++| H1 需求正規化 | 僅實質 scope／acceptance 歧義或取捨需人類決定；有效任務說明不重問批准 | Repo exploration、合理假設與必要需求草稿 |
+ | H2 Issue publication | 是否將草稿／拆分發布或修改到 GitHub | 草擬 PRD、Issue 與 dependency graph |
+ | H3 產品／架構取捨 | 選擇會改變使用者行為、domain model、privacy 或 supersede ADR 的方案 | 提供 alternatives、tradeoffs、prototype／evidence |
+ | H4 Production access | 是否允許讀取私密 Production data／logs，scope 多大 | 準備唯讀 query／route 清單 |
+@@ -223,7 +225,7 @@
+ 1. 執行 `git status --short --branch`，記錄 HEAD 與既有 dirty／untracked boundary；不得處理 scope 外變更。
+ 2. 實作前更新／核對 remote main 與 `origin/main`，依批准 scope 從最新基線建立 `codex/phase-*` 或 `codex/docs-*` 分支；既有任務分支先核對基線，不擅自切換。Audit-only 可用固定 HEAD 作唯讀比較，不為盤點 fetch／切 branch。
+ 3. Runtime/tooling 涉及時，依 `package.json`、lockfile、`.nvmrc`／`.node-version` 核對實際版本，不用歷史版本指令猜測。
+-4. 依 [context routing](./agent-context-routing.md) 的共同實作路由及任務增量讀 owning sections、相關 source／tests；不全量預讀 CONTEXT、架構、ADR、歷史報告或 Skills。
++4. 先定位相關 source／tests，按問題查 owning evidence；[context lookup](./agent-context-routing.md) 是可選索引。不因任務類別預讀文件聯集；遇契約不明、變更或風險時查相應 owner。
+ 5. 讀取本次 Issue／task acceptance。PR、Preview／Production 狀態僅於相關階段且具備必要 authority 時核對；缺少 access 可完成本地準備，不推導 live inspection 權限。
+ 
+ ### Gate output
+@@ -350,7 +352,7 @@
+ 
+ ## 10. Gate 6：本地驗證
+ 
+-所有實作路由都須讀本節完整適用規則，並判定 §11 的 scope-appropriate QA。依風險選擇 focused tests，application／runtime 改動適用時依序：
++代理依改動風險與 acceptance 選擇充分驗證，不要求每次先讀本節或 §11；驗證適用性不明時查本節，PR／Preview QA 查 §11。模型自主選擇不豁免已適用的驗證要求。依風險選擇 focused tests，application／runtime 改動適用時依序：
+ 
+ ```bash
+ pnpm run build

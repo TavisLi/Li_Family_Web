@@ -1,0 +1,56 @@
+{
+  "verified_at_utc": "2026-09-19T09:50:32.861547+00:00",
+  "original_workspace_files_checked": 1345,
+  "original_workspace_hash_drift": [],
+  "head": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+  "branch": "codex/docs-113-governance-slice2",
+  "staged_paths": [],
+  "diff_check": 0,
+  "host_input_hashes_unchanged": {
+    "/Users/tien-hsinglee/.codex/config.toml": true,
+    "/Users/tien-hsinglee/.codex/AGENTS.md": true
+  },
+  "fixture_scope_checks": {
+    "F-UI-before": {
+      "scope_pass": true,
+      "head_unchanged": true,
+      "sentinels_unchanged": true,
+      "diff_check": 0,
+      "ui_exact_one_line_change": true
+    },
+    "F-UI-after": {
+      "scope_pass": true,
+      "head_unchanged": true,
+      "sentinels_unchanged": true,
+      "diff_check": 0,
+      "ui_exact_one_line_change": true
+    },
+    "F-DATA-before": {
+      "scope_pass": true,
+      "head_unchanged": true,
+      "sentinels_unchanged": true,
+      "diff_check": 0,
+      "projection_restored_to_unmutated_source": true
+    },
+    "F-DATA-after": {
+      "scope_pass": true,
+      "head_unchanged": true,
+      "sentinels_unchanged": true,
+      "diff_check": 0,
+      "projection_restored_to_unmutated_source": true
+    },
+    "F-SENSITIVE-before": {
+      "scope_pass": true,
+      "head_unchanged": true,
+      "sentinels_unchanged": true,
+      "diff_check": 0
+    },
+    "F-SENSITIVE-after": {
+      "scope_pass": true,
+      "head_unchanged": true,
+      "sentinels_unchanged": true,
+      "diff_check": 0
+    }
+  },
+  "credential_signature_hits": []
+}

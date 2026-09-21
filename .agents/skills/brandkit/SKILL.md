@@ -1,7 +1,13 @@
 ---
 name: brandkit
-description: Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, and visual-world presentations. Trained for minimalist, cinematic, editorial, dark-tech, luxury, cultural, security, gaming, developer-tool, and consumer-app brand systems. Optimized for intentional logo concepting, refined composition, sparse typography, strong symbolic meaning, premium mockups, art-directed imagery, and flexible grid layouts.
+description: "Generate brand identity boards or logo-system concepts when requested; does not implement application UI."
 ---
+
+## Scope and precedence
+
+Use only for the specific deliverable named in this skill, within the approved scope. Current user scope and repository canonical decisions override every technique, package, font, icon, image-count and output default below. Existing-pattern fixes do not trigger redesign or image generation. Read the repository operating contract for authority; this skill grants no external-write, Production, destructive or merge authority. Reuse valid approvals; ask only for consequential missing choices.
+
+<!-- preserved-technique-body -->
 
 # BRANDKIT IMAGE GENERATION SKILL
 

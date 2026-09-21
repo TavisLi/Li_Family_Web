@@ -1,0 +1,41 @@
+--- fixture-input/src/lib/travel-memory.ts
++++ fixture-output/src/lib/travel-memory.ts
+@@ -196,7 +196,7 @@
+         const context = {
+           placementKey: placement.placementKey,
+           role: placement.role,
+-          caption: (placement.media && typeof placement.media === 'object' ? placement.media.altText : undefined) || placement.caption,
++          caption: placement.caption,
+           dayKey: day.dayKey,
+           day: day.day,
+           momentKey: moment.momentKey,
+--- fixture-input/src/lib/travel-memory.test.ts
++++ fixture-output/src/lib/travel-memory.test.ts
+@@ -104,6 +104,27 @@
+ assert.equal(gallery.items[0]?.caption, '南山文化旅遊區的海上觀音。')
+ assert.equal(gallery.items[0]?.type, 'photo')
+ assert.equal(gallery.items[0]?.type === 'photo' && gallery.items[0].media.altText, '海上觀音替代文字')
++const originalMedia = structuredClone(media)
++for (const caption of [undefined, null, '', '另一日的位置敘事']) {
++  const placementDay: TravelMemoryDay = {
++    ...days[1],
++    moments: [{
++      momentKey: 'second-day-photo',
++      title: '同一照片的另一個位置',
++      placements: [{ placementKey: 'second-placement', type: 'photo', media, caption }],
++    }],
++  }
++  const filteredGallery = toTravelMemoryGallery(memory, [days[0], placementDay], {
++    dayKey: 'day-04', type: 'photo',
++  })
++  assert.equal(filteredGallery.items.length, 1)
++  const item = filteredGallery.items[0]
++  assert.equal(item.caption, caption, 'preserve the selected placement caption, including absent or empty values for renderer fallback')
++  assert.equal(item.placementKey, 'second-placement')
++  assert.ok(item.type === 'photo')
++  assert.equal(item.media, media, 'keep the original media asset for accessibility')
++  assert.deepEqual(media, originalMedia, 'projection must not mutate media metadata')
++}
+ assert.equal(toTravelMemoryGallery(memory, days, { dayKey: 'day-04' }).items.length, 0)
+ const duplicateAssetGallery = toTravelMemoryGallery(memory, [
+   days[0],

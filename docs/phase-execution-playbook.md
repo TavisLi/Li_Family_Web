@@ -4,6 +4,8 @@
 更新日期：2026-07-24
 適用範圍：Phase、跨領域功能、schema／seed／Production data、重大文件治理與 release closeout。
 
+本文件是對應工作的程序 owner，不是所有任務的開工必讀。已清楚授權的低風險本地工作依 AGENTS 自主完成，按實際問題查本文件；不強制另造 Phase、逐 gate 填表或重問批准。適用的 acceptance、驗證要求與外部／高風險 authority gates 仍有效，不因未預讀而豁免。
+
 ## 1. 目的
 
 本 Playbook 將 Phase 1–17 的交付經驗收斂成同一條可執行流程。它解決四個重複出現的問題：
@@ -24,6 +26,8 @@ Ready
   ↓
 Implementing
   ↓
+Implemented
+  ↓
 Locally verified
   ↓
 PR ready
@@ -34,6 +38,8 @@ Production verified
   ↓
 Closed
 ```
+
+`Implementing` 是實作進行中；`Implemented` 是實作完成，兩者均不代表驗證完成。
 
 不需要部署或資料操作的 Phase，可將不適用階段標記 `N/A`，但 Completion Report 必須說明原因。
 
@@ -180,7 +186,7 @@ HITL 的目的不是讓每個技術步驟都停下等待，而是在人類必須
 
 | 節點 | 需要人類決定什麼 | 代理在批准前可以做什麼 |
 | --- | --- | --- |
-| H1 需求正規化 | Scope、out of scope、acceptance criteria 是否符合原意 | Repo exploration、草擬需求 |
+| H1 需求正規化 | 僅實質 scope／acceptance 歧義或取捨需人類決定；有效任務說明不重問批准 | Repo exploration、合理假設與必要需求草稿 |
 | H2 Issue publication | 是否將草稿／拆分發布或修改到 GitHub | 草擬 PRD、Issue 與 dependency graph |
 | H3 產品／架構取捨 | 選擇會改變使用者行為、domain model、privacy 或 supersede ADR 的方案 | 提供 alternatives、tradeoffs、prototype／evidence |
 | H4 Production access | 是否允許讀取私密 Production data／logs，scope 多大 | 準備唯讀 query／route 清單 |
@@ -212,23 +218,15 @@ HITL 的目的不是讓每個技術步驟都停下等待，而是在人類必須
 - Stop conditions
 - 有效期間／Phase
 
-預先授權不涵蓋未列出的 Production mutation 或 destructive action。
+預先授權不涵蓋未列出的 Production mutation 或 destructive action。批准重用與失效判定依 [AGENTS operating contract](../AGENTS.md)：target、actions、scope、baseline、環境、停止條件、有效期間均須符合且未撤回；有效批准不重問，變更或證據不足則停受影響操作。本節不實作 #105 的 approval-invalidation 機制。
 
 ## 5. Gate 1：Preflight
 
-1. `git fetch origin`。
-2. 確認 `main` 與 `origin/main`。
-3. 執行 `git status --short --branch`。
-4. 記錄使用者既有 dirty／untracked files。
-5. 確認 Node `24.21.0`。
-6. 讀取：
-   - `CONTEXT.md`
-   - 相關 ADR
-   - 架構契約
-   - Owning domain docs
-   - 現行 source／schema／data layer／renderer／tests
-7. 檢查相關 Issue、PR、Vercel deployment 與 Production evidence。
-8. 從最新 `main` 建立 `codex/phase-*` 分支。
+1. 執行 `git status --short --branch`，記錄 HEAD 與既有 dirty／untracked boundary；不得處理 scope 外變更。
+2. 實作前更新／核對 remote main 與 `origin/main`，依批准 scope 從最新基線建立 `codex/phase-*` 或 `codex/docs-*` 分支；既有任務分支先核對基線，不擅自切換。Audit-only 可用固定 HEAD 作唯讀比較，不為盤點 fetch／切 branch。
+3. Runtime/tooling 涉及時，依 `package.json`、lockfile、`.nvmrc`／`.node-version` 核對實際版本，不用歷史版本指令猜測。
+4. 先定位相關 source／tests，按問題查 owning evidence；[context lookup](./agent-context-routing.md) 是可選索引。不因任務類別預讀文件聯集；遇契約不明、變更或風險時查相應 owner。
+5. 讀取本次 Issue／task acceptance。PR、Preview／Production 狀態僅於相關階段且具備必要 authority 時核對；缺少 access 可完成本地準備，不推導 live inspection 權限。
 
 ### Gate output
 
@@ -299,11 +297,11 @@ Substantive Phase 使用 `docs/templates/phase-preparation-template.md`，至少
 
 ### 9.2 固定順序
 
-1. Production inventory
+1. Production inventory（先取得範圍明確的 read-only authority；未批准只能準備 query／plan）
 2. Collection change
 3. Generate types
 4. Generate migration
-5. Review generated migration
+5. 人工審查 generated migration SQL／up／down（適用時）
 6. Disposable/local rehearsal
 7. Negative／drift rehearsal
 8. Approval package
@@ -323,9 +321,38 @@ Substantive Phase 使用 `docs/templates/phase-preparation-template.md`，至少
 - Conflict 未處理時不執行 source-wins。
 - Payload export 只能寫入 parser-safe artifacts，不直接覆蓋 source。
 
+### 9.3 Production action authority
+
+下列動作分別批准：
+
+- Migration
+- Baseline metadata
+- Content update
+- Media upload
+- Relationship cutover
+- RLS／grants
+- Destructive cleanup
+
+本節與 §4 的 read／write／destructive gate 共同適用；一類動作的批准不推導其他類別。
+
+### 9.4 Production approval evidence
+
+Approval package 至少包含：
+
+- Target environment
+- Current inventory
+- Migration／script hash
+- Expected mutation counts
+- Stop conditions
+- Rollback
+- Before／after query
+- Read-back result
+
+執行前提供 before／after verification 計畫；執行後補齊實際 read-back result。此為治理 evidence 要求，runner／manifest／ledger／receipt 的執行契約仍由 #105 擁有。
+
 ## 10. Gate 6：本地驗證
 
-依風險選擇 focused tests，然後依序：
+代理依改動風險與 acceptance 選擇充分驗證，不要求每次先讀本節或 §11；驗證適用性不明時查本節，PR／Preview QA 查 §11。模型自主選擇不豁免已適用的驗證要求。依風險選擇 focused tests，application／runtime 改動適用時依序：
 
 ```bash
 pnpm run build
@@ -338,6 +365,10 @@ git diff --check
 ```bash
 pnpm exec payload generate:types
 ```
+
+純文件改動檢查內容、引用、語意保留、diff 與 secret；application build／runtime QA 可記 `N/A` 並說明。Executable config、schema 或 runtime 行為受影響時重新分類，不能藉文件 scope 省略 required validation。離線治理 regression script 執行 focused checks，不為它啟動 application build 或連線 Production。
+
+Browser unavailable 時，HTTP／rendered HTML／focused tests 可提供範圍適當的 fallback evidence；明列缺少的 Browser／Preview coverage，不表示完整 browser validation。Acceptance 仍要求該 coverage 時保留 blocker；Preview／Production access 仍需獨立批准。
 
 ### 驗證要求
 
@@ -407,7 +438,7 @@ Vercel `READY` 只證明 deployment build 完成，不證明 route、database、
 
 ## 13. Gate 9：Closeout
 
-使用 `docs/templates/phase-completion-report-template.md`。
+使用 [Completion Report template](./templates/phase-completion-report-template.md)，以中文存入 `docs/phase-completion-reports/`。完整保留模板的 scope、Git/PR、交付、檔案、驗證、QA、資料/read-back、限制、rollback、Issue 與 next-phase readiness；`N/A` 說明原因。
 
 ### Phase Closed 必須滿足
 
@@ -434,13 +465,8 @@ Vercel `READY` 只證明 deployment build 完成，不證明 route、database、
 
 ## 15. Phase 1–17 的可重用門檻
 
-- Schema-first 必須以真實需求為前提，不為推測新增欄位。
-- Dynamic route、data layer、generated types 是跨 Phase 架構底線。
-- Access boundary 在 data／collection layer。
-- Content parity 是 release gate。
-- Media 使用 diff-based sync，避免全量重傳。
-- Node 24.21.0 是 Payload tooling baseline。
-- 視覺 annotation 應在 Preview merge 前收斂。
-- Admin edits 必須受 reconciliation 保護。
-- Plan／Memory 是獨立 aggregate。
-- Legacy cleanup 永遠晚於 cutover、read-back、觀察與獨立批准。
+- Schema、data ownership、reconciliation、access、type 與 media 原則依 [架構 §4–§6／§10](./全栈系统需求与技术架构说明书.md) 及相關 [accepted ADR](./adr/README.md)；UI invariants 仍由 [AGENTS](../AGENTS.md) 保留。
+- Runtime 版本依現行 package/selectors，按 §5 核對。
+- Content parity 是 release gate；視覺 annotation 在適用 Preview merge 前收斂。
+- Plan／Memory 的持久模型依 ADR-0007，不由 Phase 流程重定義。
+- Legacy cleanup 永遠晚於 cutover、read-back、觀察與獨立批准，依 §4／§9／§12。

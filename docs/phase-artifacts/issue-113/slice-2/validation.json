@@ -1,0 +1,316 @@
+{
+  "status": "LOCAL_IMPLEMENTED_STRUCTURALLY_VERIFIED_HUMAN_REVIEW_PENDING",
+  "generated_at_utc": "2026-09-15T12:05:27.656258+00:00",
+  "issue": "TavisLi/Li_Family_Web#113",
+  "slice": 2,
+  "head": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+  "branch": "codex/docs-113-governance-slice2",
+  "remote_main_at_preflight": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+  "staged_files": [],
+  "approved_candidates": {
+    "draft-core.txt": "93333794ebbe6b71a8706cbd6172e06b2f608bcb1510d1b0f9a92aca0a41f88c",
+    "draft-routing.txt": "608eaefb60bec56fcbf94cf0287926c31759d93b22d22b9595c8039578b9de06"
+  },
+  "changed_files": [
+    {
+      "path": "AGENTS.md",
+      "change": "MODIFIED",
+      "before_sha256": "4597b2b02d09aaf9d5605615df78ba776218b546d5ed645d9c3f6158b1d0dd8e",
+      "after_sha256": "bcd65aa50b3734a57b1453efd0fcc024f28177ae1e9002dbf9ee4dcfffd07964",
+      "utf8_bytes": 9022,
+      "added_lines": 27,
+      "removed_lines": 148
+    },
+    {
+      "path": "docs/agent-context-routing.md",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "98209a51e7042d2d86dd532dc98d4d5a45df3286f410053ed376b58912aea180",
+      "utf8_bytes": 6624,
+      "added_lines": 38,
+      "removed_lines": 0
+    },
+    {
+      "path": "docs/phase-execution-playbook.md",
+      "change": "MODIFIED",
+      "before_sha256": "8f85f50dc70d5ad96b604eb8033c2ddefc14a476068efdb096ca594e4f770ca1",
+      "after_sha256": "7e3914601fae852e4dc17157141ca7656601e04d099098a89ffeeaddbeefe09a",
+      "utf8_bytes": 20828,
+      "added_lines": 52,
+      "removed_lines": 28
+    },
+    {
+      "path": "docs/全栈系统需求与技术架构说明书.md",
+      "change": "MODIFIED",
+      "before_sha256": "8bf3d01014a29d39b6b425e933290f007c8d4bf22d6aac48d5db679993b10066",
+      "after_sha256": "483c508825e4777d32dc4240ec051464fcd799a67e3ab796c0f8cfb6a55d9033",
+      "utf8_bytes": 13564,
+      "added_lines": 4,
+      "removed_lines": 27
+    },
+    {
+      "path": ".claude/CLAUDE.md",
+      "change": "MODIFIED",
+      "before_sha256": "cd63b0b66901002662757ccbadf69a4b629dc057204e2cfec217b98fa439ff20",
+      "after_sha256": "cd1e45591c2d8c0ec515f27e654a875e2d6fa03b1e10a394fd5ba339391227d0",
+      "utf8_bytes": 497,
+      "added_lines": 3,
+      "removed_lines": 9
+    },
+    {
+      "path": ".agents/skills/brandkit/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "b0c4837e1bd140ca816ae54948754ddd2ac1e2a4d3619363777a80caf00b2ede",
+      "after_sha256": "282d3b30fc91248aec1b88f9221db0e9970daea894a59edfed71c28a761ad367",
+      "utf8_bytes": 16191,
+      "added_lines": 7,
+      "removed_lines": 1
+    },
+    {
+      "path": ".agents/skills/design-taste-frontend/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "aa194351b246b8b4799099d4ed7b033d29eab6e6e3d58d8d2172978be7b3ec89",
+      "after_sha256": "fb909377351407548ad3805ed4a078977b42b4dee20d55e33955d8466f2dca69",
+      "utf8_bytes": 2023,
+      "added_lines": 14,
+      "removed_lines": 1196
+    },
+    {
+      "path": ".agents/skills/high-end-visual-design/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "e1e32f5e2d420872c6c7332b53d5ff7721946766b78c4822b424c2d512c8fdbc",
+      "after_sha256": "438a9f80662fc2df39d0b122d3357945d2a0524de5fab958fbda0745c96b8819",
+      "utf8_bytes": 10989,
+      "added_lines": 7,
+      "removed_lines": 1
+    },
+    {
+      "path": ".agents/skills/image-to-code/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "4c060a8064a8b13380bc2ef3d6e6a1d0b1e316aa093cd9807d0ce9e4eeb037fa",
+      "after_sha256": "a518f3f749949ca71212622f9b3e84ad76a777f65ecf51e3e03ac207de24867e",
+      "utf8_bytes": 36571,
+      "added_lines": 7,
+      "removed_lines": 1
+    },
+    {
+      "path": ".agents/skills/imagegen-frontend-mobile/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "8a33389979f3074fa0926678e266ad2eb9234624472254469fc1ad916b9caa24",
+      "after_sha256": "fb7442db87c9b3c253b4663e39a7bb31f0cde8b3683e25b5f0a2bb7bc0b918fb",
+      "utf8_bytes": 40328,
+      "added_lines": 7,
+      "removed_lines": 1
+    },
+    {
+      "path": ".agents/skills/imagegen-frontend-web/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "6b5c2256522fdba1e3313eafa3d743b960a7b13ec029d3e6586e04b23327c1f8",
+      "after_sha256": "4e84004c28fcf21a61b35e1a41d192d9365f45c590a2432ff9f1be8c54d56c00",
+      "utf8_bytes": 36866,
+      "added_lines": 7,
+      "removed_lines": 1
+    },
+    {
+      "path": ".agents/skills/industrial-brutalist-ui/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "fffbaac8597f07679e9d87145533567658aedba3b5eca6f16a7075a333048caa",
+      "after_sha256": "1b548e7f7adbed97fee961508dd1b9033e44ad1e0c6ce8dbabfff682fb25fee3",
+      "utf8_bytes": 8835,
+      "added_lines": 7,
+      "removed_lines": 1
+    },
+    {
+      "path": ".agents/skills/minimalist-ui/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "36bc7328f085405f43b476938e62460fa573bf7e984e949e072bcf014831a44c",
+      "after_sha256": "52aff21ebc28950c9e7e580c2a3393927c450525d1abb6a779e65d4798afe9ab",
+      "utf8_bytes": 8433,
+      "added_lines": 7,
+      "removed_lines": 1
+    },
+    {
+      "path": ".agents/skills/redesign-existing-projects/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "98ad3e5b051bfb71b2795f7e8a6aa0d32b51ee095606c098a4b2822ac07926c9",
+      "after_sha256": "f8d4dd62dd2dc119211309e96e389edede1f113d7eb90a993b691acfc86fc4b5",
+      "utf8_bytes": 15503,
+      "added_lines": 7,
+      "removed_lines": 1
+    },
+    {
+      "path": ".agents/skills/stitch-design-taste/SKILL.md",
+      "change": "MODIFIED",
+      "before_sha256": "46bdb08fee2dded38b6ba0a051230a502d6ac6e4044afd47592cb40c256028b5",
+      "after_sha256": "c50e8051575ccbfe9c459f075578cdb1d0f0e781362d21c4257f92a66d0ad5ad",
+      "utf8_bytes": 12255,
+      "added_lines": 7,
+      "removed_lines": 1
+    },
+    {
+      "path": ".agents/skills/design-taste-frontend/references/design-techniques.md",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "e4085f3e4fa4fc206e699624568209b786548728803ba8c712b15396406c248c",
+      "utf8_bytes": 86935,
+      "added_lines": 1203,
+      "removed_lines": 0
+    },
+    {
+      "path": "src/scripts/agent-governance.test.ts",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "530c6c46aface506c17fcc75895cc1735a6e23bf567df68a7cb66c454316208e",
+      "utf8_bytes": 12019,
+      "added_lines": 190,
+      "removed_lines": 0
+    },
+    {
+      "path": "docs/phase-artifacts/issue-113/slice-2/manifest.json",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "6a67d91d91adcacd2e96321f07bae0dab9c9fbbfd5282cc2de988322b2946a2e",
+      "utf8_bytes": 10957,
+      "added_lines": 202,
+      "removed_lines": 0
+    },
+    {
+      "path": "docs/phase-artifacts/issue-113/slice-2/baseline.json",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "54cffb787272f428c58004cfa803480c0c7339559b00cd9e2c4172d122a8c2bd",
+      "utf8_bytes": 9187,
+      "added_lines": 96,
+      "removed_lines": 0
+    },
+    {
+      "path": "docs/phase-artifacts/issue-113/slice-2/preservation-fixtures.json",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "bd31eb2d0b10591b654fbd32ed7ea46c85e148d50ec485e492a415320b87edf7",
+      "utf8_bytes": 6125,
+      "added_lines": 225,
+      "removed_lines": 0
+    },
+    {
+      "path": "docs/phase-artifacts/issue-113/slice-2/structural-results.json",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "0068c940f0a616f517d7ef48d9b286cae22eb173fb85582aad8c463742fc5e8f",
+      "utf8_bytes": 20641,
+      "added_lines": 687,
+      "removed_lines": 0
+    },
+    {
+      "path": "docs/phase-artifacts/issue-113/slice-2/measure-context.py",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "e630f05ef342b6655158283246aa95591249e109f77787cdcca2f17ce4a6778f",
+      "utf8_bytes": 6674,
+      "added_lines": 77,
+      "removed_lines": 0
+    },
+    {
+      "path": "docs/phase-artifacts/issue-113/slice-2/static-benchmark.json",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "2259f30ff64d111ba7cd8dee3f315c3a1218a78527f5956e9d5d93bfa2c3fe65",
+      "utf8_bytes": 39355,
+      "added_lines": 1131,
+      "removed_lines": 0
+    },
+    {
+      "path": "docs/phase-artifacts/issue-113/slice-2/validation.json",
+      "change": "ADDED",
+      "after_sha256": null,
+      "hash_note": "Receipt excludes its own digest to avoid self-reference; final digest emitted after writing."
+    },
+    {
+      "path": "docs/phase-artifacts/issue-113/slice-2/README.md",
+      "change": "ADDED",
+      "before_sha256": null,
+      "after_sha256": "4c0bc2c19a9a105c861f26e0148f73da527e363c639aed06fffcb4fb90ea3d36",
+      "utf8_bytes": 7378,
+      "added_lines": 80,
+      "removed_lines": 0
+    }
+  ],
+  "diff_summary": {
+    "modified_tracked_files": 14,
+    "new_functional_files": 3,
+    "new_evidence_files_including_receipt": 8,
+    "existing_slice1_files_preserved": 12,
+    "tracked_git_added_lines": 163,
+    "tracked_git_removed_lines": 1417,
+    "note": "Git tracked diff excludes the new technique reference, routing, test and evidence. Full per-file Git counts above include untracked additions without staging."
+  },
+  "validation": {
+    "baseline_checks_pass": true,
+    "structural_checks_pass": true,
+    "structural_check_count": 23,
+    "structural_runtime": "v24.19.0",
+    "approved_text_equality": true,
+    "protected_hashes_unchanged": true,
+    "technique_bodies_and_aliases_preserved": true,
+    "product_domain_sections_unchanged": true,
+    "receiving_lists_verbatim": true,
+    "all_implementation_routes_reach_validation": true,
+    "route_and_markdown_anchors_exist": true,
+    "git_diff_check": "PASS",
+    "new_authored_whitespace": "PASS",
+    "preserved_reference_whitespace": "Original bytes preserved; not reformatted",
+    "secret_scan": "No credential signature detected; manual added-diff review found no new secret/credential; not exhaustive certification",
+    "metadata_validation": "Dependency-free checks passed for exact name/JSON-quoted description frontmatter subset; no fields silently dropped",
+    "skill_creator_quick_validate": "UNAVAILABLE: PyYAML absent from both existing Python runtimes; no install",
+    "focused_tsc": "UNAVAILABLE: repository TypeScript dependency absent; no install",
+    "application_build_full_tsc_browser_preview_production": "NOT_RUN: governance-only structural scope; no application or DB imports",
+    "behavior_benchmark_slice3": "NOT_RUN"
+  },
+  "commands": [
+    "git ls-remote origin refs/heads/main (read-only preflight)",
+    "node src/scripts/agent-governance.test.ts --baseline",
+    "/Users/tien-hsinglee/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node src/scripts/agent-governance.test.ts",
+    "python3 docs/phase-artifacts/issue-113/slice-2/measure-context.py",
+    "git diff --check"
+  ],
+  "static_fixture_summary": [
+    {
+      "id": "F-UI",
+      "before_utf8_bytes": 34023,
+      "after_utf8_bytes": 28529,
+      "delta_bytes": -5494,
+      "delta_percent": -16.15
+    },
+    {
+      "id": "F-DATA",
+      "before_utf8_bytes": 56688,
+      "after_utf8_bytes": 60845,
+      "delta_bytes": 4157,
+      "delta_percent": 7.33
+    },
+    {
+      "id": "F-SENSITIVE",
+      "before_utf8_bytes": 61862,
+      "after_utf8_bytes": 54767,
+      "delta_bytes": -7095,
+      "delta_percent": -11.47
+    }
+  ],
+  "manual_review": {
+    "precedence_and_authority": "Approved P01/P02 exact equality plus explicit preservation assertions",
+    "receiving_owner_order": "Playbook received authority/evidence before architecture removed duplicated lists",
+    "ui_owner": "Remains in AGENTS; obsolete P04 not applied",
+    "routine_ui_activation": "Metadata narrowly names design/image deliverables; all body scopes exclude existing-pattern fixes; actual model activation not tested",
+    "history": "Slice1 preserved; Slice2 manifest supersedes obsolete proposal",
+    "side_effects": "No staging/commit/push/GitHub writes/Production/deploy/merge/release; no #105/#114/#118 implementation"
+  },
+  "remaining_unknowns": [
+    "Structural text/link tests do not prove model behavior; Slice3 requires separate authorization.",
+    "Data fixture increased 4157 UTF-8 bytes because common routing/validation and approved core are now counted.",
+    "Fresh-session plugin/skill discovery behavior not tested or reconfigured.",
+    "Node24.19 utility execution is not Node24.21 application runtime validation.",
+    "Quick_validate/tsc tooling limitations recorded above; no dependencies installed.",
+    "Pre-existing F15 domain historical-state concern unchanged; no Production inspection."
+  ],
+  "hash_scope": "All changed source/evidence files hashed except this receipt itself. Re-running evidence scripts requires a refreshed receipt."
+}

@@ -1,0 +1,15 @@
+--- a/docs/phase-execution-playbook.md
++++ b/docs/phase-execution-playbook.md
+@@
+ 適用範圍：Phase、跨領域功能、schema／seed／Production data、重大文件治理與 release closeout。
++
++本文件是對應工作的程序 owner，不是所有任務的開工必讀。已清楚授權的低風險本地工作依 AGENTS 自主完成，按實際問題查本文件；不強制另造 Phase、逐 gate 填表或重問批准。適用的 acceptance、驗證要求與外部／高風險 authority gates 仍有效，不因未預讀而豁免。
+@@
+-| H1 需求正規化 | Scope、out of scope、acceptance criteria 是否符合原意 | Repo exploration、草擬需求 |
++| H1 需求正規化 | 僅實質 scope／acceptance 歧義或取捨需人類決定；有效任務說明不重問批准 | Repo exploration、合理假設與必要需求草稿 |
+@@
+-4. 依 [context routing](./agent-context-routing.md) 的共同實作路由及任務增量讀 owning sections、相關 source／tests；不全量預讀 CONTEXT、架構、ADR、歷史報告或 Skills。
++4. 先定位相關 source／tests，按問題查 owning evidence；[context lookup](./agent-context-routing.md) 是可選索引。不因任務類別預讀文件聯集；遇契約不明、變更或風險時查相應 owner。
+@@
+-所有實作路由都須讀本節完整適用規則，並判定 §11 的 scope-appropriate QA。依風險選擇 focused tests，application／runtime 改動適用時依序：
++代理依改動風險與 acceptance 選擇充分驗證，不要求每次先讀本節或 §11；驗證適用性不明時查本節，PR／Preview QA 查 §11。模型自主選擇不豁免已適用的驗證要求。依風險選擇 focused tests，application／runtime 改動適用時依序：

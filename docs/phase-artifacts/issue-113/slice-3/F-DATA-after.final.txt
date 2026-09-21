@@ -1,0 +1,9 @@
+已修正 `toTravelMemoryGallery`，直接保留 `placement.caption`；altText 維持無障礙用途，缺少 caption 時沿用 renderer 原有 fallback。修正後該程式檔與固定 HEAD 一致。
+
+驗證結果：
+- 修正前成功重現 caption 被 altText 蓋過。
+- 修正後 projection 與 child-access focused tests 通過。
+- 新增缺少 caption、跨日 caption、媒體不被修改的回歸測試；既有 day/type filters 測試通過。
+- `git diff --check` 通過。
+
+使用現有 Node 26 執行，未安裝依賴；未執行 build、完整型別檢查或 Browser／Preview QA。scope 外資產及治理檔案均未修改。
