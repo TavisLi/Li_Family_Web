@@ -74,6 +74,10 @@ check('Revision 2 removes mandatory preloading without weakening stated safety c
 check('authority, data and stop boundaries remain explicit', () => {
   includes(read('AGENTS.md'), ['獨立授權：GitHub Issue／PRD 發布或修改、本地修改、Preview deployment、Production read-only', 'target、allowed/excluded actions、scope、baseline、環境、stop conditions、有效期間／Phase', 'Scope 外既有 dirty／untracked files／assets 不修改、還原、清理、stage、commit', 'Public／Family access 必須由 collection／data layer 強制', 'Secret 不進 client、log、report、fixture、HTML、Git 或 Issue／PR', '不自行 retry／repair mutation', '#105 擁有 runner／manifest／ledger／receipt／bounded I/O／approval invalidation／Preview QA execution contract'])
 })
+check('preserved phase artifacts are outside the application TypeScript program', () => {
+  const tsconfig = JSON.parse(read('tsconfig.json')) as { exclude?: string[] }
+  assert.ok(tsconfig.exclude?.includes('docs/phase-artifacts/**'), 'tsconfig must exclude preserved phase artifacts')
+})
 check('existing Skill aliases remain symlinks', () => {
   for (const [path, target] of Object.entries(aliases)) {
     assert.ok(lstatSync(path).isSymbolicLink(), path)

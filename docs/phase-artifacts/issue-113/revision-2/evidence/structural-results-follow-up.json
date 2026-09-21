@@ -1,7 +1,7 @@
 {
   "revision": 2,
   "runtime": "v26.5.0",
-  "head": "e20bf82f489634112a2c569b5ce5e0ba06616b81",
+  "head": "187dbfbb227297b7f109b4f0005dcf807c47f9c3",
   "branch": "codex/docs-113-governance-slice2",
   "passed": true,
   "checks": [
@@ -27,6 +27,10 @@
     },
     {
       "name": "authority, data and stop boundaries remain explicit",
+      "passed": true
+    },
+    {
+      "name": "preserved phase artifacts are outside the application TypeScript program",
       "passed": true
     },
     {
