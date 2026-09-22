@@ -4,13 +4,18 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@payloadcms/db-postgres@3.85.1':
+    hash: 1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052
+    path: patches/@payloadcms__db-postgres@3.85.1.patch
+
 importers:
 
   .:
     dependencies:
       '@payloadcms/db-postgres':
         specifier: 3.85.1
-        version: 3.85.1(payload@3.85.1(graphql@16.14.2)(typescript@5.6.3))
+        version: 3.85.1(patch_hash=1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052)(payload@3.85.1(graphql@16.14.2)(typescript@5.6.3))
       '@payloadcms/next':
         specifier: 3.85.1
         version: 3.85.1(@types/react@19.2.17)(graphql@16.14.2)(monaco-editor@0.55.1)(next@15.4.11(@babel/core@7.29.7)(babel-plugin-macros@3.1.0)(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(sass@1.77.4))(payload@3.85.1(graphql@16.14.2)(typescript@5.6.3))(react-dom@19.2.1(react@19.2.1))(react@19.2.1)(typescript@5.6.3)
@@ -6865,7 +6870,7 @@ snapshots:
 
   '@nolyfill/is-core-module@1.0.39': {}
 
-  '@payloadcms/db-postgres@3.85.1(payload@3.85.1(graphql@16.14.2)(typescript@5.6.3))':
+  '@payloadcms/db-postgres@3.85.1(patch_hash=1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052)(payload@3.85.1(graphql@16.14.2)(typescript@5.6.3))':
     dependencies:
       '@payloadcms/drizzle': 3.85.1(@types/pg@8.20.0)(payload@3.85.1(graphql@16.14.2)(typescript@5.6.3))(pg@8.20.0)
       '@types/pg': 8.20.0
