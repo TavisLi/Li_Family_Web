@@ -21,7 +21,7 @@
 - Branch：`codex/phase-126-payload-lifecycle`
 - Base：`main`／`35c072237a2646a1ebe2403c8278b8544b368dae`
 - Implementation commit：`bdc3a18b7`（cleanup guarantee 與 runtime 實作；本報告修訂另以後續 commit 保存）
-- Pull Request：N/A；未獲本 task 發布 PR 授權。
+- Pull Request：[#130](https://github.com/TavisLi/Li_Family_Web/pull/130)，Draft／OPEN；implementation review 已通過。文件更新前 read-back head 為 `21ce401cbb7df62764a802a2ae9a664b9c33d194`，本次文件 commit 推送後以 PR provider read-back 的新 head 為準。
 - Merge commit：N/A；未 merge。
 - Related Issues：GitHub Issue #126；#119 提供原 Node 20／24 baseline；#118 的 required CI enforcement 仍是獨立後續 gate。
 
@@ -125,7 +125,7 @@ Smoke 直接呼叫 Payload Local API 是本 Issue 的刻意測試 seam，用來�
 | --- | --- |
 | Implemented | PASS |
 | Locally verified | PASS |
-| PR ready | NOT CLAIMED；尚未發布 PR，GitHub-hosted DB smoke 尚未接線。 |
+| PR ready | NOT CLAIMED；PR #130 為 Draft，GitHub-hosted DB smoke 尚未接線。 |
 | Merged | NO |
 | Production verified | N/A；未授權且無 Production 變更。 |
 | Closed | NO；Issue #126 保持 open。 |
