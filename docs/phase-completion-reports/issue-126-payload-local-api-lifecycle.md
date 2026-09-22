@@ -97,6 +97,7 @@ Smoke 直接呼叫 Payload Local API 是本 Issue 的刻意測試 seam，用來�
 
 ## 10. Known Limitations and Blockers
 
+- 開工前即存在的未追蹤 `docs/phase-artifacts/issue-118/` 屬 #118、在 #126 scope 外；本 task 全程保留，未修改、stage 或 commit。
 - 真實 DB smoke 是可執行的 `test:payload-lifecycle`，但需要 disposable localhost PostgreSQL；不需 DB 的 package test 只驗證 wiring，不能代替 runtime natural-exit 證據。
 - #118 尚未提供／啟用此 smoke 的 GitHub-hosted PostgreSQL service 與 required status check；因此目前狀態是 `Locally verified`，不是 `PR ready` 或 CI-enforced。
 - 61-file 廣域測試中的 #101 frozen C0 package guard 會對任何現行 runtime／lockfile delta fail-closed；此既有歷史契約不屬 #126 修正範圍。
