@@ -229,7 +229,9 @@ Destructive cleanup 必須全部滿足：
 
 Executor 另要求已部署的 Production commit SHA 與執行 cleanup 的本地 `main` HEAD 完全一致。這可避免在 Production 仍載入 legacy Payload collection config 時提前刪除資料表。
 
-任何條件不滿足都停止。一般 Payload migration runner 不自動執行 legacy cleanup。
+任何條件不滿足都停止。Legacy cleanup 的首次執行須經專用 executor 與獨立批准，不能以一般 Payload migration runner 繞過上述 gate。
+
+2026-09-21 補註（Issue #125）：[Phase 17 核准包](../phase-artifacts/phase-17/travel-legacy-cleanup-approval-package.md) 已記錄 2026-07-30 Production batch 8 cleanup 與獨立回讀，並允許驗證後登錄歷史 migration。`20260719_025401` 現已納入 canonical index；原先「不得登錄」只適用於 cleanup 完成前。Index 登錄不是執行授權或目前環境已套用的證據；Payload CLI 也可能直接掃描 migration 目錄，因此缺少 index entry 並非執行隔離。新環境或缺少該 history record 的環境仍須先盤點、演練與批准，不可直接重播此 destructive migration。
 
 ## 12. Rollback
 

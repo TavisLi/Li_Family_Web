@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import { access, readFile, readdir } from 'node:fs/promises'
+
+import * as cleanupMigration from '../migrations/20260719_025401'
+import { migrations } from '../migrations'
 
 import {
   assertTravelLegacyCleanupPreconditions,
@@ -208,11 +211,41 @@ assert.match(migrationSource, /no-backup waiver has no data recovery path/)
 assert.match(migrationSource, /select count\(\*\) into shadow_media_refs/)
 assert.doesNotMatch(migrationSource, /count\(distinct parent_id\)/)
 
-const migrationIndex = await readFile(new URL('../migrations/index.ts', import.meta.url), 'utf8')
-assert.doesNotMatch(
-  migrationIndex,
-  /20260719_025401/,
-  'destructive cleanup must not be reachable through the default Payload migration runner',
+// Phase 17's approval package permits registration after verified batch 8 cleanup.
+// This checks retained history, not permission to replay it on another database.
+const cleanupIndex = migrations.findIndex(({ name }) => name === phase17LegacyCleanupMigration)
+assert.equal(migrations.filter(({ name }) => name === phase17LegacyCleanupMigration).length, 1)
+assert.equal(migrations[cleanupIndex].up, cleanupMigration.up)
+assert.equal(migrations[cleanupIndex].down, cleanupMigration.down)
+assert.equal(migrations.filter(({ up }) => up === cleanupMigration.up).length, 1)
+assert.equal(migrations.filter(({ down }) => down === cleanupMigration.down).length, 1)
+for (const { name } of phase17RequiredMigrations.filter(({ name }) => name !== 'dev')) {
+  const index = migrations.findIndex((migration) => migration.name === name)
+  assert.ok(index >= 0 && index < cleanupIndex, `${name} must precede legacy cleanup`)
+}
+for (const [index, { name }] of migrations.entries()) {
+  if (name <= phase17LegacyCleanupMigration) continue
+  assert.ok(index > cleanupIndex, `${name} must follow legacy cleanup`)
+}
+
+// Check files as well as registrations: Payload CLI can discover unregistered files.
+for (const file of await readdir(new URL('../migrations/', import.meta.url))) {
+  if (!file.endsWith('.ts') || file === 'index.ts' || file <= `${phase17LegacyCleanupMigration}.ts`) continue
+  const source = await readFile(new URL(`../migrations/${file}`, import.meta.url), 'utf8')
+  const up = source.slice(source.indexOf('export async function up'), source.indexOf('export async function down'))
+  assert.doesNotMatch(
+    up,
+    /\b(?:travel_projects(?:_\w+)?|enum_travel_projects_status|related_travel_id|featured_travel_id)\b/i,
+    `${file} must not reintroduce or replay retired Travel schema in UP`,
+  )
+}
+await assert.rejects(access(new URL('../payload/collections/TravelProjects.ts', import.meta.url)), { code: 'ENOENT' })
+assert.deepEqual(
+  (await readdir(new URL('./', import.meta.url))).filter((file) =>
+    /^(?:phase16-travel-baseline|travel-collection-copy|travel-controlled-migration)/.test(file),
+  ),
+  [],
+  'retired baseline/copy/migration tools must not return',
 )
 
 const cleanupCliSource = await readFile(
