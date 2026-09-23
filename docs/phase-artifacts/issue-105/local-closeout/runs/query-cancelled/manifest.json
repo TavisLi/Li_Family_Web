@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "runId": "issue-105-local-query-cancelled",
+  "environment": "disposable",
+  "target": "127.0.0.1:55444/issue105",
+  "runtime": {
+    "node": "24.21.0",
+    "pnpm": "10.28.0",
+    "bootstrap": {
+      "entrypoint": "src/scripts/run-local-session.mjs",
+      "envNames": [
+        "DATABASE_URI",
+        "PAYLOAD_ENABLE_DEV_SCHEMA_PUSH"
+      ]
+    },
+    "schemaPush": "disabled"
+  },
+  "scope": {
+    "include": [
+      "travel_memories_rels legacy paths",
+      "_travel_memories_v_rels legacy paths",
+      "travel_memories_daily_highlights"
+    ],
+    "exclude": [
+      "non-target relation paths",
+      "travel_memories canonical content",
+      "Production"
+    ],
+    "expectedEffects": [
+      "disposable apply and restore or fail closed",
+      "local-fault:query-cancelled"
+    ],
+    "stopConditions": [
+      "scope or metadata drift",
+      "row or byte cap",
+      "query or round-trip budget",
+      "timeout",
+      "unknown commit"
+    ],
+    "baseline": "6b94d7c3c883d7fedb4e2be870a9733738b3e071ceae1885a759945252004b10"
+  },
+  "artifacts": {
+    "executor": {
+      "path": "src/scripts/run-executor.mjs",
+      "sha256": "8d7af8c8d0a3691ae11c21ef723284a8e0926cc726ade5a1068bb4fd253c859a"
+    },
+    "sql": [
+      {
+        "path": "src/scripts/run-executor-retirement-plan.mjs",
+        "sha256": "0828526f92cc4f0d46bd0eb71b64e0fd709874bb1ec5245ba8dfad9f9709910b"
+      }
+    ],
+    "backup": {
+      "path": "docs/phase-artifacts/issue-105/slice-2-example/backup.json",
+      "sha256": "075ca6f24f8f6168456e120122b832b5503253340a01ed71d20d8e0a97f6a375"
+    },
+    "dependencies": [
+      {
+        "path": "src/scripts/run-contract.mjs",
+        "sha256": "ff0718533831556a8bbf9beb1e8705620cca8e91c22bf8c11e3f6c696ff30a04"
+      },
+      {
+        "path": "src/scripts/run-executor-evidence.mjs",
+        "sha256": "342a435ebc631ceab58261fed79fb414f0cebcb3e8365c9012dbc82318566a23"
+      },
+      {
+        "path": "src/scripts/run-executor-terminal.mjs",
+        "sha256": "0e9c82105bdc9c1b20d4e4a286acad2b92a2a80220028ac01a6b1955653604cf"
+      },
+      {
+        "path": "src/scripts/run-local-fault-client.mjs",
+        "sha256": "8fed93004e05c9f0e0fdda8583f1d02cbdfdffe5b55cb69ef9ff5d2679165b46"
+      },
+      {
+        "path": "src/scripts/run-local-rehearsal.mjs",
+        "sha256": "0beaa0266c6551baa9e18f73cae35db709e56a1e1235255de4ed649a03122eb8"
+      },
+      {
+        "path": "src/scripts/run-local-session.mjs",
+        "sha256": "515cb36790fbde5209aaa3a7fca313f41542fe22861e1ddafb16d5b2f602de84"
+      },
+      {
+        "path": "src/scripts/run-local-manifest.mjs",
+        "sha256": "f11f34764f1c028dc6b613667169e6493131ece97ffb9f00dadd76cc8557effe"
+      },
+      {
+        "path": "docs/phase-artifacts/issue-105/local-closeout/limits.json",
+        "sha256": "e62257c60f1e605c49153b1a12b78d0f02b7d42e75eb03ce74797516882f4f21"
+      },
+      {
+        "path": "docs/phase-artifacts/issue-105/local-closeout/read-retry-policy.json",
+        "sha256": "a5157142341d1214d2cf0cfbef3d5ab6896e6a65370045c7d8952ff0f5551df5"
+      },
+      {
+        "path": "package.json",
+        "sha256": "26d37ece716399422ab2c7bbf8609c30e0577f0287606d0908db17c0e32eede9"
+      },
+      {
+        "path": "pnpm-lock.yaml",
+        "sha256": "9e34200caa50abafe2c23bcf8c1ee17099bb4001cdcbff36f9fa20327a675475"
+      }
+    ]
+  },
+  "approval": {
+    "action": "local",
+    "allowed": [
+      "local"
+    ],
+    "excluded": [
+      "preview-deploy",
+      "production-read",
+      "production-migration",
+      "destructive-cleanup",
+      "merge",
+      "release"
+    ],
+    "validFrom": "2026-09-23T00:00:00.000Z",
+    "validUntil": "2026-10-07T00:00:00.000Z"
+  }
+}

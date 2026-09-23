@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-normal",
+  "sessionId": "issue-105-local-normal:17635",
+  "actualExitCode": 0,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1179,
+  "status": "PASS",
+  "code": null,
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 175,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

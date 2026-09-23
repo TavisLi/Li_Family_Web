@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-connection-drop",
+  "sessionId": "issue-105-local-connection-drop:17659",
+  "actualExitCode": 1,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1095,
+  "status": "UNKNOWN",
+  "code": "CONNECTION_DROP",
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 210,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

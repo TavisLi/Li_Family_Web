@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-deadline",
+  "sessionId": "issue-105-local-deadline:17678",
+  "actualExitCode": 1,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1578,
+  "status": "UNKNOWN",
+  "code": "RUN_DEADLINE",
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 193,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

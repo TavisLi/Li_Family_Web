@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "runId": "issue-105-local-silent-exit",
+  "manifestSha256": "78a2e120b06c20ed710ac17aa17d69e7c61ec62cddbc9a1b4a54e63140d1ab49",
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-09-23T03:46:29.045Z",
+      "stage": "bootstrap",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 2,
+      "at": "2026-09-23T03:46:29.059Z",
+      "stage": "connect",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 3,
+      "at": "2026-09-23T03:46:29.059Z",
+      "stage": "transaction",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 4,
+      "at": "2026-09-23T03:46:29.064Z",
+      "stage": "preflight",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 5,
+      "at": "2026-09-23T03:46:29.072Z",
+      "stage": "supervisor",
+      "status": "BLOCK",
+      "evidencePath": "supervisor-receipt.json"
+    }
+  ]
+}

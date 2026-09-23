@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "source": "observed tool interaction during final local matrix in this task",
+  "command": "node src/scripts/run-local-matrix.mjs docs/phase-artifacts/issue-105/local-closeout/runs",
+  "shellSessionId": 12241,
+  "observations": [
+    {
+      "kind": "exec_command",
+      "waitRequestedMs": 30000,
+      "sessionStillRunning": true,
+      "newTerminalRecords": 11
+    },
+    {
+      "kind": "write_stdin",
+      "waitRequestedMs": 30000,
+      "waitActualMs": 18236,
+      "sessionStillRunning": false,
+      "newTerminalRecords": 1
+    }
+  ],
+  "shellSessionCalls": 2,
+  "emptyPolls": 0,
+  "longWaitFaultElapsedMs": 36353,
+  "tokenTelemetry": null
+}

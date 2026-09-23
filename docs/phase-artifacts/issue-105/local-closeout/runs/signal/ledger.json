@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "runId": "issue-105-local-signal",
+  "manifestSha256": "327f29d02f142c9dd5c86fdf46c0797303327b5fd16d4f4dc99a61b9fbbeb1cb",
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-09-23T03:46:37.877Z",
+      "stage": "bootstrap",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 2,
+      "at": "2026-09-23T03:46:37.891Z",
+      "stage": "connect",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 3,
+      "at": "2026-09-23T03:46:37.892Z",
+      "stage": "transaction",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 4,
+      "at": "2026-09-23T03:46:37.895Z",
+      "stage": "preflight",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 5,
+      "at": "2026-09-23T03:46:37.896Z",
+      "stage": "preflight",
+      "status": "UNKNOWN",
+      "evidencePath": "receipt.json"
+    }
+  ]
+}

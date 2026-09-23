@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-warning",
+  "manifestSha256": "32f2eecff8930dbcec8a780402a2ec6c2990c040399ea984870282e208efbbac",
+  "stage": "preflight",
+  "status": "UNKNOWN",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

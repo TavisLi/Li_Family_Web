@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-signal",
+  "manifestSha256": "327f29d02f142c9dd5c86fdf46c0797303327b5fd16d4f4dc99a61b9fbbeb1cb",
+  "stage": "preflight",
+  "status": "UNKNOWN",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

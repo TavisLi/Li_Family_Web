@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-silent-exit",
+  "manifestSha256": "78a2e120b06c20ed710ac17aa17d69e7c61ec62cddbc9a1b4a54e63140d1ab49",
+  "stage": "supervisor",
+  "status": "BLOCK",
+  "lastEvidencePath": "supervisor-receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

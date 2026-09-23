@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "runId": "issue-105-local-connection-drop",
+  "manifestSha256": "3318abdac6cd22046189b09cff557bc504be5b031b3e5044e4ab2b8d3009281b",
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-09-23T03:46:33.921Z",
+      "stage": "bootstrap",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 2,
+      "at": "2026-09-23T03:46:33.935Z",
+      "stage": "connect",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 3,
+      "at": "2026-09-23T03:46:33.936Z",
+      "stage": "transaction",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 4,
+      "at": "2026-09-23T03:46:33.939Z",
+      "stage": "preflight",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 5,
+      "at": "2026-09-23T03:46:33.944Z",
+      "stage": "preflight",
+      "status": "UNKNOWN",
+      "evidencePath": "receipt.json"
+    }
+  ]
+}

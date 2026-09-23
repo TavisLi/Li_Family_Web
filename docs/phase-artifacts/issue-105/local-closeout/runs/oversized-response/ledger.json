@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "runId": "issue-105-local-oversized-response",
+  "manifestSha256": "cb3779023b4fd6080afd1e5aebe3198da3f0e6d0fd4007282af03d38e4951b88",
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-09-23T03:46:31.281Z",
+      "stage": "bootstrap",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 2,
+      "at": "2026-09-23T03:46:31.294Z",
+      "stage": "connect",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 3,
+      "at": "2026-09-23T03:46:31.295Z",
+      "stage": "transaction",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 4,
+      "at": "2026-09-23T03:46:31.298Z",
+      "stage": "preflight",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 5,
+      "at": "2026-09-23T03:46:31.300Z",
+      "stage": "preflight",
+      "status": "BLOCK",
+      "evidencePath": "receipt.json"
+    }
+  ]
+}

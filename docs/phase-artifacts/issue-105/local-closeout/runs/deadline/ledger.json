@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "runId": "issue-105-local-deadline",
+  "manifestSha256": "02eef39639c0b6fc2d8a60b31ba67fedaf7d7790beb38cecc212729025b708d1",
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-09-23T03:46:39.194Z",
+      "stage": "bootstrap",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 2,
+      "at": "2026-09-23T03:46:39.522Z",
+      "stage": "connect",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 3,
+      "at": "2026-09-23T03:46:39.523Z",
+      "stage": "transaction",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 4,
+      "at": "2026-09-23T03:46:39.526Z",
+      "stage": "preflight",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 5,
+      "at": "2026-09-23T03:46:39.694Z",
+      "stage": "preflight",
+      "status": "UNKNOWN",
+      "evidencePath": "receipt.json"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-rollback-failure",
+  "manifestSha256": "450e017343759971d723b10468856cccbb1a23ef51ac5e70e5fae219eca2bbb6",
+  "stage": "preflight",
+  "status": "UNKNOWN",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

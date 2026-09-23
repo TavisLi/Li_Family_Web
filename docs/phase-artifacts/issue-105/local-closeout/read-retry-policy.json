@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "operation": "read",
+  "maxAttempts": 1,
+  "retryableCodes": ["CLIENT_RESPONSE_TIMEOUT", "CONNECTION_DROP"],
+  "stopStatuses": ["UNKNOWN", "PASS"]
+}
