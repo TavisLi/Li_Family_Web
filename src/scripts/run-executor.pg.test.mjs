@@ -72,9 +72,21 @@ test('disposable PostgreSQL rehearsal and drift matrix', { skip: !enabled }, asy
     await change('schema-drift',
       'CREATE INDEX issue105_drift_idx ON travel_memories_daily_highlights(day)',
       'DROP INDEX issue105_drift_idx', 'SCHEMA_DRIFT')
+    await change('fk-drift',
+      'ALTER TABLE travel_memories_daily_highlights DROP CONSTRAINT travel_memories_daily_highlights__parent_id_fkey',
+      'ALTER TABLE travel_memories_daily_highlights ADD CONSTRAINT travel_memories_daily_highlights__parent_id_fkey FOREIGN KEY (_parent_id) REFERENCES travel_memories(id)', 'SCHEMA_DRIFT')
+    await change('sequence-drift',
+      'ALTER SEQUENCE travel_memories_daily_highlights_id_seq INCREMENT BY 2',
+      'ALTER SEQUENCE travel_memories_daily_highlights_id_seq INCREMENT BY 1', 'SCHEMA_DRIFT')
     await change('security-drift',
       'ALTER TABLE travel_memories_daily_highlights DISABLE ROW LEVEL SECURITY',
       'ALTER TABLE travel_memories_daily_highlights ENABLE ROW LEVEL SECURITY', 'SECURITY_DRIFT')
+    await change('grant-drift',
+      'REVOKE SELECT ON travel_memories_daily_highlights FROM retirement_reader',
+      'GRANT SELECT ON travel_memories_daily_highlights TO retirement_reader', 'SECURITY_DRIFT')
+    await change('policy-drift',
+      'ALTER POLICY retirement_read ON travel_memories_daily_highlights USING (false)',
+      'ALTER POLICY retirement_read ON travel_memories_daily_highlights USING (true)', 'SECURITY_DRIFT')
     await t.test('baseline still restores exactly after drift cases', async () => {
       const result = await runCase('final-normal', 'PASS')
       assert.equal(result.restoreState, 'RESTORED')
