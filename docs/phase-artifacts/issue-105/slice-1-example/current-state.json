@@ -1,0 +1,17 @@
+{
+  "runId": "issue-105-slice-1-local-inspection",
+  "manifestSha256": "b67f6f69086353cbafb3dedd66c224bac479c9d496a40476dad125f57b17345d",
+  "stage": "not-started",
+  "status": "PENDING",
+  "lastEvidencePath": null,
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": [],
+  "verifiedFiles": 4,
+  "verifiedEvidenceFiles": 0
+}

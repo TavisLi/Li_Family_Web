@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "runId": "issue-105-slice-1-local-inspection",
+  "environment": "disposable",
+  "target": "local-contract-fixture",
+  "runtime": {
+    "node": "24.21.0",
+    "pnpm": "10.28.0",
+    "bootstrap": {
+      "entrypoint": "src/scripts/run-contract-inspect.mjs",
+      "envNames": []
+    },
+    "schemaPush": "disabled"
+  },
+  "scope": {
+    "include": ["docs/phase-artifacts/issue-105/slice-1-example/current-state.json"],
+    "exclude": ["Production", "Preview", "database writes", "deployment"],
+    "expectedEffects": ["replace the local current-state summary"],
+    "stopConditions": ["artifact checksum mismatch", "malformed ledger", "runtime mismatch"],
+    "baseline": "da75f504273add4f549a6e3383e6746e42e2ded4"
+  },
+  "artifacts": {
+    "executor": {
+      "path": "src/scripts/run-contract-inspect.mjs",
+      "sha256": "070a43cada52ddaf6a63bce81f8f0d4b84297cf5d6ea5b3ded3796b591c90159"
+    },
+    "sql": [],
+    "backup": null,
+    "dependencies": [
+      {
+        "path": "src/scripts/run-contract.mjs",
+        "sha256": "3b0dcc465e63d0fc9b40f34623dfb15c6c1067e8cfe5b38875eae65766edad62"
+      },
+      {
+        "path": "package.json",
+        "sha256": "26d37ece716399422ab2c7bbf8609c30e0577f0287606d0908db17c0e32eede9"
+      },
+      {
+        "path": "pnpm-lock.yaml",
+        "sha256": "9e34200caa50abafe2c23bcf8c1ee17099bb4001cdcbff36f9fa20327a675475"
+      }
+    ]
+  },
+  "approval": {
+    "action": "local",
+    "allowed": ["local"],
+    "excluded": ["preview-deploy", "production-read", "production-migration", "destructive-cleanup", "merge", "release"],
+    "validFrom": "2026-09-23T00:00:00.000Z",
+    "validUntil": "2026-10-01T00:00:00.000Z"
+  }
+}
