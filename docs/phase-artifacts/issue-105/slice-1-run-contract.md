@@ -35,6 +35,8 @@ Each item in `evidence.json` has `kind`, `status`, `path`, `sha256`, and `depend
 
 `data` and `schema` must identify the actual inspected snapshot or metadata, not a generic environment label. Preview evidence is tied to the exact deployment and authenticated route entry. This slice only evaluates fingerprints; the executor, collection of trusted fingerprints, complete restore/drift tests, GET-only method evidence, and receipt generation belong to Slices 2–3. A PASS here does not imply those later gates passed.
 
+For a nonmutating manifest with `artifacts.backup: null`, rehearsal and preflight evidence is always invalid with `changed: ["backup"]`, even if `dependencies.json` supplies a backup fingerprint. Preview QA has no backup dependency and is evaluated normally.
+
 Run the local inspector with:
 
 ```sh

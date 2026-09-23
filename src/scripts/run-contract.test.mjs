@@ -69,19 +69,28 @@ test('reuses only a matching live human approval and names the invalidating chan
 })
 
 test('invalidates only changed dependencies for each evidence type', () => {
+  const run = manifest()
+  run.artifacts.backup = file('backup.json', 'backup bytes')
   const qa = {
     kind: 'preview-qa', status: 'PASS', path: 'qa.json', sha256: hash('qa'),
     dependsOn: { commit: 'a', deployment: 'd', authEntry: 'family', routes: 'r', data: 'data', schema: 'schema' },
   }
-  assert.equal(evaluateEvidence(qa, { ...qa.dependsOn, executor: 'changed' }).valid, true)
-  assert.deepEqual(evaluateEvidence(qa, { ...qa.dependsOn, authEntry: 'public' }).changed, ['authEntry'])
-  assert.deepEqual(evaluateEvidence(qa, { ...qa.dependsOn, schema: undefined }).changed, ['schema'])
+  assert.equal(evaluateEvidence(qa, { ...qa.dependsOn, executor: 'changed' }, run).valid, true)
+  assert.deepEqual(evaluateEvidence(qa, { ...qa.dependsOn, authEntry: 'public' }, run).changed, ['authEntry'])
+  assert.deepEqual(evaluateEvidence(qa, { ...qa.dependsOn, schema: undefined }, run).changed, ['schema'])
   const preflight = {
     kind: 'preflight', status: 'PASS', path: 'preflight.json', sha256: hash('preflight'),
     dependsOn: { manifest: 'm', executor: 'e', sql: 's', backup: 'b', schema: 'schema', data: 'data' },
   }
-  assert.deepEqual(evaluateEvidence(preflight, { ...preflight.dependsOn, data: 'changed' }).changed, ['data'])
-  assert.deepEqual(evaluateEvidence(preflight, { ...preflight.dependsOn, backup: 'changed' }).changed, ['backup'])
+  assert.deepEqual(evaluateEvidence(preflight, { ...preflight.dependsOn, data: 'changed' }, run).changed, ['data'])
+  assert.deepEqual(evaluateEvidence(preflight, { ...preflight.dependsOn, backup: 'changed' }, run).changed, ['backup'])
+  run.artifacts.backup = null
+  assert.deepEqual(evaluateEvidence(preflight, preflight.dependsOn, run), {
+    valid: false, changed: ['backup'], status: 'PASS',
+  })
+  assert.equal(evaluateEvidence({ ...preflight, kind: 'rehearsal', dependsOn: {
+    manifest: 'm', executor: 'e', sql: 's', backup: 'b', schema: 'schema',
+  } }, preflight.dependsOn, run).valid, false)
 })
 
 test('requires actual evidence bytes before the inspector may reuse PASS evidence', async () => {
@@ -106,19 +115,21 @@ test('derives one current state from the ordered ledger and preserves UNKNOWN', 
   assert.throws(() => currentState(run, ledger, approved(run), [], {}, now), /event after terminal failure/)
 })
 
-test('inspector writes a single reviewable summary without inventing approval', async () => {
+test('inspector writes a summary without inventing approval or accepting backup-free preflight', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'run-contract-inspect-'))
   const run = manifest()
+  const dependsOn = { manifest: 'm', executor: 'e', sql: 's', backup: 'b', schema: 'schema', data: 'data' }
   const inputs = {
     'manifest.json': run,
     'ledger.json': { version: 1, runId: run.runId, manifestSha256: manifestHash(run), events: [] },
-    'evidence.json': [],
-    'dependencies.json': {},
+    'evidence.json': [{ kind: 'preflight', status: 'PASS', path: 'preflight.json', sha256: hash('evidence bytes'), dependsOn }],
+    'dependencies.json': dependsOn,
   }
   await Promise.all([
     ...Object.entries(inputs).map(([name, value]) => writeFile(path.join(directory, name), JSON.stringify(value))),
     ...[['executor.mjs', 'executor'], ['read.sql', 'read'], ['package.json', '{"packageManager":"pnpm@10.28.0"}'], ['pnpm-lock.yaml', 'lock']]
       .map(([name, bytes]) => writeFile(path.join(directory, name), bytes)),
+    writeFile(path.join(directory, 'preflight.json'), 'evidence bytes'),
   ])
   const result = spawnSync(process.execPath, ['src/scripts/run-contract-inspect.mjs', directory, directory], {
     cwd: new URL('../..', import.meta.url), encoding: 'utf8',
@@ -128,7 +139,9 @@ test('inspector writes a single reviewable summary without inventing approval', 
   assert.equal(summary.status, 'PENDING')
   assert.deepEqual(summary.authorization.reasons, ['NO_APPROVAL'])
   assert.equal(summary.verifiedFiles, 4)
-  assert.equal(summary.verifiedEvidenceFiles, 0)
+  assert.equal(summary.verifiedEvidenceFiles, 1)
+  assert.deepEqual(summary.evidence[0].changed, ['backup'])
+  assert.equal(summary.evidence[0].valid, false)
 })
 
 test('checked-in Slice 1 example replays from the current artifact bytes', async () => {

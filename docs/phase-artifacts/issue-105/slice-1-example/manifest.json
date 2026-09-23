@@ -29,7 +29,7 @@
     "dependencies": [
       {
         "path": "src/scripts/run-contract.mjs",
-        "sha256": "3b0dcc465e63d0fc9b40f34623dfb15c6c1067e8cfe5b38875eae65766edad62"
+        "sha256": "ff0718533831556a8bbf9beb1e8705620cca8e91c22bf8c11e3f6c696ff30a04"
       },
       {
         "path": "package.json",

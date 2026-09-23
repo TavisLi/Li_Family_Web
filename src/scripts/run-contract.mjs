@@ -146,14 +146,16 @@ export function evaluateAuthorization(manifest, approval, now = new Date()) {
   return { recordMatches: reasons.length === 0, sourceNeedsVerification: true, reasons }
 }
 
-export function evaluateEvidence(evidence, current) {
+export function evaluateEvidence(evidence, current, manifest) {
   exactKeys(evidence, ['kind', 'status', 'dependsOn', 'path', 'sha256'], 'evidence')
   assert(evidenceKeys[evidence.kind], 'BLOCK: unknown evidence kind')
   nonempty(evidence.path, 'evidence.path')
   assert(hashPattern.test(evidence.sha256), 'BLOCK: evidence checksum')
   const required = evidenceKeys[evidence.kind]
   exactKeys(evidence.dependsOn, required, 'evidence.dependsOn')
-  const changed = required.filter((key) => !evidence.dependsOn[key] || !current?.[key] || evidence.dependsOn[key] !== current[key])
+  const changed = required.filter((key) =>
+    (key === 'backup' && manifest.artifacts.backup === null) ||
+    !evidence.dependsOn[key] || !current?.[key] || evidence.dependsOn[key] !== current[key])
   return { valid: evidence.status === 'PASS' && changed.length === 0, changed, status: evidence.status }
 }
 
@@ -193,6 +195,6 @@ export function currentState(manifest, ledger, approval, evidence, current, now 
     status: latest?.status ?? 'PENDING',
     lastEvidencePath: latest?.evidencePath ?? null,
     authorization: evaluateAuthorization(manifest, approval, now),
-    evidence: evidence.map((item) => ({ path: item.path, ...evaluateEvidence(item, current) })),
+    evidence: evidence.map((item) => ({ path: item.path, ...evaluateEvidence(item, current, manifest) })),
   }
 }
