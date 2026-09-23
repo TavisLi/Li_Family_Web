@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-slice2-review",
+  "manifestSha256": "18adebeb4d764986f7e3c4e35968964277176276f7e80f3a1a206a7c1c8a7d04",
+  "stage": "complete",
+  "status": "PASS",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}
