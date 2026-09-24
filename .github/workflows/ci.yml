@@ -1,0 +1,186 @@
+name: CI
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  scope:
+    name: CI / scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      app: ${{ steps.plan.outputs.app }}
+      deps: ${{ steps.plan.outputs.deps }}
+      disposable: ${{ steps.plan.outputs.disposable }}
+      governance: ${{ steps.plan.outputs.governance }}
+      schema: ${{ steps.plan.outputs.schema }}
+      tests: ${{ steps.plan.outputs.tests }}
+      head: ${{ steps.plan.outputs.head }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify scope and governance contracts
+        id: plan
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$HEAD_SHA"
+          node --test scripts/ci/plan.test.mjs scripts/ci/validate.test.mjs
+          node scripts/ci/validate.mjs
+          node scripts/ci/plan.mjs "$BASE_SHA" "$HEAD_SHA"
+      - name: Compact scope summary
+        if: always()
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          APP: ${{ steps.plan.outputs.app }}
+          DB: ${{ steps.plan.outputs.disposable }}
+          DEPS: ${{ steps.plan.outputs.deps }}
+          TESTS: ${{ steps.plan.outputs.tests }}
+        run: |
+          {
+            echo "Base: $BASE_SHA"
+            echo "Tested head: $HEAD_SHA"
+            echo "Scope: application=$APP tests=$TESTS disposable=$DB dependencies=$DEPS"
+            echo "Scope job: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  app:
+    name: CI / application
+    needs: scope
+    if: needs.scope.outputs.app == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      PAYLOAD_SECRET: synthetic-ci-only
+      PAYLOAD_ENABLE_DEV_SCHEMA_PUSH: 'false'
+      TEST_GROUP: ${{ needs.scope.outputs.tests }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.scope.outputs.head }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+      - name: Install and verify
+        run: |
+          test "$(node --version)" = "v$(cat .nvmrc)"
+          test "$(pnpm --version)" = "10.28.0"
+          pnpm install --frozen-lockfile
+          pnpm run lint
+          node scripts/ci/offline-tests.mjs "$TEST_GROUP"
+          pnpm run build
+          pnpm exec tsc --noEmit
+      - name: Compact application summary
+        if: always()
+        run: echo "Tested head ${{ needs.scope.outputs.head }}; application job ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+
+  disposable:
+    name: CI / disposable fixture
+    needs: scope
+    if: needs.scope.outputs.disposable == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      DATABASE_URI: postgresql://postgres:synthetic@127.0.0.1:55444/issue105
+      PAYLOAD_ENABLE_DEV_SCHEMA_PUSH: 'false'
+      ISSUE105_PG_REHEARSAL: '1'
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: synthetic
+          POSTGRES_DB: issue105
+        ports:
+          - 55444:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d issue105"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.scope.outputs.head }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version-file: .nvmrc
+      - name: Synthetic loopback fixture and sequential rehearsal
+        run: |
+          pnpm install --frozen-lockfile
+          fixture_dir="$(mktemp -d)"
+          node src/scripts/run-executor-fixture.mjs "$fixture_dir"
+          node src/scripts/run-executor.pg.test.mjs
+          node src/scripts/run-local-scope-parity.pg.test.mjs
+      - name: Compact fixture summary
+        if: always()
+        run: echo "Tested head ${{ needs.scope.outputs.head }}; disposable job ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+
+  dependency-review:
+    name: CI / dependency review
+    needs: scope
+    if: needs.scope.outputs.deps == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.scope.outputs.head }}
+          persist-credentials: false
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: high
+      - name: Compact dependency summary
+        if: always()
+        run: echo "Tested head ${{ needs.scope.outputs.head }}; dependency review ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
+
+  gate:
+    name: CI / gate
+    needs: [scope, app, disposable, dependency-review]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every applicable result
+        env:
+          SCOPE_RESULT: ${{ needs.scope.result }}
+          APP_RESULT: ${{ needs.app.result }}
+          DB_RESULT: ${{ needs.disposable.result }}
+          DEPS_RESULT: ${{ needs.dependency-review.result }}
+          APP_NEEDED: ${{ needs.scope.outputs.app }}
+          DB_NEEDED: ${{ needs.scope.outputs.disposable }}
+          DEPS_NEEDED: ${{ needs.scope.outputs.deps }}
+          HEAD_SHA: ${{ needs.scope.outputs.head }}
+        run: |
+          node - <<'NODE'
+          const checks = [
+            ['scope', process.env.SCOPE_RESULT, true],
+            ['application', process.env.APP_RESULT, process.env.APP_NEEDED === 'true'],
+            ['disposable', process.env.DB_RESULT, process.env.DB_NEEDED === 'true'],
+            ['dependency review', process.env.DEPS_RESULT, process.env.DEPS_NEEDED === 'true'],
+          ]
+          const bad = checks.filter(([_, result, needed]) => result !== (needed ? 'success' : 'skipped'))
+          console.log(JSON.stringify({ head: process.env.HEAD_SHA, checks, blockers: bad }))
+          if (!process.env.HEAD_SHA || bad.length) process.exitCode = 1
+          NODE
+      - name: Compact gate summary
+        if: always()
+        env:
+          HEAD_SHA: ${{ needs.scope.outputs.head }}
+        run: echo "Tested head $HEAD_SHA; gate ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
