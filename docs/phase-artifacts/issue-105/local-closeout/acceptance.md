@@ -8,7 +8,7 @@
 | 2 | 同一入口的正常與故障矩陣 | PASS | [12 次實際 session](./runs/matrix.json) 均經 `run-local-session.mjs` → `run-local-rehearsal.mjs` → 同一 `executeRun`/SQL plan；每次重建同一合成 fixture，包含 warning、silent exit、delay、oversize、cancel、disconnect、rollback、commit acknowledgment、signal、deadline、long wait。每次都核對 terminal、receipt、current-state，故障沒有變成 PASS。 |
 | 3 | Sequential、keyset、row/byte/query/round-trip/deadline bounded I/O | PASS | [Slice 2 rehearsal](../slice-2-rehearsal.md)、`run-executor.test.mjs`、`run-executor.pg.test.mjs`；本輪矩陣沿用同一 executor。 |
 | 4 | Optimized snapshot 與獨立 reference 完整 scope 對照 | PASS | [獨立全表與 catalog ID 掃描](./scope-parity.json)、`run-local-scope-parity.pg.test.mjs` 8/8；新增 target、path 移動、protected/canonical 內容、index/grant drift 後再恢復 baseline。此項僅證明合成 disposable fixture。 |
-| 5 | #101 真實私有備份的全量 restore 與非目標資料保護 | OPEN | 私有備份未使用。本地合成 fixture 無法證明真實資料完整性。需另行授權隔離環境匯入該備份，對全量 row/catalog scope 執行 preflight、apply、restore 與獨立 read-back；不連 Production。 |
+| 5 | #101 真實私有備份的全量 restore 與非目標資料保護 | OPEN | 2026-09-24 在另行授權後檢查文件記載的私有備份目錄，目錄不存在，依 stop condition 未連線資料庫或啟動 preflight／restore；精簡 BLOCK 證據見 [criterion-5-private-backup-block.json](./criterion-5-private-backup-block.json)。 |
 | 6 | Bootstrap、signal、deadline 及每種終止結果有 receipt/current-state | PASS | [矩陣](./runs/matrix.json) 的 `silent-exit`、`signal`、`deadline`、`rollback-failure`、`commit-ack-loss`；`run-local-session.test.mjs` 2/2 特別驗證 parent 在 malformed manifest 與缺少 bound input 時仍寫出 receipt、terminal、ledger/current-state。 |
 | 7 | Agent 等同一 live session，無空輪詢 | PASS | [本輪實際工具觀察](./agent-wait.json)：36,353 ms 的 long-wait run，兩次有內容的 shell session 呼叫，0 empty polls；不是模擬計數。 |
 | 8 | Ledger、單一 current-state、終止 UNKNOWN 不隱藏 | PASS | [Slice 1 契約](../slice-1-run-contract.md)、`run-contract.test.mjs`、[矩陣各 run](./runs/matrix.json)。 |
