@@ -1,0 +1,25 @@
+name: Production-sensitive work
+description: Preparation for migration, content or media writes, or cleanup
+title: "[Production] "
+body:
+  - type: textarea
+    id: scope
+    attributes:
+      label: Exact target and scope
+      description: Specify the environment, data, allowed actions, and exclusions.
+    validations:
+      required: true
+  - type: textarea
+    id: risk
+    attributes:
+      label: Risk and recovery
+      description: Name stop conditions, rollback or recovery, and the separate approval boundary.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and evidence
+      description: Include dry run, read-back, and receipt requirements as applicable; link the owning contract.
+    validations:
+      required: true

@@ -1,0 +1,25 @@
+name: Work item
+description: Bounded product, design, or engineering work
+title: "[Work] "
+body:
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome and scope
+      description: State the result and what is included.
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Boundaries and risk
+      description: Include exclusions, dependencies, privacy or Production impact, and Human decision points when relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance and evidence
+      description: Give verifiable criteria and the evidence needed for review.
+    validations:
+      required: true
