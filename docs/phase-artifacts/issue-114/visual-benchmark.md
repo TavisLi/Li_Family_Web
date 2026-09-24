@@ -46,3 +46,7 @@
 - Skill 角色、precedence、tier、motion、reference routing 可由文件與 Skill 檔驗證。
 - 「representative UI regression 證明整體一致性與品質提升」尚未完成：本次沒有 UI change 與可比對的前後 browser pair。不能用舊 Phase 20／21 的改善冒稱 #114 的改善。
 - 後續若要以現有 portal／Travel 真實頁面作 QA，須依環境取得對應授權；不得為補 benchmark 讀取 Production 或修改 content／media。
+
+## 2026-09-24 follow-up
+
+使用者其後授權以純本地合成資料完成三種代表頁面的同條件前後比較及最小 UI 修正。[實測報告與全部截圖](./representative-ui-validation.md) 補足上述「尚未完成」的本地 browser 項目；本文件前段保留初次交付當時的狀態，不能再當作最新驗收結論。

@@ -192,7 +192,7 @@ export function HomePageView({
 
               return (
                 <Link
-                  className="group grid min-h-[28rem] overflow-hidden rounded-lg border border-white/55 bg-white/45 shadow-sm backdrop-blur-md transition duration-300 hover:-translate-y-1 hover:bg-white/65 hover:shadow-2xl hover:shadow-slate-900/10"
+                  className="group grid min-h-[28rem] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm transition duration-200 motion-safe:hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-900/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9a7a41] motion-reduce:transition-none"
                   href={memberLink.href}
                   key={member.id}
                   rel={memberLink.rel}

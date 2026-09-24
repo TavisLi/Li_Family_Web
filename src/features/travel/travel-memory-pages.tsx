@@ -192,7 +192,7 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
                 <Link className="group block min-h-48 border-l border-white/20 px-5 py-4 transition hover:bg-white/[0.06]" href={`/travel/${memory.slug}/day/${day.dayKey}`}>
                   <span className="font-mono text-xl font-semibold tabular-nums text-[#ddae73] md:text-2xl">D{String(day.day).padStart(2, '0')}</span>
                   <span className="mt-10 block text-xl font-semibold leading-tight tracking-[-0.02em] md:text-2xl">{day.title}</span>
-                  <span className="mt-2 block text-xs leading-5 text-white/45">{day.theme || day.date?.slice(0, 10) || 'Daily scene'}</span>
+                  <span className="mt-2 block text-xs leading-5 text-white/70">{day.theme || day.date?.slice(0, 10) || 'Daily scene'}</span>
                 </Link>
               </li>
             ))}
@@ -202,8 +202,8 @@ function CinematicOverview({ memory }: { memory: TravelMemoryOverview }) {
         )}
       <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 pb-16 pt-12 md:grid-cols-2 md:px-10 md:pb-24" data-memory-day-cards="true">
         {memory.days.map((day, index) => (
-          <Link className={cn('group relative min-h-[26rem] overflow-hidden bg-[#151b1a]', index % 2 === 1 && 'md:mt-24')} href={`/travel/${memory.slug}/day/${day.dayKey}`} key={day.dayKey}>
-            <PayloadImage className="absolute inset-0 h-full w-full !aspect-auto rounded-none" fallbackLabel={day.title} fit="cover" imageClassName="opacity-80 transition duration-700 group-hover:scale-[1.03]" media={day.heroMedia} sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
+          <Link className={cn('group relative min-h-[26rem] overflow-hidden bg-[#151b1a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#ddae73]', index % 2 === 1 && 'md:mt-24')} href={`/travel/${memory.slug}/day/${day.dayKey}`} key={day.dayKey}>
+            <PayloadImage className="absolute inset-0 h-full w-full !aspect-auto rounded-none" fallbackLabel={day.title} fit="cover" imageClassName="opacity-80 transition duration-700 motion-safe:group-hover:scale-[1.03] motion-reduce:transition-none motion-reduce:duration-0" media={day.heroMedia} sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0d1211] via-transparent to-transparent" />
             <span className="absolute inset-x-0 bottom-0 p-7">
               <span className="font-mono text-lg font-semibold text-[#ddae73] md:text-xl">DAY {String(day.day).padStart(2, '0')}</span>
@@ -584,13 +584,13 @@ function EditorialDay({ view }: { view: TravelMemoryDayView }) {
     >
       <header className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-14 md:grid-cols-[0.34fr_1fr] md:px-10 md:py-24">
         <div>
-          <Link className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#806f5d] transition hover:text-[#a34031]" href={`/travel/${view.memory.slug}`}>
+          <Link className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#6f6254] transition hover:text-[#a34031] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#a34031]" href={`/travel/${view.memory.slug}`}>
             <ArrowLeft className="size-4" aria-hidden="true" /> 回到旅行首頁
           </Link>
           <p className="mt-14 font-serif text-[8rem] leading-[0.78] text-[#b64332] md:text-[11rem]">
             {view.day.day}
           </p>
-          <p className="mt-7 font-mono text-xs tabular-nums text-[#806f5d]">
+          <p className="mt-7 font-mono text-xs tabular-nums text-[#6f6254]">
             {view.day.dateLabel || view.day.date?.slice(0, 10) || view.day.dayKey}
           </p>
         </div>
@@ -626,11 +626,11 @@ function EditorialDay({ view }: { view: TravelMemoryDayView }) {
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#a34031]">今日札記</p>
           <dl className="mt-5 grid gap-4 border-t border-[#cfc2ae] pt-5 text-sm text-[#675f55]">
             <div>
-              <dt className="text-xs text-[#897d6e]">片段</dt>
+              <dt className="text-xs text-[#6f6254]">片段</dt>
               <dd className="mt-1 font-serif text-lg text-[#29251f]">{moments.length} 個沿途時刻</dd>
             </div>
             <div>
-              <dt className="text-xs text-[#897d6e]">篇章</dt>
+              <dt className="text-xs text-[#6f6254]">篇章</dt>
               <dd className="mt-1 leading-6">Day {view.day.day} of {view.memory.days.length}</dd>
             </div>
           </dl>
@@ -646,7 +646,7 @@ function EditorialDay({ view }: { view: TravelMemoryDayView }) {
                   <p className="font-mono text-sm tabular-nums text-[#a34031]">{moment.time || '—'}</p>
                   <div>
                     {moment.location ? (
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#897d6e]">{moment.location}</p>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#6f6254]">{moment.location}</p>
                     ) : null}
                     <h2 className="mt-2 font-serif text-3xl leading-tight tracking-[-0.02em] md:text-4xl">{moment.title}</h2>
                     {moment.transport ? <p className="mt-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#a34031]">交通 · {moment.transport}</p> : null}
