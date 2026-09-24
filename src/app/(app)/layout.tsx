@@ -38,7 +38,7 @@ export default async function AppLayout({ children }: AppLayoutProps) {
       <body>
         <div className="min-h-screen bg-slate-50 text-slate-950">
           <header className="sticky top-0 z-30 border-b border-white/50 bg-white/60 backdrop-blur-xl">
-            <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-3 sm:px-5">
+            <nav className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-3 [&_a:focus-visible]:outline [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-4 [&_a:focus-visible]:outline-[#9a7a41] sm:px-5">
               <Link
                 aria-label="Web Li 首頁"
                 className="group flex shrink-0 items-center gap-2"

@@ -5,6 +5,8 @@
 
 自主選 context、方法與驗證；契約不明、變更或衝突時查 owner，不預讀清單。docs/agent-context-routing.md 是可選索引。Skills 按任務／使用者指定啟用，不因 UI 小修觸發 redesign／產圖，不擴權或覆寫 stack。
 
+設計任務依 [Li Family visual system](docs/design/li-family-visual-system.md) 與 [Skill routing](docs/design/skill-routing.md) 選一個 Creative Director；一般 UI 小修只讀受影響規則。Skill 的 generic 預設不得靜默更換 framework、Tailwind、shadcn、字體、Lucide 或擴大 redesign。視覺變更依 change scope 使用 `visual-qa`，不把舊截圖當現行 runtime 證據。
+
 ## 權限與保全
 遵守平台 system／developer。Repository precedence：目前使用者 task／有效批准 → CONTEXT 穩定詞彙 → accepted ADR → 架構契約 → AGENTS → owning domain／Phase rules → task-scoped Skills → historical evidence。Proposed ADR 非決策，限定例外不泛化；契約與 schema／ADR 衝突時回報，停受影響高風險動作，不靜默覆寫。
 

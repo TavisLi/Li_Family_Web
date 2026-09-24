@@ -1,0 +1,615 @@
+{
+  "source": "working-tree",
+  "fixtureSha256": "5902ede29bed060bfda734ab5f17c8d9c3bf2ff3f82e6f839fa02ebea4d3434a",
+  "results": [
+    {
+      "phase": "after",
+      "surface": "portal",
+      "route": "/",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "status": 200,
+      "screenshot": "/Users/tien-hsinglee/Project/li-family-web/output/playwright/issue114-after-portal-desktop.webp",
+      "lazyImages": 6,
+      "title": "Web Li",
+      "h1": [
+        "Li Family"
+      ],
+      "layout": "portal",
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "images": [
+        {
+          "src": "/_next/image",
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-nanshan.jpeg",
+          "ok": true,
+          "alt": "海南南山文化旅遊區"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-lagoon-pool.jpeg",
+          "ok": true,
+          "alt": "度假村泳池與綠地"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-nanshan.jpeg",
+          "ok": true,
+          "alt": "海南南山文化旅遊區"
+        }
+      ],
+      "links": 16,
+      "focus": {
+        "tag": "A",
+        "label": "Web Li 首頁",
+        "href": "/",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "surface": "portal",
+      "route": "/",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "status": 200,
+      "screenshot": "/Users/tien-hsinglee/Project/li-family-web/output/playwright/issue114-after-portal-tablet.webp",
+      "lazyImages": 6,
+      "title": "Web Li",
+      "h1": [
+        "Li Family"
+      ],
+      "layout": "portal",
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "images": [
+        {
+          "src": "/_next/image",
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-nanshan.jpeg",
+          "ok": true,
+          "alt": "海南南山文化旅遊區"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-lagoon-pool.jpeg",
+          "ok": true,
+          "alt": "度假村泳池與綠地"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-nanshan.jpeg",
+          "ok": true,
+          "alt": "海南南山文化旅遊區"
+        }
+      ],
+      "links": 16,
+      "focus": {
+        "tag": "A",
+        "label": "Web Li 首頁",
+        "href": "/",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "surface": "portal",
+      "route": "/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "/Users/tien-hsinglee/Project/li-family-web/output/playwright/issue114-after-portal-mobile.webp",
+      "lazyImages": 6,
+      "title": "Web Li",
+      "h1": [
+        "Li Family"
+      ],
+      "layout": "portal",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "images": [
+        {
+          "src": "/_next/image",
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-nanshan.jpeg",
+          "ok": true,
+          "alt": "海南南山文化旅遊區"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-lagoon-pool.jpeg",
+          "ok": true,
+          "alt": "度假村泳池與綠地"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-nanshan.jpeg",
+          "ok": true,
+          "alt": "海南南山文化旅遊區"
+        }
+      ],
+      "links": 16,
+      "focus": {
+        "tag": "A",
+        "label": "Web Li 首頁",
+        "href": "/",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "surface": "editorial",
+      "route": "/travel/synthetic-editorial/day/day-03",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "status": 200,
+      "screenshot": "/Users/tien-hsinglee/Project/li-family-web/output/playwright/issue114-after-editorial-desktop.webp",
+      "lazyImages": 0,
+      "title": "Web Li",
+      "h1": [
+        "在海邊重新相聚"
+      ],
+      "layout": "editorial-day",
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "images": [
+        {
+          "src": "/_next/image",
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        }
+      ],
+      "links": 9,
+      "focus": {
+        "tag": "A",
+        "label": "Web Li 首頁",
+        "href": "/",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "surface": "editorial",
+      "route": "/travel/synthetic-editorial/day/day-03",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "status": 200,
+      "screenshot": "/Users/tien-hsinglee/Project/li-family-web/output/playwright/issue114-after-editorial-tablet.webp",
+      "lazyImages": 0,
+      "title": "Web Li",
+      "h1": [
+        "在海邊重新相聚"
+      ],
+      "layout": "editorial-day",
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "images": [
+        {
+          "src": "/_next/image",
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        }
+      ],
+      "links": 9,
+      "focus": {
+        "tag": "A",
+        "label": "Web Li 首頁",
+        "href": "/",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "surface": "editorial",
+      "route": "/travel/synthetic-editorial/day/day-03",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "/Users/tien-hsinglee/Project/li-family-web/output/playwright/issue114-after-editorial-mobile.webp",
+      "lazyImages": 0,
+      "title": "Web Li",
+      "h1": [
+        "在海邊重新相聚"
+      ],
+      "layout": "editorial-day",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "images": [
+        {
+          "src": "/_next/image",
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        }
+      ],
+      "links": 9,
+      "focus": {
+        "tag": "A",
+        "label": "Web Li 首頁",
+        "href": "/",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "surface": "cinematic",
+      "route": "/travel/synthetic-cinematic",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "status": 200,
+      "screenshot": "/Users/tien-hsinglee/Project/li-family-web/output/playwright/issue114-after-cinematic-desktop.webp",
+      "lazyImages": 8,
+      "title": "Web Li",
+      "h1": [
+        "沿著海岸的八日旅行"
+      ],
+      "layout": "cinematic-overview",
+      "scrollWidth": 1440,
+      "innerWidth": 1440,
+      "images": [
+        {
+          "src": "/_next/image",
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-nanshan.jpeg",
+          "ok": true,
+          "alt": "海南南山文化旅遊區"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-lagoon-pool.jpeg",
+          "ok": true,
+          "alt": "度假村泳池與綠地"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        }
+      ],
+      "links": 23,
+      "focus": {
+        "tag": "A",
+        "label": "Web Li 首頁",
+        "href": "/",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "surface": "cinematic",
+      "route": "/travel/synthetic-cinematic",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "status": 200,
+      "screenshot": "/Users/tien-hsinglee/Project/li-family-web/output/playwright/issue114-after-cinematic-tablet.webp",
+      "lazyImages": 8,
+      "title": "Web Li",
+      "h1": [
+        "沿著海岸的八日旅行"
+      ],
+      "layout": "cinematic-overview",
+      "scrollWidth": 768,
+      "innerWidth": 768,
+      "images": [
+        {
+          "src": "/_next/image",
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-nanshan.jpeg",
+          "ok": true,
+          "alt": "海南南山文化旅遊區"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-lagoon-pool.jpeg",
+          "ok": true,
+          "alt": "度假村泳池與綠地"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        }
+      ],
+      "links": 23,
+      "focus": {
+        "tag": "A",
+        "label": "Web Li 首頁",
+        "href": "/",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "errors": []
+    },
+    {
+      "phase": "after",
+      "surface": "cinematic",
+      "route": "/travel/synthetic-cinematic",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "status": 200,
+      "screenshot": "/Users/tien-hsinglee/Project/li-family-web/output/playwright/issue114-after-cinematic-mobile.webp",
+      "lazyImages": 8,
+      "title": "Web Li",
+      "h1": [
+        "沿著海岸的八日旅行"
+      ],
+      "layout": "cinematic-overview",
+      "scrollWidth": 390,
+      "innerWidth": 390,
+      "images": [
+        {
+          "src": "/_next/image",
+          "ok": true,
+          "alt": ""
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-nanshan.jpeg",
+          "ok": true,
+          "alt": "海南南山文化旅遊區"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-lagoon-pool.jpeg",
+          "ok": true,
+          "alt": "度假村泳池與綠地"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/cover-birds-nest.jpeg",
+          "ok": true,
+          "alt": "山林間的家庭旅程風景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-03-luhuitou.jpeg",
+          "ok": true,
+          "alt": "鹿回頭山景"
+        },
+        {
+          "src": "/prototypes/travel-memory-hainan/day-08-beach.jpeg",
+          "ok": true,
+          "alt": "海南海邊的沙灘"
+        }
+      ],
+      "links": 23,
+      "focus": {
+        "tag": "A",
+        "label": "Web Li 首頁",
+        "href": "/",
+        "outlineStyle": "solid",
+        "outlineWidth": "2px",
+        "boxShadow": "none"
+      },
+      "errors": []
+    }
+  ]
+}
