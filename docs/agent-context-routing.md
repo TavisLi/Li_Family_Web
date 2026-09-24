@@ -6,6 +6,7 @@
 | --- | --- |
 | 詞彙、持久決策 | [CONTEXT](../CONTEXT.md)；[ADR index](./adr/README.md)，只追相關 accepted 決策 |
 | Stack、目錄、data access／generated types、domain 契約 | [架構](./全栈系统需求与技术架构说明书.md) §3–§9，按問題定位 |
+| UI 視覺語言、presentation family、設計 Skill 分工 | [Li Family visual system](./design/li-family-visual-system.md) 的受影響段落；[Skill routing](./design/skill-routing.md) 只在選 Skill 或處理衝突時查 |
 | Source／Admin reconciliation、media ownership | 架構 §5；[ADR-0006](./adr/0006-seed-reconciliation-protects-published-content.md)；source 格式需釐清時查 [source guideline](./travel-content-source-guidelines.md) |
 | Public／Family enforcement | 架構 §6；[ADR-0002](./adr/0002-family-mode-is-an-access-boundary.md) |
 | Travel placement caption 與多頁共享模型 | [ADR-0009](./adr/0009-travel-memory-pages-share-one-content-model.md)，配合當前 projection／renderer |

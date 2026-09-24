@@ -2,6 +2,8 @@
 
 本目錄存放專案級與頁面級設計參考文件。這些文件是設計規格、風格基準與後續 Phase 實作依據，不是前台 runtime 直接讀取的資料來源。
 
+跨頁面視覺語言見 [Li Family visual system](./li-family-visual-system.md)；設計 Skills 的角色與載入路由見 [Skill routing](./skill-routing.md)。
+
 ## Travel Design Docs
 
 旅遊頁面的設計文檔放在：
