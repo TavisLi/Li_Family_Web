@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-deadline",
+  "manifestSha256": "02eef39639c0b6fc2d8a60b31ba67fedaf7d7790beb38cecc212729025b708d1",
+  "stage": "preflight",
+  "status": "UNKNOWN",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

@@ -1,0 +1,19 @@
+{
+  "criterion": 5,
+  "status": "BLOCK",
+  "checkedAt": "2026-09-24",
+  "commit": "b40f5fc351cb6c5f2f1055fdf0818dd730a1f620",
+  "reason": "PRIVATE_BACKUP_MISSING",
+  "expectedBackup": {
+    "path": ".phase21-private/retirement-backup-2026-09-07T09-19-11-293Z/"
+  },
+  "observed": "Expected private backup directory is absent.",
+  "backupByteVerification": "NOT_RUN",
+  "fullScopeAndPreflight": "NOT_RUN",
+  "restoreAndIndependentReadback": "NOT_RUN",
+  "database": "No disposable database was created or connected; Docker socket access was denied during read-only container discovery.",
+  "productionConnections": 0,
+  "productionMutations": 0,
+  "executorChanged": false,
+  "automaticRetry": false
+}

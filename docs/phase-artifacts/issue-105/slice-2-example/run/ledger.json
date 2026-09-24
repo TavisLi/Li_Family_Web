@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "runId": "issue-105-slice2-review",
+  "manifestSha256": "18adebeb4d764986f7e3c4e35968964277176276f7e80f3a1a206a7c1c8a7d04",
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-09-23T01:53:50.252Z",
+      "stage": "bootstrap",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 2,
+      "at": "2026-09-23T01:53:50.267Z",
+      "stage": "connect",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 3,
+      "at": "2026-09-23T01:53:50.267Z",
+      "stage": "transaction",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 4,
+      "at": "2026-09-23T01:53:50.272Z",
+      "stage": "preflight",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 5,
+      "at": "2026-09-23T01:53:50.311Z",
+      "stage": "apply",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 6,
+      "at": "2026-09-23T01:53:50.315Z",
+      "stage": "commit",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 7,
+      "at": "2026-09-23T01:53:50.322Z",
+      "stage": "readback",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 8,
+      "at": "2026-09-23T01:53:50.349Z",
+      "stage": "restore",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 9,
+      "at": "2026-09-23T01:53:50.384Z",
+      "stage": "complete",
+      "status": "PASS",
+      "evidencePath": "receipt.json"
+    }
+  ]
+}

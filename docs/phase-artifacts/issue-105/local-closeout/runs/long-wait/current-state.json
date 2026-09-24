@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-long-wait",
+  "manifestSha256": "004ae686a6875df4754427c0991551608451f272df39ae4ffdacdd09f10950ec",
+  "stage": "complete",
+  "status": "PASS",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

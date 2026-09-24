@@ -1,0 +1,670 @@
+{
+  "version": 1,
+  "snapshot": {
+    "targetRows": [
+      {
+        "table": "travel_memories_rels",
+        "id": 101,
+        "parent_id": 1,
+        "path": "itineraryImages",
+        "body": {
+          "id": 101,
+          "path": "itineraryImages",
+          "media_id": 501,
+          "parent_id": 1
+        }
+      },
+      {
+        "table": "travel_memories_rels",
+        "id": 102,
+        "parent_id": 1,
+        "path": "dailyHighlights.0.mediaItems",
+        "body": {
+          "id": 102,
+          "path": "dailyHighlights.0.mediaItems",
+          "media_id": 502,
+          "parent_id": 1
+        }
+      },
+      {
+        "table": "_travel_memories_v_rels",
+        "id": 201,
+        "parent_id": 2,
+        "path": "version.itineraryImages",
+        "body": {
+          "id": 201,
+          "path": "version.itineraryImages",
+          "media_id": 601,
+          "parent_id": 2
+        }
+      },
+      {
+        "table": "_travel_memories_v_rels",
+        "id": 202,
+        "parent_id": 2,
+        "path": "version.dailyHighlights.0.mediaItems",
+        "body": {
+          "id": 202,
+          "path": "version.dailyHighlights.0.mediaItems",
+          "media_id": 602,
+          "parent_id": 2
+        }
+      }
+    ],
+    "protectedRows": [
+      {
+        "table": "travel_memories_rels",
+        "id": 103,
+        "parent_id": 1,
+        "path": "galleryImages",
+        "body": {
+          "id": 103,
+          "path": "galleryImages",
+          "media_id": 503,
+          "parent_id": 1
+        }
+      },
+      {
+        "table": "travel_memories_rels",
+        "id": 104,
+        "parent_id": 2,
+        "path": "storySections.0.mediaItems",
+        "body": {
+          "id": 104,
+          "path": "storySections.0.mediaItems",
+          "media_id": 504,
+          "parent_id": 2
+        }
+      },
+      {
+        "table": "_travel_memories_v_rels",
+        "id": 203,
+        "parent_id": 2,
+        "path": "version.galleryImages",
+        "body": {
+          "id": 203,
+          "path": "version.galleryImages",
+          "media_id": 603,
+          "parent_id": 2
+        }
+      }
+    ],
+    "canonicalRows": [
+      {
+        "id": 1,
+        "body": {
+          "id": 1,
+          "slug": "201307-hainan",
+          "title": "海南記憶"
+        }
+      },
+      {
+        "id": 2,
+        "body": {
+          "id": 2,
+          "slug": "202308-east-australia",
+          "title": "澳洲記憶"
+        }
+      }
+    ],
+    "legacyRows": [
+      {
+        "id": 11,
+        "body": {
+          "id": 11,
+          "day": 1,
+          "_order": 1,
+          "_parent_id": 1,
+          "date_label": "Day 1"
+        }
+      },
+      {
+        "id": 12,
+        "body": {
+          "id": 12,
+          "day": 2,
+          "_order": 1,
+          "_parent_id": 2,
+          "date_label": "Day 2"
+        }
+      }
+    ],
+    "metadata": {
+      "columns": [
+        {
+          "id": "_travel_memories_v_rels.0001",
+          "table_name": "_travel_memories_v_rels",
+          "column_name": "id",
+          "ordinal_position": 1,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "_travel_memories_v_rels.0002",
+          "table_name": "_travel_memories_v_rels",
+          "column_name": "parent_id",
+          "ordinal_position": 2,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "_travel_memories_v_rels.0003",
+          "table_name": "_travel_memories_v_rels",
+          "column_name": "path",
+          "ordinal_position": 3,
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "_travel_memories_v_rels.0004",
+          "table_name": "_travel_memories_v_rels",
+          "column_name": "media_id",
+          "ordinal_position": 4,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories.0001",
+          "table_name": "travel_memories",
+          "column_name": "id",
+          "ordinal_position": 1,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories.0002",
+          "table_name": "travel_memories",
+          "column_name": "slug",
+          "ordinal_position": 2,
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories.0003",
+          "table_name": "travel_memories",
+          "column_name": "title",
+          "ordinal_position": 3,
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories_daily_highlights.0001",
+          "table_name": "travel_memories_daily_highlights",
+          "column_name": "id",
+          "ordinal_position": 1,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories_daily_highlights.0002",
+          "table_name": "travel_memories_daily_highlights",
+          "column_name": "_parent_id",
+          "ordinal_position": 2,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories_daily_highlights.0003",
+          "table_name": "travel_memories_daily_highlights",
+          "column_name": "_order",
+          "ordinal_position": 3,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories_daily_highlights.0004",
+          "table_name": "travel_memories_daily_highlights",
+          "column_name": "day",
+          "ordinal_position": 4,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories_daily_highlights.0005",
+          "table_name": "travel_memories_daily_highlights",
+          "column_name": "date_label",
+          "ordinal_position": 5,
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "YES",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories_rels.0001",
+          "table_name": "travel_memories_rels",
+          "column_name": "id",
+          "ordinal_position": 1,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories_rels.0002",
+          "table_name": "travel_memories_rels",
+          "column_name": "parent_id",
+          "ordinal_position": 2,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories_rels.0003",
+          "table_name": "travel_memories_rels",
+          "column_name": "path",
+          "ordinal_position": 3,
+          "data_type": "text",
+          "udt_name": "text",
+          "is_nullable": "NO",
+          "column_default": null
+        },
+        {
+          "id": "travel_memories_rels.0004",
+          "table_name": "travel_memories_rels",
+          "column_name": "media_id",
+          "ordinal_position": 4,
+          "data_type": "integer",
+          "udt_name": "int4",
+          "is_nullable": "YES",
+          "column_default": null
+        }
+      ],
+      "constraints": [
+        {
+          "id": "_travel_memories_v_rels._travel_memories_v_rels_parent_id_fkey",
+          "table_name": "_travel_memories_v_rels",
+          "name": "_travel_memories_v_rels_parent_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (parent_id) REFERENCES travel_memories(id)"
+        },
+        {
+          "id": "_travel_memories_v_rels._travel_memories_v_rels_pkey",
+          "table_name": "_travel_memories_v_rels",
+          "name": "_travel_memories_v_rels_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "id": "travel_memories.travel_memories_pkey",
+          "table_name": "travel_memories",
+          "name": "travel_memories_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "id": "travel_memories.travel_memories_slug_key",
+          "table_name": "travel_memories",
+          "name": "travel_memories_slug_key",
+          "type": "u",
+          "definition": "UNIQUE (slug)"
+        },
+        {
+          "id": "travel_memories_daily_highlights.travel_memories_daily_highlights__parent_id_fkey",
+          "table_name": "travel_memories_daily_highlights",
+          "name": "travel_memories_daily_highlights__parent_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (_parent_id) REFERENCES travel_memories(id)"
+        },
+        {
+          "id": "travel_memories_daily_highlights.travel_memories_daily_highlights_pkey",
+          "table_name": "travel_memories_daily_highlights",
+          "name": "travel_memories_daily_highlights_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        },
+        {
+          "id": "travel_memories_rels.travel_memories_rels_parent_id_fkey",
+          "table_name": "travel_memories_rels",
+          "name": "travel_memories_rels_parent_id_fkey",
+          "type": "f",
+          "definition": "FOREIGN KEY (parent_id) REFERENCES travel_memories(id)"
+        },
+        {
+          "id": "travel_memories_rels.travel_memories_rels_pkey",
+          "table_name": "travel_memories_rels",
+          "name": "travel_memories_rels_pkey",
+          "type": "p",
+          "definition": "PRIMARY KEY (id)"
+        }
+      ],
+      "indexes": [
+        {
+          "id": "_travel_memories_v_rels._travel_memories_v_rels_path_idx",
+          "tablename": "_travel_memories_v_rels",
+          "indexname": "_travel_memories_v_rels_path_idx",
+          "indexdef": "CREATE INDEX _travel_memories_v_rels_path_idx ON public._travel_memories_v_rels USING btree (path)"
+        },
+        {
+          "id": "_travel_memories_v_rels._travel_memories_v_rels_pkey",
+          "tablename": "_travel_memories_v_rels",
+          "indexname": "_travel_memories_v_rels_pkey",
+          "indexdef": "CREATE UNIQUE INDEX _travel_memories_v_rels_pkey ON public._travel_memories_v_rels USING btree (id)"
+        },
+        {
+          "id": "travel_memories.travel_memories_pkey",
+          "tablename": "travel_memories",
+          "indexname": "travel_memories_pkey",
+          "indexdef": "CREATE UNIQUE INDEX travel_memories_pkey ON public.travel_memories USING btree (id)"
+        },
+        {
+          "id": "travel_memories.travel_memories_slug_key",
+          "tablename": "travel_memories",
+          "indexname": "travel_memories_slug_key",
+          "indexdef": "CREATE UNIQUE INDEX travel_memories_slug_key ON public.travel_memories USING btree (slug)"
+        },
+        {
+          "id": "travel_memories_daily_highlights.travel_memories_daily_highlights_parent_id_idx",
+          "tablename": "travel_memories_daily_highlights",
+          "indexname": "travel_memories_daily_highlights_parent_id_idx",
+          "indexdef": "CREATE INDEX travel_memories_daily_highlights_parent_id_idx ON public.travel_memories_daily_highlights USING btree (_parent_id)"
+        },
+        {
+          "id": "travel_memories_daily_highlights.travel_memories_daily_highlights_pkey",
+          "tablename": "travel_memories_daily_highlights",
+          "indexname": "travel_memories_daily_highlights_pkey",
+          "indexdef": "CREATE UNIQUE INDEX travel_memories_daily_highlights_pkey ON public.travel_memories_daily_highlights USING btree (id)"
+        },
+        {
+          "id": "travel_memories_rels.travel_memories_rels_path_idx",
+          "tablename": "travel_memories_rels",
+          "indexname": "travel_memories_rels_path_idx",
+          "indexdef": "CREATE INDEX travel_memories_rels_path_idx ON public.travel_memories_rels USING btree (path)"
+        },
+        {
+          "id": "travel_memories_rels.travel_memories_rels_pkey",
+          "tablename": "travel_memories_rels",
+          "indexname": "travel_memories_rels_pkey",
+          "indexdef": "CREATE UNIQUE INDEX travel_memories_rels_pkey ON public.travel_memories_rels USING btree (id)"
+        }
+      ],
+      "rls": [
+        {
+          "id": "_travel_memories_v_rels",
+          "relname": "_travel_memories_v_rels",
+          "relrowsecurity": false,
+          "relforcerowsecurity": false,
+          "acl": null,
+          "owner": "postgres"
+        },
+        {
+          "id": "travel_memories",
+          "relname": "travel_memories",
+          "relrowsecurity": false,
+          "relforcerowsecurity": false,
+          "acl": null,
+          "owner": "postgres"
+        },
+        {
+          "id": "travel_memories_daily_highlights",
+          "relname": "travel_memories_daily_highlights",
+          "relrowsecurity": true,
+          "relforcerowsecurity": false,
+          "acl": "{postgres=arwdDxtm/postgres,retirement_reader=r/postgres}",
+          "owner": "postgres"
+        },
+        {
+          "id": "travel_memories_rels",
+          "relname": "travel_memories_rels",
+          "relrowsecurity": false,
+          "relforcerowsecurity": false,
+          "acl": null,
+          "owner": "postgres"
+        }
+      ],
+      "grants": [
+        {
+          "id": "_travel_memories_v_rels.postgres.DELETE",
+          "table_name": "_travel_memories_v_rels",
+          "grantee": "postgres",
+          "privilege_type": "DELETE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "_travel_memories_v_rels.postgres.INSERT",
+          "table_name": "_travel_memories_v_rels",
+          "grantee": "postgres",
+          "privilege_type": "INSERT",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "_travel_memories_v_rels.postgres.REFERENCES",
+          "table_name": "_travel_memories_v_rels",
+          "grantee": "postgres",
+          "privilege_type": "REFERENCES",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "_travel_memories_v_rels.postgres.SELECT",
+          "table_name": "_travel_memories_v_rels",
+          "grantee": "postgres",
+          "privilege_type": "SELECT",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "_travel_memories_v_rels.postgres.TRIGGER",
+          "table_name": "_travel_memories_v_rels",
+          "grantee": "postgres",
+          "privilege_type": "TRIGGER",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "_travel_memories_v_rels.postgres.TRUNCATE",
+          "table_name": "_travel_memories_v_rels",
+          "grantee": "postgres",
+          "privilege_type": "TRUNCATE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "_travel_memories_v_rels.postgres.UPDATE",
+          "table_name": "_travel_memories_v_rels",
+          "grantee": "postgres",
+          "privilege_type": "UPDATE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories.postgres.DELETE",
+          "table_name": "travel_memories",
+          "grantee": "postgres",
+          "privilege_type": "DELETE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories.postgres.INSERT",
+          "table_name": "travel_memories",
+          "grantee": "postgres",
+          "privilege_type": "INSERT",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories.postgres.REFERENCES",
+          "table_name": "travel_memories",
+          "grantee": "postgres",
+          "privilege_type": "REFERENCES",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories.postgres.SELECT",
+          "table_name": "travel_memories",
+          "grantee": "postgres",
+          "privilege_type": "SELECT",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories.postgres.TRIGGER",
+          "table_name": "travel_memories",
+          "grantee": "postgres",
+          "privilege_type": "TRIGGER",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories.postgres.TRUNCATE",
+          "table_name": "travel_memories",
+          "grantee": "postgres",
+          "privilege_type": "TRUNCATE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories.postgres.UPDATE",
+          "table_name": "travel_memories",
+          "grantee": "postgres",
+          "privilege_type": "UPDATE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_daily_highlights.postgres.DELETE",
+          "table_name": "travel_memories_daily_highlights",
+          "grantee": "postgres",
+          "privilege_type": "DELETE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_daily_highlights.postgres.INSERT",
+          "table_name": "travel_memories_daily_highlights",
+          "grantee": "postgres",
+          "privilege_type": "INSERT",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_daily_highlights.postgres.REFERENCES",
+          "table_name": "travel_memories_daily_highlights",
+          "grantee": "postgres",
+          "privilege_type": "REFERENCES",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_daily_highlights.postgres.SELECT",
+          "table_name": "travel_memories_daily_highlights",
+          "grantee": "postgres",
+          "privilege_type": "SELECT",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_daily_highlights.postgres.TRIGGER",
+          "table_name": "travel_memories_daily_highlights",
+          "grantee": "postgres",
+          "privilege_type": "TRIGGER",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_daily_highlights.postgres.TRUNCATE",
+          "table_name": "travel_memories_daily_highlights",
+          "grantee": "postgres",
+          "privilege_type": "TRUNCATE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_daily_highlights.postgres.UPDATE",
+          "table_name": "travel_memories_daily_highlights",
+          "grantee": "postgres",
+          "privilege_type": "UPDATE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_daily_highlights.retirement_reader.SELECT",
+          "table_name": "travel_memories_daily_highlights",
+          "grantee": "retirement_reader",
+          "privilege_type": "SELECT",
+          "is_grantable": "NO"
+        },
+        {
+          "id": "travel_memories_rels.postgres.DELETE",
+          "table_name": "travel_memories_rels",
+          "grantee": "postgres",
+          "privilege_type": "DELETE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_rels.postgres.INSERT",
+          "table_name": "travel_memories_rels",
+          "grantee": "postgres",
+          "privilege_type": "INSERT",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_rels.postgres.REFERENCES",
+          "table_name": "travel_memories_rels",
+          "grantee": "postgres",
+          "privilege_type": "REFERENCES",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_rels.postgres.SELECT",
+          "table_name": "travel_memories_rels",
+          "grantee": "postgres",
+          "privilege_type": "SELECT",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_rels.postgres.TRIGGER",
+          "table_name": "travel_memories_rels",
+          "grantee": "postgres",
+          "privilege_type": "TRIGGER",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_rels.postgres.TRUNCATE",
+          "table_name": "travel_memories_rels",
+          "grantee": "postgres",
+          "privilege_type": "TRUNCATE",
+          "is_grantable": "YES"
+        },
+        {
+          "id": "travel_memories_rels.postgres.UPDATE",
+          "table_name": "travel_memories_rels",
+          "grantee": "postgres",
+          "privilege_type": "UPDATE",
+          "is_grantable": "YES"
+        }
+      ],
+      "policies": [
+        {
+          "id": "travel_memories_daily_highlights.retirement_read",
+          "tablename": "travel_memories_daily_highlights",
+          "policyname": "retirement_read",
+          "roles": "{retirement_reader}",
+          "cmd": "SELECT",
+          "qual": "true",
+          "with_check": null
+        }
+      ],
+      "sequences": [
+        {
+          "id": "travel_memories_daily_highlights_id_seq",
+          "sequencename": "travel_memories_daily_highlights_id_seq",
+          "start_value": "1",
+          "increment_by": "1",
+          "max_value": "2147483647",
+          "min_value": "1",
+          "cycle": false,
+          "cache_size": "1",
+          "last_value": "19",
+          "is_called": true
+        }
+      ]
+    }
+  },
+  "snapshotSha256": "6b94d7c3c883d7fedb4e2be870a9733738b3e071ceae1885a759945252004b10"
+}

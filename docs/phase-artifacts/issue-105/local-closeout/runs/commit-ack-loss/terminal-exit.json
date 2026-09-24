@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-commit-ack-loss",
+  "sessionId": "issue-105-local-commit-ack-loss:17670",
+  "actualExitCode": 1,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1136,
+  "status": "UNKNOWN",
+  "code": "CONNECTION_DROP",
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 207,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

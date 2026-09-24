@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-normal",
+  "manifestSha256": "7e58b9efab29b312a209d126f6cd61e16eab5b658293de5759a460b8fa8c714d",
+  "stage": "complete",
+  "status": "PASS",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

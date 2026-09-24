@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-long-wait",
+  "sessionId": "issue-105-local-long-wait:17682",
+  "actualExitCode": 0,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 36315,
+  "status": "PASS",
+  "code": null,
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 181,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

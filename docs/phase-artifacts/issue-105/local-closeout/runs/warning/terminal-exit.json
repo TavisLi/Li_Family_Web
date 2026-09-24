@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-warning",
+  "sessionId": "issue-105-local-warning:17639",
+  "actualExitCode": 1,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1102,
+  "status": "UNKNOWN",
+  "code": "DATABASE_WARNING",
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 195,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

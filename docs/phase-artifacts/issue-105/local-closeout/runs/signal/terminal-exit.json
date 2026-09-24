@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-signal",
+  "sessionId": "issue-105-local-signal:17674",
+  "actualExitCode": 1,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1096,
+  "status": "UNKNOWN",
+  "code": "SIGNAL",
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 183,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

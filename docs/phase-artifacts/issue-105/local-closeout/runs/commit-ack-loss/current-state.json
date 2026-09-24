@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-commit-ack-loss",
+  "manifestSha256": "67dc4ac763ae92a3d474be00c643890ccfceeab87b75ba044d85b8851a81ea1d",
+  "stage": "commit",
+  "status": "UNKNOWN",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

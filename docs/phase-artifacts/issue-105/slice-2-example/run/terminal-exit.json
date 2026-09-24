@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-slice2-review",
+  "sessionId": "issue-105-slice2-review:9995",
+  "actualExitCode": 0,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1203,
+  "status": "PASS",
+  "code": null,
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 168,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

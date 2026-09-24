@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-query-cancelled",
+  "manifestSha256": "b04b32e887b05bd419b46e78443feaac975709915126384d4d84662a0b60674a",
+  "stage": "preflight",
+  "status": "BLOCK",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

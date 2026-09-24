@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "runId": "issue-105-local-commit-ack-loss",
+  "manifestSha256": "67dc4ac763ae92a3d474be00c643890ccfceeab87b75ba044d85b8851a81ea1d",
+  "events": [
+    {
+      "sequence": 1,
+      "at": "2026-09-23T03:46:36.528Z",
+      "stage": "bootstrap",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 2,
+      "at": "2026-09-23T03:46:36.541Z",
+      "stage": "connect",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 3,
+      "at": "2026-09-23T03:46:36.542Z",
+      "stage": "transaction",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 4,
+      "at": "2026-09-23T03:46:36.545Z",
+      "stage": "preflight",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 5,
+      "at": "2026-09-23T03:46:36.582Z",
+      "stage": "apply",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 6,
+      "at": "2026-09-23T03:46:36.586Z",
+      "stage": "commit",
+      "status": "PENDING",
+      "evidencePath": "checkpoints.jsonl"
+    },
+    {
+      "sequence": 7,
+      "at": "2026-09-23T03:46:36.587Z",
+      "stage": "commit",
+      "status": "UNKNOWN",
+      "evidencePath": "receipt.json"
+    }
+  ]
+}

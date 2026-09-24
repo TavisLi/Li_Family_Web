@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-oversized-response",
+  "sessionId": "issue-105-local-oversized-response:17651",
+  "actualExitCode": 1,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1095,
+  "status": "BLOCK",
+  "code": "RESPONSE_BYTE_CAP",
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 216,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

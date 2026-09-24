@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-delay",
+  "manifestSha256": "32faba22a1fd6df69ce9518b4d2d755fdb07dc4c33f31dbb9c13b42b52e68848",
+  "stage": "complete",
+  "status": "PASS",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-rollback-failure",
+  "sessionId": "issue-105-local-rollback-failure:17663",
+  "actualExitCode": 1,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1093,
+  "status": "UNKNOWN",
+  "code": "QUERY_FAILURE",
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 210,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}

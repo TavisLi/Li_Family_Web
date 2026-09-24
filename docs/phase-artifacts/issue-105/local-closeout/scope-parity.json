@@ -1,0 +1,25 @@
+{
+  "status": "PASS",
+  "reference": "independent full scans and catalog ID queries",
+  "rowCounts": {
+    "targetRows": 4,
+    "protectedRows": 3,
+    "canonicalRows": 2,
+    "legacyRows": 2
+  },
+  "rowHashes": {
+    "targetRows": "b52e7cb69fbdb26c72339d8a9ed7506279d94812549ea449188e704d0bef7696",
+    "protectedRows": "b87c6e1eb6c01c3f4be9b6e3e130b66c69a96a332af0f77bc27aa62ce98fd4cd",
+    "canonicalRows": "b6cfdf0df69af5277dcec5fddb162610e9855b360faca8f879c1fb025547a340",
+    "legacyRows": "d410eec6711083d1050fd6f7385149668eab62deec69980c759fbd3e2436ec12"
+  },
+  "metadataCounts": {
+    "columns": 16,
+    "constraints": 8,
+    "indexes": 8,
+    "sequences": 1,
+    "rls": 4,
+    "grants": 29,
+    "policies": 1
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "runId": "issue-105-local-connection-drop",
+  "manifestSha256": "3318abdac6cd22046189b09cff557bc504be5b031b3e5044e4ab2b8d3009281b",
+  "stage": "preflight",
+  "status": "UNKNOWN",
+  "lastEvidencePath": "receipt.json",
+  "authorization": {
+    "recordMatches": false,
+    "sourceNeedsVerification": true,
+    "reasons": [
+      "NO_APPROVAL"
+    ]
+  },
+  "evidence": []
+}

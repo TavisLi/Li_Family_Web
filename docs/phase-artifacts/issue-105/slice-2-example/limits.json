@@ -1,0 +1,11 @@
+{
+  "rowCap": 20,
+  "responseByteCap": 65536,
+  "backupByteCap": 1048576,
+  "queryBudget": 150,
+  "roundTripBudget": 160,
+  "deadlineMs": 120000,
+  "clientTimeoutMs": 20000,
+  "statementTimeoutMs": 15000,
+  "lockTimeoutMs": 2000
+}

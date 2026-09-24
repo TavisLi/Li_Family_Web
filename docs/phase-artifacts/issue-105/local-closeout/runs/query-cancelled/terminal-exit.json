@@ -1,0 +1,14 @@
+{
+  "runId": "issue-105-local-query-cancelled",
+  "sessionId": "issue-105-local-query-cancelled:17655",
+  "actualExitCode": 1,
+  "signal": null,
+  "forcedDeadline": false,
+  "elapsedMs": 1095,
+  "status": "BLOCK",
+  "code": "QUERY_CANCELLED",
+  "receiptPath": "receipt.json",
+  "stdoutBytes": 208,
+  "stderrBytes": 0,
+  "automaticRetry": false
+}
