@@ -2,7 +2,8 @@ import { spawnSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 
 // Explicit, sequential allowlist. PostgreSQL tests run in the disposable job.
-// agent-governance.test.ts writes preserved #113 evidence, so it stays out of CI.
+// Frozen #101 package verification requires its historical Node 20 and commit;
+// agent-governance.test.ts writes preserved #113 evidence. Neither is current CI.
 const files = [
   'src/features/home/member-portal-link.test.ts',
   'src/features/member/member-profile-page.test.tsx',
@@ -34,7 +35,6 @@ const files = [
   'src/scripts/phase21-c0-evidence.test.mjs',
   'src/scripts/phase21-c0-execute.test.mjs',
   'src/scripts/phase21-c0-inventory.test.mjs',
-  'src/scripts/phase21-c0-package.test.mjs',
   'src/scripts/phase21-c0-pages.test.mjs',
   'src/scripts/phase21-c0-parents.test.mjs',
   'src/scripts/phase21-c0-response.test.mjs',

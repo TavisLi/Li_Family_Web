@@ -60,6 +60,16 @@ export function plan(paths) {
   return result
 }
 
+export function payloadDependencyChanged(before, after) {
+  const versions = (source) => {
+    const manifest = JSON.parse(source)
+    return Object.fromEntries(Object.entries({ ...manifest.dependencies, ...manifest.devDependencies })
+      .filter(([name]) => name === 'payload' || name.startsWith('@payloadcms/'))
+      .sort(([left], [right]) => left.localeCompare(right)))
+  }
+  return JSON.stringify(versions(before)) !== JSON.stringify(versions(after))
+}
+
 if (process.argv[1]?.endsWith('/plan.mjs')) {
   const [base, head] = process.argv.slice(2)
   if (!/^[0-9a-f]{40}$/.test(base ?? '') || !/^[0-9a-f]{40}$/.test(head ?? '')) {
@@ -69,6 +79,11 @@ if (process.argv[1]?.endsWith('/plan.mjs')) {
   const paths = changedPaths(diff)
   validateChangedDocs(paths)
   const result = plan(paths)
+  if (paths.includes('package.json')) {
+    const before = execFileSync('git', ['show', `${base}:package.json`], { encoding: 'utf8' })
+    const after = execFileSync('git', ['show', `${head}:package.json`], { encoding: 'utf8' })
+    if (payloadDependencyChanged(before, after)) result.disposable = true
+  }
   const output = `base=${base}\nhead=${head}\n${Object.entries(result).map(([key, value]) => `${key}=${value}`).join('\n')}\n`
   if (!process.env.GITHUB_OUTPUT) throw new Error('GITHUB_OUTPUT required')
   appendFileSync(process.env.GITHUB_OUTPUT, output)

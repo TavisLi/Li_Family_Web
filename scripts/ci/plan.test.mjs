@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import test from 'node:test'
-import { changedPaths, plan } from './plan.mjs'
+import { changedPaths, payloadDependencyChanged, plan } from './plan.mjs'
 
 test('documentation and forms do not request application build', () => {
   assert.deepEqual(plan(['docs/example.md', '.github/ISSUE_TEMPLATE/work.yml']),
@@ -27,4 +28,22 @@ test('rename and deletion classify both sides; unknown paths are conservative', 
   assert.equal(plan(['.github/workflows/new-deploy.yml']).app, true)
   assert.throws(() => changedPaths(Buffer.from('X\0unknown\0')))
   assert.throws(() => plan([]))
+})
+
+test('Payload version changes request disposable coverage; unrelated dependency changes do not', () => {
+  const before = JSON.stringify({ dependencies: { payload: '3.85.1', '@payloadcms/next': '3.85.1', 'cross-env': '^7.0.3' } })
+  const payloadUpgrade = JSON.stringify({ dependencies: { payload: '3.90.1', '@payloadcms/next': '3.90.1', 'cross-env': '^7.0.3' } })
+  const unrelated = JSON.stringify({ dependencies: { payload: '3.85.1', '@payloadcms/next': '3.85.1', 'cross-env': '^10.1.0' } })
+  const reordered = JSON.stringify({ dependencies: { 'cross-env': '^10.1.0', '@payloadcms/next': '3.85.1', payload: '3.85.1' } })
+  assert.equal(payloadDependencyChanged(before, payloadUpgrade), true)
+  assert.equal(payloadDependencyChanged(before, unrelated), false)
+  assert.equal(payloadDependencyChanged(before, reordered), false)
+})
+
+test('current offline allowlist retains safety tests without replaying the frozen #101 package', () => {
+  const selected = execFileSync(process.execPath, ['scripts/ci/offline-tests.mjs', 'all', '--list'],
+    { encoding: 'utf8' }).trim().split('\n')
+  assert(selected.includes('src/scripts/phase21-c0-security.test.mjs'))
+  assert(selected.includes('src/scripts/run-contract.test.mjs'))
+  assert(!selected.includes('src/scripts/phase21-c0-package.test.mjs'))
 })
