@@ -33,7 +33,7 @@ export function FamilyModeIndicator({ session }: FamilyModeIndicatorProps) {
 
     return (
       <Button asChild className="rounded-md" size="sm" variant="outline">
-        <Link href={`/family/login${next}`}>
+        <Link href={`/family/login${next}`} prefetch={false}>
           <LockKeyhole className="size-4" aria-hidden="true" />
           家人模式
         </Link>
