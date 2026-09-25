@@ -4,4 +4,4 @@ allowBuilds:
   unrs-resolver: true
 
 patchedDependencies:
-  '@payloadcms/db-postgres@3.85.1': patches/@payloadcms__db-postgres@3.85.1.patch
+  '@payloadcms/db-postgres@3.90.1': patches/@payloadcms__db-postgres@3.90.1.patch

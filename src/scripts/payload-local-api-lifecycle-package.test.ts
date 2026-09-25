@@ -5,7 +5,7 @@ const [packageJson, workspace, patch, smoke] = await Promise.all([
   readFile(new URL('../../package.json', import.meta.url), 'utf8'),
   readFile(new URL('../../pnpm-workspace.yaml', import.meta.url), 'utf8'),
   readFile(
-    new URL('../../patches/@payloadcms__db-postgres@3.85.1.patch', import.meta.url),
+    new URL('../../patches/@payloadcms__db-postgres@3.90.1.patch', import.meta.url),
     'utf8',
   ),
   readFile(new URL('./payload-local-api-lifecycle-smoke.ts', import.meta.url), 'utf8'),
@@ -14,7 +14,7 @@ const [packageJson, workspace, patch, smoke] = await Promise.all([
 assert.match(packageJson, /"test:payload-lifecycle":/)
 assert.match(
   workspace,
-  /'@payloadcms\/db-postgres@3\.85\.1': patches\/@payloadcms__db-postgres@3\.85\.1\.patch/,
+  /'@payloadcms\/db-postgres@3\.90\.1': patches\/@payloadcms__db-postgres@3\.90\.1\.patch/,
 )
 assert.match(patch, /^\+\s*result\.release\(\);$/m)
 assert.match(smoke, /try \{[\s\S]*await payload\.destroy\(\)[\s\S]*finally \{[\s\S]*await pool\.end\(\)/)
