@@ -45,5 +45,7 @@ test('current offline allowlist retains safety tests without replaying the froze
     { encoding: 'utf8' }).trim().split('\n')
   assert(selected.includes('src/scripts/phase21-c0-security.test.mjs'))
   assert(selected.includes('src/scripts/run-contract.test.mjs'))
+  assert(selected.includes('src/scripts/run-agent-summary.test.mjs'))
+  assert(selected.includes('src/scripts/run-local-closeout-evidence.test.mjs'))
   assert(!selected.includes('src/scripts/phase21-c0-package.test.mjs'))
 })
