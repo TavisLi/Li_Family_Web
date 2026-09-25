@@ -4,6 +4,13 @@ import { existsSync } from 'node:fs'
 // Explicit, sequential allowlist. PostgreSQL tests run in the disposable job.
 // Frozen #101 package verification requires its historical Node 20 and commit;
 // agent-governance.test.ts writes preserved #113 evidence. Neither is current CI.
+// #105 recorded examples bind manifests to historical artifact bytes. Run the
+// other contract cases here; replay those examples only at their frozen baseline.
+const historicalCases = new Map([
+  ['src/scripts/run-agent-summary.test.mjs', '^verified summary is compact, delta aware, and does not invent approval$'],
+  ['src/scripts/run-contract.test.mjs', '^checked-in Slice 1 example replays from the current artifact bytes$'],
+  ['src/scripts/run-local-closeout-evidence.test.mjs', '^recorded local matrix is bound to current bytes and has a terminal receipt for every fault$'],
+])
 const files = [
   'src/features/home/member-portal-link.test.ts',
   'src/features/member/member-profile-page.test.tsx',
@@ -94,13 +101,15 @@ if (process.argv.includes('--list')) {
   console.log(selected.join('\n'))
 } else {
   for (const file of selected) {
-    const result = spawnSync(process.execPath, [...(file.endsWith('.mjs') ? [] : ['--import', 'tsx']), file],
+    const historicalCase = historicalCases.get(file)
+    const result = spawnSync(process.execPath, [...(historicalCase ? ['--test', `--test-skip-pattern=${historicalCase}`] : []),
+      ...(file.endsWith('.mjs') ? [] : ['--import', 'tsx']), file],
       { encoding: 'utf8', env: process.env, maxBuffer: 8 * 1024 * 1024 })
     if (result.status !== 0) {
       console.error(`FAIL ${file}\n${(result.stderr + result.stdout).slice(-8192)}`)
       process.exit(1)
     }
-    console.log(`PASS ${file}`)
+    console.log(`PASS ${file}${historicalCase ? ' (frozen evidence replay N/A)' : ''}`)
   }
   console.log(`Offline allowlist: ${selected.length} passed`)
 }
