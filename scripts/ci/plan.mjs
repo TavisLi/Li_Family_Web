@@ -64,7 +64,8 @@ export function payloadDependencyChanged(before, after) {
   const versions = (source) => {
     const manifest = JSON.parse(source)
     return Object.fromEntries(Object.entries({ ...manifest.dependencies, ...manifest.devDependencies })
-      .filter(([name]) => name === 'payload' || name.startsWith('@payloadcms/')))
+      .filter(([name]) => name === 'payload' || name.startsWith('@payloadcms/'))
+      .sort(([left], [right]) => left.localeCompare(right)))
   }
   return JSON.stringify(versions(before)) !== JSON.stringify(versions(after))
 }

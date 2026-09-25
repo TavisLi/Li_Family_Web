@@ -34,8 +34,10 @@ test('Payload version changes request disposable coverage; unrelated dependency 
   const before = JSON.stringify({ dependencies: { payload: '3.85.1', '@payloadcms/next': '3.85.1', 'cross-env': '^7.0.3' } })
   const payloadUpgrade = JSON.stringify({ dependencies: { payload: '3.90.1', '@payloadcms/next': '3.90.1', 'cross-env': '^7.0.3' } })
   const unrelated = JSON.stringify({ dependencies: { payload: '3.85.1', '@payloadcms/next': '3.85.1', 'cross-env': '^10.1.0' } })
+  const reordered = JSON.stringify({ dependencies: { 'cross-env': '^10.1.0', '@payloadcms/next': '3.85.1', payload: '3.85.1' } })
   assert.equal(payloadDependencyChanged(before, payloadUpgrade), true)
   assert.equal(payloadDependencyChanged(before, unrelated), false)
+  assert.equal(payloadDependencyChanged(before, reordered), false)
 })
 
 test('current offline allowlist retains safety tests without replaying the frozen #101 package', () => {
