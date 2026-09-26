@@ -138,4 +138,16 @@ Human已接受#119 Preview/Linux/cloud parity；cloud login/Admin/upload為已�
 - 因恢復正常Git部署行為，cleanup push若產生新Preview會取消；不把這次推送當成新cloud QA，也不使用已移除的臨時環境。既有驗收部署保留，Production不切換。
 - 最終應用diff僅Node selectors/package manager與現行runtime docs、Docker歷史分類；另含正式計畫與精簡證據。沒有src、Next/Vercel config、dependency/lockfile、schema、generated files、歷史guards或兩項baseline debts差異。
 
-交付狀態：Ready for review準備完成；PR #124狀態以GitHub回讀為準。Human merge與Production部署/驗證仍未授權；#119不關閉、#115不啟動。Rollback維持既有main/Node20契約，無data rollback。
+截至 PR #124 merge 前的交付狀態：Ready for review準備完成；PR #124狀態以GitHub回讀為準。Human merge與Production部署/驗證仍未授權；當時 #119 未關閉、#115 未啟動。Rollback維持既有main/Node20契約，無data rollback。
+
+## Post-merge Production read-only verification — 2026-09-14
+
+**PASS；Issue #119 已 CLOSED（GitHub 狀態於 2026-09-26 回讀）。** PR #124已由Human批准並合併；merge commit與`origin/main`均為`e20bf82f489634112a2c569b5ce5e0ba06616b81`。Production deployment `dpl_Ayzj9At4fjerKwBNNEdzAjhxcVBG`為READY／target=production／source=git，commit與main完全一致，canonical alias `https://li-family-web.vercel.app`已指向該deployment。歷史機器可讀摘要見[production-read-only-results.md](./production-read-only-results.md)。
+
+- Runtime：Project及build selector均24.x；部署artifact的4個Node lambda outputs明列`runtime=nodejs24.x`，證明實際Production Functions已在Node24 major。移除temporary Preview probe後，Vercel不公開此deployment的`process.version` patch；不把先前Preview 24.19.0冒稱Production patch。Build因20.x→24.x主動跳過cache，lockfile up to date/resolution skipped，pnpm10.28.0、1019 packages、sharp/esbuild/unrs native install、Next build與lint/type validation均成功。
+- 公開唯讀矩陣：canonical Production domain的12項GET均200、無server error digest。包含首頁、Blog索引／文章、Travel索引／Memory／Day／Photos、Timeline、公開Member、RSC、Edge OG PNG及Next image PNG；真實標題、章節、照片與Payload-backed內容存在。
+- R2：從Production HTML選取公開JPEG與WebP各一張，均TLS encrypted/authorized、200、1600×1200；Node24.21.0＋sharp0.34.5 decode及32px WebP resize成功。沒有使用R2 credential或upload。
+- Logs：只查上述deployment與production environment，`2026-09-14T09:13:52Z`–`11:13:52Z`內error/fatal=0、warning=0；serverless動態請求彙總11筆200。靜態／Edge請求不全出現在serverless log，因此以實際HTTP回應另證。
+- 安全範圍：未登入、未開啟或操作Admin、未呼叫寫入API、未upload、未migration、未直接查Production DB，沒有Production data/schema/session mutation。Cloud login/Admin/upload維持Human已接受的known-unverified scope；兩項baseline debts不變。
+
+診斷原始指標只留本機：`/tmp/issue119-production-inspect.json`、`/tmp/issue119-production-events.json`、`/tmp/issue119/production-http/`、`/tmp/issue119/r2-production-results.json`。本addendum記錄2026-09-14的post-merge文件證據，不改寫當時觀測值或重跑Production驗證；#115未啟動。Rollback仍為Production deployment／alias的人工回退或Node24 forward fix，且不得依賴10月1日後重建Node20。
