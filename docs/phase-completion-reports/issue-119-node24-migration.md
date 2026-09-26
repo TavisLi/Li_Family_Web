@@ -31,7 +31,7 @@
 
 - Baseline test failure 和 Local API shutdown 應由 Human review 決定處理範圍；不可稱 full local PASS。
 - Preview 尚未部署。分支 no-deploy rule 保護 Draft push；後續依 artifact 的完整 Preview package 與 HITL 取得適當環境批准，再驗確切 commit/deployment/runtime及真實 QA。
-- Merged / Production verified / Closed：未執行；仍須人工批准。#115 不啟動。PR 僅 Related to #119，不使用 Closes。
+- 截至 PR #124 merge 前，Merged / Production verified / Closed 均未執行；仍須人工批准。#115 不啟動。PR 僅 Related to #119，不使用 Closes。
 
 ## Rollback
 
@@ -64,7 +64,7 @@ Human拒絕付費隔離branch，已批准本PR限定Preview使用既有Productio
 
 完整精簡矩陣、runtime與rollback見[Free Preview evidence](../phase-artifacts/issue-119/README.md)及[preview-results.json](../phase-artifacts/issue-119/preview-results.json)。一般完整logs與HTML只留本機診斷目錄，未提交憑證。
 
-**尚未解除的merge／Production gates**：Human review此PR、明確接受免費方案的cloud Auth/Admin／authenticated S3/upload未測限制，或另批准隔離環境補驗；兩项baseline debts不改報PASS。#119不關閉，#115不啟動。Preview/env只供本PR審查，credential不是server-enforced唯讀；合併／放棄後需撤除部署與六項分支env，僅刪env不會撤銷既有部署快照。Production未切換，無data rollback；程式回退遵循前述Node20/main與10月1日限制。
+**當時尚未解除的merge／Production gates**：Human review此PR、明確接受免費方案的cloud Auth/Admin／authenticated S3/upload未測限制，或另批准隔離環境補驗；兩项baseline debts不改報PASS。這是 PR #124 合併前的狀態；#119 目前已 CLOSED，#115 未啟動。Preview/env只供本PR審查，credential不是server-enforced唯讀；合併／放棄後需撤除部署與六項分支env，僅刪env不會撤銷既有部署快照。Production未切換，無data rollback；程式回退遵循前述Node20/main與10月1日限制。
 
 ## Merge-prep / acceptance addendum — 2026-09-14
 
@@ -75,3 +75,13 @@ PR #123的正式planning baseline與planning completion由`57c01de8588c8221c226b
 清理後Node24.21.0 build（含lint/types）→tsc成功；`git diff --check`成功。Final diff只保留Node24 runtime selectors／pnpm declaration、runtime docs、Docker historical classification，以及#104 planning與#119 evidence。無application source、dependency/lock/schema或歷史guards變更。
 
 本次六項臨時分支env已撤除，其他Preview／Production env不變。既有已驗收Preview快照保留；cleanup push若建立新Preview即取消，不追加runtime驗證。完整scope/read-back與log pointers見artifact末段。PR將設Ready for review，停止等候人工merge；不merge、不關閉#119、不部署Production、不啟動#115。
+
+## Post-merge Production verification addendum — 2026-09-14
+
+**Production read-only verification PASS；Issue #119 已 CLOSED（GitHub 狀態於 2026-09-26 回讀）。** PR #124已合併，merge/main commit `e20bf82f489634112a2c569b5ce5e0ba06616b81`對應Production `dpl_Ayzj9At4fjerKwBNNEdzAjhxcVBG`，canonical alias已指向該READY deployment。
+
+部署artifact的4個Node lambda outputs均明列`nodejs24.x`；build亦因20.x→24.x跳過cache，pnpm10.28.0 frozen graph、native installs、Next build與lint/types成功。Vercel在移除temporary probe後未公開Production patch，因此只確認實際Node24 major，不套用Preview的24.19.0 patch。
+
+Production canonical domain 12項公開GET/RSC/Edge/image均200且無error digest；首頁、Blog、Travel Memory/Day/Photos、Timeline與Member讀到真實Payload內容。兩張公開R2 JPEG/WebP通過TLS、格式解碼與sharp resize。部署專屬兩小時log視窗error/fatal=0、warning=0，動態請求為200。
+
+未登入、未操作Admin、未上傳、未migration、未直接查Production DB，沒有Production data/schema/session mutation。Cloud login/Admin/upload保留為Human已接受的known-unverified scope；兩項baseline debts不變，#115未啟動。完整精簡結果見[Production read-only evidence](../phase-artifacts/issue-119/production-read-only-results.md)。本addendum記錄2026-09-14的Production post-merge證據；Issue #119 目前已 CLOSED，不代表本次重跑Production驗證。
