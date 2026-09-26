@@ -18,6 +18,7 @@ import * as migration_20260730_140837_phase_18_member_external_profile_url from 
 import * as migration_20260802_061812_phase_19_travel_memory_multi_page from './20260802_061812_phase_19_travel_memory_multi_page';
 import * as migration_20260831_120000_phase_21_travel_memory_contract from './20260831_120000_phase_21_travel_memory_contract';
 import * as migration_20260908_034257_add_travel_memory_day_hero_image from './20260908_034257_add_travel_memory_day_hero_image';
+import * as migration_20260925_042448_issue140_dependency_upgrade from './20260925_042448_issue140_dependency_upgrade';
 
 export const migrations = [
   {
@@ -118,6 +119,11 @@ export const migrations = [
   {
     up: migration_20260908_034257_add_travel_memory_day_hero_image.up,
     down: migration_20260908_034257_add_travel_memory_day_hero_image.down,
-    name: '20260908_034257_add_travel_memory_day_hero_image'
+    name: '20260908_034257_add_travel_memory_day_hero_image',
+  },
+  {
+    up: migration_20260925_042448_issue140_dependency_upgrade.up,
+    down: migration_20260925_042448_issue140_dependency_upgrade.down,
+    name: '20260925_042448_issue140_dependency_upgrade',
   },
 ];
