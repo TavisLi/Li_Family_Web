@@ -27,6 +27,14 @@
 # local exports / large source archives
 content-source/blogger/*.zip
 
+# Retired content-source media copies; keep JSON manifests tracked.
+content-source/assets/**/*.avif
+content-source/assets/**/*.gif
+content-source/assets/**/*.jpeg
+content-source/assets/**/*.jpg
+content-source/assets/**/*.png
+content-source/assets/**/*.webp
+
 # debug
 npm-debug.log*
 yarn-debug.log*

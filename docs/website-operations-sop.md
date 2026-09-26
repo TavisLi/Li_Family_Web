@@ -68,10 +68,10 @@ Phase 10 已建立 `admin`／`family` 兩種帳號角色。現行模型沒有獨
 
 1. 在 `docs/travel-projects.md` 加入或更新：呈現名稱、唯一 canonical slug、domain collection（Plan／Memory）、Markdown 資料源。
 2. 建立／更新 `content-source/travels/[中文旅行名稱].md`，包含行程、航班、住宿、每日行程與可選的 YouTube 影片。
-3. 建立與 slug **完全相同**的資料夾：
+3. 在 repository 外的素材根目錄建立與 slug **完全相同**的資料夾；legacy seed 需將其絕對路徑設為 `CONTENT_SOURCE_ASSET_ROOT`，不把圖片 binary 加回 Git：
 
    ```text
-   content-source/assets/travels/[travel-slug]/
+   travels/[travel-slug]/
      cover/
      gallery/
      itinerary/
@@ -189,12 +189,14 @@ pnpm run seed:travel:dry-run
 ### 圖片 404 或顯示 fallback
 
 1. 在 Admin 找到對應 Media record，確認其 public R2 URL。
-2. 確認 `sourcePath` 對應的本機來源檔仍存在。
+2. 確認 `sourcePath` 對應的外部原始 Source／本機素材檔仍存在；若使用 legacy seed，設定絕對路徑 `CONTENT_SOURCE_ASSET_ROOT`。
 3. 只針對確認缺失的檔案執行受控重傳；不可因一張圖片失效而重傳全部媒體。
 
    ```bash
    pnpm run seed:phase-9:refresh-media -- content-source/assets/...
    ```
+
+   這裡的 `content-source/assets/...` 是 Payload 的既有邏輯 `sourcePath` 參數，並非要求 repository 內保留圖片。
 
 4. 重新開啟正式頁面，確認實際圖片 HTTP 成功且 relationship 未改錯。
 
