@@ -304,6 +304,7 @@ export interface Media {
         relationTo: 'travel-memories';
         value: number | TravelMemory;
       } | null);
+  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -1433,6 +1434,7 @@ export interface MediaSelect<T extends boolean = true> {
       };
   relatedMembers?: T;
   relatedTravelRecord?: T;
+  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
