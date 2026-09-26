@@ -28,4 +28,21 @@ Data-loss／dev-schema warning、資料破壞風險、inventory／deployment／�
 
 按風險／acceptance 充分驗證；不預讀 Playbook §10–§11，有疑問查 owner，不豁免適用要求。檢查 diff／secret；適用 build 完成才 tsc，不並行、不臨時裝 Prettier。文件-only 說明 runtime QA 不適用；executable config/schema/runtime 影響須重判。HTTP／HTML／focused tests 可作 Browser unavailable fallback，明列 Browser／Preview 缺口；acceptance 未滿足保留 blocker。Build／READY／HTTP 200 非 runtime／data／release 完成證據。
 
+跨 Issue／gate 的長任務只讀與報告變動；成功先取結構摘要，失敗只讀有界片段。同一 blocker 未有新的可驗證條件不重跑。使用 Production-backed Preview 前，先驗證 Browser 進入方式、GET-only guard、資料／schema fingerprint 取得方式及 branch scope，再設定敏感變數；BLOCK 後按已授權範圍保存證據並清理。沿用 #118 CI summary-first／repair breaker 與 #105 Preview QA owner，不另建契約。
+
 報告實際變更、驗證與缺口；PR／Phase closeout 查 Playbook §11–§14／模板，acceptance 全完成才 Closes。歷史用 addendum 補狀態，不改寫 memory；有效 preparation 是規格非證據。#105 擁有 runner／manifest／ledger／receipt／bounded I/O／approval invalidation／Preview QA execution contract，不複製或假定已完成。
+
+## 獨立 gate 交接
+
+到達下一個獨立執行或授權 gate 時，先完成目前 gate 必需的 read-back、證據保存及已授權清理，然後停止；即使下一 gate 已預先批准，也不在同一 thread 執行。最終回覆明確標示 `NEXT THREAD RECOMMENDED`，提供以下短 checkpoint 與可直接貼到新對話的提示詞；不自動建立新對話。新對話核對會變動的基線與批准有效性，不重問仍有效的批准。
+
+checkpoint 固定欄位；不適用填 N/A、未驗證填 UNKNOWN，不貼 secret、原始 log 或完整歷史：
+
+- 目前 gate／結果：PASS、BLOCK、UNKNOWN 或條件式結果；已完成的必要清理。
+- 精確基線：repo／branch／HEAD、PR head／base、deployment／data／schema fingerprint 與查證時間，僅列適用者。
+- 授權：有效 Human 批准的 target、允許／排除動作、環境、停止條件與期限；缺證據明列。
+- 證據與缺口：最短驗證結果、可定位的檔案／run 指標、blocker／UNKNOWN。
+- 下一獨立 gate：要做的動作、需要的決定或前置條件。
+- 新對話提示詞：引用此 checkpoint，要求先核對漂移，只執行下一 gate 的已授權範圍，完成後依本節再次交接。
+
+這是人類可讀交接，不取代 #105 的 manifest／ledger／receipt 或重新授權機制。
