@@ -4,7 +4,8 @@
   "outputDirectory": null,
   "git": {
     "deploymentEnabled": {
-      "codex/phase-*": false
+      "codex/phase-*": false,
+      "main": false
     }
   }
 }
