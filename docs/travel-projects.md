@@ -43,7 +43,7 @@ Controlled cleanup migration、executor 與核准包已完成本地 PostgreSQL 1
 - Dynamic route
 - Catalog mapping
 - Source mapping
-- `content-source/assets/travels/[slug]/`
+- `content-source/assets/travels/[slug]/` 舊邏輯路徑；實體圖片由 repository 外的素材根目錄提供
 - Travel-local `manifest.json`
 
 Display title、中文 Markdown filename 或旅行年份改變時，不自動改 canonical slug。

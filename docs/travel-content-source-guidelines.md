@@ -7,6 +7,8 @@
 
 本文件定義新增旅遊項目的內容交付包規格。目標是讓新的旅行 Markdown、照片與影片可以穩定進入 seed pipeline，再由 Payload CMS 與前台 `/travel/[slug]` 動態頁面使用。
 
+#133 清理後，照片原件放在 repository 外的 Source／本機素材根目錄，不把 binary 加回 `content-source/assets/`。以下 `content-source/assets/...` 圖片路徑是既有 v1 邏輯身分與 manifest 範例；實體根目錄由絕對路徑 `CONTENT_SOURCE_ASSET_ROOT` 指定，並保留 `travels/[travel-slug]/...` 相對結構。Repository 內的 manifest 與 Source v2 仍是各自既有的映射／作者契約。
+
 ## Travel Memory Source v2（#117）
 
 新 Memory 使用上述唯一模板的 `sourceVersion: 2` 契約；下方舊 Markdown 範例、中文表頭與目錄推斷只供 Travel Plan／既有 v1 資料相容，不可混入 v2。逐欄分類見 [coverage matrix](travel-memory-source-v2-coverage.md)。
@@ -23,7 +25,7 @@
 
 ## 1. 交付包總覽
 
-每個新旅遊項目建議準備三類素材：
+每個新旅遊項目建議準備三類素材；下方圖片行是既有邏輯路徑，實體圖片放在外部素材根目錄的 `travels/[travel-slug]/`：
 
 ```text
 content-source/travels/[旅行中文名].md
@@ -63,7 +65,7 @@ YYYYMM-short-location-or-theme
 這個 slug 會用於：
 
 - 前台 URL：`/travel/[slug]`
-- 照片資料夾：`content-source/assets/travels/[travel-slug]/`
+- 照片邏輯路徑：`content-source/assets/travels/[travel-slug]/`；實體素材根目錄由 `CONTENT_SOURCE_ASSET_ROOT` 指定
 - Payload `TravelPlan`／`TravelMemory` seed 對應
 - media relationship owner mapping
 
@@ -169,7 +171,7 @@ date: "2026-06-14"
 
 ## 5. 照片資料夾
 
-旅遊照片放在：
+既有旅遊照片的邏輯路徑與外部素材根目錄內的相對結構如下：
 
 ```text
 content-source/assets/travels/[travel-slug]/

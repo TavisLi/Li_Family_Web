@@ -1,0 +1,1823 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "d7865935e84b8d9f93ae373813bf3c1e59fc3bd7",
+  "manifestPath": "content-source/assets/travels/202308-east-australia/manifest.json",
+  "manifestSha256": "810322e64cfbb781e358c221790008862bed0e5c1e4605a7253f6b7df8d2430f",
+  "historicalHashEvidence": "docs/phase-artifacts/issue-113/slice-3/workspace-before.json",
+  "assetCount": 134,
+  "totalSizeBytes": 412038272,
+  "assets": [
+    {
+      "sourcePath": "travels/202308-east-australia/cover/202308-east-australia-cover-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/cover/202308-east-australia-cover-001.jpeg",
+      "sizeBytes": 2929956,
+      "sha256": "da38227d4005dc501dd974f421f5f0e765c4e881281cb8aa3e12e8b536ecd754",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "cover",
+        "sortOrder": 1
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-001.jpeg",
+      "sizeBytes": 1084469,
+      "sha256": "0b67935a1e410497bf9f56ececd65a3a7fe6788d9b631f378f9064c6f1e868be",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 1
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-002.jpeg",
+      "sizeBytes": 638346,
+      "sha256": "278767e0949033cee650f8643c6c00298c278101dcee565f41164e7506c0fe55",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 2
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-003.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-003.jpeg",
+      "sizeBytes": 4592744,
+      "sha256": "fbdfbd06a018b1c72f030c59d829c0b6caf0c92e9a6806dbca48546e8c62b218",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 3
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-004.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-004.jpeg",
+      "sizeBytes": 3811167,
+      "sha256": "32072f2b764d206f6bbf4de788ef2b0d19acc7b8d911d74c745d499ce42c73cf",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 4
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-005.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-005.jpeg",
+      "sizeBytes": 2744880,
+      "sha256": "7e0642e0bca74504113b425a32fe1e7a7cac1b1dd0daf025e431e2dcab0e2ed8",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 5
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-006.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-006.jpeg",
+      "sizeBytes": 2844969,
+      "sha256": "afdfe4a5f8a1135eb46f63de9cd80840d46979993e5a3d18926c7ca398174ebd",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 6
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-007.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-007.jpeg",
+      "sizeBytes": 3305127,
+      "sha256": "3cba071ac4fa55e67b90999e8240c66d3534b1cba00007116ddf1096cf9d634e",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 7
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-008.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-008.jpeg",
+      "sizeBytes": 4084216,
+      "sha256": "aadc1745fbd4904077c64054f33d0e27a7986d11ec914f5f98a5a31f5e3a7d89",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 8
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-009.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-009.jpeg",
+      "sizeBytes": 3741533,
+      "sha256": "0b185ec560eb336f552b5477063fa7dfe4c0ef56078e73cbe8b1bdfb621636dd",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 9
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-010.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-010.jpeg",
+      "sizeBytes": 3767984,
+      "sha256": "f1041e90e28561f5950ca4872d541a534a409cea3edd3d821c19ab690b8681e5",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 10
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-011.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-011.jpeg",
+      "sizeBytes": 4020580,
+      "sha256": "3f6fc77bce3cdfd6c67b3564d932305c1b9546ce2f1bde7881b10f2fbc7f1db4",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 11
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-012.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-012.jpeg",
+      "sizeBytes": 4748600,
+      "sha256": "a58d7f2faf3c0d96bade41dd82d55eb61027554fa0e343972ea72ab1069b9cff",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 12
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-013.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-013.jpeg",
+      "sizeBytes": 4216626,
+      "sha256": "eda7fc3f8ebde7e7f3f4116d7ef6763b78d02169b0381a63b11a2139a3cf9484",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 13
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-014.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-014.jpeg",
+      "sizeBytes": 3316253,
+      "sha256": "ac187a3df8188125f093bbf719c83e51cfa2b1eee5e0eb0c70ff6556a0dc84cd",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 14
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-015.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-015.jpeg",
+      "sizeBytes": 3343337,
+      "sha256": "65b22a33ee4248226f99b7db7432b2ab332ee7645463885bdd5ce0dafc9d5cb6",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 15
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-016.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-016.jpeg",
+      "sizeBytes": 1084469,
+      "sha256": "0b67935a1e410497bf9f56ececd65a3a7fe6788d9b631f378f9064c6f1e868be",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 16
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-017.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-017.jpeg",
+      "sizeBytes": 2138896,
+      "sha256": "faf0ac6e75c2f09b6c5ce16d58cdf644ee1782a1937b02ccd47f393efd401f71",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 17
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-018.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-018.jpeg",
+      "sizeBytes": 1074402,
+      "sha256": "af3abbd4483396d232c4d6a2e067fa4f389d88f6184978c8df9d5a43ae7e6f0e",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 18
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-019.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-019.jpeg",
+      "sizeBytes": 3167854,
+      "sha256": "bf0a77cbce222c7b7e85bd0bcad242e33b79b417dae3e64cd944b07dd926eca9",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 19
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-020.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-020.jpeg",
+      "sizeBytes": 1437319,
+      "sha256": "abd2bd5eadefb392f25a2008e1a358f4380d3ded9e1962ea3679512376101a1b",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 20
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-021.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-021.jpeg",
+      "sizeBytes": 1657595,
+      "sha256": "62cfe8a9dad7edb2a61d4e6a76bcbf4e3c6d6bac75929c595f72f786f97e1d24",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 21
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-022.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-022.jpeg",
+      "sizeBytes": 1074247,
+      "sha256": "582a88fe6e81d7fcea61bfead868b353f0c8c4fda43be59ce61af4b463cf3a45",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 22
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-023.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-023.jpeg",
+      "sizeBytes": 2027171,
+      "sha256": "23c43cc919f820af62e076ed5171eb18eff6f3d5e72a3923a06a71531c7bdf91",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 23
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-024.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-024.jpeg",
+      "sizeBytes": 2250843,
+      "sha256": "ad4fb1a0c266973d5697583736761b66eb56bedd19756935edc815c25deda61b",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 24
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-025.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-025.jpeg",
+      "sizeBytes": 3209895,
+      "sha256": "fa4bedc90bb7a72b52ef45b9f9b734bf6b348426466dfee2509b7b879ad8d65a",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 25
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-026.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-026.jpeg",
+      "sizeBytes": 1123839,
+      "sha256": "ee9737aa96500782498aea354263cb0270013a3cbfdedebe2dd80d0e150813a9",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 26
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-027.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-027.jpeg",
+      "sizeBytes": 1087680,
+      "sha256": "f55d8fd7a2df4881d631fd380427382b7101db8f433dddc60d3a333b1c7e228e",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 27
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-028.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-028.jpeg",
+      "sizeBytes": 2878715,
+      "sha256": "7c9c3e3bc2b94a73d60d1ed220b294980e98f92aace61e7fca5a6616c03a2014",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 28
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-029.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-029.jpeg",
+      "sizeBytes": 2659099,
+      "sha256": "24d50d9f1688643e5b828ec7cba4444cdc4f339ce439c3b306d3372662bb8126",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 29
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-030.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-030.jpeg",
+      "sizeBytes": 2944878,
+      "sha256": "9ca1ed6aeb849c0adc83790752427befe8f17deb787287b966809aecaa304dab",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 30
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-031.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-031.jpeg",
+      "sizeBytes": 2118062,
+      "sha256": "940fff4a32a3c95c1ac8c0e35508aad25a8021635cd267b42b5215f3bcd2f1a4",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 31
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-032.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-032.jpeg",
+      "sizeBytes": 2197658,
+      "sha256": "bb597339683bb290d0b41c7167f0b7cc57649e44caec38a9a147c483283d184f",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 32
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-033.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-033.jpeg",
+      "sizeBytes": 1923202,
+      "sha256": "a5704b65e5d1306cf9157debd056e4a6d9dca454d3335f791b93bd2f7009c0c0",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 33
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-034.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-034.jpeg",
+      "sizeBytes": 2069270,
+      "sha256": "77adf910860191dd378756131ae007ff3c28465ad2bc6e4e236d8dcd6437db47",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 34
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-035.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-035.jpeg",
+      "sizeBytes": 2701550,
+      "sha256": "7ed39c587a6b857320f9473bab1793cc3b603d29eb798139faa2224b08a5ee3e",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 35
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-036.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-036.jpeg",
+      "sizeBytes": 2908395,
+      "sha256": "2acdf1efcb730d051feac3c4f0dbc641324979f954ce62b2e46db78079412cc0",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 36
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-037.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-037.jpeg",
+      "sizeBytes": 2301430,
+      "sha256": "5e5a584ae3461e5e91fcc6aaace94631e7c3578bc8924bf6914b570891ec8fea",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 37
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-038.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-038.jpeg",
+      "sizeBytes": 2376193,
+      "sha256": "ce7757365069f0fd679e462a25da3998332685465be53316dda8c921f3d402e0",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 38
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-039.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-039.jpeg",
+      "sizeBytes": 6610041,
+      "sha256": "bdb8d0671503166ffbd42f714ecfea107bd6b97e7b28599d7aac83804c3357ee",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 39
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-040.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-040.jpeg",
+      "sizeBytes": 3803293,
+      "sha256": "9a4b44946c89b62e5c139abb5e785c435dc9ec9c4b97ffd70a7fb2558a66e3ef",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 40
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-041.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-041.jpeg",
+      "sizeBytes": 1936490,
+      "sha256": "4f4a5896b644e74ed9de72306bb6966874a53f9eb3bdeca0f7069ac75e95d0e2",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 41
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-042.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-042.jpeg",
+      "sizeBytes": 4971517,
+      "sha256": "63722ca400cec970fd8d3c72aeab8d50417947c70b8e59d3b4f1e822c612fd40",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 42
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-043.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-043.jpeg",
+      "sizeBytes": 3686991,
+      "sha256": "09e8d4057353793db7b451927d88d9940d1635cc12da6473fd0718f5f8ae871b",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 43
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-044.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-044.jpeg",
+      "sizeBytes": 3827757,
+      "sha256": "0ce4a6f30a3447e44b11451cc8f7202ae4663be2033a5259b876ea69e20feacd",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 44
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-045.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-045.jpeg",
+      "sizeBytes": 3778196,
+      "sha256": "48b591a8b79d1760cc7a51eb2d53d4eb3e0afe97354a71c3c9dc4450252ae8f6",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 45
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-046.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-046.jpeg",
+      "sizeBytes": 3105505,
+      "sha256": "2be459819f27450d6b5c8d251890356e3600ce1292ec7008e5b07fe3412d565f",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 46
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-047.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-047.jpeg",
+      "sizeBytes": 3445136,
+      "sha256": "8ee1a1b0b9c783990ac3dc834b80a904a55219f97f22906d93f3452fe8ea91ed",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 47
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-048.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-048.jpeg",
+      "sizeBytes": 3717015,
+      "sha256": "4ebba1e553d7293f5444d565e53f5ed9c1dfbced1fe97f23df29469851b09d52",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 48
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-049.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-049.jpeg",
+      "sizeBytes": 2948078,
+      "sha256": "0aa66b7e52d0f20d17aaa52918930520f156acfb379f61e93d1e3e7f386f9994",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 49
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-050.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-050.jpeg",
+      "sizeBytes": 3786847,
+      "sha256": "0c53a770abd90553f8e1798c3e878154e8f134a05eb81560a7b6b267c0630acf",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 50
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-051.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-051.jpeg",
+      "sizeBytes": 3297474,
+      "sha256": "963e70100da9231255340fdfe1d9c542f453c7cc8116e3af621cd56a4765db91",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 51
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-052.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-052.jpeg",
+      "sizeBytes": 3587294,
+      "sha256": "dcb6e9dc67ebaca1c7bdebbffc1aec5d1a1bf2254074f15f9c3f67b9d5e0c41a",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 52
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-053.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-053.jpeg",
+      "sizeBytes": 3811472,
+      "sha256": "3870fe491c933b89151a1113f6a8ea752466893fe76409991b23777e821e7f9f",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 53
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-054.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-054.jpeg",
+      "sizeBytes": 3482866,
+      "sha256": "83d1efbf6e68967d4f4f8668ed318fa3f5d4ed9bcbe1216fea48b7fa58b07199",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 54
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-055.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-055.jpeg",
+      "sizeBytes": 2145881,
+      "sha256": "a3dbe68ab4b875307d9aa8761ed5234f50dc12965b4002af4e2b4ba7005e3c2d",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 55
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-056.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-056.jpeg",
+      "sizeBytes": 3961821,
+      "sha256": "6f48011b84987a4ef88a1e64ab4967b63658e026a65a4f9ab38a6d7e3d2f9c68",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 56
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-057.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-057.jpeg",
+      "sizeBytes": 3328861,
+      "sha256": "a8110068bb3d8e5549168090c6f6f2001dadd8d8e428c1c1d45c664443fd2489",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 57
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-058.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-058.jpeg",
+      "sizeBytes": 3186522,
+      "sha256": "2d6bb3bd4f3d407e2744f07cbf09bbf6d50787b8a2d2ffcd8d2abce5b353f88a",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 58
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-059.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-059.jpeg",
+      "sizeBytes": 2633319,
+      "sha256": "1380149538d09d3a610bd62b8939e68c1a2f4d55357b5aa7a468daa763391e32",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 59
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-060.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-060.jpeg",
+      "sizeBytes": 2021483,
+      "sha256": "cb5bf8965287165708c514402879cff3015f99ce82461e2aae2ff5fc4c45985f",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 60
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-061.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-061.jpeg",
+      "sizeBytes": 2457154,
+      "sha256": "ecf32664e5ae83453d81677182c3f5365f9155139ab1150dc697a3b37498add9",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 61
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-062.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-062.jpeg",
+      "sizeBytes": 3328796,
+      "sha256": "1b4d29601719c09755c28023a0bc73a460f9e9eeabcc9db3311a79adece99895",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 62
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-063.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-063.jpeg",
+      "sizeBytes": 3294218,
+      "sha256": "2401477c5eb8d487fe9b5438ea46e609ccf7c15cc46000aa57edc540ec5c38d3",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 63
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-064.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-064.jpeg",
+      "sizeBytes": 2252895,
+      "sha256": "82f37cdf13143046379e78442bb6ddd1c9c84d0d6e1a88bee7c7795532f49073",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 64
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-065.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-065.jpeg",
+      "sizeBytes": 2962521,
+      "sha256": "694c8ec92818ef7599408577e361c1d541eb2d26f63fe626c838fd84a5cf4109",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 65
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-066.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-066.jpeg",
+      "sizeBytes": 5015188,
+      "sha256": "6b795d8ade3167d288d2890ad1940895b69091868f2b8edec8eaf8f1ef545ad5",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 66
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-067.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-067.jpeg",
+      "sizeBytes": 1756944,
+      "sha256": "37782bd49ace2fa658867815341837cea8881da55b377470bd884dc44f9be64c",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 67
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-068.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-068.jpeg",
+      "sizeBytes": 3153882,
+      "sha256": "72abb6c2c27cf96b139ac13db13772185e000211c0cb23cd89994ba61a79e3fc",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 68
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-069.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-069.jpeg",
+      "sizeBytes": 3119891,
+      "sha256": "96c5c48971d3f26fde8175db3a4971fe9d9f6b7371fc6d3f5a9c5e9b638e83a4",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 69
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-070.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-070.jpeg",
+      "sizeBytes": 2947065,
+      "sha256": "1dbe89b85379d53b99b1f13e8abcb7ccbc4ada7024a12d203cbbd429e0cafe1b",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 70
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-071.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-071.jpeg",
+      "sizeBytes": 3031778,
+      "sha256": "a93369613d116917c7e23a73742077b7b13eb4544755242bde3b7cf244821c13",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 71
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-072.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-072.jpeg",
+      "sizeBytes": 2958229,
+      "sha256": "08ba82b10e489edaceb5f8175fafb1b6babdadd6203e22a8304f7381d0da5f2f",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 72
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-073.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-073.jpeg",
+      "sizeBytes": 3024417,
+      "sha256": "b6406f5297eff50f3661d1e5148c665f95333d709b7e9fdfd15cb95210144507",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 73
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-074.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-074.jpeg",
+      "sizeBytes": 3083364,
+      "sha256": "21da8ea7e6af2897340baa0a96651b1e0d0c95ef310e79052229a61f349f142e",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 74
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-075.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-075.jpeg",
+      "sizeBytes": 2366223,
+      "sha256": "e8acaaddfa268bb873d25125e59c30ca0c72b31221598dbff9644d30980bf6d0",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 75
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-076.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-076.jpeg",
+      "sizeBytes": 477808,
+      "sha256": "2cc573e150f639c3e1ecda01098bfca3cf9ded740b6bd8da3c4436c6f46a49a8",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 76
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-077.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-077.jpeg",
+      "sizeBytes": 2445505,
+      "sha256": "5a78def7ba0babd0dbdafc5612e50a944429ad71f0839368fdb39a65fb7af6b1",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 77
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-078.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-078.jpeg",
+      "sizeBytes": 3449846,
+      "sha256": "4f257e6abb64b355b30098bec96e6fe25eebf2fb64b052bd65333bc78b9ab9e1",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 78
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-079.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-079.jpeg",
+      "sizeBytes": 3050373,
+      "sha256": "22a2b004de09f4fa399c63ed7ddf3b2bacb8ca929e5a13b68ac12b87cf3410e2",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 79
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-080.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-080.jpeg",
+      "sizeBytes": 874174,
+      "sha256": "981f1030fe36cbe894fbe76827df4d6a50252d98ada989623cefca2e08996a5d",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 80
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-081.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-081.jpeg",
+      "sizeBytes": 2658530,
+      "sha256": "50cf123ddf0b86ffc336c12a6bac035219b71f8b5d9bc5e43cb4bdb391498132",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 81
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/gallery/202308-east-australia-gallery-082.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/gallery/202308-east-australia-gallery-082.jpeg",
+      "sizeBytes": 2790213,
+      "sha256": "d326bbd5c761a19bf76d868d6aa7cf1b2b990d1904a3ad006f071886885994d5",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "gallery",
+        "sortOrder": 82
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-01-taipei-melbourne-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-01-taipei-melbourne-001.jpeg",
+      "sizeBytes": 2084338,
+      "sha256": "0b29d8c5164e53ea524fc5462e06c6fcc672468cab635628ac077ce4499c27a6",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 1,
+        "sectionId": "taipei-melbourne-flight",
+        "time": "08:14",
+        "location": "台北／墨爾本航程",
+        "sortOrder": 1
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-02-phillip-island-penguin-parade-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-02-phillip-island-penguin-parade-001.jpeg",
+      "sizeBytes": 324835,
+      "sha256": "6af0a5a73e8275cdac68597ca84524feeaa103d8f881db01778928559e8e99ad",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 2,
+        "sectionId": "phillip-island-penguin-parade",
+        "time": "18:20",
+        "location": "Phillip Island Penguin Parade",
+        "sortOrder": 2
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-03-melbourne-city-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-03-melbourne-city-001.jpeg",
+      "sizeBytes": 3208494,
+      "sha256": "585dea4eddf495d2507238faf6c66b1fbc15253ab1841cf1a5b1ac2cad9bc1e9",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 3,
+        "sectionId": "melbourne-cbd",
+        "time": "09:50",
+        "location": "Melbourne CBD",
+        "sortOrder": 3
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-03-melbourne-city-hosier-lane-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-03-melbourne-city-hosier-lane-001.jpeg",
+      "sizeBytes": 4639760,
+      "sha256": "719e5af7527ccd9dff57bd54bcba1520dc758223c1bb602d499f49d85ded94f0",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 3,
+        "sectionId": "hosier-lane",
+        "time": "09:39",
+        "location": "Hosier Lane",
+        "sortOrder": 4
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-03-melbourne-federation-square-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-03-melbourne-federation-square-001.jpeg",
+      "sizeBytes": 3332808,
+      "sha256": "f6385d36f32816ef4005aa02c6353b0eb3f058ed51652da76ec820ba402234dd",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 4,
+        "sectionId": "brisbane-city-hall",
+        "time": "13:10",
+        "location": "Brisbane City Hall",
+        "sortOrder": 5
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-03-melbourne-flinders-lane-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-03-melbourne-flinders-lane-001.jpeg",
+      "sizeBytes": 2783759,
+      "sha256": "050e78cc18d5fe9c9baee62ec6bb653dfba5ce910358f5606a3c18332cb409b6",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 3,
+        "sectionId": "flinders-lane",
+        "time": "10:27",
+        "location": "Flinders Lane",
+        "sortOrder": 6
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-03-melbourne-puffing-billy-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-03-melbourne-puffing-billy-001.jpeg",
+      "sizeBytes": 2402509,
+      "sha256": "0653b80b7c45ec6b962c21b2ea18c0b82a2861bdf6590d372dd566a5e67957c9",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 3,
+        "sectionId": "puffing-billy",
+        "time": "12:29",
+        "location": "Puffing Billy Railway",
+        "sortOrder": 7
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-03-melbourne-puffing-billy-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-03-melbourne-puffing-billy-002.jpeg",
+      "sizeBytes": 2401137,
+      "sha256": "9054e712352f75cf1d8349ffac6ca76332ebbcd4bd067c0285d2486f6210ee02",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 3,
+        "sectionId": "puffing-billy",
+        "time": "12:54",
+        "location": "Puffing Billy Railway",
+        "sortOrder": 8
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-03-melbourne-the-edge-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-03-melbourne-the-edge-001.jpeg",
+      "sizeBytes": 3601689,
+      "sha256": "4b1d17c439425c6e389c86a8333476bc3ba3dba201e9aca852f604e467ee52f0",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 3,
+        "sectionId": "eureka-skydeck",
+        "time": "16:08",
+        "location": "Eureka Skydeck / The Edge",
+        "sortOrder": 9
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-04-brisbane-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-04-brisbane-001.jpeg",
+      "sizeBytes": 3944766,
+      "sha256": "d9ae96937f7f6f12f607c40bb02328713a823f1a9b904777cfbcafec079b250d",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 4,
+        "sectionId": "brisbane-city",
+        "time": "14:26",
+        "location": "Brisbane CBD",
+        "sortOrder": 10
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-04-brisbane-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-04-brisbane-002.jpeg",
+      "sizeBytes": 2084588,
+      "sha256": "73b5211b74a9150d8e32b600dc7a30c345256acf195a118a516d5bf4c07393f9",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 4,
+        "sectionId": "brisbane-south-bank",
+        "time": "13:43",
+        "location": "South Bank / Brisbane River",
+        "sortOrder": 11
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-04-brisbane-003.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-04-brisbane-003.jpeg",
+      "sizeBytes": 3025304,
+      "sha256": "5b0ad45b8a89bbd61d7c13e7e25e3c3e9b6d2c83ea8cef4f7a62b0907c62835c",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 4,
+        "sectionId": "brisbane-city",
+        "time": "15:01",
+        "location": "Brisbane 市區",
+        "sortOrder": 12
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-05-gold-coast-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-05-gold-coast-001.jpeg",
+      "sizeBytes": 1958874,
+      "sha256": "d0528ccd37cfe8692b2a1d8cfc55c73b58d7929818563dcfab5b0a6b16e6564e",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 5,
+        "sectionId": "gold-coast-arrival",
+        "time": "06:25",
+        "location": "Gold Coast 途中",
+        "sortOrder": 13
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-05-gold-coast-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-05-gold-coast-002.jpeg",
+      "sizeBytes": 2902486,
+      "sha256": "867095f1231837c19eafd3f5b10c4a4fa94ea2ad684a866227db584f155bd98d",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 5,
+        "sectionId": "gold-coast-arrival",
+        "time": "06:45",
+        "location": "Gold Coast 途中",
+        "sortOrder": 14
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-05-gold-coast-003.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-05-gold-coast-003.jpeg",
+      "sizeBytes": 3386221,
+      "sha256": "babd56b99b807c9d475077b01df9d6381a34e436f6000c59a8e81e127f9e7e68",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 5,
+        "sectionId": "gold-coast-arrival",
+        "time": "06:47",
+        "location": "Gold Coast 途中",
+        "sortOrder": 15
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-05-gold-coast-broadbeach-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-05-gold-coast-broadbeach-001.jpeg",
+      "sizeBytes": 2916691,
+      "sha256": "de4a432bbb3c69550af988d67e43625e4b1fc562dc72a60cb07db137232db316",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 5,
+        "sectionId": "broadbeach",
+        "time": "14:44",
+        "location": "Broadbeach",
+        "sortOrder": 16
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-05-gold-coast-pacific-fair-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-05-gold-coast-pacific-fair-001.jpeg",
+      "sizeBytes": 3564637,
+      "sha256": "dfa141565053382598f59b88420f0bf4d2565357128028c40ec9e05b60906f7b",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 5,
+        "sectionId": "pacific-fair",
+        "time": "15:41",
+        "location": "Pacific Fair Shopping Centre",
+        "sortOrder": 17
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-05-gold-coast-pelican-watching-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-05-gold-coast-pelican-watching-001.jpeg",
+      "sizeBytes": 4100840,
+      "sha256": "e6fbedc712c4dbd13a6ebedcab7faae36ccdfbba89c41c5564b3d120a813284b",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 5,
+        "sectionId": "pelican-watching",
+        "time": "13:42",
+        "location": "Gold Coast Pelican Feeding Area",
+        "sortOrder": 18
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-05-gold-coast-sky-point-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-05-gold-coast-sky-point-001.jpeg",
+      "sizeBytes": 5087790,
+      "sha256": "bb0491085763c564baa7ebccc3c18ada1b2cc0415f5c8b41cce0d8e282132230",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 5,
+        "sectionId": "skypoint-observation-deck",
+        "time": "10:28",
+        "location": "SkyPoint Observation Deck",
+        "sortOrder": 19
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-05-gold-coast-sky-point-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-05-gold-coast-sky-point-002.jpeg",
+      "sizeBytes": 5043492,
+      "sha256": "a6c3940b126f3d51fa520e212d6f3199a23190b1b1f7dde4f124f9ccc494ef3e",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 5,
+        "sectionId": "skypoint-observation-deck",
+        "time": "10:26",
+        "location": "SkyPoint Observation Deck",
+        "sortOrder": 20
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-05-gold-coast-surfers-paradise-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-05-gold-coast-surfers-paradise-001.jpeg",
+      "sizeBytes": 3174109,
+      "sha256": "fd6cb939d1b2162692cbaf7f3d50eb322a6f3e186895ee053b20fc989d0087b0",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 5,
+        "sectionId": "surfers-paradise-night",
+        "time": "20:57",
+        "location": "Surfers Paradise",
+        "sortOrder": 21
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-001.jpeg",
+      "sizeBytes": 3563874,
+      "sha256": "38571ab97dc09e66de029f5977061a3fa580f7ee3ede352d0523f714854a43b1",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "gold-coast-beach-morning",
+        "time": "06:31",
+        "location": "Gold Coast Beach",
+        "sortOrder": 22
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-Burleigh-Head-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-Burleigh-Head-001.jpeg",
+      "sizeBytes": 2889464,
+      "sha256": "9baeb768eec5ac52280295d93c955a939f1bf35d62024f7659e28462ba53eca0",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "burleigh-head",
+        "time": "16:43",
+        "location": "Burleigh Head",
+        "sortOrder": 23
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-Burleigh-Head-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-Burleigh-Head-002.jpeg",
+      "sizeBytes": 3740552,
+      "sha256": "ebe48302912adc58ebea8869529cf222fcd4216018728d7e1c314d6fea20911d",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "burleigh-head",
+        "time": "17:06",
+        "location": "Burleigh Head",
+        "sortOrder": 24
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-Burleigh-Head-003.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-Burleigh-Head-003.jpeg",
+      "sizeBytes": 3193117,
+      "sha256": "8e9f60cf3d16a7b478d4f1c0764f3aefbd40ec6852cb3b765ea0e3ee9166c6fd",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "burleigh-head-evening",
+        "time": "18:10",
+        "location": "Gold Coast Coastline",
+        "sortOrder": 25
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-001.jpeg",
+      "sizeBytes": 3964370,
+      "sha256": "96f2ccbff66e96bed06d14e7870af37650b5ac23f86b203a6dbd4c598668f6aa",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "currumbin-wildlife-sanctuary",
+        "time": "11:15",
+        "location": "Currumbin Wildlife Sanctuary",
+        "sortOrder": 26
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-002.jpeg",
+      "sizeBytes": 3638065,
+      "sha256": "e405f0f9ba4acc9db008d7e9a01f7135da48d2d73047ee0c03cabf27ef148752",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "currumbin-wildlife-sanctuary",
+        "time": "12:58",
+        "location": "Currumbin Wildlife Sanctuary",
+        "sortOrder": 27
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-003.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-003.jpeg",
+      "sizeBytes": 3815861,
+      "sha256": "68151f0938de7a2576000ce7cd706a1ef0e588bcb06561130a7a13b22a99cf9d",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "currumbin-wildlife-sanctuary",
+        "time": "13:06",
+        "location": "Currumbin Wildlife Sanctuary",
+        "sortOrder": 28
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-005.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-005.jpeg",
+      "sizeBytes": 4503047,
+      "sha256": "974bb0e76219dc4391d7cd027ef0979e36e38b845918676d95fcc84662403cbc",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "currumbin-wildlife-sanctuary",
+        "time": "13:56",
+        "location": "Currumbin Wildlife Sanctuary",
+        "sortOrder": 29
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-006.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-006.jpeg",
+      "sizeBytes": 2937163,
+      "sha256": "8758ff52826076aa895d1a0b474fdcde5084d13adf5181f1849fd1b1d59c8c35",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "currumbin-wildlife-sanctuary",
+        "time": "14:24",
+        "location": "Currumbin Wildlife Sanctuary",
+        "sortOrder": 30
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-007.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-06-gold-coast-Currumbin-007.jpeg",
+      "sizeBytes": 638346,
+      "sha256": "278767e0949033cee650f8643c6c00298c278101dcee565f41164e7506c0fe55",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 6,
+        "sectionId": "currumbin-wildlife-sanctuary",
+        "time": "15:16",
+        "location": "Currumbin Wildlife Sanctuary",
+        "sortOrder": 31
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-city-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-city-001.jpeg",
+      "sizeBytes": 2916259,
+      "sha256": "439b8d982bb923cd78df0a624644933cf5dc226a66c2cb9bd90b413612bdeab5",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-opera-house",
+        "time": "09:57",
+        "location": "Sydney Opera House / Circular Quay",
+        "sortOrder": 32
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-city-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-city-002.jpeg",
+      "sizeBytes": 3676210,
+      "sha256": "2f71368bf933c2470eb7a451e1231f96ce0b26df251f25c1ec3e1cdb8e7cb5d8",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-opera-house",
+        "time": "09:59",
+        "location": "Sydney Opera House / Circular Quay",
+        "sortOrder": 33
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-city-003.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-city-003.jpeg",
+      "sizeBytes": 4247448,
+      "sha256": "baa4c0763c2d775e88c1841dd95816d5c96417d5969dcdd0a0ac4be77c3e88c7",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-harbour-walk",
+        "time": "10:16",
+        "location": "Sydney Harbour Walk",
+        "sortOrder": 34
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-city-004.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-city-004.jpeg",
+      "sizeBytes": 2600338,
+      "sha256": "fa2365eab743a1b7b15009e08741a7ce5bbc67069a7551dc0c464d42430078f0",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-harbour-walk",
+        "time": "10:36",
+        "location": "Sydney Harbour Walk",
+        "sortOrder": 35
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-city-005.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-city-005.jpeg",
+      "sizeBytes": 3705455,
+      "sha256": "f5ff3608188eb969c57e268165301299d2ec50200d6b7411c860d5543a7dc1c2",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-harbour-walk",
+        "time": "10:54",
+        "location": "Sydney Harbour Walk",
+        "sortOrder": 36
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-city-006.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-city-006.jpeg",
+      "sizeBytes": 2665159,
+      "sha256": "aabe77a30a1463d3c6e3272858f20682c8f4ed4cf14e917c55d0fc2526c534ea",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-city-walk",
+        "time": "11:18",
+        "location": "Sydney City Walk",
+        "sortOrder": 37
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-city-007.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-city-007.jpeg",
+      "sizeBytes": 4551135,
+      "sha256": "157c686339328b292b64e23a68639c9ca2a1d104f35bb4daa8143e7ec6574e55",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-harbour-walk",
+        "time": "12:39",
+        "location": "Sydney Harbour",
+        "sortOrder": 38
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-city-008.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-city-008.jpeg",
+      "sizeBytes": 3993309,
+      "sha256": "f9f84b92635f93effdfa24376a9cb4f9d34bbadd44fdc16093bf01cb795628f4",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-harbour-walk",
+        "time": "13:22",
+        "location": "Sydney Harbour",
+        "sortOrder": 39
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-city-009.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-city-009.jpeg",
+      "sizeBytes": 4020511,
+      "sha256": "66066c454b5765678ed34d79e2ca2afa78dbf5d5cbd1625bd891317fd6da11af",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-harbour-walk",
+        "time": "13:37",
+        "location": "Sydney Harbour",
+        "sortOrder": 40
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-tower-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-tower-001.jpeg",
+      "sizeBytes": 4974192,
+      "sha256": "e84fb8566af281b3f958bc189b076368bca723323b179727a141da9dd497569f",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-tower",
+        "time": "14:56",
+        "location": "Sydney Tower Eye",
+        "sortOrder": 41
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-07-sydney-tower-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-07-sydney-tower-002.jpeg",
+      "sizeBytes": 5062304,
+      "sha256": "bde20db8f5ff835b03398a6b6a73b173c2a45334a9abcdd421aa0cc4fe3468ac",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 7,
+        "sectionId": "sydney-tower",
+        "time": "14:59",
+        "location": "Sydney Tower Eye",
+        "sortOrder": 42
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-08-blue-mountains-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-08-blue-mountains-001.jpeg",
+      "sizeBytes": 473346,
+      "sha256": "a6e2ad5cd3157f9f19cc1dd32a7a8471a16a8e978072db14b1a8fa16fd41ba1e",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 8,
+        "sectionId": "blue-mountains",
+        "time": "13:54",
+        "location": "Blue Mountains",
+        "sortOrder": 43
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-08-blue-mountains-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-08-blue-mountains-002.jpeg",
+      "sizeBytes": 4224102,
+      "sha256": "08a9858782312f6ded3b0c8fb74d4c23127c56cd1b196de48378932911c8741f",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 8,
+        "sectionId": "blue-mountains",
+        "time": "14:17",
+        "location": "Blue Mountains",
+        "sortOrder": 44
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-08-blue-mountains-003.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-08-blue-mountains-003.jpeg",
+      "sizeBytes": 3082476,
+      "sha256": "b84ed8892129e8d31e9f05ab0c9eda2807413d08ffe0b32e46927dfedfa3f150",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 8,
+        "sectionId": "blue-mountains",
+        "time": "14:48",
+        "location": "Blue Mountains",
+        "sortOrder": 45
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-08-sydney-royal-botanic-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-08-sydney-royal-botanic-001.jpeg",
+      "sizeBytes": 4752229,
+      "sha256": "ce8d3e61eeeee1b8f98dd16ef68883aaff5f81ef0c1a49af4fc3edeec038218d",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 8,
+        "sectionId": "royal-botanic-garden-sydney",
+        "time": "07:50",
+        "location": "Royal Botanic Garden Sydney",
+        "sortOrder": 46
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-08-sydney-royal-botanic-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-08-sydney-royal-botanic-002.jpeg",
+      "sizeBytes": 2115131,
+      "sha256": "1a6a1237ada4bad453b74faac13ecabe654978af4b6b7132d13dbedb642dcdbb",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 8,
+        "sectionId": "royal-botanic-garden-sydney",
+        "time": "10:02",
+        "location": "Royal Botanic Garden Sydney",
+        "sortOrder": 47
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-08-sydney-royal-botanic-003.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-08-sydney-royal-botanic-003.jpeg",
+      "sizeBytes": 6508877,
+      "sha256": "46ae7237f5b6bd5ea6e829b7707e8baed059e7ba7b9fe9ad1fc045437e2399ac",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 8,
+        "sectionId": "royal-botanic-garden-sydney",
+        "time": "10:09",
+        "location": "Royal Botanic Garden Sydney",
+        "sortOrder": 48
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-08-sydney-royal-botanic-004.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-08-sydney-royal-botanic-004.jpeg",
+      "sizeBytes": 6341952,
+      "sha256": "1080c1a351fa40f7f73fe3a44ef0cce49a31d2148e2ab0bcdab4ba56ec149ad3",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 8,
+        "sectionId": "royal-botanic-garden-sydney",
+        "time": "10:13",
+        "location": "Royal Botanic Garden Sydney",
+        "sortOrder": 49
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-09-sydney-taipei-001.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-09-sydney-taipei-001.jpeg",
+      "sizeBytes": 3738454,
+      "sha256": "be8c2256b1bf15331cbd9de8deed63ec56f55e2cbfb68969e0c28cbdbc0e2a48",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 9,
+        "sectionId": "sydney-airport-return",
+        "time": "19:08",
+        "location": "Sydney Airport",
+        "sortOrder": 50
+      }
+    },
+    {
+      "sourcePath": "travels/202308-east-australia/itinerary/day-09-sydney-taipei-002.jpeg",
+      "legacySeedSourcePath": "content-source/assets/travels/202308-east-australia/itinerary/day-09-sydney-taipei-002.jpeg",
+      "sizeBytes": 360077,
+      "sha256": "254e9814cddeadd80d9e459279c03188d627150f95874b3192f5e9a8394a0642",
+      "manifestPlacement": {
+        "ownerType": "travel",
+        "ownerSlug": "202308-east-australia",
+        "usage": "itinerary",
+        "day": 9,
+        "sectionId": "sydney-taipei-flight",
+        "time": "21:31",
+        "location": "Sydney／Taipei return flight",
+        "sortOrder": 51
+      }
+    }
+  ]
+}

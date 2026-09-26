@@ -1,6 +1,8 @@
 # Content Source Asset Guidelines
 
-本文件定義 `content-source/assets/` 的照片與媒體檔案治理規則，供 seed pipeline、後續頁面開發與人工整理素材時遵循。
+本文件保留既有 `content-source/assets/` 邏輯路徑、manifest 與 seed 相容規則。圖片原件由 repository 外的 Source 保管；此目錄在 #133 清理後只保留 JSON manifest，不再作為長期圖片庫。下方圖片目錄與檔名範例描述歷史 `sourcePath`，不指示把 binary 加回 Git。
+
+執行需要讀取實體圖片的 legacy seed 時，先在本機備妥與既有相對路徑一致的素材目錄，設定絕對路徑 `CONTENT_SOURCE_ASSET_ROOT`。例如該根目錄下應有 `travels/202308-east-australia/cover/...`；seed 仍從 repository 讀取 manifest，並保留既有 `content-source/assets/...` Payload `sourcePath`。Source v2 也使用同一實體根目錄，但其邏輯 `sourcePath` 仍是 `travels/...`。未提供圖片時，不應把空掃描結果當成已完成匯入。
 
 目標是讓預置照片可以作為 Payload CMS 的初始資料來源，同時避免前台 component 硬編圖片路徑。所有預置照片都應透過 seed 建立為 Payload Media 記錄，再由 Users、Travel Plans／Memories、Posts、Timeline Events 或 HomeConfig 的 media relationship 引用。
 
@@ -10,7 +12,7 @@
 
 ## 1. 核心原則
 
-1. `content-source/assets/` 只作為 seed 初始資料來源。  
+1. `content-source/assets/` 保留 manifest 與舊邏輯身分；seed 圖片由 repository 外的實體根目錄提供。
    正式使用時，前台應讀取 Payload Media relationship，不直接讀取 `content-source/assets/` 路徑。
 
 2. 新 Memory 的展示位置以確認後的 Source v2 關係為準。
@@ -27,7 +29,7 @@
 
 ---
 
-## 2. 目前目錄結構
+## 2. 舊邏輯路徑結構
 
 ```text
 content-source/assets/
@@ -233,14 +235,14 @@ lobby-003.jpeg
 
 ## 7. 新增照片流程
 
-1. 先判斷照片歸屬：
+1. 先判斷照片歸屬，在外部素材根目錄保留對應相對路徑：
    - 成員：放到 `members/[member-slug]/`
    - 旅遊 Memory：可放到 `travels/[travel-slug]/photos/`，既有 v1 資料夾不搬動
    - 首頁家庭大廳：放到 `the_grand_family_lobby/`
 
 2. 新 Memory 保留原檔與 metadata，讓 AI 提出日期、GPS 地點及展示位置，依人類確認整理；既有檔名保持穩定。
 
-3. 執行 seed 前，確認檔案不包含 `.DS_Store` 或其他系統暫存檔。
+3. 執行 seed 前，設定 `CONTENT_SOURCE_ASSET_ROOT` 為該目錄的絕對路徑，確認檔案不包含 `.DS_Store` 或其他系統暫存檔。
 
 4. 執行：
 

@@ -5,6 +5,7 @@ import { execFile } from 'node:child_process'
 
 import matter from 'gray-matter'
 import { z } from 'zod'
+import { seedAssetRoot } from './seed-asset-root'
 
 const execFileAsync = promisify(execFile)
 const imageExtensions = new Set(['.avif', '.gif', '.jpeg', '.jpg', '.png', '.webp'])
@@ -948,18 +949,21 @@ async function parseTravelDirectory(
 }
 
 async function scanMediaAssets(projectRoot: string, memorySlugs?: readonly string[], travels: TravelSeed[] = []): Promise<MediaSeed[]> {
-  const assetRoot = path.join(projectRoot, 'content-source/assets')
+  const assetRoot = seedAssetRoot(projectRoot)
   const canonicalSlugs = new Set(travels.filter((travel) => travel.sourceFormat === 'canonical-memory').map((travel) => travel.slug))
-  const manifest = await readAssetManifest(projectRoot, assetRoot, memorySlugs)
+  const manifest = await readAssetManifest(projectRoot, memorySlugs)
   const files = memorySlugs
     ? (await Promise.all(memorySlugs.map((slug) => walkFiles(path.join(assetRoot, 'travels', slug))))).flat()
     : await walkFiles(assetRoot)
+  const imageFiles = files.filter((file) => imageExtensions.has(path.extname(file).toLowerCase()))
+  if (!memorySlugs && imageFiles.length === 0) {
+    throw new Error('No source images found; set CONTENT_SOURCE_ASSET_ROOT to the external media folder')
+  }
 
-  return files
-    .filter((file) => imageExtensions.has(path.extname(file).toLowerCase()))
+  return imageFiles
     .map((absolutePath) => {
-      const sourcePath = path.relative(projectRoot, absolutePath)
-      const segments = sourcePath.split(path.sep)
+      const sourcePath = path.posix.join('content-source/assets', toAssetRelativePath(assetRoot, absolutePath))
+      const segments = sourcePath.split('/')
       const filename = path.basename(absolutePath)
       const manifestEntry = manifest.get(toAssetRelativePath(assetRoot, absolutePath))
       const usage = manifestEntry?.usage ?? mediaUsageFromPath(segments, filename)
@@ -995,7 +999,6 @@ async function scanMediaAssets(projectRoot: string, memorySlugs?: readonly strin
 
 async function readAssetManifest(
   projectRoot: string,
-  assetRoot: string,
   memorySlugs?: readonly string[],
 ): Promise<Map<string, z.infer<typeof manifestEntrySchema>>> {
   const globalManifestPath = path.join(projectRoot, 'content-source/assets/manifest.json')
@@ -1003,15 +1006,13 @@ async function readAssetManifest(
   const addEntries = (entries: z.infer<typeof manifestEntrySchema>[]) => {
     for (const entry of entries) {
       if (memorySlugs && (entry.ownerType !== 'travel' || !memorySlugs.includes(entry.ownerSlug))) continue
-      const absolutePath = path.join(assetRoot, entry.sourcePath)
-
-      manifests.set(toAssetRelativePath(assetRoot, absolutePath), entry)
+      manifests.set(entry.sourcePath, entry)
     }
   }
 
   addEntries(await readManifestEntries(globalManifestPath))
 
-  const travelAssetRoot = path.join(assetRoot, 'travels')
+  const travelAssetRoot = path.join(projectRoot, 'content-source/assets/travels')
   try {
     const travelDirs = await fs.readdir(travelAssetRoot, { withFileTypes: true })
     const localManifestPaths = travelDirs

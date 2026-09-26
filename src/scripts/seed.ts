@@ -38,6 +38,7 @@ import { buildPhase19TravelMemoryBackfillPlan } from './phase19-travel-memory-ba
 import { parseMemorySourceV2 } from './travel-memory-source-v2'
 import { importMemoryV2 } from './travel-memory-v2-import'
 import { memoryV2Args } from './travel-memory-v2-args'
+import { seedAssetRoot } from './seed-asset-root'
 
 interface SeedStats {
   created: number
@@ -69,7 +70,7 @@ async function run() {
   if (v2Source && v2File) {
     const result = await importMemoryV2(payload, v2Source, {
       apply: v2Options!.apply,
-      assetRoot: path.join(projectRoot, 'content-source/assets'), sourceFile: v2File,
+      assetRoot: seedAssetRoot(projectRoot), sourceFile: v2File,
     })
     console.log(JSON.stringify(result, null, 2))
     return
