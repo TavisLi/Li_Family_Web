@@ -28,7 +28,7 @@ export function changedPaths(diff) {
     const count = /^[RC]/.test(status) ? 2 : 1
     for (let j = 0; j < count; j++) {
       const path = fields[i++]
-      if (!path || path.startsWith('/') || path.includes('..')) throw new Error('Invalid changed path')
+      if (!path || path.startsWith('/') || path.split('/').includes('..')) throw new Error('Invalid changed path')
       paths.push(path)
     }
   }

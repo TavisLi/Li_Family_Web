@@ -30,6 +30,13 @@ test('rename and deletion classify both sides; unknown paths are conservative', 
   assert.throws(() => plan([]))
 })
 
+test('changed paths allow consecutive dots in filenames and reject parent segments', () => {
+  assert.deepEqual(changedPaths(Buffer.from('A\0content-source/assets/members/tavis/tavis-hero..jpeg\0')),
+    ['content-source/assets/members/tavis/tavis-hero..jpeg'])
+  assert.throws(() => changedPaths(Buffer.from('A\0../x\0')))
+  assert.throws(() => changedPaths(Buffer.from('A\0x/../y\0')))
+})
+
 test('Payload version changes request disposable coverage; unrelated dependency changes do not', () => {
   const before = JSON.stringify({ dependencies: { payload: '3.85.1', '@payloadcms/next': '3.85.1', 'cross-env': '^7.0.3' } })
   const payloadUpgrade = JSON.stringify({ dependencies: { payload: '3.90.1', '@payloadcms/next': '3.90.1', 'cross-env': '^7.0.3' } })
