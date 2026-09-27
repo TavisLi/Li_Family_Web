@@ -98,7 +98,7 @@ assert.equal(planMemoryV2(source, { ...inventory, memory: { id: 1, ...projected.
 // temporary synthetic PNG. No config, environment or remote service is loaded.
 const root = await mkdtemp(path.join(tmpdir(), 'memory-v2-'))
 try {
-  const filename = path.join(root, source.assets![0]!.sourcePath)
+  const filename = path.join(root, source.assets![0]!.sourcePath!)
   await mkdir(path.dirname(filename), { recursive: true })
   await writeFile(filename, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64'))
   const db: Record<string, Record<string, unknown>[]> = {

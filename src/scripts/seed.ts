@@ -37,6 +37,7 @@ import {
 import { buildPhase19TravelMemoryBackfillPlan } from './phase19-travel-memory-backfill'
 import { parseMemorySourceV2 } from './travel-memory-source-v2'
 import { importMemoryV2 } from './travel-memory-v2-import'
+import { validateMediaRegistry } from './travel-memory-media-registry'
 import { memoryV2Args } from './travel-memory-v2-args'
 import { seedAssetRoot } from './seed-asset-root'
 
@@ -68,9 +69,13 @@ async function run() {
   const payload = await getPayload({ config: configPromise })
   console.log('Payload Local API initialized')
   if (v2Source && v2File) {
+    const registry = process.env.TRAVEL_MEDIA_REGISTRY
+      ? validateMediaRegistry(JSON.parse(await readFile(process.env.TRAVEL_MEDIA_REGISTRY, 'utf8')), v2Source.slug)
+      : undefined
     const result = await importMemoryV2(payload, v2Source, {
       apply: v2Options!.apply,
       assetRoot: seedAssetRoot(projectRoot), sourceFile: v2File,
+      registry, environment: process.env.TRAVEL_MEDIA_ENVIRONMENT,
     })
     console.log(JSON.stringify(result, null, 2))
     return

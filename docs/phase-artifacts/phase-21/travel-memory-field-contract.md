@@ -29,11 +29,12 @@ Issues：#96、#99、#101
 ## Identity and conflict rules
 
 - Day：Memory id＋`dayKey`。
-- Moment：Source 使用 semantic `sectionId`/stable key；Admin 自動生成 `moment:<uuid>`。
-- Placement：Source photo 使用 source path、YouTube 使用 canonical video id；Admin 自動生成 `placement:<uuid>`。
+- Moment：新 Source 使用 semantic `scene` 產生穩定 key；Admin 自動生成 `moment:<uuid>`。採納既有 Current 時保留原 `momentKey`，未能精確配對須明確審核對照，不重新產生。
+- Placement：新 Source photo 使用來源檔 byte SHA-256 `assetId`；舊 path reference 保留相容解析，YouTube 使用 canonical video id；Admin 自動生成 `placement:<uuid>`。採納既有 Current 時保留原 `placementKey`、關係、caption 與順序，不從遺漏列推定移除或重新分類。
+- `assetId` 是媒體 byte identity；`sourcePath` 僅為可選舊路徑別名。travel slug 界定 Registry namespace；Registry 只記技術 metadata 和環境 locator，作者編排仍由 Source v2 管理。
 - 不使用 array index、Markdown anchor equality 或人工猜日期。
 - Missing Base existing child → `preserve-current`；Source-only → update；Current-only → preserve；雙邊不同 → conflict。
-- unmatched day/media、duplicate source placement、missing media record 一律 BLOCK write。
+- unmatched day/media、duplicate source placement、missing media record、未驗證 hash 對 Media 關係或既有 key 無審核對照，一律 BLOCK write。
 
 ## Three-renderer content contract
 

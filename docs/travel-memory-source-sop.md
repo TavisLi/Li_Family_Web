@@ -4,7 +4,7 @@
 
 ## 全新項目導入
 
-1. 複製 template，依其中說明填好旅程。把照片放在一個 photos 資料夾，另附影片網址；不用先挑選或分三種資料夾。
+1. 複製 template，依其中說明填好旅程。把照片放在一個 photos 資料夾，另附影片網址；不用先挑選或分三種資料夾。AI 先以 scanner 計算每個來源檔 byte SHA-256，將 technical Media Registry 放在 Git 忽略的 `.travel-media-staging/<slug>/`。
 2. 把材料位置交給 AI，說明「建立新旅行回憶」、公開或家人限定，以及偏好的版型。網址登記、格式整理與 manifest 由 AI 處理。
 3. AI 提供一份附縮圖的配置預覽：Overview 封面、每天代表照片、Daily 各片段照片與影片、完整相簿。每張附檔名、建議位置與文字；不確定的日期或景點集中列出讓你確認。
 4. 直接用白話修正，例如「這張改到第二天下午」「這張只留相簿」「這張不要發布」。你不必看 JSON 或自行發明技術 ID。
@@ -14,25 +14,30 @@
 ## 舊有項目更新
 
 1. 提供既有網址與這次要改的內容；只交新增照片或文字即可，不必重填整份 template。
-2. 告訴 AI 是否在 Admin 修改過內容。已匯入照片保留原檔名與位置，避免被當成新照片。
+2. 告訴 AI 是否在 Admin 修改過內容。已匯入照片用 `assetId` 或已驗證的舊路徑別名核對；檔名與位置本身不能證明是同一份 byte。
 3. AI 比較網站現況、上次匯入內容與這次材料，給你新增／修改清單、前後差異及照片位置預覽。網站單獨改過的內容應保留；不同版本由你確認採用哪份。
 4. 確認後說「批准這批更新」。刪除、覆寫既有編輯或修改公開範圍須在清單中明列。
 5. AI 更新後回讀網站，提供正式網址與變更摘要。若要回復，先說明可回復範圍，再依確認方案處理。
 
 ## 照片怎麼交給 AI
 
-- 保留原始照片與 metadata。相機原始檔名可以直接使用；同名檔案要避免互相覆蓋。
+- 保留原始照片與 metadata。相機原始檔名可以直接使用；同名檔案要避免互相覆蓋。byte 不同的衍生檔會有自己的 `assetId`。
 - 想重新命名的新照片，可用「20260402-063000-海邊-001.jpg」；不知道日期就保留原名，不必猜日期。已匯入照片不要任意改名。
 - HEIC/HEIF 可交原檔，由 AI 提出轉檔安排並保留原件。
 - AI 綜合檔名、拍攝時間／時區、GPS 與圖像辨識提出配置。缺少或互相矛盾的資訊列為待確認；不能只靠畫面認定人物身分或精確日期。
 - 日期優先參考原始照片的拍攝時間，依已知時區換算當地日期，再用 GPS 位置與 Markdown 行程交叉核對；檔案修改時間不當作拍攝日期。跨夜、飛行日、時區缺失或 GPS 與行程不符時列為待確認，不直接改寫原始 metadata。
 - 配置預覽附上「建議日期／地點、依據、待確認原因」。證據一致的照片按日批次確認；只逐張詢問有歧義的照片。人類確認後才固定正式配對與 manifest identity。
 - AI 起草 altText（畫面看見什麼）與 caption（這張照片的故事），讓你在配置預覽中一起審閱。
+- Registry 只保存 hash、檔案與內嵌 metadata、來源及環境別 Media locator。Day、Moment、照片位置、圖說與排列由 Source v2 經你審核；metadata 中的 caption 只能當候選資訊。
 - 不必分 cover、gallery、itinerary 三個資料夾；既有資料夾也不必搬動。實際展示位置由確認後的 manifest 與媒體關係決定。
 
 ## AI 應完成的檢查
 
 AI 處理網址登記、格式檢查、照片清單與 manifest 草案，並執行匯入預演。重複照片、無法配對、缺少上次匯入基準或版本衝突都要先列出。正式更新前給人可閱讀的摘要，執行後獨立回讀資料與網頁。
+
+既有 Current 採納時先讀取既有 `momentKey`、`placementKey`、關係與排列，提出明確對照供審核；不能用新 scene/hash key 重建、從省略列推定刪除，或由 AI 重分類。hash 引用若缺少該環境已驗證 Media locator，或舊 alias 無 byte 證據，預演列為 BLOCK。Slice 2 只提供本地 Registry／resolver；新 hash 媒體上傳及 Production schema、content、media 更新仍是獨立 gate。
+
+技術操作：先用 `node --import tsx src/scripts/travel-memory-media-intake.ts --slug <slug> --input <folder>` 產生 `registry.json`、`summary.json`、`review-queue.json`。Source v2 匯入預演可設定 `TRAVEL_MEDIA_REGISTRY` 指向 registry 檔，並明列 `TRAVEL_MEDIA_ENVIRONMENT`；locator 的 `verifiedByteHash` 必須來自該環境可取回 Media bytes 的獨立查證，不以相同 alias、檔名或 URL 代替。scanner 不會自行把 locator 標為 verified。
 
 資料庫結構變更、刪除或額外上傳若超過已批准範圍，要先說明具體影響。遇到資料變動警告、回讀失敗或私密內容外洩，停止並保留證據。程式回退不會自動恢復網站內容；資料回復使用另行確認的方案。
 

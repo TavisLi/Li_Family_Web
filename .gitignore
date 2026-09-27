@@ -53,6 +53,7 @@ next-env.d.ts
 .env
 
 /media
+/.travel-media-staging/
 
 # local agent worktrees
 .worktrees/

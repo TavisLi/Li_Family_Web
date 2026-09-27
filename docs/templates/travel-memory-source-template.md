@@ -27,8 +27,10 @@ galleryImages:
    cinematic-timeline、family-scrapbook，所有頁面共用；新建省略用 runtime 預設。
    participants 填家庭成員 slug（由 AI 核對）；外部同行者填 name／note 表。
    originPlan 是原 Plan slug，無原 Plan 就刪除此行。不要填資料庫 ID。
-3. coverImage 是 Overview 封面；galleryImages 是相簿路徑及順序；
-   dailyHeroImage 是 Daily 與 Overview 日卡封面。路徑相對 content-source/assets。
+3. coverImage 是 Overview 封面；galleryImages 是相簿順序；
+   dailyHeroImage 是 Daily 與 Overview 日卡封面。新照片使用 byte SHA-256
+   `assetId`（格式 sha256: 加 64 個小寫十六進位字元）；既有路徑仍可讀，
+   路徑相對 content-source/assets，僅作可選相容別名。
    照片可只放單一 photos 資料夾；不知道的日期、人物及位置由人確認。
 4. 簡單資料用表格，空白格表示没填。沒有資料可刪除該表及標題。
    航班所有欄位可選；住宿僅 hotel 必填。dateLabel／dateRange 是顯示文字，
@@ -46,21 +48,26 @@ galleryImages:
 6. day 是 1–99，第幾天；date 是可選當地日期，不以檔案修改時間猜測；
    dateLabel 顯示日期，title 每日標題，theme 主題，story 每日故事。
    moments 依填寫順序呈現。scene 是固定片段名稱，例如「碼頭清晨散步」，
-   匯入器用它產生技術識別，不需手填 momentKey。建立後保留 scene；
+   新建時匯入器用它產生技術識別，不需手填 momentKey。既有 Current key
+   必須透過審核對照保留，不能用 scene 重新產生。建立後保留 scene；
    網頁文字改 title 即可。同一天 scene 不能重複。time 時間、location 地點、
    body 故事、transport 交通；meals 是三餐、lodging 當日住宿。
-7. placement type=photo 時只填 media 路徑；youtube 時只填 youtubeUrl。
+7. placement type=photo 時 media 填 `assetId`；舊照片可保留路徑；youtube 時只填 youtubeUrl。
    role 選 hero／inline／gallery。caption 是此使用位置的可見故事文字。
    同照片可在不同片段有不同 caption；同片段不可重複同照片／同 YouTube。
-   placementKey 自動產生。altText 另在資產區，描述畫面供無障礙使用。
-8. memory-media 是 v2 的媒體 manifest；sourcePath 固定，photo 需要實體檔案，
+   新建 placementKey 自動產生；既有 Current key、caption 與排列須保留。
+   altText 另在資產區，描述畫面供無障礙使用。
+8. memory-media 新照片填 `assetId`，可加 `sourcePath` 舊別名；舊 path-only 區塊
+   仍可讀。photo 的 byte hash 由 Media Registry scanner 計算，不能猜填；
+   本範例的 path-only 區塊示範舊來源相容格式。新的 hash 引用需環境別已驗證
+   Media locator；無法證明對應時匯入預演 BLOCK，不能靠相同檔名判定。
    video 填 youtubeUrl。altText 必填；tags 標籤；relatedMembers 已確認人物 slug。
    focalX／focalY 是可選裁切焦點 0–100 百分比；ownership 由根 slug 解析。
    舊 manifest 的 usage／day／sectionId／sortOrder 對應 v2 明確配置與排列，
    time／location 放 Moment，caption 放 placement。v2 不同時套用舊 JSON manifest。
 9. 新建時省略可選欄位就不建立；CMS checkbox／role 預設仍適用。
    更新省略欄位、陣列項目、表格列或語系都代表保留；[] 也不代表刪除。
-   v2 無刪除語法。需刪除或更換 scene／sourcePath 時，交 AI 提出明確對照另案處理。
+   v2 無刪除語法。需刪除或更換 scene／資產時，提出明確對照另案處理。
    舊紀錄無 v2 Base 時整份保留，先作基準審查，不直接覆蓋 Admin。
    無唯一識別的表格列／提醒內容若無法配對，回報 conflict，不猜列序。
 10. 系統 ID、timestamp、sourceMetadata、dayIdentity、momentKey、placementKey、
