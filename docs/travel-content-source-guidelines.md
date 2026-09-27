@@ -335,6 +335,8 @@ content-source/assets/travels/[travel-slug-or-asset-folder]/manifest.json
 
 ### Manifest 放置規則
 
+以下 JSON manifest 規則保留給既有 seed 流程。Travel Memory Source v2 的新照片以來源檔 SHA-256 `assetId` 作 canonical identity；`sourcePath` 只是可選舊別名。技術 Media Registry 依 travel slug 放在 Git 忽略的 `.travel-media-staging/<slug>/`，不承載 Day／Moment／placement／caption／order。既有 Current 採納必須保留其 key 與 placements，不能因路徑或檔名變動重建關係。詳見 [Source v2 模板](templates/travel-memory-source-template.md) 與 [SOP](travel-memory-source-sop.md)。
+
 複雜旅遊項目優先使用 local manifest：
 
 ```text

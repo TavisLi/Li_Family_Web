@@ -6,9 +6,9 @@
 
 ## 所有作者欄位共用規則
 
-- Source 路徑使用下表位置與同名欄位；projectMemoryV2 保留 scalar／group，relationship 使用 slug 或 sourcePath 精確解析。完整語法見 [唯一模板](templates/travel-memory-source-template.md)。
+- Source 路徑使用下表位置與同名欄位；projectMemoryV2 保留 scalar／group，relationship 使用 slug 或 Media Registry 的 SHA-256 assetId 精確解析。sourcePath 只作可選舊別名；assetId 是 sidecar identity，不是 Slice 2 Payload 欄位。完整語法見 [唯一模板](templates/travel-memory-source-template.md)。
 - 新建省略可選值：不建立該選項；Payload checkbox 預設仍依 schema（privacy true、互動 true、placement role inline）；缺少 style 時 runtime fallback editorial-journal。必填欄位在匯入前驗證。
-- 更新省略：保留 Current，不表示刪除。包括 nested fields、array items、語系；空值不作刪除指令。v2 不提供刪除語法。缺 Base 保留，雙方不同修改同欄位產生 conflict。
+- 更新省略：保留 Current，不表示刪除。包括 nested fields、array items、語系；空值不作刪除指令。v2 不提供刪除語法。缺 Base 保留，雙方不同修改同欄位產生 conflict。既有 momentKey／placementKey／placement 關係須保留，無審核對照時不採納。
 - locale 為 zh-TW 或 en；文字依該 locale 投影，非 localized 欄位為全語系共用。未提供的語系不寫入；UI fallback 遵循 Payload 設定。
 - 表格欄位皆為文字，日期用 YYYY-MM-DD；role／type／boolean／number 依 schema 驗證。故事與 Day 的富語意內容使用具型別 fenced YAML；不填 DB ID 或 technical key。
 - Production 影響欄描述資料用途；是否顯示仍取決於現行 renderer 與版型。寫入 source 不等於發布。
@@ -132,7 +132,7 @@
 | Media.type | source-authorable | 必填（父項存在時） | memory-media.type | 照片／影片類型 |
 | Media.youtubeUrl | source-authorable | 可選 | memory-media.youtubeUrl | YouTube 網址 |
 | Media.altText | source-authorable | 必填（父項存在時） | memory-media.altText | 資產無障礙描述，不作為敘事圖說 |
-| Media.sourcePath | source-authorable | 可選 | memory-media.sourcePath | 相對 content-source/assets 的穩定檔案路徑 |
+| Media.sourcePath | source-authorable | 可選 | memory-media.sourcePath | 相對 content-source/assets 的可選舊路徑別名 |
 | Media.tags | source-authorable | 可選 | memory-media.tags | 資產標籤 |
 | Media.tags[].tag | source-authorable | 必填（父項存在時） | memory-media.tags[].tag | 單一標籤文字 |
 | Media.tags[].id | cms/system-managed | 系統管理 | 禁止手填 | Payload／storage／version 管理；versions.version 重用完整 document 欄位契約 |

@@ -2,12 +2,16 @@ import { createHash } from 'node:crypto'
 import matter from 'gray-matter'
 import { z } from 'zod'
 import type { Media, TravelMemory, TravelMemoryDay } from '../payload/payload-types'
+import { assetIdSchema } from './travel-memory-media-registry'
 
 const text = z.string().trim().min(1)
 const date = z.string().date()
 const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 const assetPath = text.refine(value => !value.startsWith('/') && !value.includes('\\') &&
   value.split('/').every(part => part !== '..' && part !== '.' && part !== ''), 'Use a relative asset path without traversal')
+const mediaReference = text.refine(value => value.startsWith('sha256:')
+  ? assetIdSchema.safeParse(value).success : assetPath.safeParse(value).success,
+'Use a valid sha256 assetId or relative legacy asset path')
 const youtube = z.string().url().refine(value => {
   const url = new URL(value)
   return ['youtube.com', 'www.youtube.com', 'youtu.be'].includes(url.hostname) &&
@@ -22,7 +26,7 @@ const guest = z.object({ name: text, note: text.optional() }).strict()
 const video = z.object({ title: text.optional(), url: youtube }).strict()
 const placement = z.object({
   type: z.enum(['photo', 'youtube']), role: z.enum(['hero', 'inline', 'gallery']).optional(),
-  media: assetPath.optional(), youtubeUrl: youtube.optional(), caption: text.optional(),
+  media: mediaReference.optional(), youtubeUrl: youtube.optional(), caption: text.optional(),
 }).strict().superRefine((value, ctx) => {
   if (value.type === 'photo' ? !value.media || value.youtubeUrl !== undefined : !value.youtubeUrl || value.media !== undefined) {
     ctx.addIssue({ code: 'custom', message: 'photo requires only media; youtube requires only youtubeUrl' })
@@ -33,7 +37,7 @@ const moment = z.object({
 }).strict()
 const day = z.object({
   day: z.number().int().min(1).max(99), date: date.optional(), title: text,
-  ...fields(['dateLabel', 'theme', 'story', 'lodging']), dailyHeroImage: assetPath.optional(),
+  ...fields(['dateLabel', 'theme', 'story', 'lodging']), dailyHeroImage: mediaReference.optional(),
   moments: z.array(moment).optional(),
   meals: z.object({ breakfast: text.optional(), lunch: text.optional(), dinner: text.optional() }).strict().optional(),
 }).strict()
@@ -42,24 +46,25 @@ const section = z.object({
   ...fields(['displayDay', 'displayDate', 'displaySubtitle']),
   role: z.enum(['featured-memory', 'travel-reflection', 'unforgettable-day', 'family-story', 'additional-information']).optional(),
   body: text, links: z.array(z.object({ label: text.optional(), url: z.string().url() }).strict()).optional(),
-  mediaItems: z.array(assetPath).optional(),
+  mediaItems: z.array(mediaReference).optional(),
   interactions: z.object({ commentsEnabled: z.boolean().optional(), thumbsUpEnabled: z.boolean().optional(), thumbsDownEnabled: z.boolean().optional() }).strict().optional(),
 }).strict()
 const reminder = z.object({ category: text, items: z.array(z.object({ entry: text, text }).strict()).optional() }).strict()
 const media = z.object({
-  sourcePath: assetPath, type: z.enum(['photo', 'video']), youtubeUrl: youtube.optional(), altText: text,
+  assetId: assetIdSchema.optional(), sourcePath: assetPath.optional(), type: z.enum(['photo', 'video']), youtubeUrl: youtube.optional(), altText: text,
   tags: z.array(z.object({ tag: text }).strict()).optional(), relatedMembers: z.array(slug).optional(),
   focalX: z.number().min(0).max(100).optional(), focalY: z.number().min(0).max(100).optional(),
 }).strict().superRefine((value, ctx) => {
   if (value.type === 'video' && !value.youtubeUrl) ctx.addIssue({ code: 'custom', message: 'video requires youtubeUrl' })
   if (value.type === 'photo' && value.youtubeUrl) ctx.addIssue({ code: 'custom', message: 'photo cannot specify youtubeUrl' })
+  if (!value.assetId && !value.sourcePath) ctx.addIssue({ code: 'custom', message: 'media requires assetId or legacy sourcePath' })
 })
 const metadata = z.object({
   sourceVersion: z.literal(2), locale: z.enum(['zh-TW', 'en']).default('zh-TW'),
   title: text, slug, startDate: date, endDate: date, isPrivate: z.boolean(), summary: text.optional(),
   presentationStyle: z.enum(['editorial-journal', 'cinematic-timeline', 'family-scrapbook']).optional(),
   participants: z.array(slug).optional(), originPlan: slug.optional(),
-  coverImage: assetPath.optional(), galleryImages: z.array(assetPath).optional(),
+  coverImage: mediaReference.optional(), galleryImages: z.array(mediaReference).optional(),
 }).strict().refine(value => value.endDate >= value.startDate, 'endDate precedes startDate')
 
 export type MemorySourceV2 = z.infer<typeof metadata> & {
@@ -122,7 +127,8 @@ export function parseMemorySourceV2(markdown: string): MemorySourceV2 {
   const source = result as MemorySourceV2
   unique(source.days?.map(item => String(item.day)), 'day')
   unique(source.storySections?.map(item => item.anchor), 'story anchor')
-  unique(source.assets?.map(item => item.sourcePath), 'asset sourcePath')
+  unique(source.assets?.flatMap(item => item.sourcePath ? [item.sourcePath] : []), 'asset sourcePath')
+  unique(source.assets?.flatMap(item => item.assetId ? [item.assetId] : []), 'assetId')
   unique(source.participants, 'participant')
   for (const item of source.reminders ?? []) unique(item.items?.map(row => row.entry), `reminder ${item.category} entry`)
   for (const item of source.days ?? []) {
@@ -130,7 +136,7 @@ export function parseMemorySourceV2(markdown: string): MemorySourceV2 {
     for (const scene of item.moments ?? []) unique(scene.placements?.map(placementIdentity), `day ${item.day} ${scene.scene} placement`)
   }
   for (const item of source.assets ?? []) {
-    if (!item.sourcePath.startsWith(`travels/${source.slug}/`)) throw new Error(`Asset must belong to travels/${source.slug}/: ${item.sourcePath}`)
+    if (item.sourcePath && !item.sourcePath.startsWith(`travels/${source.slug}/`)) throw new Error(`Asset must belong to travels/${source.slug}/: ${item.sourcePath}`)
     unique(item.relatedMembers, 'relatedMembers')
   }
   return source
@@ -149,7 +155,7 @@ function placementIdentity(value: { media?: string; youtubeUrl?: string }): stri
 export type MemoryV2Resolver = {
   member(slug: string): number
   plan(slug: string): number
-  media(sourcePath: string): number
+  media(reference: string): number
 }
 type ParentContent = Pick<TravelMemory, 'title' | 'slug' | 'startDate' | 'endDate' | 'isPrivate'> & Partial<Omit<TravelMemory, 'id' | 'sourceMetadata' | 'createdAt' | 'updatedAt' | 'days'>>
 type DayContent = Omit<TravelMemoryDay, 'id' | 'memory' | 'dayIdentity' | 'createdAt' | 'updatedAt' | 'sourceMetadata'>
@@ -192,7 +198,7 @@ export function projectMemoryV2(source: MemorySourceV2, resolve: MemoryV2Resolve
         })) } : {}),
       })) } : {}),
     })),
-    assets: (assets ?? []).map(({ relatedMembers, ...item }) => ({
+    assets: (assets ?? []).map(({ relatedMembers, assetId: _assetId, ...item }) => ({
       ...item, ...(relatedMembers ? { relatedMembers: relatedMembers.map(resolve.member) } : {}),
     })),
   }
