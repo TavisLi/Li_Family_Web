@@ -11,6 +11,7 @@ import {
   parseTravelCatalog,
   parseTravelMarkdown,
 } from './seed-content'
+import { withSeedTestAssets } from './seed-test-assets'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 const projectRoot = path.resolve(dirname, '../..')
@@ -231,6 +232,7 @@ async function main() {
   )
 
   assert.ok(seedContent.media.length >= 10)
+  assert.equal(seedContent.media.length, 10)
   assert.ok(seedContent.media.some((item) => item.ownerType === 'member' && item.ownerSlug === 'tavis'))
   assert.ok(
     seedContent.media.some(
@@ -245,6 +247,14 @@ async function main() {
         item.sourcePath.endsWith(
           'content-source/assets/travels/202607-chongqing-yangtze-river/cover/202607-chongqing-yangtze-river-cover-001.jpg',
         ) &&
+        item.usage === 'cover',
+    ),
+  )
+  assert.ok(
+    seedContent.media.some(
+      (item) =>
+        item.sourcePath ===
+          'content-source/assets/travels/202702-thailand-phuket/cover/202702-thailand-phuket-cover-001.jpg' &&
         item.usage === 'cover',
     ),
   )
@@ -315,7 +325,7 @@ async function main() {
   assert.ok(seedContent.blogPosts.some((post) => post.tags.length >= 2))
 }
 
-main().catch((error) => {
+withSeedTestAssets(main).catch((error) => {
   console.error(error)
   process.exit(1)
 })
