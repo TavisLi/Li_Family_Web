@@ -52,7 +52,7 @@ galleryImages:
    必須透過審核對照保留，不能用 scene 重新產生。建立後保留 scene；
    網頁文字改 title 即可。同一天 scene 不能重複。time 時間、location 地點、
    body 故事、transport 交通；meals 是三餐、lodging 當日住宿。
-7. placement type=photo 時 media 填 `assetId`；舊照片可保留路徑；youtube 時只填 youtubeUrl。
+7. placement type=photo 時 media 填 `assetId`；舊照片可保留路徑；youtube 時只填 youtubeUrl。既有 Current 若確有 null photo 關係，採納候選可用既有 `placementKey` 加 `legacyUnresolvedMedia: true` 明示保留；新 placement 不得使用此標記，也不能用假 `assetId` 補位。
    role 選 hero／inline／gallery。caption 是此使用位置的可見故事文字。
    同照片可在不同片段有不同 caption；同片段不可重複同照片／同 YouTube。
    新建 placementKey 自動產生；既有 Current key、caption 與排列須保留。
@@ -71,7 +71,9 @@ galleryImages:
    舊紀錄無 v2 Base 時整份保留，先作基準審查，不直接覆蓋 Admin。
    無唯一識別的表格列／提醒內容若無法配對，回報 conflict，不猜列序。
 10. 系統 ID、timestamp、sourceMetadata、dayIdentity、momentKey、placementKey、
-    發布狀態不要手填。新建匯入先建立草稿，預覽確認後再發布。
+    發布狀態不要手填。唯一例外是 Current adoption 工具產生的審核候選稿：
+    可明列既有 momentKey／placementKey 以保留關係，必須與 Current 逐筆核對。
+    新建匯入先建立草稿，預覽確認後再發布。
     這是 synthetic 範例；欄位的網站呈現仍依實際版型，並非每個欄位都直接顯示。
 -->
 

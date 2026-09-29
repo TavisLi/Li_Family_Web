@@ -11,6 +11,7 @@ import { memoryV2Args } from './travel-memory-v2-args'
 import { australiaV2Fixture } from './travel-memory-v2-australia-fixture'
 import { parseTravelMarkdown } from './seed-content'
 import { buildTravelMemoryProjection } from './travel-seed-projections'
+import { validateMediaRegistry } from './travel-memory-media-registry'
 
 assert.equal(memoryV2Args(['--travel-only']), undefined)
 assert.deepEqual(memoryV2Args(['--travel-only', '--memory-v2', 'template.md']), { file: 'template.md', apply: false })
@@ -47,6 +48,14 @@ assert.equal(projected.memory.storySections?.[0]?.interactions?.thumbsDownEnable
 assert.equal(projected.days[0]?.dailyHeroImage, 30)
 assert.equal(projected.days[0]?.moments?.[0]?.placements?.[0]?.role, 'hero')
 assert.notEqual(projected.assets[0]?.altText, projected.days[0]?.moments?.[0]?.placements?.[0]?.caption)
+const adoptionSource = parseMemorySourceV2(template
+  .replace('scene: 海邊第一次散步', 'scene: 海邊第一次散步\n    momentKey: moment:existing')
+  .replace('type: photo\n        role: hero', 'type: photo\n        placementKey: placement:existing\n        role: hero')
+  .replace('caption: 我們一起記住的黃昏', 'caption: "我們一起記住的黃昏 "'))
+const adoptionProjection = projectMemoryV2(adoptionSource, refs)
+assert.equal(adoptionProjection.days[0]?.moments?.[0]?.momentKey, 'moment:existing')
+assert.equal(adoptionProjection.days[0]?.moments?.[0]?.placements?.[0]?.placementKey, 'placement:existing')
+assert.equal(adoptionProjection.days[0]?.moments?.[0]?.placements?.[0]?.caption, '我們一起記住的黃昏 ')
 const revised = structuredClone(source)
 revised.days![0]!.moments![0]!.title = '修改顯示標題'
 revised.days!.reverse()
@@ -66,6 +75,7 @@ for (const invalid of [
   template.replace('role: hero', 'role: poster'),
   template.replace('scene: 海邊第一次散步', 'momentKey: forbidden'),
   template.replace('type: photo\n        role: hero', 'type: youtube\n        role: hero'),
+  template.replace('https://youtu.be/aqz-KE-bpKQ', 'not-a-url'),
   template + '\nThis prose must not silently disappear.\n',
   template.replace('| name | note |', '| name | unknown |'),
 ]) assert.throws(() => parseMemorySourceV2(invalid))
@@ -90,6 +100,74 @@ assert.equal(plan.parent.action, 'create')
 assert.equal(plan.days.length, 2)
 assert.equal(plan.assets.length, 1)
 assert.equal(plan.conflicts.length, 0)
+const duplicateHash = `sha256:${'a'.repeat(64)}`
+const duplicateSource = parseMemorySourceV2(template.replaceAll('travels/202604-clean-room-coast/photos/coast.png', duplicateHash)
+  .replace(`sourcePath: ${duplicateHash}\ntype: photo`, `assetId: ${duplicateHash}\ntype: photo`))
+const duplicateRegistry = validateMediaRegistry({ version: 1, travelSlug: source.slug, assets: [{
+  assetId: duplicateHash, files: [], filename: 'coast.png', mimeType: 'image/png', width: 1, height: 1,
+  byteSize: 1, provenance: 'production-upload', byteProvenance: 'synthetic fixture', locators: [
+    { environment: 'production', payloadId: 30, verified: true, verifiedByteHash: duplicateHash },
+    { environment: 'production', payloadId: 31, verified: true, verifiedByteHash: duplicateHash },
+  ],
+}] }, source.slug)
+assert.match(planMemoryV2(duplicateSource, { ...inventory, media: [{ id: 30 }, { id: 31 }] }, duplicateRegistry, 'production').conflicts.join(';'), /exact verified Current relationship required/)
+const duplicateAdoption = { ...duplicateSource, days: [], storySections: [], assets: [], coverImage: duplicateHash, galleryImages: [duplicateHash, duplicateHash] }
+const duplicatePlan = planMemoryV2(duplicateAdoption, {
+  ...inventory, memory: { id: 2, coverImage: 30, galleryImages: [30, 31] }, media: [{ id: 30 }, { id: 31 }],
+}, duplicateRegistry, 'production')
+assert.deepEqual(duplicatePlan.parent.data.galleryImages, [30, 31], 'same bytes retain distinct Current Media IDs')
+assert.equal(duplicatePlan.parent.data.coverImage, 30)
+assert.deepEqual(duplicatePlan.conflicts, [])
+const incompleteDuplicateRegistry = validateMediaRegistry({ ...duplicateRegistry, assets: [{
+  ...duplicateRegistry.assets[0]!, locators: duplicateRegistry.assets[0]!.locators.slice(0, 1),
+}] }, source.slug)
+assert.match(planMemoryV2(duplicateAdoption, {
+  ...inventory, memory: { id: 2, coverImage: 30, galleryImages: [30, 31] }, media: [{ id: 30 }, { id: 31 }],
+}, incompleteDuplicateRegistry, 'production').conflicts.join(';'), /does not match exact Current relationship/)
+const duplicateBase = projectMemoryV2(duplicateAdoption, {
+  member: () => 10, plan: () => 20, media: (_reference, context) => context === 'gallery|1' ? 31 : 30,
+}).memory
+const duplicateWithBase = planMemoryV2(duplicateAdoption, {
+  ...inventory, memory: { ...duplicateBase, id: 2, sourceMetadata: {
+    baseProjection: { contract: 'memory-source-v2', locales: { 'zh-TW': { memory: duplicateBase, days: {}, assets: {} } } },
+  } }, media: [{ id: 30 }, { id: 31 }],
+}, duplicateRegistry, 'production')
+assert.equal(duplicateWithBase.parent.action, 'preserve-current', 'exact gallery IDs must survive projection')
+assert.deepEqual(duplicateWithBase.parent.data.galleryImages, [30, 31])
+const duplicatePlacementSource = { ...duplicateAdoption, days: [{ day: 1, title: 'Existing day', moments: [{
+  scene: 'existing-scene', momentKey: 'moment:existing', title: 'Existing moment', placements: [{
+    type: 'photo' as const, placementKey: 'placement:existing', media: duplicateHash,
+  }],
+}] }] }
+const duplicatePlacementPlan = planMemoryV2(duplicatePlacementSource, {
+  ...inventory, memory: { id: 2, coverImage: 30, galleryImages: [30, 31] }, media: [{ id: 30 }, { id: 31 }],
+  days: [{ id: 3, dayKey: 'day-01', moments: [{ momentKey: 'moment:existing', placements: [
+    { placementKey: 'placement:existing', type: 'photo', media: 31 },
+  ] }] }],
+}, duplicateRegistry, 'production')
+assert.ok(duplicatePlacementPlan.conflicts.every(item => item.includes('reviewed Current mapping')),
+  'verified duplicate placement must resolve to its exact Current Media ID')
+const duplicateDayBase = projectMemoryV2(duplicatePlacementSource, {
+  member: () => 10, plan: () => 20,
+  media: (_reference, context) => context === 'gallery|1' || context?.startsWith('placement|') ? 31 : 30,
+}).days[0]!
+const duplicatePlacementWithBase = planMemoryV2(duplicatePlacementSource, {
+  ...inventory, memory: { ...duplicateBase, id: 2, sourceMetadata: {
+    baseProjection: { contract: 'memory-source-v2', locales: { 'zh-TW': {
+      memory: duplicateBase, days: { 'day-01': duplicateDayBase }, assets: {},
+    } } },
+  } }, media: [{ id: 30 }, { id: 31 }], days: [{ ...duplicateDayBase, id: 3 }],
+}, duplicateRegistry, 'production')
+assert.equal(duplicatePlacementWithBase.days[0]?.action, 'preserve-current')
+assert.equal((duplicatePlacementWithBase.days[0]?.data.moments as { placements: { media: number }[] }[] | undefined)?.[0]?.placements[0]?.media, 31)
+const unresolvedMarkdown = template.replace('type: photo\n        role: hero',
+  'type: photo\n        placementKey: placement:existing-null\n        legacyUnresolvedMedia: true\n        role: hero')
+  .replace('media: travels/202604-clean-room-coast/photos/coast.png\n        caption:', 'caption:')
+const unresolvedSource = parseMemorySourceV2(unresolvedMarkdown)
+const unresolvedPlacement = projectMemoryV2(unresolvedSource, refs).days[0]?.moments?.[0]?.placements?.[0]
+assert.equal(unresolvedPlacement?.placementKey, 'placement:existing-null')
+assert.equal(unresolvedPlacement?.media, undefined, 'legacy null photo must not gain a fake Media identity')
+assert.throws(() => parseMemorySourceV2(unresolvedMarkdown.replace('placementKey: placement:existing-null\n', '')))
 assert.throws(() => planMemoryV2(source, { ...inventory, members: [] }), /member tavis/)
 assert.throws(() => planMemoryV2(source, { ...inventory, members: [...inventory.members, ...inventory.members] }), /expected one/)
 assert.equal(planMemoryV2(source, { ...inventory, memory: { id: 1, ...projected.memory } }).missingBase, true)
