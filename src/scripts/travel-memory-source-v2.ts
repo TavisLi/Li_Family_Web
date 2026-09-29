@@ -5,6 +5,7 @@ import type { Media, TravelMemory, TravelMemoryDay } from '../payload/payload-ty
 import { assetIdSchema } from './travel-memory-media-registry'
 
 const text = z.string().trim().min(1)
+const exactText = z.string().refine(value => value.trim().length > 0, 'Required nonblank text')
 const date = z.string().date()
 const slug = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
 const assetPath = text.refine(value => !value.startsWith('/') && !value.includes('\\') &&
@@ -13,7 +14,8 @@ const mediaReference = text.refine(value => value.startsWith('sha256:')
   ? assetIdSchema.safeParse(value).success : assetPath.safeParse(value).success,
 'Use a valid sha256 assetId or relative legacy asset path')
 const youtube = z.string().url().refine(value => {
-  const url = new URL(value)
+  let url: URL
+  try { url = new URL(value) } catch { return false }
   return ['youtube.com', 'www.youtube.com', 'youtu.be'].includes(url.hostname) &&
     Boolean(url.hostname === 'youtu.be' ? url.pathname.match(/^\/[\w-]{11}$/) :
       url.pathname === '/watch' ? url.searchParams.get('v')?.match(/^[\w-]{11}$/) : url.pathname.match(/^\/(?:embed|shorts)\/[\w-]{11}$/))
@@ -25,15 +27,20 @@ const lodging = z.object({ ...fields(['dateRange', 'city', 'address', 'roomType'
 const guest = z.object({ name: text, note: text.optional() }).strict()
 const video = z.object({ title: text.optional(), url: youtube }).strict()
 const placement = z.object({
+  placementKey: text.optional(),
   type: z.enum(['photo', 'youtube']), role: z.enum(['hero', 'inline', 'gallery']).optional(),
-  media: mediaReference.optional(), youtubeUrl: youtube.optional(), caption: text.optional(),
+  media: mediaReference.optional(), legacyUnresolvedMedia: z.literal(true).optional(),
+  youtubeUrl: youtube.optional(), caption: exactText.optional(),
 }).strict().superRefine((value, ctx) => {
-  if (value.type === 'photo' ? !value.media || value.youtubeUrl !== undefined : !value.youtubeUrl || value.media !== undefined) {
-    ctx.addIssue({ code: 'custom', message: 'photo requires only media; youtube requires only youtubeUrl' })
+  if (value.type === 'photo'
+    ? (Boolean(value.media) === Boolean(value.legacyUnresolvedMedia)) ||
+      (value.legacyUnresolvedMedia && !value.placementKey) || value.youtubeUrl !== undefined
+    : !value.youtubeUrl || value.media !== undefined || value.legacyUnresolvedMedia) {
+    ctx.addIssue({ code: 'custom', message: 'photo requires media or a keyed legacy unresolved relation; youtube requires only youtubeUrl' })
   }
 })
 const moment = z.object({
-  scene: text, title: text, ...fields(['time', 'location', 'body', 'transport']), placements: z.array(placement).optional(),
+  scene: text, momentKey: text.optional(), title: text, ...fields(['time', 'location', 'body', 'transport']), placements: z.array(placement).optional(),
 }).strict()
 const day = z.object({
   day: z.number().int().min(1).max(99), date: date.optional(), title: text,
@@ -133,7 +140,12 @@ export function parseMemorySourceV2(markdown: string): MemorySourceV2 {
   for (const item of source.reminders ?? []) unique(item.items?.map(row => row.entry), `reminder ${item.category} entry`)
   for (const item of source.days ?? []) {
     unique(item.moments?.map(moment => moment.scene), `day ${item.day} scene`)
-    for (const scene of item.moments ?? []) unique(scene.placements?.map(placementIdentity), `day ${item.day} ${scene.scene} placement`)
+    unique(item.moments?.flatMap(moment => moment.momentKey ? [moment.momentKey] : []), `day ${item.day} momentKey`)
+    for (const scene of item.moments ?? []) {
+      unique(scene.placements?.map(placement => placement.legacyUnresolvedMedia
+        ? placement.placementKey! : placementIdentity(placement)), `day ${item.day} ${scene.scene} placement`)
+      unique(scene.placements?.flatMap(item => item.placementKey ? [item.placementKey] : []), `day ${item.day} ${scene.scene} placementKey`)
+    }
   }
   for (const item of source.assets ?? []) {
     if (item.sourcePath && !item.sourcePath.startsWith(`travels/${source.slug}/`)) throw new Error(`Asset must belong to travels/${source.slug}/: ${item.sourcePath}`)
@@ -155,7 +167,7 @@ function placementIdentity(value: { media?: string; youtubeUrl?: string }): stri
 export type MemoryV2Resolver = {
   member(slug: string): number
   plan(slug: string): number
-  media(reference: string): number
+  media(reference: string, context?: string): number
 }
 type ParentContent = Pick<TravelMemory, 'title' | 'slug' | 'startDate' | 'endDate' | 'isPrivate'> & Partial<Omit<TravelMemory, 'id' | 'sourceMetadata' | 'createdAt' | 'updatedAt' | 'days'>>
 type DayContent = Omit<TravelMemoryDay, 'id' | 'memory' | 'dayIdentity' | 'createdAt' | 'updatedAt' | 'sourceMetadata'>
@@ -164,13 +176,16 @@ type AssetContent = Pick<Media, 'sourcePath' | 'type' | 'altText'> & Partial<Pic
 export function projectMemoryV2(source: MemorySourceV2, resolve: MemoryV2Resolver): {
   memory: ParentContent; days: DayContent[]; assets: AssetContent[]
 } {
+  const dayKey = (day: number) => `day-${String(day).padStart(2, '0')}`
+  const momentKey = (day: number, scene: string, existing?: string) => existing ??
+    `scene:${createHash('sha256').update(`${source.slug}:${day}:${scene}`).digest('hex').slice(0, 24)}`
   const { sourceVersion: _version, locale: _locale, days, assets, flights, lodgings, participants, originPlan, coverImage, galleryImages, storySections, reminders, ...parent } = source
   const memory: ParentContent = {
     ...parent, startDate: iso(parent.startDate), endDate: iso(parent.endDate),
     ...(participants ? { participants: participants.map(resolve.member) } : {}),
     ...(originPlan ? { originPlan: resolve.plan(originPlan) } : {}),
-    ...(coverImage ? { coverImage: resolve.media(coverImage) } : {}),
-    ...(galleryImages ? { galleryImages: galleryImages.map(resolve.media) } : {}),
+    ...(coverImage ? { coverImage: resolve.media(coverImage, 'cover') } : {}),
+    ...(galleryImages ? { galleryImages: galleryImages.map((reference, index) => resolve.media(reference, `gallery|${index}`)) } : {}),
     ...(reminders ? { reminders: reminders.map(({ items, ...group }) => ({
       ...group,
       ...(items ? { items: items.map(({ entry, ...item }) => ({ ...item,
@@ -182,21 +197,25 @@ export function projectMemoryV2(source: MemorySourceV2, resolve: MemoryV2Resolve
       ...(lodgings ? { lodgings: lodgings.map(item => ({ ...item, ...(item.startDate ? { startDate: iso(item.startDate) } : {}), ...(item.endDate ? { endDate: iso(item.endDate) } : {}) })) } : {}),
     } } : {}),
     ...(storySections ? { storySections: storySections.map(({ mediaItems, ...item }) => ({
-      ...item, ...(mediaItems ? { mediaItems: mediaItems.map(resolve.media) } : {}),
+      ...item, ...(mediaItems ? { mediaItems: mediaItems.map((reference, index) => resolve.media(reference, `story|${item.anchor}|${index}`)) } : {}),
     })) } : {}),
   }
   return {
     memory,
     days: (days ?? []).map(({ dailyHeroImage, moments, ...item }) => ({
-      ...item, dayKey: `day-${String(item.day).padStart(2, '0')}`,
+      ...item, dayKey: dayKey(item.day),
       ...(item.date ? { date: iso(item.date) } : {}),
-      ...(dailyHeroImage ? { dailyHeroImage: resolve.media(dailyHeroImage) } : {}),
-      ...(moments ? { moments: moments.map(({ scene, placements, ...moment }) => ({
-        ...moment, momentKey: `scene:${createHash('sha256').update(`${source.slug}:${item.day}:${scene}`).digest('hex').slice(0, 24)}`,
-        ...(placements ? { placements: placements.map(({ media, ...item }) => ({
-          ...item, placementKey: placementIdentity({ ...item, media }), ...(media ? { media: resolve.media(media) } : {}),
-        })) } : {}),
-      })) } : {}),
+      ...(dailyHeroImage ? { dailyHeroImage: resolve.media(dailyHeroImage, `hero|${dayKey(item.day)}`) } : {}),
+      ...(moments ? { moments: moments.map(({ scene, momentKey: existingKey, placements, ...moment }) => {
+        const key = momentKey(item.day, scene, existingKey)
+        return { ...moment, momentKey: key,
+          ...(placements ? { placements: placements.map(({ media, legacyUnresolvedMedia: _legacyUnresolvedMedia, ...placement }) => {
+            const placementKey = placement.placementKey ?? placementIdentity({ ...placement, media })
+            return { ...placement, placementKey,
+              ...(media ? { media: resolve.media(media, `placement|${dayKey(item.day)}|${key}|${placementKey}`) } : {}) }
+          }) } : {}),
+        }
+      }) } : {}),
     })),
     assets: (assets ?? []).map(({ relatedMembers, assetId: _assetId, ...item }) => ({
       ...item, ...(relatedMembers ? { relatedMembers: relatedMembers.map(resolve.member) } : {}),

@@ -5,7 +5,7 @@ import { isDeepStrictEqual } from 'node:util'
 import type { Payload } from 'payload'
 import { projectMemoryV2, type MemorySourceV2 } from './travel-memory-source-v2'
 import { reconcileMemoryV2, type V2Record } from './travel-memory-v2-reconciliation'
-import { assetIdSchema, resolveRegistryEntry, resolveRegistryMediaId, validateMediaRegistry, type MediaRegistry } from './travel-memory-media-registry'
+import { assetIdSchema, resolveRegistryEntry, validateMediaRegistry, type MediaRegistry } from './travel-memory-media-registry'
 
 export type V2Inventory = {
   memory?: V2Record & { id: number }
@@ -19,6 +19,10 @@ type Envelope = { contract: 'memory-source-v2'; locales: Partial<Record<'zh-TW' 
 
 export function planMemoryV2(source: MemorySourceV2, inventory: V2Inventory, registry?: MediaRegistry, environment?: string) {
   if (registry) validateMediaRegistry(registry, source.slug)
+  const metadata = inventory.memory?.sourceMetadata as { baseProjection?: Envelope } | undefined
+  const envelope = metadata?.baseProjection?.contract === 'memory-source-v2' ? metadata.baseProjection : undefined
+  const base = envelope?.locales[source.locale]
+  const missingBase = Boolean(inventory.memory && !base)
   const isAssetId = (value: string) => assetIdSchema.safeParse(value).success
   const assetKey = (item: NonNullable<MemorySourceV2['assets']>[number]) => item.assetId ?? item.sourcePath!
   const referenceConflicts: string[] = []
@@ -27,12 +31,40 @@ export function planMemoryV2(source: MemorySourceV2, inventory: V2Inventory, reg
     if (found.length !== 1) throw new Error(`${label}: expected one exact relationship, found ${found.length}`)
     return found[0]!
   }
-  const matchMedia = (reference: string) => {
+  const currentMediaId = (context?: string): number | undefined => {
+    if (context === 'cover') return inventory.memory?.coverImage as number | undefined
+    if (context?.startsWith('gallery|')) return (inventory.memory?.galleryImages as number[] | undefined)?.[Number(context.slice(8))]
+    if (context?.startsWith('story|')) {
+      const [, anchor, index] = context.split('|')
+      const story = rows(inventory.memory?.storySections).find(item => item.anchor === anchor)
+      return (story?.mediaItems as number[] | undefined)?.[Number(index)]
+    }
+    const [kind, dayKey, momentKey, placementKey] = context?.split('|') ?? []
+    const day = inventory.days.find(item => item.dayKey === dayKey)
+    if (!day) return undefined
+    if (kind === 'hero') return day.dailyHeroImage as number | undefined
+    if (kind !== 'placement') return undefined
+    const moment = rows(day.moments).find(item => item.momentKey === momentKey)
+    return rows(moment?.placements).find(item => item.placementKey === placementKey)?.media as number | undefined
+  }
+  const rows = (value: unknown): V2Record[] => Array.isArray(value)
+    ? value.filter((item): item is V2Record => Boolean(item) && typeof item === 'object' && !Array.isArray(item)) : []
+  const matchMedia = (reference: string, context?: string) => {
     if (!isAssetId(reference)) return inventory.media.filter(item => item.sourcePath === reference)
     if (!registry || !environment) { referenceConflicts.push(`assetId ${reference}: registry and environment required`); return [] }
     const entry = resolveRegistryEntry(registry, reference)
     if (!entry) { referenceConflicts.push(`assetId ${reference}: missing registry entry`); return [] }
-    const id = resolveRegistryMediaId(registry, reference, environment)
+    const verifiedIds = entry.locators.filter(item => item.environment === environment && item.verified).map(item => item.payloadId)
+    const currentId = currentMediaId(context)
+    if (missingBase && currentId && !verifiedIds.includes(currentId)) {
+      referenceConflicts.push(`assetId ${reference}: verified locator does not match exact Current relationship for ${context}`)
+      return []
+    }
+    const id = verifiedIds.length === 1 ? verifiedIds[0] : verifiedIds.length > 1 ? currentId : undefined
+    if (verifiedIds.length > 1 && (!id || !verifiedIds.includes(id))) {
+      referenceConflicts.push(`assetId ${reference}: exact verified Current relationship required for ${context ?? 'asset metadata'}`)
+      return []
+    }
     if (!id && entry.sourcePath && inventory.media.some(item => item.sourcePath === entry.sourcePath)) {
       referenceConflicts.push(`assetId ${reference}: existing alias lacks verified byte-to-Media locator`)
     }
@@ -53,20 +85,27 @@ export function planMemoryV2(source: MemorySourceV2, inventory: V2Inventory, reg
   const resolver = {
     member: (slug: string) => exact(inventory.members, `member ${slug}`, item => item.slug === slug).id,
     plan: (slug: string) => exact(inventory.plans, `plan ${slug}`, item => item.slug === slug).id,
-    media: (reference: string) => {
+    media: (reference: string, context?: string) => {
       const placeholder = placeholderIds.get(reference)
       if (placeholder) return placeholder
-      const matches = matchMedia(reference)
-      if (isAssetId(reference) && matches.length !== 1) {
-        referenceConflicts.push(`assetId ${reference}: expected one verified Media relationship, found ${matches.length}`)
+      const matches = matchMedia(reference, context)
+      if (matches.length !== 1) {
+        referenceConflicts.push(`media ${reference}: expected one verified Current relationship, found ${matches.length}`)
         return -100000 - referenceConflicts.length
       }
       return exact(matches, `media ${reference}`, () => true).id
     },
   }
   const projection = projectMemoryV2(source, resolver)
-  const rows = (value: unknown): V2Record[] => Array.isArray(value)
-    ? value.filter((item): item is V2Record => Boolean(item) && typeof item === 'object' && !Array.isArray(item)) : []
+  for (const day of source.days ?? []) for (const moment of day.moments ?? []) for (const placement of moment.placements ?? []) {
+    if (!placement.legacyUnresolvedMedia) continue
+    const currentDay = inventory.days.find(item => item.dayKey === `day-${String(day.day).padStart(2, '0')}`)
+    const currentMoment = rows(currentDay?.moments).find(item => item.momentKey === moment.momentKey)
+    const currentPlacement = rows(currentMoment?.placements).find(item => item.placementKey === placement.placementKey)
+    if (!currentPlacement || currentPlacement.type !== 'photo' || currentPlacement.media != null) {
+      referenceConflicts.push(`placement ${placement.placementKey}: legacy unresolved photo must match a null Current relationship`)
+    }
+  }
   for (const day of projection.days) {
     const current = inventory.days.find(item => item.dayKey === day.dayKey)
     for (const nextMoment of rows(day.moments)) {
@@ -81,11 +120,8 @@ export function planMemoryV2(source: MemorySourceV2, inventory: V2Inventory, reg
       }
     }
   }
-  const metadata = inventory.memory?.sourceMetadata as { baseProjection?: Envelope } | undefined
-  const envelope = metadata?.baseProjection?.contract === 'memory-source-v2' ? metadata.baseProjection : undefined
   // A different locale is not evidence of ownership of this locale's text or
   // localized array rows. Missing locale Base needs a reviewed adoption plan.
-  const base = envelope?.locales[source.locale]
   const parent = reconcileMemoryV2(projection.memory, base?.memory, inventory.memory)
   const days = projection.days.map(item => {
     const current = inventory.days.filter(day => day.dayKey === item.dayKey)
@@ -100,7 +136,6 @@ export function planMemoryV2(source: MemorySourceV2, inventory: V2Inventory, reg
   })
   // No child/media apply is permitted when the owning legacy record lacks a
   // v2 baseline. An explicit reviewed baseline is a separate operation.
-  const missingBase = Boolean(inventory.memory && !base)
   if (missingBase) {
     for (const item of projection.days) {
       const current = inventory.days.find(day => day.dayKey === item.dayKey)
@@ -155,16 +190,18 @@ export async function readMemoryV2Inventory(payload: Payload, source: MemorySour
   for (const reference of refs) {
     const hashReference = assetIdSchema.safeParse(reference).success
     const entry = hashReference && registry ? resolveRegistryEntry(registry, reference) : undefined
-    const id = hashReference && registry && environment ? resolveRegistryMediaId(registry, reference, environment) : undefined
+    const ids = entry && environment ? entry.locators.filter(item => item.environment === environment && item.verified).map(item => item.payloadId) : []
     const sourcePath = hashReference ? entry?.sourcePath : reference
     if (sourcePath && !sourcePath.startsWith(`travels/${source.slug}/`)) throw new Error(`Cross-owner media reference: ${sourcePath}`)
-    if (!id && !sourcePath) continue
-    const result = await payload.find({ ...options, collection: 'media', where: id ? { id: { equals: id } } : { sourcePath: { equals: sourcePath } } })
-    for (const item of result.docs) {
-      if (item.relatedTravelRecord && (item.relatedTravelRecord.relationTo !== 'travel-memories' || item.relatedTravelRecord.value !== memory?.id)) {
-        throw new Error(`Media ownership mismatch: ${reference}`)
+    if (!ids.length && !sourcePath) continue
+    for (const id of ids.length ? ids : [undefined]) {
+      const result = await payload.find({ ...options, collection: 'media', where: id ? { id: { equals: id } } : { sourcePath: { equals: sourcePath } } })
+      for (const item of result.docs) {
+        if (item.relatedTravelRecord && (item.relatedTravelRecord.relationTo !== 'travel-memories' || item.relatedTravelRecord.value !== memory?.id)) {
+          throw new Error(`Media ownership mismatch: ${reference}`)
+        }
+        if (!media.some(row => row.id === item.id)) media.push({ ...item, sourcePath: item.sourcePath ?? undefined })
       }
-      if (!media.some(row => row.id === item.id)) media.push({ ...item, sourcePath: item.sourcePath ?? undefined })
     }
   }
   return { memory: memory ? { ...memory } : undefined, days: (days?.docs ?? []).map(item => ({ ...item })), media, members, plans }
@@ -207,13 +244,6 @@ export async function importMemoryV2(payload: Payload, source: MemorySourceV2, o
   for (const asset of plan.assets.filter(asset => asset.action === 'update')) {
     await payload.update({ collection: 'media', id: asset.id!, locale: source.locale, data: changedData(asset.data, inventory.media.find(item => item.id === asset.id)) as never })
   }
-  const projected = projectMemoryV2(source, {
-    member: slug => inventory.members.find(item => item.slug === slug)!.id,
-    plan: slug => inventory.plans.find(item => item.slug === slug)!.id,
-    media: reference => assetIdSchema.safeParse(reference).success
-      ? resolveRegistryMediaId(options.registry!, reference, options.environment!)!
-      : inventory.media.find(item => item.sourcePath === reference)!.id,
-  })
   const parentData = changedData(resolved.parent.data, inventory.memory)
   const memory = inventory.memory
     ? resolved.parent.action === 'update'
@@ -231,8 +261,8 @@ export async function importMemoryV2(payload: Payload, source: MemorySourceV2, o
   }
   const nextEnvelope = resolved.nextEnvelope
   const accepted = nextEnvelope.locales[source.locale]!
-  for (const asset of projected.assets) {
-    if (plan.assets.some(item => item.sourcePath === asset.sourcePath && item.action === 'create')) accepted.assets[asset.sourcePath!] = asset
+  for (const asset of plan.assets.filter(item => item.action === 'create')) {
+    accepted.assets[asset.key] = asset.data
   }
   await payload.update({ collection: 'travel-memories', id: memory.id, data: { sourceMetadata: {
     sourceFile: options.sourceFile, parserVersion: 'memory-source-v2',
