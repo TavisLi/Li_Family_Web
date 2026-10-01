@@ -22,7 +22,7 @@ jobs:
       tests: ${{ steps.plan.outputs.tests }}
       head: ${{ steps.plan.outputs.head }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -65,7 +65,7 @@ jobs:
       PAYLOAD_ENABLE_DEV_SCHEMA_PUSH: 'false'
       TEST_GROUP: ${{ needs.scope.outputs.tests }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.scope.outputs.head }}
           persist-credentials: false
@@ -111,7 +111,7 @@ jobs:
           --health-cmd "pg_isready -U postgres -d issue105"
           --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.scope.outputs.head }}
           persist-credentials: false
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.scope.outputs.head }}
           persist-credentials: false
