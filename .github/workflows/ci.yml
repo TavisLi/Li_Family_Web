@@ -96,17 +96,24 @@ jobs:
     timeout-minutes: 30
     env:
       DATABASE_URI: postgresql://postgres:synthetic@127.0.0.1:55444/issue105
+      PGHOST: 127.0.0.1
+      PGPORT: '55444'
+      PGUSER: postgres
+      PGPASSWORD: synthetic
+      PGDATABASE: postgres
+      ISSUE158_CI_SERVICE: '1'
       PAYLOAD_ENABLE_DEV_SCHEMA_PUSH: 'false'
       ISSUE105_PG_REHEARSAL: '1'
     services:
       postgres:
-        image: postgres:17
+        # Docker Official Image multi-platform OCI index digest; each platform manifest has its own digest.
+        image: postgres:17.11@sha256:d74eeac9a635390a49bc21bd49fccd973de707e2a53a76ac49b552b8712ec46f
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: synthetic
           POSTGRES_DB: issue105
         ports:
-          - 55444:5432
+          - 127.0.0.1:55444:5432
         options: >-
           --health-cmd "pg_isready -U postgres -d issue105"
           --health-interval 10s --health-timeout 5s --health-retries 5
@@ -124,6 +131,8 @@ jobs:
       - name: Synthetic loopback fixture and sequential rehearsal
         run: |
           pnpm install --frozen-lockfile
+          pnpm run test:issue158
+          pnpm run rehearse:issue158
           fixture_dir="$(mktemp -d)"
           node src/scripts/run-executor-fixture.mjs "$fixture_dir"
           node src/scripts/run-executor.pg.test.mjs

@@ -42,6 +42,8 @@
     "test:clean-room": "cross-env PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=false node --import tsx src/scripts/phase21-clean-room-check.tsx",
     "test:phase-21": "pnpm run test:daily-parser && pnpm run test:clean-room && cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/scripts/travel-memory-source-contract.test.ts && node --import tsx src/scripts/travel-memory-day-projections.test.ts && node --import tsx src/scripts/phase19-travel-memory-backfill.test.ts && node --import tsx src/scripts/travel-seed-reconciliation.test.ts && node --import tsx src/scripts/seed-dry-run.test.ts && node --import tsx src/payload/collections/travel-memory-keys.test.ts && node --import tsx src/scripts/phase21-travel-memory-migration-package.test.ts && node --import tsx src/scripts/phase21-travel-memory-inventory.test.ts && node --import tsx src/scripts/phase21-travel-memory-seed-safety.test.ts && node --import tsx src/lib/travel-memory.test.ts && node --import tsx src/features/travel/travel-memory-pages.test.tsx",
     "travel:phase-21:inventory": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=false node --import tsx src/scripts/phase21-travel-memory-inventory.ts",
+    "test:issue158": "node --test src/scripts/issue158/*.test.mjs",
+    "rehearse:issue158": "node --import tsx src/scripts/issue158/replay.mjs",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
   },
   "dependencies": {

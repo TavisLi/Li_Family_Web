@@ -14,9 +14,11 @@ const dependencies = (path) => path === 'package.json' || path === 'pnpm-lock.ya
   path.startsWith('patches/') || path === '.npmrc' || path === '.nvmrc'
 const schema = (path) => path.startsWith('src/migrations/') ||
   path.startsWith('src/payload/collections/') || path.startsWith('src/scripts/phase21-') ||
-  path.startsWith('src/scripts/run-executor') || path.startsWith('src/scripts/run-local-')
+  path.startsWith('src/scripts/run-executor') || path.startsWith('src/scripts/run-local-') ||
+  path.startsWith('src/scripts/issue158/') || path.startsWith('scripts/rehearsal/')
 const disposable = (path) => path.startsWith('src/scripts/run-executor') ||
-  path.startsWith('src/scripts/run-local-') || path === 'src/scripts/run-contract.mjs'
+  path.startsWith('src/scripts/run-local-') || path === 'src/scripts/run-contract.mjs' ||
+  path.startsWith('src/scripts/issue158/') || path.startsWith('scripts/rehearsal/')
 
 export function changedPaths(diff) {
   const fields = diff.toString('utf8').split('\0')
