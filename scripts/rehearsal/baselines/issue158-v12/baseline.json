@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "id": "issue158-v12-semantic",
+  "source": {
+    "canonicalSha256": "e231fa48bf6592823d31e20af019eda97d28c3e630666dd745b89a2528f9ea59",
+    "postgres": "17.6",
+    "collation": "en_US.UTF-8",
+    "scope": "schema-only"
+  },
+  "runtime": {
+    "node": "24.21.0",
+    "pnpm": "10.28.0",
+    "payload": "3.90.1",
+    "postgresMajor": 17,
+    "localPostgres": "17.11",
+    "ciImage": "postgres:17.11@sha256:d74eeac9a635390a49bc21bd49fccd973de707e2a53a76ac49b552b8712ec46f"
+  },
+  "restore": {
+    "postgresMajor": 17,
+    "semanticProjection": "issue158-catalog-v1",
+    "catalogCategories": [
+      "relations",
+      "columns",
+      "constraints",
+      "indexes",
+      "triggers",
+      "functions",
+      "types",
+      "policies",
+      "roles",
+      "memberships",
+      "migrations",
+      "default-privileges"
+    ],
+    "migrationRows": 0,
+    "migrationProvenance": "restored-baseline; migrations were not executed",
+    "platformEquivalence": "UNKNOWN"
+  },
+  "artifacts": {
+    "schema": {
+      "path": "scripts/rehearsal/baselines/issue158-v12/schema.sql",
+      "sha256": "0fd2766bd5e825861696f60f9578e5b2d4997f07996f7de2eac91b43a70b69a1",
+      "bytes": 387904
+    },
+    "catalogQueries": {
+      "path": "scripts/rehearsal/baselines/issue158-v12/catalog-queries.json",
+      "sha256": "db4527a0dc20c6818a571eff355b424713830fcfc5bc955bfcef616e18020681"
+    },
+    "semanticCatalog": {
+      "path": "scripts/rehearsal/baselines/issue158-v12/semantic-catalog.json",
+      "sha256": "ca34f5a0b2817c82d773444eef9a9be34d8976ca2cd276dfea9e316d59579dd1"
+    }
+  },
+  "limitations": [
+    "migration readiness BLOCK",
+    "legacy parity BLOCK",
+    "physical parity BLOCK",
+    "platform and collation equivalence UNKNOWN",
+    "no source-role or RLS parity claim"
+  ]
+}

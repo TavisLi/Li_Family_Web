@@ -4,14 +4,19 @@ import path from 'node:path'
 
 import { currentState, manifestHash } from './run-contract.mjs'
 
-export function fileEvidenceSink(directory, manifest, signal) {
+export function fileEvidenceSink(directory, manifest, signal,
+  { approval = null, evidence = [], current = {} } = {}) {
   let lastStage = null
+  let stateContext = { approval, evidence, current }
   let ledger
   const ledgerPath = path.join(directory, 'ledger.json')
   const checkpointsPath = path.join(directory, 'checkpoints.jsonl')
   const receiptPath = path.join(directory, 'receipt.json')
   return {
     signal,
+    bindStateContext(context) {
+      stateContext = { ...stateContext, ...context }
+    },
     async start() {
       ledger = JSON.parse(await readFile(ledgerPath, 'utf8'))
       assert.equal(ledger.runId, manifest.runId, 'BLOCK: ledger run ID')
@@ -33,7 +38,8 @@ export function fileEvidenceSink(directory, manifest, signal) {
       ledger.events.push({ sequence: ledger.events.length + 1, at: new Date().toISOString(), stage: result.stage,
         status: result.status, evidencePath: 'receipt.json' })
       await writeFile(ledgerPath, `${JSON.stringify(ledger, null, 2)}\n`, { mode: 0o600 })
-      const state = currentState(manifest, ledger, null, [], {})
+      const state = currentState(manifest, ledger, stateContext.approval,
+        stateContext.evidence, stateContext.current)
       await writeFile(path.join(directory, 'current-state.json'), `${JSON.stringify(state, null, 2)}\n`, { mode: 0o600 })
     },
   }

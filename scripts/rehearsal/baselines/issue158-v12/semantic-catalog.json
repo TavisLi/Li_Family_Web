@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "projection": "issue158-catalog-v1",
+  "sourceAcceptanceSha256": "b8e60df76a0d2a39994c32b6fcae9e6e639427ce95caa3a28bfffd3962906e7d",
+  "sourceCategoryResultSha256": "7796ecebca1eb4edd3a3eec9ed004930039d7d194d2c76fea023cfed6c6e1403",
+  "ddlSemanticSha256": "3af5760e57305577b5ed67d0a55159b781b63214453d94d3b0df7bb95581c8b0",
+  "categories": {
+    "schemas": {
+      "rows": 1,
+      "sha256": "a8723d51cccb3a62d30873d5758274d094bf921c0a55448d6df8ca040c963f4f"
+    },
+    "relations": {
+      "rows": 674,
+      "sha256": "1e4ae305980c8c9de4432c1d793586be3f1d39b2e6f7ca9c8e8d0542b7950d0a"
+    },
+    "columns": {
+      "rows": 1633,
+      "sha256": "975d28d9d092ea9d03174c5f161901868439543750b0bc4511b8417344773ab0"
+    },
+    "constraints": {
+      "rows": 290,
+      "sha256": "884585d1d0911f5a5daca40cb24645be69854f320401a7dbe68056ce58d7bc61"
+    },
+    "indexes": {
+      "rows": 450,
+      "sha256": "49829fafa582c7508b2466d85937cb06094b2bfe15fbd84babadad599003e03a"
+    },
+    "sequences": {
+      "rows": 99,
+      "sha256": "fb442ed687bda219628c6645e9a6b3b386d94ea326a5708400dd2befb4093434"
+    },
+    "enums": {
+      "rows": 91,
+      "sha256": "03ec5d9ce9dae193d9a7cf8f8c05473a327c1457a910fe9553b8ab5b57268688"
+    },
+    "functions": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "triggers": {
+      "rows": 660,
+      "sha256": "9065496af635e8ab9d556254d8041fec55bf4d6bff48b9e48800194cc47e8011"
+    },
+    "policies": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "default_acl": {
+      "rows": 6,
+      "sha256": "247e2ff38763a793ddb5fb87ab06c89188ed64b6ea055347c1ae00c59fb66959"
+    },
+    "inheritance": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  }
+}
