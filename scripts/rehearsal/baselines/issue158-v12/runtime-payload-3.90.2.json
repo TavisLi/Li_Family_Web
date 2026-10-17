@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "id": "issue158-v12-payload-3.90.2",
+  "baselineManifestSha256": "bd0bd48ca13c782417ca632e8755f3b9e559b6b449c3311a89d72581b21eed89",
+  "historicalPayload": "3.90.1",
+  "packages": {
+    "payload": "3.90.2",
+    "@payloadcms/db-postgres": "3.90.2",
+    "@payloadcms/next": "3.90.2",
+    "@payloadcms/payload-cloud": "3.90.2",
+    "@payloadcms/richtext-lexical": "3.90.2",
+    "@payloadcms/storage-s3": "3.90.2"
+  },
+  "files": {
+    "pnpm-lock.yaml": "43d2a67d977f053167f9a40da5517e588d52865a2d4a3626849c628b262ec46c",
+    "pnpm-workspace.yaml": "df1db56bc0b7fc9220733ccde4a758fc3b30c10ec1f9ddd1c30b0e3f129fbc17",
+    "patches/@payloadcms__db-postgres@3.90.2.patch": "1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052"
+  }
+}

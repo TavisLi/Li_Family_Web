@@ -5,17 +5,17 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  '@payloadcms/db-postgres@3.90.1':
+  '@payloadcms/db-postgres@3.90.2':
     hash: 1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052
-    path: patches/@payloadcms__db-postgres@3.90.1.patch
+    path: patches/@payloadcms__db-postgres@3.90.2.patch
 
 importers:
 
   .:
     dependencies:
       '@payloadcms/db-postgres':
-        specifier: 3.90.1
-        version: 3.90.1(patch_hash=1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052)(payload@3.90.2(graphql@16.14.2)(typescript@5.6.3))
+        specifier: 3.90.2
+        version: 3.90.2(patch_hash=1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052)(payload@3.90.2(graphql@16.14.2)(typescript@5.6.3))
       '@payloadcms/next':
         specifier: 3.90.2
         version: 3.90.2(@types/react@19.3.0)(graphql@16.14.2)(monaco-editor@0.55.1)(next@15.5.27(@babel/core@7.29.7)(@types/node@24.19.2)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(payload@3.90.2(graphql@16.14.2)(typescript@5.6.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@5.6.3)
@@ -1476,15 +1476,15 @@ packages:
     resolution: {integrity: sha512-nn5ozdjYQpUCZlWGuxcJY/KpxkWQs4DcbMCmKojjyrYDEAGy4Ce19NN4v5MduafTwJlbKc99UA8YhSVqq9yPZA==}
     engines: {node: '>=12.4.0'}
 
-  '@payloadcms/db-postgres@3.90.1':
-    resolution: {integrity: sha512-n0TD+UgJ5fVanvK3sti1gPzrHLnvuMqxf2+IgChQsWYI975mBc407Ev7tWXHx0YsoCOw5vXSGNQT44ttHISx0A==}
+  '@payloadcms/db-postgres@3.90.2':
+    resolution: {integrity: sha512-0DgQh5bZTnc8I7RdyE1Tvaj2MpFPGEtz0rbRdEvABYyFnhxSzuwSX0PevxAL4xma6sOdhbSSqOvW4hC3MayS9w==}
     peerDependencies:
-      payload: 3.90.1
+      payload: 3.90.2
 
-  '@payloadcms/drizzle@3.90.1':
-    resolution: {integrity: sha512-7iKm4RHzkrtSETVnt36DlpoCWQsUUIO5+YfBwe81g4vYai+wWSlyEz8dXUZGrIHbwsaojqJ2Qxdt+DetQlNVPw==}
+  '@payloadcms/drizzle@3.90.2':
+    resolution: {integrity: sha512-C5r0gimzaq6ih21jh3VPQNNRxFYCi6JhTgkcbf2c/xGF7MEEzNzDn3DgfFFe4zeDE4iuC9glYrXFs85AKghq8w==}
     peerDependencies:
-      payload: 3.90.1
+      payload: 3.90.2
 
   '@payloadcms/email-nodemailer@3.90.2':
     resolution: {integrity: sha512-HpkEpnXYi6sFtbKB8qi9rL234gsMS5c0DJg2zag8+sYyad23xrUPytKT6PxI4HYdsIs+GRkQSmpjCgLmwi5ojw==}
@@ -7081,9 +7081,9 @@ snapshots:
 
   '@nolyfill/is-core-module@1.0.39': {}
 
-  '@payloadcms/db-postgres@3.90.1(patch_hash=1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052)(payload@3.90.2(graphql@16.14.2)(typescript@5.6.3))':
+  '@payloadcms/db-postgres@3.90.2(patch_hash=1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052)(payload@3.90.2(graphql@16.14.2)(typescript@5.6.3))':
     dependencies:
-      '@payloadcms/drizzle': 3.90.1(@types/pg@8.20.0)(payload@3.90.2(graphql@16.14.2)(typescript@5.6.3))(pg@8.20.0)
+      '@payloadcms/drizzle': 3.90.2(@types/pg@8.20.0)(payload@3.90.2(graphql@16.14.2)(typescript@5.6.3))(pg@8.20.0)
       '@types/pg': 8.20.0
       console-table-printer: 2.12.1
       drizzle-kit: 0.31.7
@@ -7124,7 +7124,7 @@ snapshots:
       - sqlite3
       - supports-color
 
-  '@payloadcms/drizzle@3.90.1(@types/pg@8.20.0)(payload@3.90.2(graphql@16.14.2)(typescript@5.6.3))(pg@8.20.0)':
+  '@payloadcms/drizzle@3.90.2(@types/pg@8.20.0)(payload@3.90.2(graphql@16.14.2)(typescript@5.6.3))(pg@8.20.0)':
     dependencies:
       console-table-printer: 2.12.1
       dequal: 2.0.3

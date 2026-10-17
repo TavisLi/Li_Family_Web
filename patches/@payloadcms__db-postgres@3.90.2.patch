@@ -1,0 +1,14 @@
+diff --git a/dist/connect.js b/dist/connect.js
+index bf4beedd6617e13dbafab75c82f356095ffa4e5f..d7fa113d92f4249780b231486e1bc9825cad6cfc 100644
+--- a/dist/connect.js
++++ b/dist/connect.js
+@@ -35,6 +35,9 @@ const connectWithReconnect = async function({ adapter, pool, reconnect = false }
+         // swallow error
+         }
+     });
++    // Backport payloadcms/payload#17831: this checkout only verifies connectivity
++    // and installs the reconnect listener. Keeping it checked out pins the pool.
++    result.release();
+ };
+ export const connect = async function connect(options = {
+     hotReload: false

@@ -18,8 +18,32 @@ export async function verifyBaseline(root) {
   assert.equal((await readFile(path.join(rootPath, '.nvmrc'), 'utf8')).trim(), baseline.runtime.node)
   assert.equal((await readFile(path.join(rootPath, '.node-version'), 'utf8')).trim(), baseline.runtime.node)
   assert.equal(pkg.packageManager, `pnpm@${baseline.runtime.pnpm}`)
-  assert.equal(pkg.dependencies.payload, baseline.runtime.payload)
-  assert.equal(pkg.dependencies['@payloadcms/db-postgres'], baseline.runtime.payload)
+  let runtimeBinding = null
+  if (pkg.dependencies.payload === '3.90.2') {
+    runtimeBinding = JSON.parse(await readFile(path.join(rootPath,
+      'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json'), 'utf8'))
+    assert.equal(runtimeBinding.version, 1)
+    assert.equal(runtimeBinding.id, 'issue158-v12-payload-3.90.2')
+    assert.equal(runtimeBinding.historicalPayload, baseline.runtime.payload)
+    assert.equal(sha256(await readFile(manifestPath)), runtimeBinding.baselineManifestSha256,
+      'BLOCK: historical baseline drift')
+    assert.deepEqual(Object.keys(runtimeBinding.packages).sort(), ['payload', '@payloadcms/db-postgres',
+      '@payloadcms/next', '@payloadcms/payload-cloud', '@payloadcms/richtext-lexical', '@payloadcms/storage-s3'].sort())
+    for (const [name, version] of Object.entries(runtimeBinding.packages)) {
+      assert.equal(version, '3.90.2')
+      assert.equal(pkg.dependencies[name], version, 'BLOCK: Payload family mismatch: ' + name)
+      const installed = JSON.parse(await readFile(path.join(rootPath, 'node_modules', name, 'package.json'), 'utf8'))
+      assert.equal(installed.version, version, 'BLOCK: installed Payload family mismatch: ' + name)
+    }
+    assert.deepEqual(Object.keys(runtimeBinding.files).sort(), ['pnpm-lock.yaml', 'pnpm-workspace.yaml',
+      'patches/@payloadcms__db-postgres@3.90.2.patch'].sort())
+    for (const [name, hash] of Object.entries(runtimeBinding.files)) {
+      assert.equal(sha256(await readFile(path.join(rootPath, name))), hash, 'BLOCK: runtime binding drift: ' + name)
+    }
+  } else {
+    assert.equal(pkg.dependencies.payload, baseline.runtime.payload)
+    assert.equal(pkg.dependencies['@payloadcms/db-postgres'], baseline.runtime.payload)
+  }
   assert.equal(baseline.runtime.postgresMajor, baseline.restore.postgresMajor)
   assert.match(baseline.runtime.ciImage, /^postgres:17\.11@sha256:[a-f0-9]{64}$/)
   assert.deepEqual(baseline.restore.catalogCategories, [
@@ -57,7 +81,7 @@ export async function verifyBaseline(root) {
   assert.equal(semantic.sourceAcceptanceSha256, 'b8e60df76a0d2a39994c32b6fcae9e6e639427ce95caa3a28bfffd3962906e7d')
   assert.equal(semantic.categories && Object.keys(semantic.categories).length, 12)
 
-  return { id: baseline.id, canonicalSha256: baseline.source.canonicalSha256,
+  return { runtimeBinding: runtimeBinding?.id ?? null, id: baseline.id, canonicalSha256: baseline.source.canonicalSha256,
     schemaSha256: sha256(bytes), bytes: bytes.length, statementCount: statements.length,
     postgresMajor: baseline.restore.postgresMajor, catalogCategories: Object.keys(semantic.categories).length,
     semanticCatalogSha256: sha256(await readFile(path.join(rootPath, baseline.artifacts.semanticCatalog.path))),
