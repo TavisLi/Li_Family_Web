@@ -238,7 +238,9 @@ async function makeManifest(runId, database, options, backupPath, sourceRecordPa
       sql: [await file(schemaPath), await file(queryPath), await file(semanticPath)],
       backup: { path: backup, sha256: await digestFile(backupPath) },
       dependencies: await Promise.all(['package.json', 'pnpm-lock.yaml',
-        'scripts/rehearsal/baselines/issue158-v12/baseline.json', 'src/scripts/issue158/baseline.mjs',
+        'scripts/rehearsal/baselines/issue158-v12/baseline.json',
+        'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json',
+        'pnpm-workspace.yaml', 'patches/@payloadcms__db-postgres@3.90.2.patch', 'src/scripts/issue158/baseline.mjs',
         'src/scripts/issue158/catalog.mjs', 'src/scripts/issue158/restore.mjs', 'src/scripts/issue158/ownership.mjs',
         'src/scripts/run-contract.mjs', 'src/scripts/run-executor-evidence.mjs',
         'src/scripts/travel-memory-v2-reconciliation.ts', 'src/payload/payload.config.ts',
@@ -250,7 +252,7 @@ async function makeManifest(runId, database, options, backupPath, sourceRecordPa
 }
 
 function localApproval(manifest) {
-  return { source: 'current user instruction on 2026-10-16 authorizing local Issue 158 implementation and two disposable replays',
+  return { source: 'current user instruction on 2026-10-17 authorizing PR #159 local disposable compatibility rehearsal',
     manifestSha256: manifestHash(manifest), action: manifest.approval.action, environment: manifest.environment,
     target: manifest.target, scope: manifest.scope.include, baseline: manifest.scope.baseline,
     stopConditions: manifest.scope.stopConditions, validFrom: manifest.approval.validFrom,
@@ -362,7 +364,7 @@ async function prepareConsumer(options, database, runId, runDirectory) {
     await save(path.join(runDirectory, 'before-image.json'), { sha256: sha256(dump), bytes: dump.length,
       rowsSha256: beforeRows.sha256, sequenceSha256: beforeSequences, syntheticOnly: true })
     const sourceRecordPath = path.join(runDirectory, 'authorization-source.json')
-    await save(sourceRecordPath, { source: 'current user instruction dated 2026-10-16',
+    await save(sourceRecordPath, { source: 'current user instruction dated 2026-10-17 for PR #159 compatibility',
       authority: 'local Issue 158 implementation and two fresh disposable consumer replays',
       exclusions: ['Production credentials', 'Production connection', 'migration execution', 'merge', 'release', 'Issue close'] })
     manifest = await makeManifest(runId, database, options, backupPath, sourceRecordPath)
@@ -625,7 +627,7 @@ export async function replay() {
     authorizationRecordMatches: run.currentState?.authorization?.recordMatches ?? false,
     authorizationSourceNeedsHumanReadback: run.currentState?.authorization?.sourceNeedsVerification ?? true,
     evidenceValid: run.currentState?.evidence?.every((item) => item.valid) ?? false })),
-    baseline: { schemaSha256: baseline.schemaSha256, semanticCatalogSha256: baseline.semanticCatalogSha256,
+    baseline: { runtimeBinding: baseline.runtimeBinding, schemaSha256: baseline.schemaSha256, semanticCatalogSha256: baseline.semanticCatalogSha256,
       categories: baseline.catalogCategories, schemaOnlyMigrationRows: baseline.migrationRows },
     targetPeer: options.peer, clusterCleanup: clusterCleanup.status, clusterOwnerRunId: clusterCleanup.ownerRunId,
     clusterPathSha256: clusterCleanup.pathSha256, productionConnections: 0, retry: false,

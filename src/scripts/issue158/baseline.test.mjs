@@ -23,7 +23,10 @@ test('baseline verifier rejects data commands and hash drift in an isolated fixt
   t.after(() => rm(temp, { recursive: true, force: true }))
   const directory = path.join(temp, 'scripts/rehearsal/baselines/issue158-v12')
   await mkdir(directory, { recursive: true })
-  await copyFile(path.join(root, 'package.json'), path.join(temp, 'package.json'))
+  const historicalPackage = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'))
+  historicalPackage.dependencies.payload = '3.90.1'
+  historicalPackage.dependencies['@payloadcms/db-postgres'] = '3.90.1'
+  await writeFile(path.join(temp, 'package.json'), JSON.stringify(historicalPackage))
   await copyFile(path.join(root, '.nvmrc'), path.join(temp, '.nvmrc'))
   await copyFile(path.join(root, '.node-version'), path.join(temp, '.node-version'))
   const manifest = JSON.parse(await readFile(path.join(root, 'scripts/rehearsal/baselines/issue158-v12/baseline.json'), 'utf8'))
@@ -33,4 +36,49 @@ test('baseline verifier rejects data commands and hash drift in an isolated fixt
   await writeFile(path.join(directory, 'baseline.json'), JSON.stringify(manifest))
   await writeFile(path.join(directory, 'schema.sql'), malicious)
   await assert.rejects(verifyBaseline(temp), /baseline contains data or executable objects/)
+})
+
+async function candidateFixture(t) {
+  const temp = await mkdtemp(path.join(os.tmpdir(), 'issue158-runtime-'))
+  t.after(() => rm(temp, { recursive: true, force: true }))
+  const bindingPath = 'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json'
+  const binding = JSON.parse(await readFile(path.join(root, bindingPath), 'utf8'))
+  for (const name of ['package.json', '.nvmrc', '.node-version', bindingPath,
+    'scripts/rehearsal/baselines/issue158-v12/baseline.json', ...Object.keys(binding.files)]) {
+    await mkdir(path.dirname(path.join(temp, name)), { recursive: true })
+    await copyFile(path.join(root, name), path.join(temp, name))
+  }
+  for (const [name, version] of Object.entries(binding.packages)) {
+    const directory = path.join(temp, 'node_modules', name)
+    await mkdir(directory, { recursive: true })
+    await writeFile(path.join(directory, 'package.json'), JSON.stringify({ version }))
+  }
+  return temp
+}
+
+test('candidate runtime rejects the original mixed Payload family', async (t) => {
+  const temp = await candidateFixture(t)
+  const pkg = JSON.parse(await readFile(path.join(temp, 'package.json'), 'utf8'))
+  pkg.dependencies['@payloadcms/db-postgres'] = '3.90.1'
+  await writeFile(path.join(temp, 'package.json'), JSON.stringify(pkg))
+  await assert.rejects(verifyBaseline(temp), /Payload family mismatch/)
+})
+
+test('candidate runtime rejects historical baseline edits', async (t) => {
+  const temp = await candidateFixture(t)
+  const file = path.join(temp, 'scripts/rehearsal/baselines/issue158-v12/baseline.json')
+  await writeFile(file, (await readFile(file, 'utf8')) + '\n')
+  await assert.rejects(verifyBaseline(temp), /historical baseline drift/)
+})
+
+test('candidate runtime rejects installed adapter drift', async (t) => {
+  const temp = await candidateFixture(t)
+  await writeFile(path.join(temp, 'node_modules/@payloadcms/db-postgres/package.json'), '{"version":"3.90.1"}')
+  await assert.rejects(verifyBaseline(temp), /installed Payload family mismatch/)
+})
+
+test('candidate runtime rejects lockfile drift', async (t) => {
+  const temp = await candidateFixture(t)
+  await writeFile(path.join(temp, 'pnpm-lock.yaml'), 'drift')
+  await assert.rejects(verifyBaseline(temp), /runtime binding drift/)
 })
