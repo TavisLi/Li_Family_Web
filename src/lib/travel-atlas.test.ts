@@ -179,6 +179,13 @@ test('does not navigate with unverified CRS or invalid coordinates', () => {
   )
   assert.deepEqual(
     buildGoogleMapsNavigation({
+      coordinate: { crs: 'GCJ-02' },
+      address: '明確地址不得覆蓋未知 CRS',
+    }),
+    { status: 'unavailable', reason: 'unsupported-crs' },
+  )
+  assert.deepEqual(
+    buildGoogleMapsNavigation({
       coordinate: { crs: 'WGS84', longitude: 181, latitude: 25 },
     }),
     { status: 'unavailable', reason: 'invalid-coordinate' },

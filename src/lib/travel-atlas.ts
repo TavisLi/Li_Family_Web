@@ -66,6 +66,10 @@ export function validateWgs84Coordinate(input: unknown): CoordinateValidationRes
   }
 
   const value = input as Record<string, unknown>
+  if (Object.hasOwn(value, 'crs') && value.crs !== 'WGS84') {
+    return { valid: false, reason: 'unsupported-crs' }
+  }
+
   const hasLongitude = value.longitude !== null && value.longitude !== undefined
   const hasLatitude = value.latitude !== null && value.latitude !== undefined
 
