@@ -15,6 +15,7 @@ const files = [
   'src/features/home/member-portal-link.test.ts',
   'src/features/member/member-profile-page.test.tsx',
   'src/features/member/typewriter.test.ts',
+  'src/features/travel/travel-atlas-map.test.tsx',
   'src/features/travel/travel-detail-page.test.tsx',
   'src/features/travel/travel-index-page.test.tsx',
   'src/features/travel/travel-memory-pages.test.tsx',
@@ -104,6 +105,7 @@ if (process.argv.includes('--list')) {
   for (const file of selected) {
     const historicalCase = historicalCases.get(file)
     const result = spawnSync(process.execPath, [...(historicalCase ? ['--test', `--test-skip-pattern=${historicalCase}`] : []),
+      ...(file === 'src/features/travel/travel-atlas-map.test.tsx' ? ['--experimental-test-module-mocks'] : []),
       ...(file.endsWith('.mjs') ? [] : ['--import', 'tsx']), file],
       { encoding: 'utf8', env: process.env, maxBuffer: 8 * 1024 * 1024 })
     if (result.status !== 0) {
