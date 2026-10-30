@@ -80,6 +80,7 @@ export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtl
     let map: MapLibreMap | null = null
     const markers: MapLibreMarker[] = []
     const container = mapContainer.current
+    const list = listRef.current
     setAvailability('loading')
 
     function fail(reason: 'webgl-unsupported' | 'provider-error') {
@@ -155,10 +156,16 @@ export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtl
     void initialize()
     return () => {
       active = false
+      const focusedMarker = markerButtons.current.find((marker) => marker.element === document.activeElement)
       for (const marker of markers) marker.remove()
       markerButtons.current = []
       if (mapRef.current === map) mapRef.current = null
       map?.remove()
+      if (focusedMarker && list?.isConnected) {
+        const buttons = [...list.querySelectorAll<HTMLButtonElement>('button')]
+        const target = buttons.find((button) => focusedMarker.itemIds.includes(button.dataset.atlasId ?? '')) ?? buttons[0] ?? list
+        target.focus()
+      }
     }
   }, [projection, groupPanelId])
 
@@ -190,10 +197,10 @@ export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtl
           </>
         )}
       </div>
-      <ul ref={listRef} aria-label="地點清單" className="space-y-2">
+      <ul ref={listRef} aria-label="地點清單" tabIndex={-1} className="space-y-2">
         {projection.listItems.map((entry) => (
           <li key={entry.id}>
-            <Button type="button" variant="outline" className="h-auto min-h-11 w-full justify-start whitespace-normal text-left" aria-pressed={selected === entry.id} onClick={() => setSelectedId(entry.id)}>
+            <Button type="button" variant="outline" className="h-auto min-h-11 w-full justify-start whitespace-normal text-left" data-atlas-id={entry.id} aria-pressed={selected === entry.id} onClick={() => setSelectedId(entry.id)}>
               {entry.title}{!markerIds.has(entry.id) ? '（位置未提供或無法顯示）' : ''}{selected === entry.id ? '（已選取）' : ''}
             </Button>
           </li>

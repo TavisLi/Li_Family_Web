@@ -204,6 +204,35 @@ test('keeps selection visible when the list is selected before map load and clea
   assert.match(container.textContent ?? '', /目前沒有可顯示的地圖地點/)
 })
 
+test('moves focus to the list when an entries update removes the focused marker', async (t) => {
+  const container = dom.document.createElement('div')
+  dom.document.body.appendChild(container)
+  const root = createRoot(container as unknown as HTMLElement)
+  t.after(async () => { await act(async () => root.unmount()); container.remove() })
+  async function renderAndLoad(nextEntries: typeof entries) {
+    await act(async () => { root.render(createElement(TravelAtlasMapView, { entries: nextEntries })); await new Promise((resolve) => setTimeout(resolve, 0)) })
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)) })
+    await act(async () => FakeMap.latest.fire('load'))
+  }
+  await renderAndLoad(entries)
+  FakeMap.latest.options.container.querySelector('button')?.focus()
+  await renderAndLoad([...entries])
+  const list = container.querySelector('ul[aria-label="地點清單"]')
+  assert.ok(list)
+  assert.ok(Object.is(dom.document.activeElement, list.querySelector('button')), 'focus moves to the corresponding list item')
+  await renderAndLoad([...entries])
+  assert.ok(Object.is(dom.document.activeElement, list.querySelector('button')), 'an update does not steal focus from the list')
+
+  FakeMap.latest.options.container.querySelector('button')?.focus()
+  await act(async () => root.render(createElement(TravelAtlasMapView, { entries: [entries[1]] })))
+  assert.ok(Object.is(dom.document.activeElement, list.querySelector('button')), 'focus moves to a remaining list item')
+
+  await renderAndLoad(entries)
+  FakeMap.latest.options.container.querySelector('button')?.focus()
+  await act(async () => root.render(createElement(TravelAtlasMapView, { entries: [] })))
+  assert.ok(Object.is(dom.document.activeElement, list), 'the empty list remains a focus target')
+})
+
 test('falls back to the list if marker creation fails during map load', async (t) => {
   const container = dom.document.createElement('div')
   dom.document.body.appendChild(container)
