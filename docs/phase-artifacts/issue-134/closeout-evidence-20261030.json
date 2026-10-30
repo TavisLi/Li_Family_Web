@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "status": "LOCAL_CLOSEOUT_EVIDENCE_READY",
+  "checkedDate": "2026-10-30",
+  "stagedWorkflow": {
+    "status": "PASS_LINKED_STAGED_WORKFLOW",
+    "inputInventory": {
+      "files": 451,
+      "uniqueAssets": 451,
+      "semanticInventorySha256": "2827b44862185727d1429f669105d1b8cc8dcfd3a9f8c6155981b3289c715eac"
+    },
+    "review": {
+      "moments": 61,
+      "modelSemanticSha256": "e0eba13f1a0639afdf2447b03ef5e15838c394404bc470c049a64f01b91a47d9",
+      "modelBytesSha256": "e00e5b9c772e1530bb8b9faaefd1deb7707fce058c73bf3762a38d980242511b"
+    },
+    "acceptedSourceSha256": "49fb88996d128865842ca1b665b9a37aa19fad94cadd166b4d650f69c0070e7c",
+    "media": {
+      "pilot": 2,
+      "increment": 398,
+      "newPhotosTotal": 400,
+      "allInScannedInventory": true,
+      "allInFinalReviewedPlan": true,
+      "allVerifiedInFinalRegistry": true,
+      "registrySha256": "ac762cffee6e112e652e9d8a165d91fbcacc1ef8e50fb52cf238097ea0a58b92",
+      "finalVerifiedLocators": 747,
+      "pendingNewPhotos": 0
+    },
+    "content": {
+      "planSha256": "a90d70be203cceef5bad9506de64b28cf76183a47fbb96a5e618dbedeb2f8d50",
+      "moments": 61,
+      "placements": 743,
+      "days": 9,
+      "allPhotoRelationsResolveToVerifiedRegistry": true,
+      "commitState": "COMMITTED",
+      "acceptance": "PASS",
+      "receipt": "PASS",
+      "terminal": "PASS",
+      "historyPreservation": {
+        "status": "PASS",
+        "pruned": 0
+      },
+      "independentHistoryReadBack": {
+        "status": "PASS",
+        "pruned": 0
+      },
+      "idempotency": "not replayed; exact saved baseline stops reapply"
+    },
+    "largerMediaConsumer": {
+      "status": "PASS",
+      "cleanup": "PASS",
+      "tests": [
+        "real Payload/storage-s3 exact original and derivative objects",
+        "all second-pass PUTs conditional and SDK maxAttempts=1",
+        "same transfer/Registry body verified 398 receipts",
+        "verified rerun creates zero Media",
+        "all792 prior assets/349 locators preserved"
+      ]
+    },
+    "scope": "saved approved artifacts only; same Source/model and exact final Registry/plan bindings; no live reads or content reconsideration",
+    "limitations": [
+      "staged separately approved runs; not one atomic cross-DB/storage transaction",
+      "old UNKNOWN outcomes remain unchanged",
+      "HEIC/derivative handling tested separately with generated fixtures",
+      "model tokens and historical tool/image/read telemetry unavailable"
+    ],
+    "evidenceHashes": {
+      "r3Acceptance": "f1a4f68763471c084255a470d06861009187e9e9bfbe139693f2c1c4895d93d3",
+      "r3PostRunVerification": "fb894c1eef19e5d04166a53a3e47db50a6dc76a3b5cd90db00f44ea3f2473876",
+      "mediaRegistryAdoption": "a95cb1d25150d1aafb7d441c987099bda8c43ab4e7c81026da7ae3756418ddfa",
+      "largerConsumer": "350cba56862645e8af960ce88f83822ed59257f68f535006122f13a57971f69d"
+    }
+  },
+  "efficiency": {
+    "workload": {
+      "savedReviewedMoments": 61,
+      "savedReviewedPlacements": 743
+    },
+    "method": "same saved workload: full plan vs summary-first initial context; output file bytes proxy only, not observed model telemetry",
+    "before": {
+      "bytes": 1483468,
+      "sha256": "a90d70be203cceef5bad9506de64b28cf76183a47fbb96a5e618dbedeb2f8d50"
+    },
+    "after": {
+      "bytes": 3267,
+      "sha256": "a3ff13a8af191311050f2c229f5cf509346b34694bbb05f4fff8389a4ee59022"
+    },
+    "differenceBytes": 1480201,
+    "imagesInspected": "UNKNOWN",
+    "toolCalls": "UNKNOWN",
+    "repeatedReads": "UNKNOWN",
+    "modelTokens": "UNKNOWN",
+    "claim": "No actual token savings or complete reasoning-workload reduction claimed",
+    "status": "PASS_PROXY_WITH_TELEMETRY_LIMITS",
+    "boundary": "metadata-only initial context selection; full workflow effort not measured",
+    "source": "same hash-bound accepted workload; summary-first initial context compared with full-plan initial context",
+    "acceptance": "Issue explicitly allows proxy evidence when actual token telemetry is unavailable; unavailable historical counters remain UNKNOWN"
+  },
+  "heic": {
+    "status": "PASS",
+    "generatedFixture": "16x12 synthetic PNG → native ImageIO HEIC; no photo binary committed",
+    "platform": "macOS ImageIO + installed sharp 0.35.5",
+    "tests": 1,
+    "network": "blocked",
+    "privateInputs": "blocked",
+    "assertions": [
+      "HEIC scan assetId equals exact original byte SHA-256",
+      "dimensions and MIME identified; duplicate bytes detected",
+      "explicit native JPEG conversion has a different assetId",
+      "derivedFrom points to preserved HEIC original",
+      "incremental rescan retains derivedFrom and original Registry entry",
+      "only converted JPEG enters reviewed upload input preparation"
+    ],
+    "limitation": "bundled sharp can read HEIC metadata but lacks HEVC pixel decoding; conversion must be explicit, separately identified, and approved for the batch; no claim of same-byte HEIC upload or Production codec support"
+  },
+  "verification": {
+    "portableSyntheticTests": 58,
+    "heicTests": 1,
+    "affectedPayloadPostgres": "PASS, reused exact unchanged operation bytes",
+    "buildThenTsc": "PASS, reused unchanged app/runtime boundaries",
+    "productionConnectionsThisFollowup": 0,
+    "credentialReadsThisFollowup": 0
+  },
+  "humanAcceptedBaseline": "website visual, Media, r3 COMMITTED and independent read-back, 61 Moments / 743 placements",
+  "publication": "not committed/pushed/merged; no Issue close authority"
+}

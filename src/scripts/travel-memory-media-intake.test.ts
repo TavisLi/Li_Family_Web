@@ -5,12 +5,15 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import sharp from 'sharp'
 import type { Payload } from 'payload'
-import { scanTravelMedia } from './travel-memory-media-intake'
+import { captureTimestamp, scanTravelMedia } from './travel-memory-media-intake'
 import { resolveRegistryMediaId, validateMediaRegistry } from './travel-memory-media-registry'
 import { parseMemorySourceV2, projectMemoryV2 } from './travel-memory-source-v2'
 import { importMemoryV2, planMemoryV2, type V2Inventory } from './travel-memory-v2-import'
 
 const root = await mkdtemp(path.join(tmpdir(), 'travel-media-intake-'))
+assert.equal(captureTimestamp('2023:08:12 13:07:33', '+10:00'), '2023-08-12T03:07:33.000Z')
+assert.equal(captureTimestamp('2023:08:12 00:30:00', '+10:00'), '2023-08-11T14:30:00.000Z')
+assert.equal(captureTimestamp('2023:08:12 00:30:00', undefined), '2023-08-12T00:30:00')
 try {
   const input = path.join(root, 'input')
   const output = path.join(root, 'stage')
