@@ -44,7 +44,10 @@
     "travel:phase-21:inventory": "cross-env NODE_OPTIONS=--no-deprecation PAYLOAD_ENABLE_DEV_SCHEMA_PUSH=false node --import tsx src/scripts/phase21-travel-memory-inventory.ts",
     "test:issue158": "node --test src/scripts/issue158/*.test.mjs",
     "rehearse:issue158": "node --import tsx src/scripts/issue158/replay.mjs",
-    "start": "cross-env NODE_OPTIONS=--no-deprecation next start"
+    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "test:issue134": "node --import ./src/scripts/fixtures/issue134-offline-guard.mjs --import tsx --test src/scripts/travel-memory-media-intake.test.ts src/scripts/travel-memory-review.test.mjs src/scripts/travel-memory-metadata-placement.test.mjs src/scripts/travel-memory-time-priority.test.mjs src/scripts/travel-memory-import-preparation.test.mjs src/scripts/travel-memory-import-cross-day.test.mjs src/scripts/travel-memory-import-history.test.mjs src/scripts/travel-memory-import-readback.test.mjs src/scripts/travel-memory-media-adapter.test.mjs src/scripts/travel-memory-verified-media-read.test.mjs src/scripts/issue134-daily-transaction.test.mjs src/scripts/issue134-daily-boundary.test.mjs src/scripts/issue134-additive-history.test.mjs src/scripts/travel-memory-workflow.test.mjs src/scripts/issue134-recovery-history.test.mjs src/scripts/issue134-transaction-budget.test.mjs src/scripts/travel-memory-source-v2.test.ts",
+    "test:issue134:disposable": "node --import tsx src/scripts/travel-memory-daily-disposable.mjs",
+    "test:issue134:heic": "node --import ./src/scripts/fixtures/issue134-offline-guard.mjs --import tsx --test src/scripts/travel-memory-heic.test.mjs"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "3.90.2",

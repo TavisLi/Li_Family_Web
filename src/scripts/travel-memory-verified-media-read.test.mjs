@@ -1,0 +1,11 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import {EventEmitter} from 'node:events'
+import {createHash} from 'node:crypto'
+import {readVerifiedMedia,validateMediaReadTarget} from './travel-memory-verified-media-read.mjs'
+const body=Buffer.from('synthetic image bytes'),target={url:'https://assets.example/exact.jpeg',mediaId:1,byteSize:body.length,mimeType:'image/jpeg',assetId:'sha256:'+createHash('sha256').update(body).digest('hex')}
+function fake({status=200,mime='image/jpeg',length=body.length,data=body}={}){let calls=0;return {get calls(){return calls},request:(url,options,cb)=>{calls++;assert.equal(url,target.url);assert.equal(options.headers['Accept-Encoding'],'identity');assert(!options.headers.Authorization);const req=new EventEmitter();req.destroy=()=>{};queueMicrotask(()=>{const r=new EventEmitter();r.statusCode=status;r.headers={'content-type':mime,'content-length':String(length)};r.destroy=()=>{};cb(r);r.emit('data',data);r.emit('end')});return req}}}
+test('only exact HTTPS origin without credentials/query is allowed',()=>{for(const url of ['http://assets.example/x','https://other.example/x','https://u:p@assets.example/x','https://assets.example/x?token=x','https://assets.example:443/x#x'])assert.throws(()=>validateMediaReadTarget({...target,url},'assets.example'))})
+test('verified bytes returned after one GET',async()=>{const f=fake(),r=await readVerifiedMedia(target,{host:'assets.example',deadlineAt:Date.now()+1000,request:f.request});assert.deepEqual(r.body,body);assert.equal(f.calls,1)})
+test('redirect/status, headers, overflow and byte drift stop without retry',async()=>{for(const [options,error] of [[{status:302},/HTTP_STATUS/],[{mime:'text/html'},/HEADERS/],[{length:1},/HEADERS/],[{data:Buffer.concat([body,body])},/BYTE_LIMIT/],[{data:Buffer.alloc(body.length)},/HASH/]]){const f=fake(options);await assert.rejects(readVerifiedMedia(target,{host:'assets.example',deadlineAt:Date.now()+1000,request:f.request}),error);assert.equal(f.calls,1)}})
+test('expired overall deadline makes no request',async()=>{const f=fake();await assert.rejects(readVerifiedMedia(target,{host:'assets.example',deadlineAt:Date.now()-1,request:f.request}),/DEADLINE/);assert.equal(f.calls,0)})

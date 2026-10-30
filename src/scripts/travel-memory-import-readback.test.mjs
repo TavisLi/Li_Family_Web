@@ -1,0 +1,7 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import {assertReviewedDayReadback} from './travel-memory-import-plan.mjs'
+const zh={id:24,dayKey:'day-01',memory:2,dailyHeroImage:10,title:'新',moments:[{id:'m',momentKey:'key',title:'片段',placements:[{placementKey:'p',type:'photo',role:'inline',media:3,caption:'caption'},{id:'null',placementKey:'empty',type:'photo',media:null}]}]},en={...structuredClone(zh),title:'English day',moments:[{...structuredClone(zh.moments[0]),title:null,placements:zh.moments[0].placements.map(p=>({...p,caption:null}))}]},expected={zh,en}
+function observed(){const x=structuredClone(expected);for(const d of [x.zh,x.en])d.moments[0].placements[0].id='new-id';return x}
+test('read-back checks exact content/captions/order/locale/null and returns actual new anchor IDs',()=>{const r=assertReviewedDayReadback(expected,observed());assert.equal(r.status,'PASS');assert.equal(r.anchors[0].actualPlacementId,'new-id')})
+test('read-back rejects wrong captions, IDs, order, English translation, hero and dropped null',()=>{for(const change of [x=>x.zh.moments[0].placements[0].caption='wrong',x=>x.zh.moments[0].id='wrong',x=>x.zh.moments[0].placements.reverse(),x=>x.en.moments[0].title='automatic translation',x=>x.zh.dailyHeroImage=99,x=>x.zh.moments[0].placements.pop()]){const x=observed();change(x);assert.throws(()=>assertReviewedDayReadback(expected,x),/BLOCK/)}})
