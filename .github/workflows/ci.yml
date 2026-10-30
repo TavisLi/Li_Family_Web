@@ -18,6 +18,7 @@ jobs:
       deps: ${{ steps.plan.outputs.deps }}
       disposable: ${{ steps.plan.outputs.disposable }}
       governance: ${{ steps.plan.outputs.governance }}
+      pnpmSetup: ${{ steps.pnpm-scope.outputs.needed }}
       schema: ${{ steps.plan.outputs.schema }}
       tests: ${{ steps.plan.outputs.tests }}
       head: ${{ steps.plan.outputs.head }}
@@ -37,6 +38,17 @@ jobs:
           node --test scripts/ci/plan.test.mjs scripts/ci/validate.test.mjs
           node scripts/ci/validate.mjs
           node scripts/ci/plan.mjs "$BASE_SHA" "$HEAD_SHA"
+      - name: Scope bounded pnpm setup
+        id: pnpm-scope
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if git diff --quiet "$BASE_SHA...$HEAD_SHA" -- .github/workflows/ci.yml; then
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          fi
       - name: Compact scope summary
         if: always()
         env:
@@ -69,7 +81,7 @@ jobs:
         with:
           ref: ${{ needs.scope.outputs.head }}
           persist-credentials: false
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           run_install: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -122,7 +134,7 @@ jobs:
         with:
           ref: ${{ needs.scope.outputs.head }}
           persist-credentials: false
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
         with:
           run_install: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -159,9 +171,32 @@ jobs:
         if: always()
         run: echo "Tested head ${{ needs.scope.outputs.head }}; dependency review ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
 
+  pnpm-setup:
+    name: CI / pnpm setup
+    needs: scope
+    if: needs.scope.outputs.pnpmSetup == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.scope.outputs.head }}
+          persist-credentials: false
+      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          run_install: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - name: Verify versions and install frozen lockfile
+        run: |
+          test "$(node --version)" = "v$(cat .nvmrc)"
+          test "$(pnpm --version)" = "10.28.0"
+          pnpm install --frozen-lockfile
+
   gate:
     name: CI / gate
-    needs: [scope, app, disposable, dependency-review]
+    needs: [scope, app, disposable, dependency-review, pnpm-setup]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -172,9 +207,11 @@ jobs:
           APP_RESULT: ${{ needs.app.result }}
           DB_RESULT: ${{ needs.disposable.result }}
           DEPS_RESULT: ${{ needs.dependency-review.result }}
+          PNPM_SETUP_RESULT: ${{ needs.pnpm-setup.result }}
           APP_NEEDED: ${{ needs.scope.outputs.app }}
           DB_NEEDED: ${{ needs.scope.outputs.disposable }}
           DEPS_NEEDED: ${{ needs.scope.outputs.deps }}
+          PNPM_SETUP_NEEDED: ${{ needs.scope.outputs.pnpmSetup }}
           HEAD_SHA: ${{ needs.scope.outputs.head }}
         run: |
           node - <<'NODE'
@@ -183,6 +220,7 @@ jobs:
             ['application', process.env.APP_RESULT, process.env.APP_NEEDED === 'true'],
             ['disposable', process.env.DB_RESULT, process.env.DB_NEEDED === 'true'],
             ['dependency review', process.env.DEPS_RESULT, process.env.DEPS_NEEDED === 'true'],
+            ['pnpm setup', process.env.PNPM_SETUP_RESULT, process.env.PNPM_SETUP_NEEDED === 'true'],
           ]
           const bad = checks.filter(([_, result, needed]) => result !== (needed ? 'success' : 'skipped'))
           console.log(JSON.stringify({ head: process.env.HEAD_SHA, checks, blockers: bad }))
