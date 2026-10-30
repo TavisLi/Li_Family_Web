@@ -23,6 +23,7 @@ const files = [
   'src/lib/data/phase-7-domain.test.ts',
   'src/lib/data/travel-memory-child-access.test.ts',
   'src/lib/site-metadata.test.ts',
+  'src/lib/travel-atlas.test.ts',
   'src/lib/travel-domain.test.ts',
   'src/lib/travel-interactions.test.ts',
   'src/lib/travel-memory-rollout.test.ts',
