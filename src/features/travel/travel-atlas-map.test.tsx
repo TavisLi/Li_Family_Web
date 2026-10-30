@@ -70,7 +70,7 @@ mock.module('maplibre-gl', { exports: { Map: FakeMap, Marker: FakeMarker, setWor
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
 
-test('synchronizes a synthetic marker and list selection on an empty local style', async (t) => {
+test('synchronizes a synthetic marker and list selection on an offline geographic style', async (t) => {
   FakeMarker.created = []
   const container = dom.document.createElement('div')
   dom.document.body.appendChild(container)
@@ -90,7 +90,8 @@ test('synchronizes a synthetic marker and list selection on an empty local style
   assert.equal(FakeMap.latest.options.scrollZoom, false)
   assert.equal(FakeMap.latest.options.cooperativeGestures, true)
   const style = FakeMap.latest.options.style as { sources: Record<string, unknown>; sprite?: string; glyphs?: string }
-  assert.deepEqual(style.sources, {})
+  assert.deepEqual(Object.keys(style.sources), ['land'])
+  assert.equal((style.sources.land as { type: string }).type, 'geojson')
   assert.equal(style.sprite, undefined)
   assert.equal(style.glyphs, undefined)
 
@@ -101,6 +102,11 @@ test('synchronizes a synthetic marker and list selection on an empty local style
   assert.ok(listButton)
   await act(async () => marker.click())
   assert.equal(listButton.getAttribute('aria-pressed'), 'true')
+  const popupClose = container.querySelector('[aria-label="關閉地點詳情"]') as unknown as HTMLButtonElement | null
+  assert.ok(popupClose)
+  await act(async () => popupClose.click())
+  assert.equal(dom.document.activeElement, marker)
+  await act(async () => marker.click())
   const clear = [...container.querySelectorAll('button')].find((button) => button.textContent === '清除選取')
   assert.ok(clear)
   await act(async () => clear.click())

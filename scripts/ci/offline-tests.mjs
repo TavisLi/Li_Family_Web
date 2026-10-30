@@ -16,6 +16,7 @@ const files = [
   'src/features/member/member-profile-page.test.tsx',
   'src/features/member/typewriter.test.ts',
   'src/features/travel/travel-atlas-map.test.tsx',
+  'src/features/travel/atlas/atlas-fixtures.test.ts',
   'src/features/travel/travel-detail-page.test.tsx',
   'src/features/travel/travel-index-page.test.tsx',
   'src/features/travel/travel-memory-pages.test.tsx',

@@ -1,7 +1,8 @@
 'use client'
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { Map as MapLibreMap, Marker as MapLibreMarker, StyleSpecification } from 'maplibre-gl'
+import type { Map as MapLibreMap, Marker as MapLibreMarker, GeoJSONSourceSpecification, StyleSpecification } from 'maplibre-gl'
+import land from './atlas/natural-earth-land.json'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -13,10 +14,13 @@ import {
   type TravelAtlasRendererAvailability,
 } from '@/lib/travel-atlas'
 
-const EMPTY_STYLE: StyleSpecification = {
+const LOCAL_GEOGRAPHY_STYLE: StyleSpecification = {
   version: 8,
-  sources: {},
-  layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#e9edf2' } }],
+  sources: { land: { type: 'geojson', data: land as unknown as NonNullable<GeoJSONSourceSpecification['data']> } },
+  layers: [
+    { id: 'background', type: 'background', paint: { 'background-color': '#dbe9e9' } },
+    { id: 'land', type: 'fill', source: 'land', paint: { 'fill-color': '#f1f0e5', 'fill-outline-color': '#bdcbc5' } },
+  ],
 }
 
 type MarkerButton = { element: HTMLButtonElement; groupId: string; itemIds: readonly string[] }
@@ -33,7 +37,7 @@ function resetMapView(map: MapLibreMap, groups: readonly TravelAtlasMarkerGroup[
 }
 
 /** Entries must already be filtered for the current reader by their owning data layer. */
-export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtlasEntry<T>[] }) {
+export function TravelAtlasMapView<T>({ entries, renderDetail, renderSummary }: { entries: readonly TravelAtlasEntry<T>[]; renderDetail?: (entry: TravelAtlasEntry<T>) => React.ReactNode; renderSummary?: (entry: TravelAtlasEntry<T>) => React.ReactNode }) {
   const projection = useMemo(() => projectTravelAtlasEntries(entries), [entries])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null)
@@ -41,6 +45,7 @@ export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtl
   const mapContainer = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapLibreMap | null>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  const selectionOrigin = useRef<HTMLElement | null>(null)
   const markerButtons = useRef<MarkerButton[]>([])
   const selected = resolveTravelAtlasSelection(selectedId, projection.listItems.map((item) => item.id))
   const selectedRef = useRef(selected)
@@ -112,7 +117,7 @@ export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtl
         const { Map, Marker, setWorkerUrl } = await import('maplibre-gl')
         if (!active) return
         setWorkerUrl(new URL('maplibre-gl/dist/maplibre-gl-worker.mjs', import.meta.url).toString())
-        map = new Map({ container, style: EMPTY_STYLE, center: [0, 0], zoom: 1, attributionControl: false, scrollZoom: false, cooperativeGestures: true })
+        map = new Map({ container, style: LOCAL_GEOGRAPHY_STYLE, center: [0, 0], zoom: 1, attributionControl: false, scrollZoom: false, cooperativeGestures: true })
         mapRef.current = map
         map.on('error', () => fail('provider-error'))
         map.on('webglcontextlost', () => fail('webgl-unsupported'))
@@ -135,6 +140,7 @@ export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtl
                 element.setAttribute('aria-controls', groupPanelId)
               }
               element.addEventListener('click', () => {
+                selectionOrigin.current = element
                 if (itemIds.length === 1) setSelectedId(itemIds[0])
                 else setExpandedGroupId((current) => current === group.id ? null : group.id)
               })
@@ -176,10 +182,14 @@ export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtl
     state.reason === 'disabled' ? '地圖尚未啟用，請使用地點清單' : '地圖載入失敗，請使用地點清單'
 
   return (
-    <section aria-label="旅行地圖與地點清單" className="space-y-4">
-      <div ref={mapContainer} role="region" aria-label="互動地圖" className="relative h-64 overflow-hidden rounded-lg border bg-muted sm:h-80" />
+    <section aria-label="旅行地圖與地點清單" className="grid gap-5 motion-reduce:[&_button]:transition-none lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+      <div className="space-y-3">
+      <div className="relative">
+      <div ref={mapContainer} role="region" aria-label="互動地圖" className="relative h-64 overflow-hidden rounded-xl border bg-muted sm:h-80 lg:h-[32rem]" />
+      {selected !== null && <div role="group" aria-label="地點詳情" className="absolute bottom-3 left-3 right-3 z-10 flex items-center justify-between gap-3 rounded-lg border bg-white p-3 shadow-lg sm:right-auto sm:max-w-sm"><p className="font-medium">{projection.listItems.find((entry) => entry.id === selected)?.title}</p><Button type="button" variant="outline" aria-label="關閉地點詳情" className="min-h-11" onClick={() => { setSelectedId(null); selectionOrigin.current?.focus() }}>關閉</Button></div>}
+      </div>
       <p role="status" aria-live="polite" className="text-sm text-muted-foreground">{status}</p>
-      <p className="text-sm text-muted-foreground">底圖尚未啟用；地點可由下方清單選取。</p>
+      <p className="text-sm text-muted-foreground">Natural Earth 1:110m 陸地輪廓 · 公共領域；地點為合成示意。</p>
       {state.status === 'ready' && (
         <div role="group" aria-label="地圖控制" className="flex flex-wrap gap-2">
           <Button type="button" variant="outline" className="h-auto min-h-11" aria-label="放大地圖" onClick={() => mapRef.current?.zoomIn({ duration: 0 })}>放大地圖</Button>
@@ -187,6 +197,9 @@ export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtl
           <Button type="button" variant="outline" className="h-auto min-h-11" aria-label="重設地圖" onClick={() => { if (mapRef.current) resetMapView(mapRef.current, projection.groups) }}>重設地圖</Button>
         </div>
       )}
+      </div>
+      <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
+      <h2 className="text-xl font-semibold">地點與故事</h2>
       <div id={groupPanelId} role="group" aria-label="同地點的項目" className="space-y-2" hidden={!expandedGroup}>
         {expandedGroup && (
           <>
@@ -200,13 +213,15 @@ export function TravelAtlasMapView<T>({ entries }: { entries: readonly TravelAtl
       <ul ref={listRef} aria-label="地點清單" tabIndex={-1} className="space-y-2">
         {projection.listItems.map((entry) => (
           <li key={entry.id}>
-            <Button type="button" variant="outline" className="h-auto min-h-11 w-full justify-start whitespace-normal text-left" data-atlas-id={entry.id} aria-pressed={selected === entry.id} onClick={() => setSelectedId(entry.id)}>
-              {entry.title}{!markerIds.has(entry.id) ? '（位置未提供或無法顯示）' : ''}{selected === entry.id ? '（已選取）' : ''}
+            <Button type="button" variant="outline" className={`h-auto min-h-14 w-full justify-start whitespace-normal text-left motion-reduce:transition-none hover:bg-slate-100 hover:text-slate-900 ${selected === entry.id ? 'border-blue-700 bg-blue-50 text-slate-900' : ''}`} data-atlas-id={entry.id} aria-pressed={selected === entry.id} onClick={(event) => { selectionOrigin.current = event.currentTarget; setSelectedId(entry.id) }}>
+              <span className="block w-full"><span className="block">{entry.title}{!markerIds.has(entry.id) ? '（位置未提供或無法顯示）' : ''}{selected === entry.id ? '（已選取）' : ''}</span>{renderSummary?.(entry)}</span>
             </Button>
+            {selected === entry.id && renderDetail && <div className="space-y-3 px-3 py-4 text-sm leading-7">{renderDetail(entry)}</div>}
           </li>
         ))}
       </ul>
       {selected !== null && <Button type="button" variant="outline" className="h-auto min-h-11" onClick={() => setSelectedId(null)}>清除選取</Button>}
+      </div>
     </section>
   )
 }
