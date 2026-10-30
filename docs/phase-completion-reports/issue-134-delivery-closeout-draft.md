@@ -1,7 +1,7 @@
 # Issue #134 Completion Report — Media Intake 與審核後匯入工作流程
 
 報告日期：2026-10-30
-最終狀態：Locally verified／程式交付候選；未 Merged、未 Closed。
+最終狀態：PR #169 已合併至 main；Issue #134 仍 OPEN，等待最終 Human closeout review／批准。
 
 ## 1. Phase Scope
 
@@ -15,13 +15,13 @@
 ### Out of scope
 
 - 單次 Production dispatcher／credential／個別照片恢復分支、照片、私人 Source／locators、批准原文、before-images、receipt／ledger 與 raw Browser evidence。
-- 新 Production 操作、重播歷史 run、一般化所有旅程的正式 Daily executor、全站 retention、merge／deploy／Release／Issue close。
+- 新 Production 操作、重播歷史 run、一般化所有旅程的正式 Daily executor、全站 retention、Production deploy／Release／Issue close。
 
 ## 2. Branch／Commit／PR
 
 - 原 checkout branch／HEAD：codex/phase-134-slice-3／8c6276c4ee5fa68531ddeeb1a957d14274257f69；dirty/untracked 保留，未切換。
-- 候選 base：main 413069052b21ae0100f4bbe009082be8d7e2bbe0，Git tree 858d5253e1df3c11120500349ca3cac047b8e2ad；候選於隔離副本。
-- Implementation commit／Pull Request／Merge commit：N/A，尚未獲具體發布／merge 授權。
+- 候選 base：main `413069052b21ae0100f4bbe009082be8d7e2bbe0`，Git tree `858d5253e1df3c11120500349ca3cac047b8e2ad`；候選於隔離副本。
+- Delivery branch `codex/phase-134-delivery-20261030`／implementation head `b377763f81b697489084147a2b4a3e27e0243936`；[PR #169](https://github.com/TavisLi/Li_Family_Web/pull/169) 已於 2026-10-30 合併。Squash merge commit `13b77c2478016ed808c8744faeac535b0e9d7545`；合併後 remote `main` read-back 與 merge commit 完全相同。
 - Related Issues：#134；#105 是既有 runner／evidence owner，不新增 executor 或平行治理。
 - 原 43 檔候選已由 Human 審查通過；本次 HEIC 測試與收尾文件增補另列精確 delta，不把前次批准視為發布授權。
 
@@ -49,6 +49,10 @@
 | Payload 3.90.2／owned loopback PG17 | PASS、cleanup PASS | 真 TravelMemoryDays 單一 Day move/remove／English/null/ID/history／提交後回讀；未變 operation bytes 重用 |
 | pnpm run build → tsc --noEmit | PASS → PASS | 前次順序執行；本次只新增測試／文件／測試指令，app/runtime 內容未變 |
 | patch apply／diff／secret/privacy | 隨 exact candidate packet 核驗 | 不將準備文件標成已執行 CI |
+| PR #169 exact-head CI／CodeQL | PASS | head `b377763f81b697489084147a2b4a3e27e0243936`：CI / scope、application、dependency review、gate、CodeQL 與 CodeQL / JavaScript and TypeScript 均 success；disposable fixture 與 Supabase Preview skipped，不作 PASS。 |
+| PR #169 review／Ruleset | Human review complete | Human 確認 review 完成；GitHub review submission 為 0，merge 時 active Ruleset required approving reviews 為 0。 |
+
+合併後 CI／CodeQL workflow 沒有 `push` trigger，故無 post-merge run。PR checks 的 workflow warnings：部分 actions request Node 20、runner 使用 Node 24；CodeQL v3 預定於 2026-12 淘汰，default-branch push hook 未設定。CodeQL 無新 alerts；warnings 不代表 check failure。
 
 效率同 workload 的完整 plan 1,483,468 bytes／compact summary 3,267 bytes，僅比較初始 metadata context 的檔案大小代理。歷史 images inspected／tool calls／repeated reads／model token telemetry 未取得，維持 UNKNOWN；不宣稱實際 token savings。Issue 允許沒有 token telemetry 時報 proxy。
 
@@ -64,7 +68,7 @@
 - 已接受的 Production r3：COMMITTED／獨立 read-back PASS，九日／61 Moments／743 placements，舊歷史 preservation／independent history read-back PASS、pruned 0。
 - Media：已接受 400／400 新照片 verified、pending 0；747 verified locators。
 - Production deployment／deployment commit、route HTTP／rendered HTML／canonical／runtime logs／observation window：本次未新增查證，無新部署；僅沿用已接受網站結果，不新增 exact-SHA deployment claim。
-- 程式合併後的適用部署／查核仍依最終 PR scope 與既有 gate 執行，不把過往網站驗收冒充新 SHA 驗證。
+- PR #169 僅交付 scripts／tests／docs，未改網站 runtime 或部署設定；`vercel.json` 的 `deploymentEnabled.main=false` 保留。此次沒有 Production deployment 或新 exact-SHA route／HTML／runtime 驗證，不把既有 Human 接受的網站結果冒充新部署證據。
 
 ## 8. Migration／Data
 
@@ -81,7 +85,7 @@
 
 ## 10. Known Limitations and Blockers
 
-- 待正式程式發布、exact-head CI／review、merge、適用合併後查核及最終 closeout 授權；本報告不得標 Closed。
+- PR #169、exact-head CI／CodeQL 與 merge 已完成；Issue #134 維持 OPEN，等待最終 Human closeout review 與獨立 close 批准。
 - Daily operation 限 Memory 2／九日／zh-TW/en；其他 target 需明確適配及驗證，不宣稱通用 Production execution。
 - bundled sharp 可讀 HEIC metadata，無 HEVC 像素解碼能力；需本批明確轉檔決定、不同 assetId 與 derivedFrom，不自動改副檔名或上傳。
 - 原圖 freshness、runner-only retention 不保證未來一般 Admin 編輯的歷史保留、舊 UNKNOWN 與歷史自動 QA BLOCK 均保留。
@@ -94,7 +98,7 @@
 ## 12. Issue Closeout
 
 - Closed：N/A，尚未關閉任何 Issue。
-- Remains open：#134，等待正式交付與結案 gate。
+- Remains open：#134；PR #169 已 merged，最終 Human closeout review／close 批准仍是獨立 gate。
 - Follow-up Issues：尚未建立新 Issue。泛化 Daily executor／單張恢復其他分支不在本次承諾；例行剩餘照片依已驗證流程逐批批准，不以整庫全部上線為本 Issue 結案條件。
 
 ## 13. Next-phase Readiness
@@ -106,8 +110,9 @@
 | State | Result |
 | --- | --- |
 | Implemented | 原候選完成、Human review PASS；本次增加格式驗證與收尾文件 |
-| Locally verified | PASS：58 portable＋1 HEIC，既有未變 PG／build／tsc 證據重用 |
-| PR ready | 本地 exact packet 待審查／發布授權；未建立 PR |
-| Merged | NO |
-| Production verified | 既有 content/Media/visual Human accepted；無本候選新部署驗證 |
+| Locally verified | PASS：58 portable＋1 HEIC；既有未變 PG／build／tsc 證據重用 |
+| PR #169 checks | PASS：exact-head CI／CodeQL；scoped disposable fixture／Supabase Preview skipped |
+| Delivery PR | #169 merged；implementation head `b377763f81b697489084147a2b4a3e27e0243936` |
+| Merge／main | PASS：`13b77c2478016ed808c8744faeac535b0e9d7545`；remote main read-back 相同 |
+| Production verified | 既有 content／Media／visual Human accepted；本候選沒有新 Production deployment／exact-SHA runtime 驗證 |
 | Closed | NO |
