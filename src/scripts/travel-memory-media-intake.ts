@@ -56,6 +56,17 @@ function metadataGroups(value: unknown): Record<string, unknown>[] {
   return [root, ...Object.values(root).filter(item => item && typeof item === 'object' && !Array.isArray(item)) as Record<string, unknown>[]]
 }
 
+export function captureTimestamp(value: string | undefined, timezone: string | undefined): string | undefined {
+  if (!value) return undefined
+  const wallTime = value.replace(/^(\d{4}):(\d{2}):(\d{2}) /, '$1-$2-$3T')
+  // EXIF wall times must never inherit the machine's timezone from Date revival.
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(wallTime) && timezone && /^[+-]\d{2}:\d{2}$/.test(timezone)) {
+    const date = new Date(`${wallTime}${timezone}`)
+    if (!Number.isNaN(date.getTime())) return date.toISOString()
+  }
+  return wallTime
+}
+
 export async function scanTravelMedia(input: string, slug: string, output = path.join('.travel-media-staging', slug)) {
   const root = await realpath(input)
   const priorPath = path.join(output, 'registry.json')
@@ -81,14 +92,14 @@ export async function scanTravelMedia(input: string, slug: string, output = path
       const mimeType = mimeTypes[image.format ?? '']
       if (!mimeType || !image.width || !image.height) throw new Error('unsupported-image-or-missing-dimensions')
       let parsed: unknown
-      try { parsed = await exifr.parse(filename, { tiff: true, exif: true, gps: true, iptc: true, xmp: true, mergeOutput: false }) }
+      try { parsed = await exifr.parse(filename, { tiff: true, exif: true, gps: true, iptc: true, xmp: true, mergeOutput: false, reviveValues: false }) }
       catch { review.push({ file: relative, assetId, reason: 'embedded-metadata-unreadable' }) }
       const groups = metadataGroups(parsed)
-      const capturedAt = firstValue(groups, ['DateTimeOriginal', 'CreateDate', 'DateCreated'])
       const timezone = firstValue(groups, ['OffsetTimeOriginal', 'OffsetTime', 'TimeZone'])
+      const capturedAt = captureTimestamp(firstValue(groups, ['DateTimeOriginal', 'CreateDate', 'DateCreated']), timezone)
       const latitude = groups.map(group => group.latitude).find(value => typeof value === 'number')
       const longitude = groups.map(group => group.longitude).find(value => typeof value === 'number')
-      const captions = [...new Set(groups.flatMap(group => ['Caption', 'CaptionAbstract', 'Description', 'ImageDescription'].map(key => metadataValue(group[key])).filter((item): item is string => Boolean(item))))]
+      const captions = [...new Set(groups.flatMap(group => ['Caption', 'CaptionAbstract', 'Description', 'ImageDescription', 'Title', 'UserComment'].map(key => metadataValue(group[key])).filter((item): item is string => Boolean(item))))]
       const after = await stat(filename)
       if (after.size !== before.size || after.mtimeMs !== before.mtimeMs) {
         review.push({ file: relative, assetId, reason: 'file-changed-during-scan' })

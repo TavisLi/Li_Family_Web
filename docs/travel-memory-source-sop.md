@@ -44,3 +44,19 @@ AI 處理網址登記、格式檢查、照片清單與 manifest 草案，並執�
 此文件定義 AI 協作流程，不代表已有一鍵辨識／發布工具。依人類決定，實際照片配置預覽與確認留待下一個 Travel Memory 演練；模板欄位覆蓋與匯入保護由 #117 接續處理，不以本文件宣稱演練已完成。
 
 新版材料可指定版型；若你曾在 Admin 改過版型，更新時會保留。若 Source 與 Admin 都改了同一內容且結果不同，AI 必須先請你確認，不可直接覆蓋。舊項目若缺少新版匯入基準，AI 會先保留網站內容並提出另行確認的對照方案。
+
+## #134 可重用匯入工作台
+
+先執行 scanner，讀 summary／review queue，再只看需判斷的本地圖片。`prepare-travel-memory-review.mjs --config <config.json>` 讀取明列的 Source、已保存 Current／英文、舊 Registry、新掃描 Registry 與 photoRoot，以全新 output 建立本地 HTML；metadata 提出候選，不自行決定日期、人物、caption 或移除。Title／UserComment 與其他內嵌文字只作候選。既有 placements 沿用 Current 身分，不重新猜位置；不把 bytes 相同的不同 Media ID 自動合併。
+
+Human 在 HTML 編輯日期、Moment、placement、順序、caption 與移除決定，保存回覆並可載入。批次、Source／model hash 不符須拒收。保留未決項，Source omission 不代表刪除；明確移除、同圖展示省略與跨 Day 搬移保留逐項 ID／key 對照，Media records／檔案／locators 不隨之刪除。HTML 禁用外部連線，以本地縮圖作審查材料。
+
+內容通過後，`prepare-travel-memory-import.mjs <config.json>` 固定 source／sourceSha256、model／modelSha256、decisions、registry、photoRoot 及全新 output，輸出 Source 副本、完整 Registry、daily plan、已核對 bytes 的 upload inputs 與 compact summary。輸入漂移就停止；不能覆寫舊批次，或把此輸出當 Production 批准。
+
+`travel-memory-import-plan.mjs` 負責 fresh identity／其他語言／null／caption／read-back 保護；`travel-memory-media-transfer.mjs` 負責舊 Registry 保全與 INTENT→CREATED→VERIFIED，寫入不明不重試。`travel-memory-daily-update.mjs` 只是既有 #105 交易內的 operation：Current anchor、必要 locale 更新、實際 ID／關係回讀與零舊歷史損失，commit 與監督仍屬 #105。Daily operation 目前限 Memory 2／九日；其他旅程不能直接套用。Shared retention 仍為 30；runner-only maxPerDoc=0 不承諾未來一般 Admin 編輯的歷史保留。
+
+依 [#134 交付審查](phase-artifacts/issue-134/delivery-review-20261030.md) 區分本地 synthetic、已接受的 Production 結果與未泛化能力。每批私密 Source／Registry／before-image／receipt 保持可恢復，照片及原始證據不進程式 PR；後續大量照片仍逐批審核、批准與回讀。失敗／UNKNOWN 保存已完成結果，停受影響動作，不能借舊批准自行讀取、重傳或清理。
+
+### HEIC 原件與明確轉檔
+
+scanner 可讀 HEIC 尺寸／metadata 並建立 exact-byte assetId；這不代表本機 sharp 已具 HEVC 像素解碼能力。需縮圖／JPEG 匯入時，先按本批決定以本地 ImageIO 或已確認的解碼器明確轉檔，保留 HEIC 原件與 hash；轉檔是不同 assetId，以 technical Registry 的 derivedFrom 指向原件，不宣稱 bytes 相同。新檔獨立掃描，先固定及保留 derivedFrom，再進入 HTML 審查與 JPEG upload preparation；不把 HEIC 檔改副檔名冒充 JPEG，也不因 metadata PASS 就授權上傳。`pnpm run test:issue134:heic` 在 macOS 以 runtime 合成圖驗證此路徑，實際其他平台／Production codec 能力不由此推論。
