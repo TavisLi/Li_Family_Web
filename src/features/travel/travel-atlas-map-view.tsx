@@ -37,7 +37,7 @@ function resetMapView(map: MapLibreMap, groups: readonly TravelAtlasMarkerGroup[
 }
 
 /** Entries must already be filtered for the current reader by their owning data layer. */
-export function TravelAtlasMapView<T>({ entries, renderDetail, renderSummary }: { entries: readonly TravelAtlasEntry<T>[]; renderDetail?: (entry: TravelAtlasEntry<T>) => React.ReactNode; renderSummary?: (entry: TravelAtlasEntry<T>) => React.ReactNode }) {
+export function TravelAtlasMapView<T>({ entries, renderDetail, renderSummary, tone = 'default' }: { entries: readonly TravelAtlasEntry<T>[]; renderDetail?: (entry: TravelAtlasEntry<T>) => React.ReactNode; renderSummary?: (entry: TravelAtlasEntry<T>) => React.ReactNode; tone?: 'default' | 'editorial' }) {
   const projection = useMemo(() => projectTravelAtlasEntries(entries), [entries])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null)
@@ -129,8 +129,8 @@ export function TravelAtlasMapView<T>({ entries, renderDetail, renderSummary }: 
               const element = document.createElement('button')
               const itemIds = group.markers.map((marker) => marker.id)
               element.type = 'button'
-              element.className = 'flex h-11 w-11 items-center justify-center rounded-full border-2 border-background bg-primary text-sm font-semibold text-primary-foreground shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring'
-              element.textContent = itemIds.length > 1 ? String(itemIds.length) : '●'
+              element.className = `flex h-11 w-11 items-center justify-center rounded-full border-2 border-background text-sm font-semibold shadow focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${tone === 'editorial' ? 'bg-[#52675d] text-white' : 'bg-primary text-primary-foreground'}`
+              element.textContent = itemIds.length > 1 ? String(itemIds.length) : tone === 'editorial' ? '✦' : '●'
               element.setAttribute('aria-label', itemIds.length > 1 ? `同地點 ${itemIds.length} 個項目` : `選取 ${group.markers[0].title}`)
               const pressed = selectedRef.current !== null && itemIds.includes(selectedRef.current)
               element.setAttribute('aria-pressed', String(pressed))
@@ -173,7 +173,7 @@ export function TravelAtlasMapView<T>({ entries, renderDetail, renderSummary }: 
         target.focus()
       }
     }
-  }, [projection, groupPanelId])
+  }, [projection, groupPanelId, tone])
 
   const status = state.status === 'loading' ? '地圖載入中' :
     state.status === 'ready' ? '地圖已載入' :
@@ -198,8 +198,8 @@ export function TravelAtlasMapView<T>({ entries, renderDetail, renderSummary }: 
         </div>
       )}
       </div>
-      <div className="space-y-4 rounded-xl border bg-card p-4 sm:p-6">
-      <h2 className="text-xl font-semibold">地點與故事</h2>
+      <div className={`space-y-4 rounded-xl border p-4 sm:p-6 ${tone === 'editorial' ? 'border-[#ded8ca] bg-[#fffdf9]' : 'bg-card'}`}>
+      <h2 className={`text-xl font-semibold ${tone === 'editorial' ? 'font-serif text-[#34443d]' : ''}`}>{tone === 'editorial' ? '故事與片刻' : '地點與故事'}</h2>
       <div id={groupPanelId} role="group" aria-label="同地點的項目" className="space-y-2" hidden={!expandedGroup}>
         {expandedGroup && (
           <>
@@ -213,7 +213,7 @@ export function TravelAtlasMapView<T>({ entries, renderDetail, renderSummary }: 
       <ul ref={listRef} aria-label="地點清單" tabIndex={-1} className="space-y-2">
         {projection.listItems.map((entry) => (
           <li key={entry.id}>
-            <Button type="button" variant="outline" className={`h-auto min-h-14 w-full justify-start whitespace-normal text-left motion-reduce:transition-none hover:bg-slate-100 hover:text-slate-900 ${selected === entry.id ? 'border-blue-700 bg-blue-50 text-slate-900' : ''}`} data-atlas-id={entry.id} aria-pressed={selected === entry.id} onClick={(event) => { selectionOrigin.current = event.currentTarget; setSelectedId(entry.id) }}>
+            <Button type="button" variant="outline" className={`h-auto min-h-14 w-full justify-start whitespace-normal text-left motion-reduce:transition-none hover:bg-slate-100 hover:text-slate-900 ${tone === 'editorial' ? (selected === entry.id ? 'border-[#a68a54] bg-[#f2f1e9] text-[#34443d] hover:bg-[#f2f1e9]' : 'border-[#e4ded2] bg-[#fffdf9] text-[#34443d] hover:bg-[#f5f2eb]') : (selected === entry.id ? 'border-blue-700 bg-blue-50 text-slate-900' : '')}`} data-atlas-id={entry.id} aria-pressed={selected === entry.id} onClick={(event) => { selectionOrigin.current = event.currentTarget; setSelectedId(entry.id) }}>
               <span className="block w-full"><span className="block">{entry.title}{!markerIds.has(entry.id) ? '（位置未提供或無法顯示）' : ''}{selected === entry.id ? '（已選取）' : ''}</span>{renderSummary?.(entry)}</span>
             </Button>
             {selected === entry.id && renderDetail && <div className="space-y-3 px-3 py-4 text-sm leading-7">{renderDetail(entry)}</div>}

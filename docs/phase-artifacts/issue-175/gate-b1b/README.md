@@ -19,3 +19,11 @@ Captured 2026-10-30 on loopback from the production build, based on main `dd4179
 - Emulated `prefers-reduced-motion: reduce` set the list-button transition property to `none`; camera selection, zoom and reset use zero-duration movement. This is a focused browser check, not an accessibility certification.
 - At a global extent, distinct nearby markers can overlap; exact coincident coordinates are grouped and every item remains in the text list. Visual acceptance of this tradeoff remains for Human review.
 - Real-photo cropping, narrative and privacy acceptance remain UNKNOWN. Provider, cost, terms, Family privacy, CRS and production integration remain open. No Production deployment or merge is authorized by this evidence.
+
+## Human review minor-fix follow-up
+
+On 2026-10-30, the Memory view was refined against the accepted Gate A warm editorial direction: paper-toned background, deep green controls and story markers, and a quieter story card. MapLibre still uses the local real land geometry and exact-coordinate grouping. Nearby distinct-coordinate overlap remains an open follow-up; no proximity merging was added.
+
+The updated synthetic loopback build was captured at [1440](memory-1440-fix.png), [768](memory-768-fix.png), [390](memory-390-fix.png), [320](memory-320-fix.png), and [320 with an expanded story](memory-story-320-fix.png). The original B1b captures above retain the corresponding pre-fix view. Memory marker selection, list synchronisation, close and focus return, Day 02 switching and reduced-motion transition suppression were checked in the browser. At 320 and 768px, document width equalled viewport width; the sampled console had no errors.
+
+`/atlas-review` is dynamically guarded: `ATLAS_REVIEW_ENABLED=true` is required, together with `VERCEL_ENV=preview` or `development`, or a local `NODE_ENV=development` or `test` when `VERCEL_ENV` is absent. A production `VERCEL_ENV` and unknown environments are denied even with opt-in. A local production-build HTTP check returned 404 for production with opt-in, 404 for preview without opt-in, and 200 for preview with opt-in. This does not authorize a deployment or access to Production.
