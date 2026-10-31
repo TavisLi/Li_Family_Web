@@ -47,6 +47,7 @@ assert.deepEqual(
     'displayDate',
     'displaySubtitle',
     'body',
+    'geoStops',
     'links',
     'mediaItems',
     'interactions',
@@ -105,6 +106,7 @@ assert.ok(moments && moments.type === 'array')
 assert.deepEqual(fieldNames(moments.fields), [
   'momentKey',
   'time',
+  'geo',
   'location',
   'title',
   'body',
@@ -160,8 +162,8 @@ const originPlan = TravelMemories.fields.find(
 assert.ok(originPlan && originPlan.type === 'relationship')
 assert.equal(originPlan.relationTo, 'travel-plans')
 assert.equal(originPlan.required, false)
-assert.equal(TravelPlans.hooks?.beforeValidate?.length, 1)
-assert.equal(TravelMemories.hooks?.beforeValidate?.length, 1)
+assert.equal(TravelPlans.hooks?.beforeValidate?.length, 2)
+assert.equal(TravelMemories.hooks?.beforeValidate?.length, 2)
 assert.equal(TravelPlans.hooks?.afterChange?.length, 1)
 assert.equal(TravelMemories.hooks?.afterChange?.length, 1)
 assert.equal(normalizeTravelSlug('  2027-Phuket  '), '2027-phuket')

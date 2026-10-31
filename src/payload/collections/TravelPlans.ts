@@ -1,3 +1,6 @@
+import { travelGeoReviewEndpoints } from './travel-geo-review'
+import { lockTravelGeoWrites } from './travel-geo-lock'
+import { travelGeoGuard, travelGeoAccessRevisionField, travelGeoStopsField } from './travel-geo'
 import type { CollectionConfig } from 'payload'
 
 import {
@@ -17,6 +20,7 @@ import {
 
 export const TravelPlans: CollectionConfig = {
   slug: 'travel-plans',
+  endpoints: travelGeoReviewEndpoints('plan'),
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'startDate', 'endDate', 'isPrivate', '_status'],
@@ -25,12 +29,14 @@ export const TravelPlans: CollectionConfig = {
   },
   access: travelCollectionAccess,
   hooks: {
+    beforeOperation: [lockTravelGeoWrites],
     afterChange: [syncTravelRouteIdentity('travel-plans')],
     beforeDelete: [removeTravelRouteIdentity('travel-plans')],
-    beforeValidate: [preventCrossTravelSlugCollision('travel-memories')],
+    beforeValidate: [travelGeoGuard('plan'), preventCrossTravelSlugCollision('travel-memories')],
   },
   versions: travelCollectionVersions,
   fields: [
+    travelGeoAccessRevisionField(),
     ...commonTravelFields(
       'members',
       'The lobby derives Active Plans or Archived Plans from this date.',
@@ -60,6 +66,7 @@ export const TravelPlans: CollectionConfig = {
         { name: 'displayDate', type: 'text', required: false, localized: true },
         { name: 'displaySubtitle', type: 'text', required: false, localized: true },
         { name: 'body', type: 'textarea', required: true, localized: true },
+        travelGeoStopsField(),
         linksField(),
         mediaItemsField(),
         {

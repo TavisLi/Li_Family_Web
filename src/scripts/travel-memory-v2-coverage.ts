@@ -48,18 +48,19 @@ export function memoryV2Coverage(): Row[] {
         continue
       }
       const path = `${prefix}.${field.name}`
-      const system = field.name === 'sourceMetadata' || path.includes('.sourceMetadata.') ||
+      const geo = field.name === 'geoAccessRevision' || /\.geo(?:\.|$)/.test(path)
+      const system = geo || field.name === 'sourceMetadata' || path.includes('.sourceMetadata.') ||
         ['dayIdentity', 'momentKey', 'placementKey'].includes(field.name)
       const derived = ['days', 'dayKey', 'memory', 'relatedTravelRecord'].includes(field.name)
       const classification = system ? 'cms/system-managed' : derived ? 'derived/importer-managed' : 'source-authorable'
       if (!system && !derived && !meanings[field.name]) throw new Error(`Unclassified field: ${path}`)
-      const source = system ? '禁止手填；CMS／匯入基準管理' : derived ? ({
+      const source = geo ? 'PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入' : system ? '禁止手填；CMS／匯入基準管理' : derived ? ({
         days: 'Payload reverse join', dayKey: 'Day.day → day-NN',
         memory: '根文件 slug 精確解析 parent', relatedTravelRecord: '根文件 slug → travel-memories 關係',
       }[field.name] ?? '') : sourceLocation(path)
       rows.push({ path, classification, source,
         required: 'required' in field && field.required ? '必填（父項存在時）' : '可選',
-        meaning: system ? '技術識別／匯入基準；不直接顯示' : derived ? source : meanings[field.name]!,
+        meaning: geo ? '受保護的位置／批准副本；限 Admin 原始讀取' : system ? '技術識別／匯入基準；不直接顯示' : derived ? source : meanings[field.name]!,
       })
       if ('fields' in field) {
         const child = field.type === 'array' ? `${path}[]` : path

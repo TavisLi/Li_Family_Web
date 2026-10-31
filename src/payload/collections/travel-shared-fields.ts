@@ -35,7 +35,8 @@ export const travelCollectionVersions: CollectionConfig['versions'] = {
       interval: 2000,
     },
   },
-  maxPerDoc: 30,
+  // Geo review saves must retain existing content and approval history.
+  maxPerDoc: 0,
 }
 
 export function commonTravelFields(
@@ -129,6 +130,9 @@ export function sourceMetadataField(): Field {
     name: 'sourceMetadata',
     type: 'group',
     required: false,
+    access: {
+      read: ({ req }) => canManageContent({ user: req.user }),
+    },
     admin: {
       description:
         'Seed reconciliation metadata. Managed by the travel seed workflow; editors should not change it manually.',

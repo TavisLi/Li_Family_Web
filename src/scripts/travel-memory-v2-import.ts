@@ -5,6 +5,7 @@ import { isDeepStrictEqual } from 'node:util'
 import type { Payload } from 'payload'
 import { projectMemoryV2, type MemorySourceV2 } from './travel-memory-source-v2'
 import { reconcileMemoryV2, type V2Record } from './travel-memory-v2-reconciliation'
+import { containsTravelGeo } from './travel-geo-preservation'
 import { assetIdSchema, resolveRegistryEntry, validateMediaRegistry, type MediaRegistry } from './travel-memory-media-registry'
 
 export type V2Inventory = {
@@ -26,6 +27,9 @@ export function planMemoryV2(source: MemorySourceV2, inventory: V2Inventory, reg
   const isAssetId = (value: string) => assetIdSchema.safeParse(value).success
   const assetKey = (item: NonNullable<MemorySourceV2['assets']>[number]) => item.assetId ?? item.sourcePath!
   const referenceConflicts: string[] = []
+  if (containsTravelGeo(inventory.days) || containsTravelGeo(metadata?.baseProjection)) {
+    referenceConflicts.push('geo: legacy importer cannot safely preserve geo and its Base')
+  }
   const exact = <T>(rows: T[], label: string, matches: (item: T) => boolean): T => {
     const found = rows.filter(matches)
     if (found.length !== 1) throw new Error(`${label}: expected one exact relationship, found ${found.length}`)

@@ -195,3 +195,16 @@ test('does not navigate with unverified CRS or invalid coordinates', () => {
     reason: 'missing-destination',
   })
 })
+
+test('owner tuple identity preserves boundaries, owner type, and stable keys', async () => {
+  const { travelAtlasOwnerIdentity } = await import('./travel-atlas')
+  const plan = travelAtlasOwnerIdentity(['plan', 12, 'day:1', 'stop:2'])
+  assert.equal(plan, travelAtlasOwnerIdentity(['plan', 12, 'day:1', 'stop:2']))
+  assert.notEqual(plan, travelAtlasOwnerIdentity(['plan', 12, 'day', '1:stop:2']))
+  assert.notEqual(plan, travelAtlasOwnerIdentity(['plan', '12', 'day:1', 'stop:2']))
+  assert.notEqual(plan, travelAtlasOwnerIdentity(['memory', 12, 'day:1', 'stop:2']))
+  assert.notEqual(plan, travelAtlasOwnerIdentity(['plan', 13, 'day:1', 'stop:2']))
+  assert.ok(plan.startsWith('v1:'))
+  assert.deepEqual(JSON.parse(plan.slice(3)), ['plan', 12, 'day:1', 'stop:2'])
+  assert.throws(() => travelAtlasOwnerIdentity(['plan', 12, ' ', 'stop:2']))
+})
