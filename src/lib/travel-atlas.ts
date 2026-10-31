@@ -4,6 +4,22 @@ export interface Wgs84Coordinate {
   readonly latitude: number
 }
 
+export type TravelAtlasOwnerTuple = readonly [
+  'plan' | 'memory', string | number, string, string,
+]
+
+/** Encode the complete owner tuple without conflating delimiter boundaries or ID types. */
+export function travelAtlasOwnerIdentity(tuple: TravelAtlasOwnerTuple): string {
+  const [kind, ownerId, sectionOrDay, stopOrMoment] = tuple
+  if (
+    tuple.length !== 4 || (kind !== 'plan' && kind !== 'memory') ||
+    (typeof ownerId === 'string' ? !ownerId.trim() : !Number.isSafeInteger(ownerId)) ||
+    typeof sectionOrDay !== 'string' || !sectionOrDay.trim() ||
+    typeof stopOrMoment !== 'string' || !stopOrMoment.trim()
+  ) throw new Error('A complete travel geo owner tuple is required')
+  return `v1:${JSON.stringify(tuple)}`
+}
+
 export interface TravelAtlasEntry<T = unknown> {
   /** Stable identity from the owning Plan section or Memory Moment. */
   readonly id: string
