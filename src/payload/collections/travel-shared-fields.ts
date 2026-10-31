@@ -129,6 +129,9 @@ export function sourceMetadataField(): Field {
     name: 'sourceMetadata',
     type: 'group',
     required: false,
+    access: {
+      read: ({ req }) => canManageContent({ user: req.user }),
+    },
     admin: {
       description:
         'Seed reconciliation metadata. Managed by the travel seed workflow; editors should not change it manually.',
