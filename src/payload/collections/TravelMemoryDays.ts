@@ -1,3 +1,6 @@
+import { travelGeoReviewEndpoints } from './travel-geo-review'
+import { lockTravelGeoWrites } from './travel-geo-lock'
+import { travelGeoGuard, travelGeoAccessRevisionField, travelGeoField } from './travel-geo'
 import { randomUUID } from 'node:crypto'
 
 import type { CollectionBeforeValidateHook, CollectionConfig, Where } from 'payload'
@@ -22,6 +25,7 @@ const setDayIdentity: CollectionBeforeValidateHook = ({ data, originalDoc }) => 
 
 export const TravelMemoryDays: CollectionConfig = {
   slug: 'travel-memory-days',
+  endpoints: travelGeoReviewEndpoints('memory'),
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'memory', 'dayKey', 'date', '_status'],
@@ -48,10 +52,12 @@ export const TravelMemoryDays: CollectionConfig = {
     delete: ({ req }) => canManageContent({ user: req.user }),
   },
   hooks: {
-    beforeValidate: [setDayIdentity],
+    beforeOperation: [lockTravelGeoWrites],
+    beforeValidate: [travelGeoGuard('memory'), setDayIdentity],
   },
   versions: travelCollectionVersions,
   fields: [
+    travelGeoAccessRevisionField(),
     {
       name: 'memory',
       type: 'relationship',
@@ -110,6 +116,7 @@ export const TravelMemoryDays: CollectionConfig = {
           },
         },
         { name: 'time', type: 'text', required: false },
+        travelGeoField(),
         { name: 'location', type: 'text', required: false, localized: true },
         { name: 'title', type: 'text', required: true, localized: true },
         { name: 'body', type: 'textarea', required: false, localized: true },

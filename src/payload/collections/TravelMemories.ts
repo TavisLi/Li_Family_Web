@@ -1,3 +1,5 @@
+import { lockTravelGeoWrites } from './travel-geo-lock'
+import { travelGeoGuard, travelGeoAccessRevisionField } from './travel-geo'
 import type { CollectionConfig } from 'payload'
 
 import {
@@ -24,12 +26,14 @@ export const TravelMemories: CollectionConfig = {
   },
   access: travelCollectionAccess,
   hooks: {
+    beforeOperation: [lockTravelGeoWrites],
     afterChange: [syncTravelRouteIdentity('travel-memories')],
     beforeDelete: [removeTravelRouteIdentity('travel-memories')],
-    beforeValidate: [preventCrossTravelSlugCollision('travel-plans')],
+    beforeValidate: [travelGeoGuard('parent'), preventCrossTravelSlugCollision('travel-plans')],
   },
   versions: travelCollectionVersions,
   fields: [
+    travelGeoAccessRevisionField(),
     ...commonTravelFields('participants'),
     {
       name: 'presentationStyle',

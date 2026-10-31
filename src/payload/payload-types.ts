@@ -351,6 +351,7 @@ export interface Media {
  */
 export interface TravelPlan {
   id: number;
+  geoAccessRevision?: string | null;
   title: string;
   /**
    * Canonical travel identity. It must not collide with a slug in the other travel collection.
@@ -384,6 +385,25 @@ export interface TravelPlan {
         displayDate?: string | null;
         displaySubtitle?: string | null;
         body: string;
+        geoStops?:
+          | {
+              stopKey?: string | null;
+              geo?: {
+                name?: string | null;
+                latitude?: number | null;
+                longitude?: number | null;
+                crs?: string | null;
+                provenance?: string | null;
+                originalCRS?: string | null;
+                approval?: {
+                  snapshot?: string | null;
+                  audience?: ('family' | 'public') | null;
+                  confirmedBy?: string | null;
+                };
+              };
+              id?: string | null;
+            }[]
+          | null;
         links?:
           | {
               label?: string | null;
@@ -441,6 +461,7 @@ export interface TravelPlan {
  */
 export interface TravelMemory {
   id: number;
+  geoAccessRevision?: string | null;
   title: string;
   /**
    * Canonical travel identity. It must not collide with a slug in the other travel collection.
@@ -460,7 +481,7 @@ export interface TravelMemory {
       }[]
     | null;
   /**
-   * Published visual style for all routes in this Travel Memory. Source imports do not manage this field.
+   * Published visual style for all routes. Source v2 may specify it; safe reconciliation preserves Admin-only changes.
    */
   presentationStyle?: ('editorial-journal' | 'cinematic-timeline' | 'family-scrapbook') | null;
   /**
@@ -589,6 +610,7 @@ export interface TravelMemory {
  */
 export interface TravelMemoryDay {
   id: number;
+  geoAccessRevision?: string | null;
   memory: number | TravelMemory;
   dayIdentity: string;
   dayKey: string;
@@ -609,6 +631,19 @@ export interface TravelMemoryDay {
          */
         momentKey: string;
         time?: string | null;
+        geo?: {
+          name?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          crs?: string | null;
+          provenance?: string | null;
+          originalCRS?: string | null;
+          approval?: {
+            snapshot?: string | null;
+            audience?: ('family' | 'public') | null;
+            confirmedBy?: string | null;
+          };
+        };
         location?: string | null;
         title: string;
         body?: string | null;
@@ -1089,6 +1124,7 @@ export interface PostsSelect<T extends boolean = true> {
  * via the `definition` "travel-plans_select".
  */
 export interface TravelPlansSelect<T extends boolean = true> {
+  geoAccessRevision?: T;
   title?: T;
   slug?: T;
   isPrivate?: T;
@@ -1114,6 +1150,29 @@ export interface TravelPlansSelect<T extends boolean = true> {
         displayDate?: T;
         displaySubtitle?: T;
         body?: T;
+        geoStops?:
+          | T
+          | {
+              stopKey?: T;
+              geo?:
+                | T
+                | {
+                    name?: T;
+                    latitude?: T;
+                    longitude?: T;
+                    crs?: T;
+                    provenance?: T;
+                    originalCRS?: T;
+                    approval?:
+                      | T
+                      | {
+                          snapshot?: T;
+                          audience?: T;
+                          confirmedBy?: T;
+                        };
+                  };
+              id?: T;
+            };
         links?:
           | T
           | {
@@ -1150,6 +1209,7 @@ export interface TravelPlansSelect<T extends boolean = true> {
  * via the `definition` "travel-memories_select".
  */
 export interface TravelMemoriesSelect<T extends boolean = true> {
+  geoAccessRevision?: T;
   title?: T;
   slug?: T;
   isPrivate?: T;
@@ -1269,6 +1329,7 @@ export interface TravelMemoriesSelect<T extends boolean = true> {
  * via the `definition` "travel-memory-days_select".
  */
 export interface TravelMemoryDaysSelect<T extends boolean = true> {
+  geoAccessRevision?: T;
   memory?: T;
   dayIdentity?: T;
   dayKey?: T;
@@ -1284,6 +1345,23 @@ export interface TravelMemoryDaysSelect<T extends boolean = true> {
     | {
         momentKey?: T;
         time?: T;
+        geo?:
+          | T
+          | {
+              name?: T;
+              latitude?: T;
+              longitude?: T;
+              crs?: T;
+              provenance?: T;
+              originalCRS?: T;
+              approval?:
+                | T
+                | {
+                    snapshot?: T;
+                    audience?: T;
+                    confirmedBy?: T;
+                  };
+            };
         location?: T;
         title?: T;
         body?: T;

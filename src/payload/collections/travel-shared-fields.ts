@@ -35,7 +35,8 @@ export const travelCollectionVersions: CollectionConfig['versions'] = {
       interval: 2000,
     },
   },
-  maxPerDoc: 30,
+  // Geo review saves must retain existing content and approval history.
+  maxPerDoc: 0,
 }
 
 export function commonTravelFields(

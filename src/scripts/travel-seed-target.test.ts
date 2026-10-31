@@ -235,6 +235,7 @@ assert.equal(adminWrites.length, 0)
 // The legacy writer cannot round-trip a v2 envelope or nested geo stops.
 // It must block before any mutation even in an explicit source-wins mode.
 for (const [target, current] of [
+  [memoryTarget, { id: 503, ...memoryTarget.source, title: 'Admin edit', sourceMetadata: { baseProjection: { atlasGeoV1: { owner: { name: { en: 'Private Base' }, latitude: 20, longitude: 100 } } } } }],
   [memoryTarget, { id: 501, ...memoryTarget.source, title: 'Admin edit', sourceMetadata: { baseProjection: { contract: 'memory-source-v2', locales: { en: { days: { 'day-01': { title: 'preserve' } } } } } } }],
   [planningTarget, { id: 502, ...planningTarget.source, title: 'Admin edit', planningSections: [{ ...(planningTarget.source.planningSections as object[])[0], id: 'section-row', geoStops: [{ id: 'stop-row', stopKey: 'stop-1', geo: { latitude: 20, longitude: 100 } }] }], sourceMetadata: { baseProjection: planningTarget.source } }],
 ] as const) {
