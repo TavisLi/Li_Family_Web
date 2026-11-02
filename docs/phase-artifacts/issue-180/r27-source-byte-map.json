@@ -594,6 +594,8 @@
     "docs/phase-artifacts/issue-180/pr181-follow-ups.md",
     "docs/phase-artifacts/issue-180/r27-evidence-summary.json",
     "docs/phase-artifacts/issue-180/r27-source-byte-map.json",
-    "src/scripts/phase21-travel-memory-seed-safety.test.ts"
+    "src/scripts/phase21-travel-memory-seed-safety.test.ts",
+    "scripts/ci/plan.mjs",
+    "scripts/ci/plan.test.mjs"
   ]
 }

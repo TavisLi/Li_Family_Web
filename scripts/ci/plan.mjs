@@ -18,7 +18,11 @@ const schema = (path) => path.startsWith('src/migrations/') ||
   path.startsWith('src/scripts/issue158/') || path.startsWith('scripts/rehearsal/')
 const disposable = (path) => path.startsWith('src/scripts/run-executor') ||
   path.startsWith('src/scripts/run-local-') || path === 'src/scripts/run-contract.mjs' ||
-  path.startsWith('src/scripts/issue158/') || path.startsWith('scripts/rehearsal/')
+  path.startsWith('src/scripts/issue158/') || (path.startsWith('scripts/rehearsal/') &&
+    // These exact inputs use Issue 180's own binding and separately approved Gate C
+    // execution. The CI fixture replays Issue 158's frozen runtime, not Gate C.
+    !['binding.json', 'historical-lock.yaml', 'legacy-fixture.sql']
+      .some(name => path === `scripts/rehearsal/baselines/issue180/${name}`))
 
 export function changedPaths(diff) {
   const fields = diff.toString('utf8').split('\0')
