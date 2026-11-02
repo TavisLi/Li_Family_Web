@@ -1,5 +1,7 @@
 # Issue #180 Gate B1 continuation — Human review
 
+> **Publication addendum — 2026-11-02:** The original B1 statements below are historical. [Current accepted scope](GATE-C-CURRENT.md) records r27 synthetic Gate C 20/20 PASS and Human decisions: Memory V1 retired/V2-only; shared try-lock fail-fast accepted; `maxPerDoc=0` conditionally accepted for current preservation. [Open follow-ups](pr181-follow-ups.md) cover Admin unsaved-state/edit retention, capacity and Production fidelity. Runtime/schema/Production claims below must be interpreted at their original date; Production remains UNKNOWN.
+
 2026-10-31 (Asia/Shanghai). Related: #180; same Draft PR #181.
 
 **B1 local implementation / offline checks: PASS. Complete runtime/data acceptance: BLOCK.**

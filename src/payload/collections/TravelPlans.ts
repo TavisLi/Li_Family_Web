@@ -1,6 +1,6 @@
 import { travelGeoReviewEndpoints } from './travel-geo-review'
 import { lockTravelGeoWrites } from './travel-geo-lock'
-import { travelGeoGuard, travelGeoAccessRevisionField, travelGeoStopsField } from './travel-geo'
+import { travelGeoGuard, travelGeoAccessRevisionField, travelGeoStopsField, omitUnreadablePlanGeoStops } from './travel-geo'
 import type { CollectionConfig } from 'payload'
 
 import {
@@ -29,6 +29,7 @@ export const TravelPlans: CollectionConfig = {
   },
   access: travelCollectionAccess,
   hooks: {
+    afterRead: [omitUnreadablePlanGeoStops],
     beforeOperation: [lockTravelGeoWrites],
     afterChange: [syncTravelRouteIdentity('travel-plans')],
     beforeDelete: [removeTravelRouteIdentity('travel-plans')],

@@ -180,11 +180,18 @@ try {
   await mkdir(path.dirname(filename), { recursive: true })
   await writeFile(filename, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64'))
   const db: Record<string, Record<string, unknown>[]> = {
-    users: inventory.members, 'travel-plans': inventory.plans, 'travel-memories': [], 'travel-memory-days': [], media: [],
+    users: inventory.members, 'travel-plans': inventory.plans, 'travel-memories': [], 'travel-memory-days': [], media: [{ ...projected.assets[0], id: 30 }],
   }
   let nextId = 100
   let writes = 0
+  let beforeTransaction: typeof db
+  const sessions = { tx: { db: { execute: async () => ({ rows: [{ locked: true, isolation: 'read committed', id: 30 }] }) } } }
   const store = {
+    db: { sessions,
+      beginTransaction: async () => { beforeTransaction = structuredClone(db); return 'tx' },
+      commitTransaction: async () => {},
+      rollbackTransaction: async () => { Object.assign(db, beforeTransaction) },
+    },
     find: async ({ collection, where }: { collection: string; where: Record<string, { equals: unknown }> }) => ({
       docs: db[collection]!.filter(item => Object.entries(where).every(([key, condition]) => item[key] === condition.equals)), hasNextPage: false,
     }),
@@ -201,7 +208,7 @@ try {
       return item
     },
   } as unknown as Payload
-  const options = { apply: false, assetRoot: root, sourceFile: 'template.md' }
+  const options = { apply: false, assetRoot: root, sourceFile: 'template.md', req: { payload: store, context: {} } as import('payload').PayloadRequest }
   await importMemoryV2(store, source, options)
   assert.equal(writes, 0, 'dry-run must not write')
   await importMemoryV2(store, source, { ...options, apply: true })
@@ -222,7 +229,7 @@ try {
   const changed = structuredClone(source)
   changed.summary = '新的旅程摘要'
   await importMemoryV2(store, changed, { ...options, apply: true })
-  assert.equal(firstMemory.summary, '新的旅程摘要')
+  assert.equal(db['travel-memories']![0]!.summary, '新的旅程摘要')
   assert.equal(firstMemory.presentationStyle, 'family-scrapbook')
   assert.equal(db.users!.length, 1, 'no user mutation')
   const firstDay = db['travel-memory-days']![0]!

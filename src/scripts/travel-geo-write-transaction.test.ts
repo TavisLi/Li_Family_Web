@@ -31,11 +31,11 @@ for (const kind of ['plan', 'memory'] as const) {
   assert.deepEqual(store.updateOptions.slice(0, 2).map(args => args.locale), ['zh-TW', 'en'])
   const saved = geoRows(store.state.doc, kind)[0]!
   assert.deepEqual(geoContent(saved.geo), source)
-  assert.equal(saved.geo.approval, null, 'Source cannot approve geographic content')
+  assert.deepEqual(saved.geo.approval, { snapshot: null, audience: null, confirmedBy: null }, 'Source cannot approve geographic content')
   const base = record(record((store.state.parent ?? store.state.doc).sourceMetadata).baseProjection)
   assert.deepEqual(record(base.atlasGeoV1)[identity], source)
   const expected = structuredClone(before)
-  geoRows(expected.doc, kind)[0]!.row.geo = { ...source, approval: null }
+  geoRows(expected.doc, kind)[0]!.row.geo = { ...source, approval: { snapshot: null, audience: null, confirmedBy: null } }
   record((expected.parent ?? expected.doc).sourceMetadata).baseProjection = base
   expected.doc.updatedAt = store.state.doc.updatedAt
   if (expected.parent) expected.parent.updatedAt = store.state.parent?.updatedAt

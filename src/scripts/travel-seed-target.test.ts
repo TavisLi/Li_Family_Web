@@ -232,11 +232,9 @@ const adminEditResult = await writeTravelSeedTarget({
 assert.equal(adminEditResult.action, 'preserve-current')
 assert.equal(adminWrites.length, 0)
 
-// The legacy writer cannot round-trip a v2 envelope or nested geo stops.
+// The remaining Plan writer cannot round-trip protected geo stops.
 // It must block before any mutation even in an explicit source-wins mode.
 for (const [target, current] of [
-  [memoryTarget, { id: 503, ...memoryTarget.source, title: 'Admin edit', sourceMetadata: { baseProjection: { atlasGeoV1: { owner: { name: { en: 'Private Base' }, latitude: 20, longitude: 100 } } } } }],
-  [memoryTarget, { id: 501, ...memoryTarget.source, title: 'Admin edit', sourceMetadata: { baseProjection: { contract: 'memory-source-v2', locales: { en: { days: { 'day-01': { title: 'preserve' } } } } } } }],
   [planningTarget, { id: 502, ...planningTarget.source, title: 'Admin edit', planningSections: [{ ...(planningTarget.source.planningSections as object[])[0], id: 'section-row', geoStops: [{ id: 'stop-row', stopKey: 'stop-1', geo: { latitude: 20, longitude: 100 } }] }], sourceMetadata: { baseProjection: planningTarget.source } }],
 ] as const) {
   const before = structuredClone(current)
@@ -252,4 +250,23 @@ for (const [target, current] of [
   assert.equal(result.action, 'conflict')
   assert.equal(mutations.length, 0)
   assert.deepEqual(current, before)
+}
+
+// Payload stores a draft-only Base in the latest version. Reading the main row
+// is insufficient even when it has the same document id and slug.
+{
+  const main = { id: 601, ...planningTarget.source, sourceMetadata: { baseProjection: null } }
+  const draft = { ...main, _status: 'draft', sourceMetadata: { baseProjection: {
+    atlasGeoV1: { 'plan-stop': { latitude: 25, longitude: 121 } },
+  } } }
+  let mutations = 0
+  const result = await writeTravelSeedTarget({ mode: 'source-wins', target: planningTarget,
+    store: {
+      async find(args) { return { docs: [(args as { draft?: boolean }).draft ? draft : main] } },
+      async create() { mutations++; return { id: 601 } },
+      async update() { mutations++; return { id: 601 } },
+    },
+  })
+  assert.equal(result.action, 'conflict', 'latest draft geo Base must refuse Plan source-wins')
+  assert.equal(mutations, 0, 'refusal must not advance or replace metadata')
 }

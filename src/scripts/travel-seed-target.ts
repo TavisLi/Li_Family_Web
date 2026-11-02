@@ -37,6 +37,7 @@ export type TravelSeedStore = {
   find(args: {
     collection: TravelSeedCollection
     depth: 0
+    draft: true
     limit: 1
     where: { slug: { equals: string } }
   }): Promise<{ docs: TravelSeedDocument[] }>
@@ -108,9 +109,11 @@ export async function writeTravelSeedTarget(input: {
   store: TravelSeedStore
   target: TravelSeedTarget
 }): Promise<TravelSeedWriteResult> {
+  if (input.target.collection === 'travel-memories') throw new Error('MEMORY_V1_RETIRED: use --memory-v2 <file>; legacy Memory writes are disabled')
   const existing = await input.store.find({
     collection: input.target.collection,
     depth: 0,
+    draft: true,
     limit: 1,
     where: { slug: { equals: String(input.target.source.slug) } },
   })

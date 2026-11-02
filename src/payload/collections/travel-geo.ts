@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { isDeepStrictEqual } from 'node:util'
-import type { CollectionBeforeValidateHook, Field } from 'payload'
+import type { CollectionAfterReadHook, CollectionBeforeValidateHook, Field } from 'payload'
+import type { TravelPlan } from '../payload-types'
 import { canManageContent } from '../access/is-admin'
 
 export function travelGeoField(): Field {
@@ -18,6 +19,7 @@ export function travelGeoField(): Field {
       { name: 'originalCRS', type: 'text', required: false },
       {
         name: 'approval', type: 'group', required: false, admin: { readOnly: true },
+        hooks: { beforeValidate: [({ value }) => value === null ? {} : value] },
         fields: [
           { name: 'snapshot', type: 'textarea', required: false },
           { name: 'audience', type: 'select', enumName: 'travel_geo_audience', required: false, options: ['family', 'public'] },
@@ -48,6 +50,15 @@ export function travelGeoStopsField(): Field {
   }
 }
 
+// Payload 3.90.2 recreates a denied array as [] after field access runs.
+// Omit it after field traversal so raw stop presence stays Admin-only.
+export const omitUnreadablePlanGeoStops: CollectionAfterReadHook<TravelPlan> = ({ doc, req, overrideAccess }) => {
+  if (!overrideAccess && !canManageContent({ user: req.user })) {
+    for (const section of doc.planningSections ?? []) delete section.geoStops
+  }
+  return doc
+}
+
 type Row = Record<string, unknown>
 export function geoRecord(value: unknown): Row | undefined {
   return value && typeof value === 'object' && !Array.isArray(value) ? value as Row : undefined
@@ -62,7 +73,7 @@ export async function withTravelGeoApproval<T>(req: object, write: () => Promise
 }
 
 export function travelGeoGuard(kind: 'plan' | 'memory' | 'parent'): CollectionBeforeValidateHook {
-  return ({ data, originalDoc, req }) => guardTravelGeoIdentity(kind, data ?? {}, originalDoc, approvalRequests.has(req), Boolean(req.context.isRestoringVersion))
+  return ({ data, originalDoc, operation, req }) => guardTravelGeoIdentity(kind, data ?? {}, operation === 'create' ? undefined : originalDoc, approvalRequests.has(req), Boolean(req.context.isRestoringVersion))
 }
 
 export function guardTravelGeoIdentity(kind: 'plan' | 'memory' | 'parent', data: Row, original?: Row, approvalWrite = false, restoring = false): Row {
@@ -97,17 +108,26 @@ export function guardTravelGeoIdentity(kind: 'plan' | 'memory' | 'parent', data:
       return row
     }
     const oldApproval = previous?.approval
-    if (!approvalWrite && Object.hasOwn(geo, 'approval') && !isDeepStrictEqual(geo.approval, oldApproval) && geo.approval != null) throw new Error('Geo approval requires explicit Admin review')
+    if (!approvalWrite && Object.hasOwn(geo, 'approval') && !isDeepStrictEqual(geo.approval, oldApproval) && !emptyGeoApproval(geo.approval)) throw new Error('Geo approval requires explicit Admin review')
     const merged = { ...previous, ...geo }
     const content = ({ approval: _approval, ...value }: Row) => value
     if (!approvalWrite && (restoring || !isDeepStrictEqual(content(merged), content(previous ?? {})))) merged.approval = null
+    // Payload traverses named groups; null is not a valid group container.
+    if (emptyGeoApproval(merged.approval)) merged.approval = { snapshot: null, audience: null, confirmedBy: null }
     return { ...row, geo: merged }
   }
+}
+
+function emptyGeoApproval(value: unknown): boolean {
+  const approval = geoRecord(value)
+  return value == null || Boolean(approval && Object.values(approval).every(field => field == null))
 }
 
 function relation(value: unknown): unknown { return geoRecord(value)?.id ?? value }
 
 function rows(value: unknown, previous: unknown, key: string, transform: (row: Row, before?: Row) => Row): Row[] {
+  // Payload represents omitted optional arrays as null, including legacy creates.
+  if (value == null && (previous == null || (Array.isArray(previous) && previous.length === 0))) return []
   if (!Array.isArray(value)) throw new Error('Geo row removal requires separate review')
   const old = Array.isArray(previous) ? previous.map(geoRecord).filter((item): item is Row => Boolean(item)) : []
   const seen = new Set<string>()

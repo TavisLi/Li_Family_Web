@@ -1,0 +1,158 @@
+{
+  "version": 1,
+  "scope": "r27-isolated-synthetic-only",
+  "testedBaselineHEAD": "ee0130375bca35306323f63498f3e74dd17fed30",
+  "runId": "issue180-f5dc1b3f34b80b5f84aae12ef6c5c503",
+  "manifestCanonicalSHA256": "080a0efa31c9815bcf27cde00383efe5af8dce0cac0b750576c82a12fa85001c",
+  "manifestRawSHA256": "6e06167bb2aec99ebd1bd2a3b4c9078f828591f66948b7ef58c887d52fd4a82a",
+  "terminalReceiptSHA256": "e2a4e034bb2540059754491512e3121b235c2555b13cb5256320d6b0f310bc05",
+  "terminalLedgerSHA256": "38e3b0dfd994cfaca1fcaec08210cd7fe0d15f9ce2989ac6559c15fc06e7772f",
+  "status": "PASS",
+  "warnings": [],
+  "cases": [
+    {
+      "id": "migration-up",
+      "status": "PASS",
+      "evidence": "main/migration-up.json",
+      "sha256": "62e0360ed81e897986d79f7c39fe9bfb0c2289d98025db56a79ff4cf5847c72b"
+    },
+    {
+      "id": "empty-down",
+      "status": "PASS",
+      "evidence": "main/empty-down.json",
+      "sha256": "e9a1d01748c1cf1ffaf05b61776d64dac3f67320b32195953a294d788b39da87"
+    },
+    {
+      "id": "populated-down-refusal",
+      "status": "PASS",
+      "evidence": "main/populated-down-refusal.json",
+      "sha256": "bfe1665eb92e31c2474d857c69d5242d5d70726bac08230ac947d9e1ef1c3397"
+    },
+    {
+      "id": "plan-seed",
+      "status": "PASS",
+      "evidence": "main/plan-seed.json",
+      "sha256": "0ebb4fa66b08818ed72ea7c13d9cb0f589b6eeba41e3ec6888a329fadd8fd34c"
+    },
+    {
+      "id": "memory-v1",
+      "status": "PASS",
+      "evidence": "main/memory-v1.json",
+      "sha256": "1bcc3e5f35c58eb81f33550fb41db3b3252af5a45d80935ffe51348966b8303e"
+    },
+    {
+      "id": "memory-v2",
+      "status": "PASS",
+      "evidence": "main/memory-v2.json",
+      "sha256": "3f63d2ab0b8b837f45d1a67023b05ffbbe597c88bf6d7d05508ad73c1dad4509"
+    },
+    {
+      "id": "admin",
+      "status": "PASS",
+      "evidence": "main/admin.json",
+      "sha256": "56dcfccb1b88c652f26988e25444a5d67fa1a69c343d6e19edfe2668d529a861"
+    },
+    {
+      "id": "locales",
+      "status": "PASS",
+      "evidence": "main/locales.json",
+      "sha256": "cd9f5352ffc6b9d84e15726affdb6e97f2ea103fc51afc2262c5c26674846db7"
+    },
+    {
+      "id": "non-target",
+      "status": "PASS",
+      "evidence": "main/non-target.json",
+      "sha256": "59b97945af408dbec9d6ca1634976b588647f055483b02748e163b805b52169b"
+    },
+    {
+      "id": "http",
+      "status": "PASS",
+      "evidence": "main/http.json",
+      "sha256": "5a2b40a99a7a6f71a7e0561b31367933fc11b82bffd3ad94ee93720de23f19c4"
+    },
+    {
+      "id": "graphql",
+      "status": "PASS",
+      "evidence": "main/graphql.json",
+      "sha256": "5082f74750be824bfc2f98c4c44c9867ec80b580ad3f3284b078cfa3565a38e5"
+    },
+    {
+      "id": "local-api",
+      "status": "PASS",
+      "evidence": "main/local-api.json",
+      "sha256": "f9542320e30f4517802ea063bccdac688c882044fbdba1264bdd08aee447b3c9"
+    },
+    {
+      "id": "same-owner",
+      "status": "PASS",
+      "evidence": "main/same-owner.json",
+      "sha256": "00a238e00129158d1268d7aa96a58cece43b22cfc75b5dd5e3ea3223a564922e"
+    },
+    {
+      "id": "parent-day",
+      "status": "PASS",
+      "evidence": "main/parent-day.json",
+      "sha256": "0de17183d688dfa2a166a27b6b54fe348e66ddd9fafd0998fd7c82fe6497da38"
+    },
+    {
+      "id": "different-trips",
+      "status": "PASS",
+      "evidence": "main/different-trips.json",
+      "sha256": "7f3ed40c0f86cd92b1752b4254068a8707bf53d100695d2acb9ec484b88179e8"
+    },
+    {
+      "id": "autosave",
+      "status": "PASS",
+      "evidence": "main/autosave.json",
+      "sha256": "442369719c666d4fffb959d19357f3488c4c4b1c7ea0b7011a8b6e223b719484"
+    },
+    {
+      "id": "transaction-rollback",
+      "status": "PASS",
+      "evidence": "main/transaction-rollback.json",
+      "sha256": "aa34e896dc41cedd48e3ccd68333e3262244638abdae3865c3c06ff61f5d0bd1"
+    },
+    {
+      "id": "history",
+      "status": "PASS",
+      "evidence": "main/history.json",
+      "sha256": "45a52dd01212e758a7bb7931cf7ed1f2b6544a5b528e5a57863ba4710f8ba7e2"
+    },
+    {
+      "id": "independent-restore",
+      "status": "PASS",
+      "evidence": "main/independent-restore.json",
+      "sha256": "9b9e6cec80e30f920ab9634939b57b2fa8f0d3027386ee32183380e3d2aa657d"
+    },
+    {
+      "id": "cleanup",
+      "status": "PASS",
+      "evidence": "cleanup.json",
+      "sha256": "44cfdacaef08043b42525611f890e0ce44081854a111f475a52e359f1a08759f"
+    }
+  ],
+  "controlledCleanupProbes": [
+    {
+      "phase": "cleanup-failure",
+      "expectedFailure": "EXPECTED_CLEANUP_FAILURE",
+      "absence": {
+        "databaseAbsent": true,
+        "serverStopped": true,
+        "directoryAbsent": true
+      }
+    },
+    {
+      "phase": "cleanup-abort",
+      "expectedFailure": "INTERRUPTED",
+      "absence": {
+        "databaseAbsent": true,
+        "serverStopped": true,
+        "directoryAbsent": true
+      }
+    }
+  ],
+  "history": "retained and independently restored",
+  "restoreCatalog": "all compared properties and relative live-column order; 24 absolute ordinal differences recorded",
+  "productionReadiness": "UNKNOWN",
+  "publication": "historical result; no claim that the publication commit was executed under r27"
+}

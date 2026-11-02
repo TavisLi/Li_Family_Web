@@ -61,7 +61,7 @@ for (const kind of ['plan', 'memory'] as const) {
     ...input, action: 'revoke', expectedRevision: geoReviewRevision(store.state.doc, store.state.parent),
   })
   assert.equal(revoke.result, 'revoked')
-  assert.equal(geoRows(store.state.doc, kind)[0]!.geo.approval, null)
+  assert.deepEqual(geoRows(store.state.doc, kind)[0]!.geo.approval, { snapshot: null, audience: null, confirmedBy: null })
   assert.equal(store.state.doc._status, 'published')
 
   const rollback = syntheticStore(kind)

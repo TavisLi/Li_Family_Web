@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "node": "24.21.0",
+  "baseline": "scripts/rehearsal/baselines/issue158-v12/baseline.json",
+  "historicalMapping": "scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json",
+  "historicalLock": "scripts/rehearsal/baselines/issue180/historical-lock.yaml",
+  "files": {
+    "pnpm-lock.yaml": "f0dd95d9d4d382ff41b04d6a5b70a08a41ef94e5f0c4a5aefff122e57d90695f",
+    "pnpm-workspace.yaml": "df1db56bc0b7fc9220733ccde4a758fc3b30c10ec1f9ddd1c30b0e3f129fbc17",
+    "package.json": "a6d1b8abad9dde68360533c093fa6182e9cb135b89c33cfd31dce658e05425fe",
+    "patches/@payloadcms__db-postgres@3.90.2.patch": "1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052",
+    "scripts/rehearsal/baselines/issue180/historical-lock.yaml": "43d2a67d977f053167f9a40da5517e588d52865a2d4a3626849c628b262ec46c",
+    "scripts/rehearsal/baselines/issue158-v12/schema.sql": "0fd2766bd5e825861696f60f9578e5b2d4997f07996f7de2eac91b43a70b69a1",
+    "scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json": "15ceeadb5220290dee16c9c4f30d135ef7d99a5a21109e6f59ec6bc85d46e524",
+    "scripts/rehearsal/baselines/issue158-v12/baseline.json": "bd0bd48ca13c782417ca632e8755f3b9e559b6b449c3311a89d72581b21eed89",
+    "scripts/rehearsal/baselines/issue158-v12/catalog-queries.json": "db4527a0dc20c6818a571eff355b424713830fcfc5bc955bfcef616e18020681",
+    "scripts/rehearsal/baselines/issue158-v12/semantic-catalog.json": "ca34f5a0b2817c82d773444eef9a9be34d8976ca2cd276dfea9e316d59579dd1"
+  },
+  "review": {
+    "historicalCommit": "413069052b21ae0100f4bbe009082be8d7e2bbe0",
+    "change": "additive maplibre-gl 6.16.0 and happy-dom 20.14.6 dependency trees; no removed historical lock lines",
+    "limits": [
+      "not clean install integrity",
+      "not migration fidelity",
+      "not source roles/RLS parity"
+    ]
+  }
+}
