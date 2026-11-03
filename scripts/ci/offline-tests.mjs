@@ -27,6 +27,7 @@ const files = [
   'src/lib/data/travel-memory-child-access.test.ts',
   'src/lib/site-metadata.test.ts',
   'src/lib/travel-atlas.test.ts',
+  'src/lib/travel-geo-value.test.ts',
   'src/lib/travel-domain.test.ts',
   'src/lib/travel-interactions.test.ts',
   'src/lib/travel-memory-rollout.test.ts',
@@ -35,6 +36,11 @@ const files = [
   'src/payload/access/is-admin.test.ts',
   'src/payload/collections/travel-collections.test.ts',
   'src/payload/collections/travel-memory-keys.test.ts',
+  'src/payload/collections/travel-geo.test.ts',
+  'src/payload/collections/travel-geo-lock.test.ts',
+  'src/payload/collections/travel-geo-review.test.ts',
+  'src/payload/collections/travel-source-metadata-access.test.ts',
+  'src/payload/collections/travel-source-metadata-query.test.ts',
   'src/payload/collections/users.test.ts',
   'src/payload/r2-preview.test.ts',
   'src/payload/r2.test.ts',
@@ -77,6 +83,10 @@ const files = [
   'src/scripts/travel-conflict-register.test.ts',
   'src/scripts/travel-daily-table-boundaries.test.ts',
   'src/scripts/travel-data-api-security-package.test.ts',
+  'src/scripts/travel-geo-reconciliation.test.ts',
+  'src/scripts/travel-geo-write.test.ts',
+  'src/scripts/travel-geo-write-transaction.test.ts',
+  'src/scripts/travel-geo-migration.test.ts',
   'src/scripts/travel-legacy-cleanup-package.test.ts',
   'src/scripts/travel-memory-day-projections.test.ts',
   'src/scripts/travel-memory-source-contract.test.ts',
@@ -84,6 +94,25 @@ const files = [
   'src/scripts/travel-section-media.test.ts',
   'src/scripts/travel-seed-reconciliation.test.ts',
   'src/scripts/travel-seed-target.test.ts',
+  // Portable Issue #180 regressions; real PostgreSQL rehearsal stays separately approved.
+  'src/scripts/issue180/access-counts.test.mjs',
+  'src/scripts/issue180/access-diagnostic.test.mjs',
+  'src/scripts/issue180/gate-c-access.test.mjs',
+  'src/scripts/issue180/gate-c-observer.test.mjs',
+  'src/scripts/issue180/gate-c-recovery.test.mjs',
+  'src/scripts/issue180/gate-c-worker.test.mjs',
+  'src/scripts/issue180/gate-c-worker-host.test.mjs',
+  'src/scripts/issue180/geo-null.test.mjs',
+  'src/scripts/issue180/geo-optional-rows.test.mjs',
+  'src/scripts/issue180/geo-owner.test.mjs',
+  'src/scripts/issue180/geo-read.test.mjs',
+  'src/scripts/issue180/graphql-groups.test.mjs',
+  'src/scripts/issue180/graphql-validation.test.mjs',
+  'src/scripts/issue180/query-denial.test.mjs',
+  'src/scripts/issue180/snapshot-assertions.test.mjs',
+  'src/scripts/issue180/v2-transaction.test.mjs',
+  'src/scripts/issue180/validation-diagnostic.test.mjs',
+
 ]
 
 for (const file of files) {
@@ -97,7 +126,7 @@ const selected = files.filter(file => {
     file.startsWith('src/features/member/') || file === 'src/lib/site-metadata.test.ts' ||
     file === 'src/lib/data/auth-session.test.ts' || file === 'src/payload/access/is-admin.test.ts' ||
     file === 'src/payload/collections/users.test.ts'
-  return file.includes('travel') || file.includes('seed-') || file.includes('daily-hero') ||
+  return file.startsWith('src/scripts/issue180/') || file.includes('travel') || file.includes('seed-') || file.includes('daily-hero') ||
     file === 'src/payload/r2.test.ts' || file === 'src/payload/r2-preview.test.ts'
 })
 if (!selected.length) throw new Error(`No tests selected for ${group}`)

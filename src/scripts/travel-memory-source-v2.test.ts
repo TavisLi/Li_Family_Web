@@ -180,11 +180,18 @@ try {
   await mkdir(path.dirname(filename), { recursive: true })
   await writeFile(filename, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64'))
   const db: Record<string, Record<string, unknown>[]> = {
-    users: inventory.members, 'travel-plans': inventory.plans, 'travel-memories': [], 'travel-memory-days': [], media: [],
+    users: inventory.members, 'travel-plans': inventory.plans, 'travel-memories': [], 'travel-memory-days': [], media: [{ ...projected.assets[0], id: 30 }],
   }
   let nextId = 100
   let writes = 0
+  let beforeTransaction: typeof db
+  const sessions = { tx: { db: { execute: async () => ({ rows: [{ locked: true, isolation: 'read committed', id: 30 }] }) } } }
   const store = {
+    db: { sessions,
+      beginTransaction: async () => { beforeTransaction = structuredClone(db); return 'tx' },
+      commitTransaction: async () => {},
+      rollbackTransaction: async () => { Object.assign(db, beforeTransaction) },
+    },
     find: async ({ collection, where }: { collection: string; where: Record<string, { equals: unknown }> }) => ({
       docs: db[collection]!.filter(item => Object.entries(where).every(([key, condition]) => item[key] === condition.equals)), hasNextPage: false,
     }),
@@ -201,7 +208,7 @@ try {
       return item
     },
   } as unknown as Payload
-  const options = { apply: false, assetRoot: root, sourceFile: 'template.md' }
+  const options = { apply: false, assetRoot: root, sourceFile: 'template.md', req: { payload: store, context: {} } as import('payload').PayloadRequest }
   await importMemoryV2(store, source, options)
   assert.equal(writes, 0, 'dry-run must not write')
   await importMemoryV2(store, source, { ...options, apply: true })
@@ -222,10 +229,33 @@ try {
   const changed = structuredClone(source)
   changed.summary = '新的旅程摘要'
   await importMemoryV2(store, changed, { ...options, apply: true })
-  assert.equal(firstMemory.summary, '新的旅程摘要')
+  assert.equal(db['travel-memories']![0]!.summary, '新的旅程摘要')
   assert.equal(firstMemory.presentationStyle, 'family-scrapbook')
   assert.equal(db.users!.length, 1, 'no user mutation')
+  const firstDay = db['travel-memory-days']![0]!
+  const moments = firstDay.moments as Record<string, unknown>[]
+  moments[0]!.geo = { latitude: 20, longitude: 100 }
+  const beforeGeo = structuredClone(db)
+  const beforeGeoWrites = writes
+  await assert.rejects(() => importMemoryV2(store, changed, { ...options, apply: true }), /geo: legacy importer/)
+  assert.equal(writes, beforeGeoWrites, 'geo blocks before any record or Base mutation')
+  assert.deepEqual(db, beforeGeo, 'all synthetic legacy data remains intact')
 } finally {
   await rm(root, { recursive: true, force: true })
 }
 console.log('Travel Memory Source v2: parser, projection, coverage, reconciliation and local import PASS')
+
+const geoInventory: V2Inventory = {
+  ...inventory,
+  memory: { ...duplicateBase, id: 2, sourceMetadata: { baseProjection: {
+    contract: 'memory-source-v2', locales: { 'zh-TW': { memory: duplicateBase, days: { 'day-01': duplicateDayBase }, assets: {} } },
+  } } },
+  media: [{ id: 30 }, { id: 31 }],
+  days: [{ ...duplicateDayBase, id: 3, moments: [{
+    ...duplicateDayBase.moments![0], id: 'moment-row', geo: { latitude: 20, longitude: 100 },
+  }] }],
+}
+const beforeGeoInventory = structuredClone(geoInventory)
+const geoPlan = planMemoryV2(duplicatePlacementSource, geoInventory, duplicateRegistry, 'production')
+assert.match(geoPlan.conflicts.join(';'), /geo.*legacy/i)
+assert.deepEqual(geoInventory, beforeGeoInventory)

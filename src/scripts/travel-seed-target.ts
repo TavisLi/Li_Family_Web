@@ -1,4 +1,5 @@
 import type { TravelSeed } from './seed-content'
+import { containsTravelGeo } from './travel-geo-preservation'
 import {
   buildTravelMemoryProjection,
   buildTravelPlanProjection,
@@ -36,6 +37,7 @@ export type TravelSeedStore = {
   find(args: {
     collection: TravelSeedCollection
     depth: 0
+    draft: true
     limit: 1
     where: { slug: { equals: string } }
   }): Promise<{ docs: TravelSeedDocument[] }>
@@ -107,9 +109,11 @@ export async function writeTravelSeedTarget(input: {
   store: TravelSeedStore
   target: TravelSeedTarget
 }): Promise<TravelSeedWriteResult> {
+  if (input.target.collection === 'travel-memories') throw new Error('MEMORY_V1_RETIRED: use --memory-v2 <file>; legacy Memory writes are disabled')
   const existing = await input.store.find({
     collection: input.target.collection,
     depth: 0,
+    draft: true,
     limit: 1,
     where: { slug: { equals: String(input.target.source.slug) } },
   })
@@ -127,6 +131,20 @@ export async function writeTravelSeedTarget(input: {
       },
     })
     return { action: 'create', conflicts: [], id: created.id }
+  }
+
+  // The v1 projection cannot round-trip a v2 envelope or geo-bearing nested
+  // rows. Refuse before writing, including in source-wins mode.
+  const metadata = currentDocument.sourceMetadata
+  const base = metadata && typeof metadata === 'object' && !Array.isArray(metadata)
+    ? (metadata as Record<string, unknown>).baseProjection : undefined
+  const v2Base = base && typeof base === 'object' && !Array.isArray(base)
+    && (base as Record<string, unknown>).contract === 'memory-source-v2'
+  if (v2Base || containsTravelGeo(currentDocument.planningSections) || containsTravelGeo(base)) {
+    return {
+      action: 'conflict', id: currentDocument.id,
+      conflicts: [{ field: 'sourceMetadata', category: 'source-metadata', base: undefined, source: undefined, current: undefined }],
+    }
   }
 
   const current = buildTravelProjection(currentDocument)

@@ -32,6 +32,20 @@ test('rename and deletion classify both sides; unknown paths are conservative', 
   assert.throws(() => plan([]))
 })
 
+test('bound Issue 180 inputs retain application checks without replaying the unrelated frozen Issue 158 runtime', () => {
+  const inputs = ['binding.json', 'historical-lock.yaml', 'legacy-fixture.sql']
+    .map(name => `scripts/rehearsal/baselines/issue180/${name}`)
+  for (const input of inputs) {
+    assert.deepEqual(plan([input]), { governance: false, app: true, schema: true,
+      deps: false, disposable: false, tests: 'all' })
+  }
+  for (const other of ['scripts/rehearsal/baselines/issue180/new.sql',
+    'scripts/rehearsal/baselines/issue158-v12/schema.sql', 'src/scripts/issue158/replay.mjs',
+    'src/scripts/run-executor.mjs']) {
+    assert.equal(plan([...inputs, other]).disposable, true)
+  }
+})
+
 test('changed paths allow consecutive dots in filenames and reject parent segments', () => {
   assert.deepEqual(changedPaths(Buffer.from('A\0content-source/assets/members/tavis/tavis-hero..jpeg\0')),
     ['content-source/assets/members/tavis/tavis-hero..jpeg'])

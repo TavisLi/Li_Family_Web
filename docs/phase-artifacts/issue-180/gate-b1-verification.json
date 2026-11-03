@@ -1,0 +1,75 @@
+{
+  "recordedAt": "2026-10-31T13:33:56.973290+08:00",
+  "baseline": {
+    "main": "d8139e4561f7c4bb47fdc8d8c0e00e099660c829",
+    "previousPRHead": "0804f0662ba83c40bea96a922e907c7d78a840b5"
+  },
+  "node": "24.21.0",
+  "payload": "3.90.2",
+  "lockfileSHA256": "f0dd95d9d4d382ff41b04d6a5b70a08a41ef94e5f0c4a5aefff122e57d90695f",
+  "codeSHA256": "bfd9e0e6a445dfa40572030e8928755c3af97086629cb539c2543e6577366a30",
+  "fileSHA256": {
+    "scripts/ci/offline-tests.mjs": "a14fb5c40294d62e45b2c20d0a182eeecc0b90ce511b06298a4a5ce6a1cf4f46",
+    "src/lib/travel-geo-value.test.ts": "5849044c910026837a4a985d7a3f2e7b2d431ad5960d37aae9249d58e390dc98",
+    "src/lib/travel-geo-value.ts": "eabf487b6d5a124de6b3dd14e61b0fdb9ed06ab5a6d301453e4f5105cb3175a9",
+    "src/migrations/20261031_052622_issue180_optional_geo.json": "e9d8f993b12f1987371ea3d174a623b9a4bbe62b342eb1fbb7e8aade36700339",
+    "src/migrations/20261031_052622_issue180_optional_geo.ts": "252ceab99cedd36c1c2cd91acb839182df4687918dda17963c3ce03510fec966",
+    "src/migrations/index.ts": "a49d7eadf235746c8348b75cfa9cea1e52495142304772e8eb43ccabb77ad093",
+    "src/payload/collections/TravelMemories.ts": "2f3c87b665387f8b28b429a05fd4224e236861d8df27709a26e75b331029a112",
+    "src/payload/collections/TravelMemoryDays.ts": "3ed97cc9993555c83e164ae7072579461249d974f5cc97dc7392091a5c671a65",
+    "src/payload/collections/TravelPlans.ts": "9533880b0765c7dfc0630a40cfc31925fd009ff84cbc78cb81560415d14d1528",
+    "src/payload/collections/travel-collections.test.ts": "9b08ceea2b48a524da8782e0df23a9ac488e2a82ef519417ace5e3f3bcd82541",
+    "src/payload/collections/travel-geo-lock.test.ts": "0bbec1230544a630984103e3e056e31517f7141f4328662ac759c77f005d4abe",
+    "src/payload/collections/travel-geo-lock.ts": "86013846871def43f189904cc9a2e1dad60733463ed0bf816bc697fe358626c8",
+    "src/payload/collections/travel-geo-review.test.ts": "4f48e1980bc0a2426a8999a156439d3031e8f9d5097e438494baa1658c81971c",
+    "src/payload/collections/travel-geo-review.ts": "9d395ef232605034e94d933e275262f303d38d1a2918dc0b78ccc2bce74bd3b6",
+    "src/payload/collections/travel-geo-test-store.ts": "4c3a6eadbc5e41f0150af7f7cc306ed2409795564da1169d4f3aadeeb001d2cb",
+    "src/payload/collections/travel-geo.test.ts": "09a244c53f655c6ea1b08d18bcf5094f7087670e8e01a226653dcf68d3e42ea3",
+    "src/payload/collections/travel-geo.ts": "b2a0bdb95a0587c66b955df7584a053b64b3c3a675117e4a7f03d4ab7f6ba63d",
+    "src/payload/collections/travel-shared-fields.ts": "6dd27ed2f2d109e9875712ef8eb54ee78eef7cf4db4794b4cbdcd9d31c390104",
+    "src/payload/collections/travel-source-metadata-query.test.ts": "c6f1e60942989af3dc752f8cf22d45936eb15037da059c7810b87d049e885fd9",
+    "src/payload/payload-types.ts": "d4854a70b765c061f88fc0664a874e53dff3e0c3924d5e4d2c7ad3167eb22909",
+    "src/scripts/travel-geo-migration.test.ts": "dc8945c64527cee8542846362e3a98f8d13eae09b6a469614b6ab97884bd7cb7",
+    "src/scripts/travel-geo-preservation.ts": "3c0cc78abfda96c94bc7c2a38e81b8b89210f636344eb2e0309ce6fe4c4a099f",
+    "src/scripts/travel-geo-write-transaction.test.ts": "79036f12b1c45c59adebe65bfaf28d590966ff702ddf479a342c6e5edb92be4a",
+    "src/scripts/travel-geo-write.test.ts": "a1e26a9a5150afe0a6b2a092459c0a6e0c6e6ca291cfe39830f4b6e6655dbff8",
+    "src/scripts/travel-geo-write.ts": "3c6bc70376be3d3e377477f7d75e5f309fde7ab2088ce8ec607c6528fdcd12a1",
+    "src/scripts/travel-memory-v2-coverage.ts": "1a724a275cc07a3bfb987c535d0339d3f239f3be5dc3e4fce5deb4b8fe2782f9",
+    "src/scripts/travel-seed-target.test.ts": "c114a732be7b3ddf43004a8987ed2d247e311c94a13c5275ff68e7cc03f2b63d"
+  },
+  "checks": {
+    "travelOfflineAllowlist": {
+      "result": "PASS",
+      "files": 51,
+      "note": "Before final review repairs; changed boundaries rechecked below"
+    },
+    "finalBoundaryTests": {
+      "result": "PASS",
+      "files": 6
+    },
+    "finalBuild": {
+      "result": "PASS",
+      "warning": "Next.js edge-runtime disables static generation on its route",
+      "note": "Before whitespace-only cleanup of generated SQL and test helper; migration static test rerun afterward"
+    },
+    "finalTypeScript": {
+      "result": "PASS"
+    },
+    "lint": {
+      "result": "PASS",
+      "notice": "next lint deprecation"
+    },
+    "migrationStaticReview": "PASS (not executed)",
+    "independentStaticReview": "three findings fixed and statically rechecked",
+    "realPayloadDBRoundTrips": "UNKNOWN; Gate C not started",
+    "HTTPGraphQLDatabasePolicy": "UNKNOWN; synthetic operation/response tests only"
+  },
+  "excluded": [
+    "Production access",
+    "credential reads",
+    "migration execution",
+    "deployment",
+    "merge",
+    "Gate C"
+  ]
+}

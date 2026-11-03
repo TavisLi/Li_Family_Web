@@ -15,6 +15,16 @@ export function reconcileMemoryV2(source: V2Record, base?: V2Record, current?: V
   if (!base) return { action: 'preserve-current', data: current, base: {}, conflicts: [] }
   const conflicts: string[] = []
   const merge = (s: unknown, b: unknown, c: unknown, path: string, baseline = false): unknown => {
+    // Geo is one reviewed value: merging coordinate components can fabricate a
+    // location that neither Source nor an editor submitted. An absent geo Base
+    // is not proof that an existing item's empty geo was accepted.
+    if (path.endsWith('.geo')) {
+      if (!record(b) || !Object.keys(b).length || !containsGeoBaseline(s, b)) return baseline ? b : c
+      if (isDeepStrictEqual(s, b)) return baseline ? b : c
+      if (isDeepStrictEqual(c, b) || isDeepStrictEqual(c, s)) return s
+      if (!baseline) conflicts.push(path)
+      return baseline ? b : c
+    }
     if (b === null) b = undefined
     if (c === null) c = undefined
     if (s === undefined || (Array.isArray(s) && s.length === 0)) return baseline ? b : c
@@ -66,7 +76,7 @@ export function reconcileMemoryV2(source: V2Record, base?: V2Record, current?: V
     return c
   }
   const data = merge(source, base, current, '$') as V2Record
-  const nextBase = merge(source, base, base, '$', true) as V2Record
+  const nextBase = conflicts.length ? base : merge(source, base, base, '$', true) as V2Record
   return {
     action: conflicts.length ? 'conflict' : isDeepStrictEqual(data, current) ? 'preserve-current' : 'update',
     data, base: nextBase, conflicts: [...new Set(conflicts)],
@@ -75,6 +85,14 @@ export function reconcileMemoryV2(source: V2Record, base?: V2Record, current?: V
 
 function record(value: unknown): value is V2Record {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function containsGeoBaseline(source: unknown, base: unknown): boolean {
+  if (!record(base)) return source !== undefined
+  if (!record(source)) return false
+  return Object.keys(base).every(key =>
+    Object.hasOwn(source, key) && containsGeoBaseline(source[key], base[key]),
+  )
 }
 
 function keyed(items: unknown[], path: string): Map<string, unknown> | undefined {

@@ -2,7 +2,7 @@
 
 由 src/scripts/travel-memory-v2-coverage.ts 依 Collection 產生。包含 container、array row ID、upload 與 version envelope；version document 的巢狀內容引用本表，不重複計數。
 
-總數 179；source-authorable 95；derived/importer-managed 4；cms/system-managed 80。未分類 0。
+總數 192；source-authorable 95；derived/importer-managed 4；cms/system-managed 93。未分類 0。
 
 ## 所有作者欄位共用規則
 
@@ -15,6 +15,7 @@
 
 | Payload 路徑 | 分類 | required | Source／映射 | 語意與 Production 影響 |
 | --- | --- | --- | --- | --- |
+| TravelMemories.geoAccessRevision | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
 | TravelMemories.title | source-authorable | 必填（父項存在時） | frontmatter.title | 顯示標題 |
 | TravelMemories.slug | source-authorable | 必填（父項存在時） | frontmatter.slug | 旅行網址與跨文件穩定識別 |
 | TravelMemories.isPrivate | source-authorable | 可選 | frontmatter.isPrivate | 家人限定或公開 |
@@ -92,6 +93,7 @@
 | TravelMemories.sourceMetadata.parserVersion | cms/system-managed | 可選 | 禁止手填；CMS／匯入基準管理 | 技術識別／匯入基準；不直接顯示 |
 | TravelMemories.sourceMetadata.lastImportedAt | cms/system-managed | 可選 | 禁止手填；CMS／匯入基準管理 | 技術識別／匯入基準；不直接顯示 |
 | TravelMemories.sourceMetadata.baseProjection | cms/system-managed | 可選 | 禁止手填；CMS／匯入基準管理 | 技術識別／匯入基準；不直接顯示 |
+| TravelMemoryDays.geoAccessRevision | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
 | TravelMemoryDays.memory | derived/importer-managed | 必填（父項存在時） | 根文件 slug 精確解析 parent | 根文件 slug 精確解析 parent |
 | TravelMemoryDays.dayIdentity | cms/system-managed | 必填（父項存在時） | 禁止手填；CMS／匯入基準管理 | 技術識別／匯入基準；不直接顯示 |
 | TravelMemoryDays.dayKey | derived/importer-managed | 必填（父項存在時） | Day.day → day-NN | Day.day → day-NN |
@@ -105,6 +107,17 @@
 | TravelMemoryDays.moments | source-authorable | 可選 | memory-day.moments | 按作者順序的每日片段 |
 | TravelMemoryDays.moments[].momentKey | cms/system-managed | 必填（父項存在時） | 禁止手填；CMS／匯入基準管理 | 技術識別／匯入基準；不直接顯示 |
 | TravelMemoryDays.moments[].time | source-authorable | 可選 | memory-day.moments[].time | 片段時間文字 |
+| TravelMemoryDays.moments[].geo | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.name | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.latitude | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.longitude | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.crs | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.provenance | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.originalCRS | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.approval | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.approval.snapshot | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.approval.audience | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
+| TravelMemoryDays.moments[].geo.approval.confirmedBy | cms/system-managed | 可選 | PR-03 受控 geo／Admin 審核；Source v2 不支援直接寫入 | 受保護的位置／批准副本；限 Admin 原始讀取 |
 | TravelMemoryDays.moments[].location | source-authorable | 可選 | memory-day.moments[].location | 片段地點 |
 | TravelMemoryDays.moments[].title | source-authorable | 必填（父項存在時） | memory-day.moments[].title | 顯示標題 |
 | TravelMemoryDays.moments[].body | source-authorable | 可選 | memory-day.moments[].body | Markdown 敘事內文 |

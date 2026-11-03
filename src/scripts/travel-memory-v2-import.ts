@@ -1,10 +1,11 @@
-import path from 'node:path'
-import { realpath } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
+import { sql } from '@payloadcms/db-postgres'
 import { isDeepStrictEqual } from 'node:util'
-import type { Payload } from 'payload'
+import { createLocalReq, initTransaction, commitTransaction, type Payload, type PayloadRequest } from 'payload'
+import { lockTravelGeoRequest } from '../payload/collections/travel-geo-lock'
 import { projectMemoryV2, type MemorySourceV2 } from './travel-memory-source-v2'
 import { reconcileMemoryV2, type V2Record } from './travel-memory-v2-reconciliation'
+import { containsTravelGeo } from './travel-geo-preservation'
 import { assetIdSchema, resolveRegistryEntry, validateMediaRegistry, type MediaRegistry } from './travel-memory-media-registry'
 
 export type V2Inventory = {
@@ -13,6 +14,7 @@ export type V2Inventory = {
   media: (V2Record & { id: number; sourcePath?: string })[]
   members: { id: number; slug: string }[]
   plans: { id: number; slug: string }[]
+  allLocales?: { memory?: V2Record; days: V2Record[]; media?: V2Record[] }
 }
 type Baseline = { memory: V2Record; days: Record<string, V2Record>; assets: Record<string, V2Record> }
 type Envelope = { contract: 'memory-source-v2'; locales: Partial<Record<'zh-TW' | 'en', Baseline>> }
@@ -26,6 +28,10 @@ export function planMemoryV2(source: MemorySourceV2, inventory: V2Inventory, reg
   const isAssetId = (value: string) => assetIdSchema.safeParse(value).success
   const assetKey = (item: NonNullable<MemorySourceV2['assets']>[number]) => item.assetId ?? item.sourcePath!
   const referenceConflicts: string[] = []
+  if (protectedDays(inventory.days) || containsTravelGeo(metadata?.baseProjection) ||
+    (inventory.allLocales && (protectedDays(inventory.allLocales.days) || containsTravelGeo(inventory.allLocales.memory?.sourceMetadata)))) {
+    referenceConflicts.push('geo: legacy importer cannot safely preserve geo and its Base')
+  }
   const exact = <T>(rows: T[], label: string, matches: (item: T) => boolean): T => {
     const found = rows.filter(matches)
     if (found.length !== 1) throw new Error(`${label}: expected one exact relationship, found ${found.length}`)
@@ -149,6 +155,7 @@ export function planMemoryV2(source: MemorySourceV2, inventory: V2Inventory, reg
     conflicts: [...new Set([...referenceConflicts, ...[parent, ...days, ...assets].flatMap(item => item.conflicts)])],
     placeholderIds: Object.fromEntries(placeholderIds),
     nextEnvelope: {
+      ...envelope,
       contract: 'memory-source-v2', locales: {
         ...envelope?.locales,
         [source.locale]: {
@@ -161,10 +168,38 @@ export function planMemoryV2(source: MemorySourceV2, inventory: V2Inventory, reg
   }
 }
 
+// This exception is V2 Current-only. Geo Base and unknown shapes stay protected.
+function emptyCurrentGeo(value: unknown): boolean {
+  if (value == null) return true
+  if (typeof value !== 'object' || Array.isArray(value)) return false
+  const fields = ['name', 'latitude', 'longitude', 'crs', 'provenance', 'originalCRS', 'approval']
+  return Object.entries(value).every(([key, item]) => {
+    if (!fields.includes(key)) return false
+    if (item == null) return true
+    if (key !== 'name' && key !== 'approval') return false
+    if (typeof item !== 'object' || Array.isArray(item)) return false
+    const keys = key === 'name' ? ['zh-TW', 'en'] : ['snapshot', 'audience', 'confirmedBy']
+    return Object.entries(item).every(([field, part]) => keys.includes(field) && part == null)
+  })
+}
+function protectedDays(days: V2Record[]): boolean {
+  return days.some(day => {
+    const { moments, ...rest } = day
+    if (containsTravelGeo(rest)) return true
+    if (moments == null) return false
+    if (!Array.isArray(moments)) return true
+    return moments.some(moment => {
+      if (!moment || typeof moment !== 'object' || Array.isArray(moment)) return true
+      const { geo, ...other } = moment
+      return !emptyCurrentGeo(geo) || containsTravelGeo(other)
+    })
+  })
+}
+
 // The same bounded, scoped inventory feeds both dry-run and apply. No unrelated
 // collections are scanned; each reference must resolve exactly once.
-export async function readMemoryV2Inventory(payload: Payload, source: MemorySourceV2, registry?: MediaRegistry, environment?: string): Promise<V2Inventory> {
-  const options = { depth: 0 as const, locale: source.locale, fallbackLocale: false as const, limit: 2 }
+export async function readMemoryV2Inventory(payload: Payload, source: MemorySourceV2, registry?: MediaRegistry, environment?: string, req?: PayloadRequest): Promise<V2Inventory> {
+  const options = { req, depth: 0 as const, draft: true, locale: source.locale, fallbackLocale: false as const, limit: 2 }
   const memories = await payload.find({ ...options, collection: 'travel-memories', where: { slug: { equals: source.slug } } })
   if (memories.docs.length > 1) throw new Error(`Duplicate memory slug: ${source.slug}`)
   const memory = memories.docs[0]
@@ -204,72 +239,126 @@ export async function readMemoryV2Inventory(payload: Payload, source: MemorySour
       }
     }
   }
-  return { memory: memory ? { ...memory } : undefined, days: (days?.docs ?? []).map(item => ({ ...item })), media, members, plans }
+  const allMemory = await payload.find({ ...options, locale: 'all', collection: 'travel-memories', where: { slug: { equals: source.slug } } })
+  if (allMemory.docs.length !== memories.docs.length || allMemory.docs[0]?.id !== memory?.id) throw new Error('BLOCK: V2 locale owner mismatch')
+  const allDays = memory ? await payload.find({ ...options, locale: 'all', collection: 'travel-memory-days', limit: 100, where: { memory: { equals: memory.id } } }) : undefined
+  if (allDays?.hasNextPage || !isDeepStrictEqual((allDays?.docs ?? []).map(d => d.id).sort(), (days?.docs ?? []).map(d => d.id).sort())) throw new Error('BLOCK: V2 locale day inventory mismatch')
+  const allMedia: V2Record[] = []
+  for (const item of media) {
+    const result = await payload.find({ ...options, locale: 'all', collection: 'media', where: { id: { equals: item.id } } })
+    if (result.docs.length !== 1 || result.docs[0].id !== item.id) throw new Error('BLOCK: V2 Media inventory mismatch')
+    allMedia.push(result.docs[0] as unknown as V2Record)
+  }
+  return { allLocales: { memory: allMemory.docs[0] as unknown as V2Record, days: (allDays?.docs ?? []) as unknown as V2Record[], media: allMedia }, memory: memory ? { ...memory } : undefined, days: (days?.docs ?? []).map(item => ({ ...item })), media, members, plans }
 }
 
 export async function importMemoryV2(payload: Payload, source: MemorySourceV2, options: {
-  apply: boolean; assetRoot: string; sourceFile: string; registry?: MediaRegistry; environment?: string
+  apply: boolean; assetRoot: string; sourceFile: string; registry?: MediaRegistry; environment?: string; req?: PayloadRequest
 }) {
-  const inventory = await readMemoryV2Inventory(payload, source, options.registry, options.environment)
-  const plan = planMemoryV2(source, inventory, options.registry, options.environment)
-  if (plan.missingBase || plan.conflicts.length) {
-    if (options.apply) throw new Error(`BLOCK: ${plan.missingBase ? 'missing v2 baseline' : plan.conflicts.join('; ')}`)
-    return plan
-  }
-  if (options.apply && plan.assets.some(asset => asset.action === 'create' && asset.key.startsWith('sha256:'))) {
-    throw new Error('BLOCK: new assetId media needs a verified post-upload Media locator before apply')
-  }
-  // Resolve real paths before any writes, including symlink containment checks.
-  const files = new Map<string, string>()
-  if (plan.assets.some(asset => asset.action === 'create' && asset.data.type === 'photo' && asset.sourcePath && !asset.key.startsWith('sha256:'))) {
-    const root = await realpath(options.assetRoot)
-    for (const asset of plan.assets.filter(asset => asset.action === 'create' && asset.data.type === 'photo' && asset.sourcePath && !asset.key.startsWith('sha256:'))) {
-      const filename = await realpath(path.resolve(root, asset.sourcePath!))
-      if (!filename.startsWith(`${root}${path.sep}`)) throw new Error(`Asset escapes root: ${asset.sourcePath}`)
-      files.set(asset.sourcePath!, filename)
+  const read = (req?: PayloadRequest) => readMemoryV2Inventory(payload, source, options.registry, options.environment, req)
+  if (!options.apply) return planMemoryV2(source, await read(), options.registry, options.environment)
+  const req = options.req ?? await createLocalReq({ locale: source.locale, fallbackLocale: false }, payload)
+  if (req.payload !== payload) throw new Error('BLOCK: V2 requires its own request transaction: payload mismatch')
+  if (req.transactionID) throw new Error('BLOCK: V2 requires its own request transaction: active transaction')
+  let started = false
+  let committing = false
+  try {
+    started = await initTransaction(req)
+    await lockTravelGeoRequest(req)
+    const inventory = await read(req)
+    const plan = planMemoryV2(source, inventory, options.registry, options.environment)
+    if (plan.missingBase || plan.conflicts.length) throw new Error(`BLOCK: ${plan.missingBase ? 'missing v2 baseline' : plan.conflicts.join('; ')}`)
+    // A DB transaction cannot undo storage uploads. No new Media is staged here.
+    if (plan.assets.some(asset => asset.action === 'create')) throw new Error('BLOCK: V2 new Media requires separate verified intake before apply')
+    if (inventory.media.length) {
+      const ids = inventory.media.map(item => item.id).sort((a, b) => a - b)
+      if (!ids.every(Number.isSafeInteger)) throw new Error('BLOCK: V2 Media identity invalid')
+      const tx = payload.db.sessions?.[await req.transactionID!]?.db as typeof payload.db.drizzle
+      const locked = await tx.execute(sql`select id from public.media where id in (${sql.join(ids.map(id => sql`${id}`), sql`, `)}) order by id for update nowait`)
+      if (!isDeepStrictEqual(locked.rows.map(row => row.id).sort((a, b) => Number(a) - Number(b)), ids)) throw new Error('BLOCK: V2 Media lock identity mismatch')
     }
+    const current = await read(req)
+    if (!isDeepStrictEqual(inventory, current)) throw new Error('BLOCK: V2 inventory changed before write')
+    const common = { req, locale: source.locale, fallbackLocale: false as const }
+    for (const asset of plan.assets.filter(item => item.action === 'update')) {
+      await payload.update({ ...common, collection: 'media', id: asset.id!, data: changedData(asset.data, inventory.media.find(item => item.id === asset.id)) as never })
+    }
+    const parentData = changedData(plan.parent.data, inventory.memory)
+    const memory = inventory.memory
+      ? plan.parent.action === 'update'
+        ? await payload.update({ ...common, collection: 'travel-memories', id: inventory.memory.id, draft: inventory.memory._status !== 'published', data: parentData as never })
+        : inventory.memory
+      : await payload.create({ ...common, collection: 'travel-memories', data: { ...parentData, _status: 'draft' } as never })
+    for (const day of plan.days) {
+      if (day.action === 'create') await payload.create({ ...common, collection: 'travel-memory-days', data: { ...writable(day.data), memory: memory.id, _status: 'draft' } as never })
+      else if (day.action === 'update') await payload.update({ ...common, collection: 'travel-memory-days', id: day.id!, draft: inventory.days.find(item => item.id === day.id)?._status !== 'published', data: changedData(day.data, inventory.days.find(item => item.id === day.id)) as never })
+    }
+    const content = await read(req)
+    assertContent(plan.parent.data, content.memory)
+    for (const day of plan.days) {
+      const saved = content.days.find(item => item.dayKey === day.dayKey)
+      if (day.id != null && day.id !== saved?.id) throw new Error('BLOCK: V2 Day identity changed')
+      assertContent(day.data, saved)
+    }
+    assertOtherLocales(inventory.allLocales, content.allLocales, source.locale)
+    for (const day of inventory.days.filter(item => !plan.days.some(target => target.dayKey === item.dayKey))) {
+      if (!isDeepStrictEqual(day, content.days.find(item => item.id === day.id))) throw new Error('BLOCK: V2 non-target Day changed')
+    }
+    for (const asset of plan.assets) assertContent(asset.data, content.media.find(item => item.id === asset.id))
+    if (protectedDays(content.allLocales?.days ?? []) || containsTravelGeo(content.allLocales?.memory?.sourceMetadata)) throw new Error('BLOCK: V2 protected geo appeared during write')
+    const oldMetadata = (inventory.memory?.sourceMetadata ?? {}) as V2Record
+    await payload.update({ ...common, collection: 'travel-memories', id: memory.id, draft: memory._status !== 'published', data: { sourceMetadata: {
+      ...oldMetadata, sourceFile: options.sourceFile, parserVersion: 'memory-source-v2',
+      sourceHash: createHash('sha256').update(JSON.stringify(source)).digest('hex'),
+      lastImportedAt: new Date().toISOString(), baseProjection: plan.nextEnvelope,
+    } } })
+    const verified = await read(req)
+    if (verified.memory?.id !== memory.id || protectedDays(verified.allLocales?.days ?? []) || containsTravelGeo(verified.allLocales?.memory?.sourceMetadata)) throw new Error('BLOCK: V2 final owner or geo read-back mismatch')
+    if (!isDeepStrictEqual((verified.memory?.sourceMetadata as V2Record)?.baseProjection, plan.nextEnvelope)) throw new Error('BLOCK: V2 Base read-back mismatch')
+    assertContent(plan.parent.data, verified.memory)
+    for (const day of plan.days) assertContent(day.data, verified.days.find(item => item.dayKey === day.dayKey))
+    assertOtherLocales(inventory.allLocales, verified.allLocales, source.locale)
+    committing = true
+    await commitTransaction(req)
+    return { ...plan, applied: true, memoryId: memory.id }
+  } catch (error) {
+    if (started && req.transactionID) {
+      try { await payload.db.rollbackTransaction(await req.transactionID); delete req.transactionID }
+      catch (rollbackError) { throw new AggregateError([error, rollbackError], 'V2 failed; rollback effects UNKNOWN') }
+    }
+    if (committing) throw new AggregateError([error], 'V2 commit acknowledgement failed; effects UNKNOWN; do not retry')
+    throw error
   }
-  if (!options.apply) return plan
-  // Uploaded files and record writes are not atomic. Failures propagate and the
-  // caller must inspect/reconcile before another approved attempt.
-  for (const asset of plan.assets.filter(asset => asset.action === 'create')) {
-    if (!asset.sourcePath) throw new Error(`BLOCK: created media ${asset.key} needs a legacy sourcePath`)
-    const created = await payload.create({ collection: 'media', locale: source.locale,
-      data: asset.data as never, ...(files.has(asset.sourcePath) ? { filePath: files.get(asset.sourcePath)! } : {}) })
-    inventory.media.push({ ...created, sourcePath: asset.sourcePath })
+}
+
+function assertContent(expected: V2Record, actual?: V2Record) {
+  const matches = (wanted: unknown, saved: unknown): boolean => {
+    if (wanted == null) return saved == null
+    if (Array.isArray(wanted)) return Array.isArray(saved) && wanted.length === saved.length && wanted.every((item, i) => matches(item, saved[i]))
+    if (typeof wanted === 'object') return Boolean(saved && typeof saved === 'object') && Object.entries(wanted).every(([key, value]) => matches(value, (saved as V2Record)[key]))
+    return isDeepStrictEqual(wanted, saved)
   }
-  const resolved = planMemoryV2(source, inventory, options.registry, options.environment)
-  // Re-materialize the source with real upload IDs; newly created assets still
-  // have no accepted Base until the owning Memory metadata is committed.
-  for (const asset of plan.assets.filter(asset => asset.action === 'update')) {
-    await payload.update({ collection: 'media', id: asset.id!, locale: source.locale, data: changedData(asset.data, inventory.media.find(item => item.id === asset.id)) as never })
+  const { geoAccessRevision: _revision, ...data } = writable(expected)
+  if (!matches(data, actual)) throw new Error('BLOCK: V2 content read-back mismatch')
+}
+function assertOtherLocales(before: V2Inventory['allLocales'], after: V2Inventory['allLocales'], locale: string) {
+  const compare = (a: unknown, b: unknown): void => {
+    if (!a || typeof a !== 'object') return
+    if (Array.isArray(a)) {
+      for (const row of a) {
+        const saved = Array.isArray(b) ? b.find(item => row && typeof row === 'object' ? item?.id === row.id : isDeepStrictEqual(item, row)) : undefined
+        if (saved === undefined) throw new Error('BLOCK: V2 stable row removed')
+        compare(row, saved)
+      }
+      return
+    }
+    const record = a as V2Record
+    for (const other of ['zh-TW', 'en']) if (other !== locale && Object.hasOwn(record, other) && !isDeepStrictEqual(record[other], (b as V2Record)?.[other])) throw new Error('BLOCK: V2 other locale changed')
+    for (const [key, value] of Object.entries(record)) if (!['sourceMetadata', 'zh-TW', 'en'].includes(key)) compare(value, (b as V2Record)?.[key])
   }
-  const parentData = changedData(resolved.parent.data, inventory.memory)
-  const memory = inventory.memory
-    ? resolved.parent.action === 'update'
-      ? await payload.update({ collection: 'travel-memories', id: inventory.memory.id, locale: source.locale, data: parentData as never })
-      : inventory.memory
-    : await payload.create({ collection: 'travel-memories', locale: source.locale, data: { ...parentData, _status: 'draft' } as never })
-  for (const day of resolved.days) {
-    if (day.action === 'create') await payload.create({ collection: 'travel-memory-days', locale: source.locale,
-      data: { ...writable(day.data), memory: memory.id, _status: 'draft' } as never })
-    else if (day.action === 'update') await payload.update({ collection: 'travel-memory-days', id: day.id!, locale: source.locale, data: changedData(day.data, inventory.days.find(item => item.id === day.id)) as never })
-  }
-  for (const asset of plan.assets.filter(asset => asset.action === 'create')) {
-    await payload.update({ collection: 'media', id: inventory.media.find(item => item.sourcePath === asset.sourcePath)!.id,
-      data: { relatedTravelRecord: { relationTo: 'travel-memories', value: memory.id } } })
-  }
-  const nextEnvelope = resolved.nextEnvelope
-  const accepted = nextEnvelope.locales[source.locale]!
-  for (const asset of plan.assets.filter(item => item.action === 'create')) {
-    accepted.assets[asset.key] = asset.data
-  }
-  await payload.update({ collection: 'travel-memories', id: memory.id, data: { sourceMetadata: {
-    sourceFile: options.sourceFile, parserVersion: 'memory-source-v2',
-    sourceHash: createHash('sha256').update(JSON.stringify(source)).digest('hex'),
-    lastImportedAt: new Date().toISOString(), baseProjection: nextEnvelope,
-  } } })
-  return { ...resolved, applied: true, memoryId: memory.id }
+  if (before?.memory) compare(before.memory, after?.memory)
+  compare(before?.days, after?.days)
+  compare(before?.media, after?.media)
 }
 
 function writable(value: V2Record): V2Record {

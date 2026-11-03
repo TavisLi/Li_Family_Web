@@ -60,3 +60,11 @@ Human 在 HTML 編輯日期、Moment、placement、順序、caption 與移除決
 ### HEIC 原件與明確轉檔
 
 scanner 可讀 HEIC 尺寸／metadata 並建立 exact-byte assetId；這不代表本機 sharp 已具 HEVC 像素解碼能力。需縮圖／JPEG 匯入時，先按本批決定以本地 ImageIO 或已確認的解碼器明確轉檔，保留 HEIC 原件與 hash；轉檔是不同 assetId，以 technical Registry 的 derivedFrom 指向原件，不宣稱 bytes 相同。新檔獨立掃描，先固定及保留 derivedFrom，再進入 HTML 審查與 JPEG upload preparation；不把 HEIC 檔改副檔名冒充 JPEG，也不因 metadata PASS 就授權上傳。`pnpm run test:issue134:heic` 在 macOS 以 runtime 合成圖驗證此路徑，實際其他平台／Production codec 能力不由此推論。
+
+## 匯入工具版本（2026-11-02）
+
+Travel Memory 的來源匯入統一使用 Source V2／`--memory-v2 <file>`；舊 Memory V1 writer 已停用，任何 reconciliation mode 均在 store I/O 前以 `MEMORY_V1_RETIRED` 拒絕。既有內容、Base、identity、locale、history 與唯讀 legacy parser／projection 保留，不因工具退役清理或重建。Payload Admin 編輯與獨立 Media 工具維持原範圍。
+
+舊一般／travel-only／phase-9 seed 命令不再可用於 Memory；CLI 在讀取 `.env`、初始化 Payload／DB 前拒絕。Travel Plan 保留 `node --import tsx src/scripts/seed.ts --travel-only --plans-only`，只選 planning records 與其 travel-owned Media，不同步 Memory／Day，不連帶寫入 Users／Blog／Home Config。Blog-only 與明確的 Media refresh 入口不由本次退役擴權或改變。
+
+Gate C 的 `memory-v1` case ID 保留以維持原矩陣／receipt 結構，但語義改為「入口退役、零 store I/O、零 mutation」，不再要求成功的 V1 Memory round-trip。正常 Memory 匯入／更新／round-trip 由 V2 驗證。這是本地產品方向，不是 Production 執行或 Gate C 驗收批准。

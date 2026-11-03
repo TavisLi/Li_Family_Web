@@ -1,11 +1,3 @@
-import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
-
-const source = await readFile(new URL('./seed.ts', import.meta.url), 'utf8')
-const conflictGate = source.indexOf('Travel Memory child sync blocked by reconciliation conflicts')
-const firstChildCreate = source.indexOf("payload.create({ collection: 'travel-memory-days'")
-
-assert.ok(conflictGate >= 0, 'travel-memory-days must have an explicit conflict stop gate')
-assert.ok(firstChildCreate > conflictGate, 'the conflict stop gate must run before the first child write')
-
-console.log('Phase 21 child seed safety test passed')
+// Memory V1 child sync is retired. Keep this Phase 21 entrypoint checking the
+// current behavioral contract: rejection before store I/O and explicit Plan scope.
+import './issue180/memory-v1-retirement.test.mjs'
