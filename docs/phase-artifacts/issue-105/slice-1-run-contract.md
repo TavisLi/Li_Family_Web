@@ -2,6 +2,17 @@
 
 Base: `main` at `da75f504273add4f549a6e3383e6746e42e2ded4`. This slice defines local evidence bookkeeping only. It does not run a preflight, a mutation, or Preview QA.
 
+## Production SELECT-only: accepted simplified route
+
+Human accepted this policy on 2026-11-03. For new, separately authorized Production SELECT-only operations, this section supersedes requirements elsewhere in this contract for a dedicated trusted host, custom admission, ledger, approval provider, formal runner route, or the Slice 1 manifest/inspector evidence format. Existing trusted tools and concise records may satisfy the controls below. This does not change existing runtime behavior or make a tool trusted by assertion.
+
+- Before execution, obtain an identifiable, unrevoked Human decision approving the exact project and environment, purpose, SQL, data scope, tool, execution count, validity period, limits and stop conditions. Confirm the decision from its source; an agent-created record is not approval. A change to an approved item requires a new decision. An expired, revoked or consumed one-attempt approval cannot be reused.
+- Verify the actual tool and connection are read-only, project-scoped and authorized for the minimum required access. Verify the effective role and relevant RLS visibility or record them as UNKNOWN and stop when needed for the conclusion. Do not infer complete counts from filtered visibility: label each count's visible scope; if RLS can filter it, do not call it a total.
+- Restrict execution to the approved SQL and set and enforce appropriate query/round-trip, row, response-byte and elapsed-time limits, including statement timeout where supported. Confirm equivalent effective controls before execution when a tool cannot enforce a proposed limit. A SELECT must not invoke side-effecting functions or other write paths.
+- Stop on target or scope drift, unverified permissions or limits, warning, cap, timeout, failure or UNKNOWN; preserve available evidence and do not automatically retry, reconnect or fall back. Save a concise audit record with the Human decision source, target, SQL or hash, tool and role, limits, time, result and evidence location, excluding secrets and unnecessary private data.
+
+Preserve historical packets, receipts, hashes and consumed approvals unchanged. This route grants no Production access by itself and does not change Production mutation, migration, destructive operation, deployment, merge or other independent gates, including their existing admission and evidence requirements. Sealed runs retain their original conditions; an old approval is not expanded by this policy.
+
 ## Files for one run
 
 Keep one run directory with `manifest.json`, `ledger.json`, `evidence.json`, and `dependencies.json`. `approval.json` exists only after a separate human decision. `current-state.json` is generated; never edit it by hand. Raw receipts and query output may live beside these files, with their paths referenced from ledger events.
