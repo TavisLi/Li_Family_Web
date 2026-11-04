@@ -1,0 +1,30 @@
+[
+  {
+    "id": "migration-state",
+    "sql": "SELECT name,batch,created_at FROM public.payload_migrations WHERE name='20261031_052622_issue180_optional_geo';"
+  },
+  {
+    "id": "schema-relations",
+    "sql": "SELECT n.nspname AS schema_name,c.relname,c.relkind,c.relrowsecurity,c.relforcerowsecurity,pg_get_userbyid(c.relowner) AS owner FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relname=ANY(ARRAY['geo_stops','geo_stops_locales','_geo_stops_v','_geo_stops_v_locales','travel_plans','_travel_plans_v','travel_memories','_travel_memories_v','travel_memory_days','travel_memory_days_moments','travel_memory_days_moments_locales','_travel_memory_days_v','_travel_memory_days_v_version_moments','_travel_memory_days_v_version_moments_locales']) ORDER BY c.relname;"
+  },
+  {
+    "id": "enum-type",
+    "sql": "SELECT n.nspname AS schema_name,t.typname,t.typtype,e.enumlabel,e.enumsortorder FROM pg_type t JOIN pg_namespace n ON n.oid=t.typnamespace LEFT JOIN pg_enum e ON e.enumtypid=t.oid WHERE n.nspname='public' AND t.typname='travel_geo_audience' ORDER BY e.enumsortorder;"
+  },
+  {
+    "id": "schema-columns",
+    "sql": "SELECT table_name,column_name,data_type,is_nullable FROM information_schema.columns WHERE table_schema='public' AND table_name=ANY(ARRAY['geo_stops','geo_stops_locales','_geo_stops_v','_geo_stops_v_locales','travel_plans','_travel_plans_v','travel_memories','_travel_memories_v','travel_memory_days','travel_memory_days_moments','travel_memory_days_moments_locales','_travel_memory_days_v','_travel_memory_days_v_version_moments','_travel_memory_days_v_version_moments_locales']) AND (column_name LIKE 'geo_%' OR column_name LIKE 'version_geo_%' OR table_name LIKE '%geo_stops%') ORDER BY table_name,column_name;"
+  },
+  {
+    "id": "current-role",
+    "sql": "SELECT current_user,current_database(),current_setting('row_security') AS row_security,r.rolsuper,r.rolbypassrls FROM pg_roles r WHERE r.rolname=current_user;"
+  },
+  {
+    "id": "table-acl-rls",
+    "sql": "SELECT c.relname,c.relkind,c.relrowsecurity,c.relforcerowsecurity,row_security_active(c.oid) AS rls_active_for_current_role,pg_get_userbyid(c.relowner) AS owner,pg_has_role(current_user,c.relowner,'USAGE') AS effective_owner,CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE r.rolname END AS grantee,a.privilege_type FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace CROSS JOIN LATERAL aclexplode(COALESCE(c.relacl,acldefault('r',c.relowner))) a LEFT JOIN pg_roles r ON r.oid=a.grantee WHERE n.nspname='public' AND c.relname=ANY(ARRAY['geo_stops','geo_stops_locales','_geo_stops_v','_geo_stops_v_locales']) AND (a.grantee=0 OR r.rolname IN ('anon','authenticated','service_role',current_user)) ORDER BY c.relname,grantee,a.privilege_type;"
+  },
+  {
+    "id": "sequence-acl",
+    "sql": "SELECT c.relname,pg_get_userbyid(c.relowner) AS owner,CASE WHEN a.grantee=0 THEN 'PUBLIC' ELSE r.rolname END AS grantee,a.privilege_type FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace CROSS JOIN LATERAL aclexplode(COALESCE(c.relacl,acldefault('S',c.relowner))) a LEFT JOIN pg_roles r ON r.oid=a.grantee WHERE n.nspname='public' AND c.relkind='S' AND c.relname=ANY(ARRAY['geo_stops_locales_id_seq','_geo_stops_v_id_seq','_geo_stops_v_locales_id_seq']) AND (a.grantee=0 OR r.rolname IN ('anon','authenticated','service_role',current_user)) ORDER BY c.relname,grantee,a.privilege_type;"
+  }
+]
