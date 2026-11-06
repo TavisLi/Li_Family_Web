@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "id": "issue158-v12-payload-3.90.2-pr177",
+  "baselineManifestSha256": "bd0bd48ca13c782417ca632e8755f3b9e559b6b449c3311a89d72581b21eed89",
+  "historicalPayload": "3.90.1",
+  "packages": {
+    "payload": "3.90.2",
+    "@payloadcms/db-postgres": "3.90.2",
+    "@payloadcms/next": "3.90.2",
+    "@payloadcms/payload-cloud": "3.90.2",
+    "@payloadcms/richtext-lexical": "3.90.2",
+    "@payloadcms/storage-s3": "3.90.2"
+  },
+  "files": {
+    "pnpm-lock.yaml": "f0dd95d9d4d382ff41b04d6a5b70a08a41ef94e5f0c4a5aefff122e57d90695f",
+    "pnpm-workspace.yaml": "df1db56bc0b7fc9220733ccde4a758fc3b30c10ec1f9ddd1c30b0e3f129fbc17",
+    "patches/@payloadcms__db-postgres@3.90.2.patch": "1c42b1c5a47ca4f205f7845e2018ed31291aca2774244946ea6db41ede576052"
+  },
+  "parent": {
+    "path": "scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json",
+    "sha256": "15ceeadb5220290dee16c9c4f30d135ef7d99a5a21109e6f59ec6bc85d46e524"
+  },
+  "source": {
+    "pullRequest": 177,
+    "mergeCommit": "422efb4798392c7a080cae1c9b64af3bdb1a1fea"
+  }
+}
