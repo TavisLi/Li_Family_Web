@@ -37,3 +37,21 @@ The isolated publication checkout passed all 99 files in the existing offline CI
 All 115 published repository file bindings in the r27 source-byte map were rechecked. Publication-only documentation, the CI test allowlist and the updated legacy test entry are listed separately; new-head CI is separate from the historical r27 execution.
 
 The first publication head `f857b5696f13af406f6273f7de5e0d6ec691c634` passed application CI and CodeQL, but the historical Issue 158 fixture job rejected the current lockfile against its frozen runtime binding. The historical binding is unchanged. CI routing now distinguishes only the three exact Issue 180 inputs (`binding.json`, `historical-lock.yaml`, `legacy-fixture.sql`) from that unrelated replay; these retain schema/application/offline checks and their accepted r27 evidence. A RED-to-GREEN routing regression verifies that new/unknown rehearsal files, Issue 158 and shared runner changes still invoke the maintained fixture job. A skipped historical fixture job is not a PASS or a new Gate C run.
+
+## 2026-11-07 Production 決策收斂（ACCEPT WITH FOLLOW-UP）
+
+本 addendum 保留上方 historical Gate C／publication 紀錄。PR #181 已合併於 main 的 `8eaa11653c3666b370ea9d2c5588b54f64ae838d`，#180 非 Production 驗收已接受；本次治理修訂基線為 main `824d262474273a5729a470a62483c2ced46f84fa`。Production migration 維持 BLOCK，下一輪只收斂以下三類風險。
+
+| 狀態／風險與後果 | 現有證據 | 最小解除條件／處置 |
+| --- | --- | --- |
+| 已完成：parent 外鍵與 locale 型別不相容可能使 DDL 失敗 | b02 確認兩個 parent id 為 integer／varchar、非空且有合格單欄唯一鍵；b03 確認 public._locales enum 為 zh-TW、en | 重用本次 metadata 證據；執行前只按漂移需要判斷 freshness |
+| 執行 blocker：runner／ledger 或相依 schema 不相容可能使升級拒絕、部分失敗或執行錯誤 migration | b01 有 dev/-1 與歷史 id=7 batch=NULL；其例外只接受 evidence-only 解讀。b02／b03 僅覆蓋部分 DDL 依賴 | 核對選定 runner 對兩項異常的實際行為、pending migration 清單及本次 DDL 所需物件。只補未被既有證據回答的差異，提出可審查處置；warning 停止條件繼續適用 |
+| 執行 blocker：DDL 或權限變更可能影響既有資料或暴露 Geo | migration 原始碼、r27 synthetic 與已取得 Production metadata 可重用 | 完成 exact migration 對所需相依物件／權限的差異核對，以及有限鎖定、維護條件和 read-back 計畫；只對具體未解風險補證 |
+| 執行 blocker：失敗後無可用恢復路徑可能造成資料損失或服務無法恢復 | r27 隔離 up／empty down／populated down refusal／restore；down 限新欄位與新表仍為空 | 核對實際可用備份與相應恢復證據，指出本次失敗情境的恢復方法。缺口直接影響恢復能力時才追加最小補證，成本與維護風險列待 Human 接受 |
+| 後續改善：Admin 編輯體驗、長期 history 容量與完整環境 parity | 原 [follow-ups](pr181-follow-ups.md) 保留 | 只有發現直接導致本次資料損失、安全漏洞或升級失敗的具體證據，才提升為 migration blocker；獨立上線／產品驗收仍依各自範圍處理 |
+
+b01／b02／b03 的本機原始紀錄位於 `/private/tmp/issue180-marker-read-review-20261106-r1/evidence/`，非 repository 可攜證據，需由原持有人保全。此次本地檢查的 CSV 合計 2,841 bytes；SHA-256 分別為 b01 `a679b676f986f99cbe91580197a5a9154c65b17e78518878f7358297478f529d`、b02 `cd35398a602576aaedb10eb4eec9d532f8ce489261666eb5b1864eaf49c6b088`、b03 `cc43ec0fe0bd5f7787d935c727172603e4837c5c16a791f9c67d0231c6efe56a`。以上是已保存觀測，不宣稱新鮮 Production inventory。
+
+唯一下一步為在同一準備任務核對上述三類 blocker，重用有效證據，給出 GO／NO-GO、殘餘風險與精確 migration 批准範圍，停 Human 決策。新增前置工作須指出新的具體失敗風險及最小解除條件。#185／#186 維持暫停。Human 於 2026-11-07 接受治理方向（ACCEPT WITH FOLLOW-UP）；上述技術缺口仍待處理，本次未批准 Production、migration、部署或 merge。
+
+工作區來源已另行核對，結果見 [Playbook §5.2](../../phase-execution-playbook.md#52-工作區與依賴隔離accept-with-follow-up)。#184 的 reader 在其已提交 exact head 可獨立完成 DB-free 測試；#134 dirty 副本不是後續執行來源。main 已合併的共用依賴按版本重用，#184 的正式 Production 入口停用與工作區問題分別判定。後續 #180 準備沿用本次獨立 scope，#181 reader 若仍需修改則回到其所屬分支與獨立授權。
