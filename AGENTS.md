@@ -7,6 +7,22 @@
 
 設計任務依 [Li Family visual system](docs/design/li-family-visual-system.md) 與 [Skill routing](docs/design/skill-routing.md) 選一個 Creative Director；一般 UI 小修只讀受影響規則。Skill 的 generic 預設不得靜默更換 framework、Tailwind、shadcn、字體、Lucide 或擴大 redesign。視覺變更依 change scope 使用 `visual-qa`，不把舊截圖當現行 runtime 證據。
 
+## 風險相稱與準備終點（ACCEPT WITH FOLLOW-UP）
+
+Human 於 2026-11-07 審查為 ACCEPT WITH FOLLOW-UP；本次接受治理方向，不授權 Production、migration、部署或 merge。
+
+Production 前置工作須對應本次操作可能造成的資料損失、安全漏洞或升級失敗。開始準備時固定有界 blocker 清單；新增 blocker 須列出觸發條件、具體後果、既有證據缺口與最小解除條件。工具實作形式、證據格式或理想環境完整度不得單獨成為 blocker；現成可信工具依 owning contract 滿足控制要求，已通過且依賴未變的證據直接重用。
+
+每項缺口標示「執行 blocker／待 Human 接受的殘餘風險／後續改善」。完成清單後即提交 GO／NO-GO 建議、殘餘風險與精確批准範圍；只有新的具體風險才增加前置工作。既有安全底線、適用驗收、warning／UNKNOWN 停止條件與獨立批准繼續適用；調整既有強制條件須明列並取得 Human 決定。
+
+已授權的本地診斷、最小修正、驗證與批准材料準備連續完成，不按技術步驟另請批准或強制換 thread；此本地準備規則優先於下方 gate 交接要求。明確的停 Human review 邊界仍適用。執行細則集中於 Playbook §5，報告只列變動、剩餘清單與唯一下一步。
+
+## 跨 Issue 工作隔離（ACCEPT WITH FOLLOW-UP）
+
+Human 於 2026-11-07 審查為 ACCEPT WITH FOLLOW-UP；本次接受治理方向，不授權 Production、migration、部署或 merge。跨 Issue 開始新修改或驗證前，核對實際 cwd、repository、worktree、branch、HEAD 與 dirty／untracked boundary。不同 scope 使用獨立 worktree／分支；同 scope 接續可沿用已核對的分支。read-only 調查可查看舊 worktree，執行入口與依賴須來自本次固定的已提交基線。跨 Issue 共用程式以 main 已追蹤版本重用，未合併依賴先列來源 PR／SHA、必要範圍與 Human 決定，明確接受前不得作為執行依賴。
+
+程式交付的可重現性驗證使用乾淨 checkout，記錄實際 runtime、指令及範圍；同 scope 開發中的修改與測試不要求逐次 commit 或重建 worktree，docs-only 沿用文件檢查。禁止透過複製舊 dirty 程式、跨 worktree import、symlink 或未提交工具補齊缺依賴；缺檔回到所屬 scope 修正。歷史 Issue 名稱的已合併共用程式按實際 bytes 判定，不為改名另建重構。收尾在現有當前入口列出已提交交付、未提交殘留與後續所屬分支；scope 外殘留保全，清理另取明確授權。細則見 Playbook §5.2。
+
 ## 權限與保全
 遵守平台 system／developer。Repository precedence：目前使用者 task／有效批准 → CONTEXT 穩定詞彙 → accepted ADR → 架構契約 → AGENTS → owning domain／Phase rules → task-scoped Skills → historical evidence。Proposed ADR 非決策，限定例外不泛化；契約與 schema／ADR 衝突時回報，停受影響高風險動作，不靜默覆寫。
 

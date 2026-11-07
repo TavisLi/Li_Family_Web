@@ -228,6 +228,36 @@ HITL 的目的不是讓每個技術步驟都停下等待，而是在人類必須
 4. 先定位相關 source／tests，按問題查 owning evidence；[context lookup](./agent-context-routing.md) 是可選索引。不因任務類別預讀文件聯集；遇契約不明、變更或風險時查相應 owner。
 5. 讀取本次 Issue／task acceptance。PR、Preview／Production 狀態僅於相關階段且具備必要 authority 時核對；缺少 access 可完成本地準備，不推導 live inspection 權限。
 
+### 5.1 風險相稱與停止準備（ACCEPT WITH FOLLOW-UP）
+
+Human 於 2026-11-07 審查為 ACCEPT WITH FOLLOW-UP；本次接受治理方向，不授權 Production、migration、部署或 merge。
+
+Production 準備使用既有當前入口維護一份有界清單。每項只記錄風險觸發條件與後果、可重用證據、最小解除條件，以及「執行 blocker／待 Human 接受／後續改善」處置。新增項目須直接對應本次操作的資料損失、安全漏洞或升級失敗，並說明既有檢查為何未涵蓋。證據格式、專用工具或完整環境 parity 的缺口，只有連到具體風險才阻擋執行。
+
+準備從實際可用的既有工具與操作入口開始，按 owning contract 驗證能力與限制；重用依賴未變的證據，只補影響本次決策的觀測。已授權的本地診斷、最小修正、受影響驗證與批准材料連續完成；明確的 Human review 邊界依原授權停止。
+
+清單收斂後立即提供 GO／NO-GO 建議、具體殘餘風險及精確執行批准文字。缺少授權或強制安全條件仍停止受影響操作；既有 §9 migration 順序與 #105 寫入控制繼續適用。若需調整既有驗收或強制條件，逐條送 Human 決定，不由 agent 默認豁免。跨 Issue 的後續改善不自動成為本次執行依賴。
+
+從既有紀錄觀察新增 blocker 數、依賴未變卻重跑的檢查數，以及到達 Human 決策的輪次；只在出現重複或擴張時檢討原因，不建立額外追蹤系統。
+
+### 5.2 工作區與依賴隔離（ACCEPT WITH FOLLOW-UP）
+
+Human 於 2026-11-07 審查為 ACCEPT WITH FOLLOW-UP；本次接受治理方向，不授權 Production、migration、部署或 merge。使用既有 Git 指令與當前入口完成下列流程，不新增 runner 或驗證框架。
+
+1. 開始跨 Issue 工作時核對 cwd、repository top-level、worktree、branch、HEAD 與 tracked／untracked diff，確認每項變更的 scope。read-only 調查可保留原位置；新修改及可重現驗證在該 scope 的獨立 worktree 執行，所有指令明確指定 workdir。
+2. 從最新已確認 main 或已明確接受的 PR exact head 建立乾淨 checkout，確認起始 status。禁止在不明 dirty 分支以 stash、reset、clean 或切 branch 為新工作騰出空間。
+3. 用 imports、entrypoint 與現有 manifest 核對本次實際依賴。main 已追蹤依賴可直接重用；未合併依賴須列出來源 PR／SHA、所需檔案、對 main 的差異與接受決定。未取得決定前保持該執行路徑 BLOCK，繼續其他已授權本地工作。
+4. 程式交付時，在乾淨 checkout 使用相應已安裝 runtime 跑範圍相符的檢查；同 scope 日常修改與測試不要求逐次 commit 或重建 worktree，docs-only 僅做適用文件檢查。缺少依賴時從版本來源處理，不借舊 worktree、node_modules symlink 或未提交程式。記錄命令、runtime、head、結果和缺口；環境可見性不足、缺檔、測試失敗及刻意停用入口分別報告。
+5. 交付前核對完整 diff 與 status，只納入本次變更。現有當前入口記錄 commit／PR、未提交殘留及下一個 owning branch；Issue 已結案與工作區是否可清理分別判定，保留歷史證據。
+
+#### 2026-11-07 #134／#181 調查與實際隔離驗證
+
+在 #134 的 `codex/phase-134-slice-3@8c6276c4ee5fa68531ddeeb1a957d14274257f69` 工作區，`issue181-production-catalog-read.mjs` 及其 test 未追蹤，且 bytes 與 PR #184 head `50e6b33d2b02f77076434b04dd253eaaccf5eac0` 不同。該工作區的 `run-contract.mjs` 亦有未提交差異。檢查 Git status 而沒有固定每次驗證的 cwd／來源 bytes，會使舊工作區的成功結果被錯套到 main，這是本次可確認的流程缺口。
+
+main `824d262474273a5729a470a62483c2ced46f84fa` 尚無上述 #181 reader；它屬於未合併 PR #184。`issue134-transaction-io.mjs` 與 `issue134-additive-history.mjs` 已由 PR #169 的 `13b77c247` 交付，main、#184 與舊工作區三者 bytes 相同。不能把所有 #134 命名依賴視為未提交程式，也不能把 main 缺少未合併 feature 判為環境故障。
+
+此次從 #184 exact head 建立新的乾淨 worktree，以 Node `v26.13.0` 執行 `node --test src/scripts/issue181-production-catalog-read.test.mjs src/scripts/issue181-production-select-session.test.mjs src/scripts/issue181-source-admission.test.mjs`，24/24 PASS、0 skipped，結束後 Git status 乾淨。檢查只使用該 head 的 tracked files，未安裝 packages；原始輸出位於本機 `/private/tmp/issue184-isolation-20261107.tap`。這是該 runtime 的 DB-free 可重現性結果，未重驗原 Node 24 歷史證據或 SQL／Production 能力。正式 session 仍刻意回報 trusted host capability 未設定，不能歸因為工作區缺檔；#105 SELECT-only 新路徑的採用另依實際工具能力決定。
+
 ### Gate output
 
 - Current-state snapshot
