@@ -21,6 +21,10 @@ try {
     assert(!(await exists(name)), 'BLOCK: run already attempted; no automatic retry')
   }
   manifest = await readJson('manifest.json')
+  if (manifest.environment === 'production') {
+    // CLI has no trusted host capability; packet data and flags cannot supply one.
+    throw new Error('BLOCK: trusted production host capability is not configured')
+  }
   const limitFiles = manifest.artifacts.dependencies.filter((item) =>
     item.path.startsWith('docs/phase-artifacts/issue-105/local-closeout/') && item.path.endsWith('/limits.json'))
   assert.equal(limitFiles.length, 1, 'BLOCK: one limit file required')
