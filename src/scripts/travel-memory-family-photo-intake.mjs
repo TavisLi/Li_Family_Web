@@ -5,6 +5,7 @@ import path from 'node:path'
 import sharp from 'sharp'
 import { familyPhotoObjectKey, familyPhotoVariants, photoSizes } from '../payload/family-media.ts'
 import { evaluateAuthorization, verifyManifestFiles } from './run-contract.mjs'
+import { validateMediaRegistry } from './travel-memory-media-registry.ts'
 import { mergeVerifiedMediaReceipt } from './travel-memory-media-transfer.mjs'
 
 const digest = bytes => createHash('sha256').update(bytes).digest('hex')
@@ -72,12 +73,14 @@ export async function runFamilyPhotoIntake({
   assert.equal(plan.ownerBasis,'ZERO_OWNER_AND_VERSION')
   assert(allowedLocale.has(plan.locale))
   assert(plan.entries.length > 0 && new Set(plan.entries.map(item=>item.assetId)).size===plan.entries.length)
-  let merged = registry
+  let merged = validateMediaRegistry(registry,plan.slug)
   for (const entry of plan.entries) {
     guard()
     const asset = merged.assets.find(item=>item.assetId===entry.assetId)
     assert(asset && !asset.locators.some(locator=>locator.environment===environment && locator.verified),
       'BLOCK: duplicate, verified or unknown family asset')
+    const {sourcePath} = entry
+    assert.equal(sourcePath,asset.sourcePath,'BLOCK: approved family Media alias drift')
     assert(typeof entry.altText === 'string' && entry.altText.trim() && entry.altText === entry.altText.trim())
     const prepared = await prepareFamilyPhoto(await loadOriginal(entry.assetId),entry.assetId)
     assert.equal(prepared.buffers.original.length,asset.byteSize)
@@ -100,7 +103,7 @@ export async function runFamilyPhotoIntake({
     await checkpoint({assetId:entry.assetId,stage:'MEDIA_INTENT'})
     guard()
     const mediaId = await adapter.createMedia({ locale:plan.locale, type:'photo', familyAssetKey:prepared.familyAssetKey,
-      altText:entry.altText,mimeType:'image/jpeg',filesize:asset.byteSize })
+      altText:entry.altText,mimeType:'image/jpeg',filesize:asset.byteSize, ...(sourcePath ? {sourcePath} : {}) })
     assert(Number.isSafeInteger(mediaId) && mediaId>0,'BLOCK: family Media create unknown')
     guard()
     const doc = await adapter.readMedia(mediaId,plan.locale)
@@ -110,11 +113,12 @@ export async function runFamilyPhotoIntake({
     assert.equal(doc.type,'photo')
     assert.equal(doc.mimeType,'image/jpeg')
     assert.equal(doc.filesize,asset.byteSize)
+    assert.equal(doc.sourcePath ?? undefined,sourcePath,'BLOCK: family Media alias readback mismatch')
     assert(!doc.filename && !doc.relatedTravelRecord,'BLOCK: private Media route or owner drift')
     const receipt = {
       stage:'VERIFIED',assetId:entry.assetId,mediaId,inputBytes:asset.byteSize,
       originalGetBytes:asset.byteSize, originalGetSha256:entry.assetId, objects:prepared.objects,
-      locator:{environment,payloadId:mediaId,verified:true,verifiedByteHash:entry.assetId},
+      locator:{environment,payloadId:mediaId,verified:true,verifiedByteHash:entry.assetId, ...(sourcePath ? {sourcePath} : {})},
     }
     const next = mergeVerifiedMediaReceipt(merged,receipt)
     await saveReceipt(receipt)

@@ -110,7 +110,7 @@ export async function readTravelMemoryCurrent({ Client, client, raw, plan, autho
 
   try {
     guard()
-    check(!raw || (raw.cap === limits.responseWireBytes && client.connection.stream === raw), 'CURRENT_WIRE_CAP_MISSING')
+    check(raw?.cap === limits.responseWireBytes && client.connection.stream === raw, 'CURRENT_WIRE_CAP_MISSING')
     await bounded(client.connect())
     peer = verifyPeer(client)
     for (const step of steps.slice(0, 4)) await runStep(step)

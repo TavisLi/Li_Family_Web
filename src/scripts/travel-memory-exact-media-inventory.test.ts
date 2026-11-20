@@ -5,7 +5,7 @@ import { readMemoryV2Inventory } from './travel-memory-v2-import'
 import type { MediaRegistry } from './travel-memory-media-registry'
 import type { MemorySourceV2 } from './travel-memory-source-v2'
 
-const ids = Array.from({length:201}, (_,i) => 201 - i)
+const ids = Array.from({length:842}, (_,i) => 842 - i)
 const assets = ids.map(id => ({assetId: 'sha256:' + id.toString(16).padStart(64,'0'), type:'photo' as const, altText:'Synthetic photo'}))
 const source: MemorySourceV2 = {
   sourceVersion:2, slug:'fixture-memory', locale:'zh-TW', title:'Fixture', isPrivate:true,
@@ -16,16 +16,20 @@ const registry: MediaRegistry = {version:1, travelSlug:source.slug, assets:asset
   files:['fixture.jpeg'], provenance:'local-file',
   locators:[{environment:'fixture',payloadId:ids[index]!,verified:true,verifiedByteHash:asset.assetId}],
 }))}
-function mock({unexpected=false, missingAll=false, otherOwner=false} = {}) {
+function mock({unexpected=false, missingAll=false, otherOwner=false, owner}: {
+  unexpected?:boolean; missingAll?:boolean; otherOwner?:boolean; owner?:number
+} = {}) {
   const batches: {locale:string; ids:number[]}[]=[]
   const payload = {async find(args: {collection:string; locale:string; limit:number; where:{id:{in:number[]}}}) {
+    if (args.collection === 'travel-memories' && owner !== undefined) return { docs:[{id:owner}] }
     if (args.collection !== 'media') return { docs:[] }
     const batch = args.where.id.in
     batches.push({locale:args.locale,ids:batch})
     assert.equal(args.limit, batch.length)
     assert.ok(batch.length <= 100)
-    const docs = batch.map(id=>({id,sourcePath:null, ...(otherOwner ?
-      {relatedTravelRecord:{relationTo:'travel-memories',value:9}} : {})})).reverse()
+    const relation = otherOwner ? 9 : owner
+    const docs = batch.map(id=>({id,sourcePath:null, ...(relation === undefined ? {} :
+      {relatedTravelRecord:{relationTo:'travel-memories',value:relation}})})).reverse()
     if (unexpected) docs[0]!.id = 99999
     if (missingAll && args.locale === 'all') docs.pop()
     return {docs, hasNextPage:false}
@@ -33,21 +37,27 @@ function mock({unexpected=false, missingAll=false, otherOwner=false} = {}) {
   return {batches,payload}
 }
 
-test('new draft reads only exact Media IDs and preserves inventory order in both locale modes', async () => {
-  const {payload,batches}=mock()
-  const result=await readMemoryV2Inventory(payload,source,registry,'fixture')
-  assert.deepEqual(result.media.map(row=>row.id),ids)
-  assert.deepEqual(result.allLocales?.media?.map(row=>row.id),ids)
-  assert.equal(result.allLocales?.media?.[0]?.sourcePath,null)
-  assert.deepEqual(batches.map(batch=>[batch.locale,batch.ids.length]),
-    [['zh-TW',100],['zh-TW',100],['zh-TW',1],['all',100],['all',100],['all',1]])
-  assert.deepEqual(batches.slice(0,3).flatMap(batch=>batch.ids),ids)
+test('an 842-photo inventory batches exact IDs before and after draft creation', async () => {
+  for (const owner of [undefined, 1]) {
+    const {payload,batches}=mock({owner})
+    const result=await readMemoryV2Inventory(payload,source,registry,'fixture')
+    assert.equal(result.memory?.id,owner)
+    assert.deepEqual(result.media.map(row=>row.id),ids)
+    assert.deepEqual(result.allLocales?.media?.map(row=>row.id),ids)
+    assert.equal(result.allLocales?.media?.[0]?.sourcePath,null)
+    assert.equal(batches.length,18)
+    for (const locale of ['zh-TW','all']) {
+      const scoped=batches.filter(batch=>batch.locale===locale)
+      assert.deepEqual(scoped.map(batch=>batch.ids.length),[100,100,100,100,100,100,100,100,42])
+      assert.deepEqual(scoped.flatMap(batch=>batch.ids),ids)
+    }
+  }
 })
 
 test('rejects unexpected IDs, non-target Media ownership and missing all-locale readback', async () => {
   for (const [flags, pattern] of [
     [{unexpected:true}, /unexpected or duplicate/],
-    [{otherOwner:true}, /ownership mismatch/],
+    [{otherOwner:true,owner:1}, /ownership mismatch/],
     [{missingAll:true}, /Media inventory mismatch/],
   ] as const) {
     await assert.rejects(readMemoryV2Inventory(mock(flags).payload,source,registry,'fixture'),pattern)

@@ -266,7 +266,7 @@ export async function readMemoryV2Inventory(payload: Payload, source: MemorySour
     }
     return docs
   }
-  const singleLocator = !memory && lookups.every(item => item.ids.length === 1 && Number.isSafeInteger(item.ids[0]) && item.ids[0]! > 0)
+  const singleLocator = lookups.every(item => item.ids.length === 1 && Number.isSafeInteger(item.ids[0]) && item.ids[0]! > 0)
   if (singleLocator) {
     const docs = await readExactMedia([...new Set(lookups.map(item => item.ids[0]!))], source.locale)
     for (const item of lookups) {

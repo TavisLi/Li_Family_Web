@@ -82,6 +82,18 @@ test('all originals and variants read back before creating an unowned private Me
   assert.equal(registry.assets[0].locators.length,0)
 })
 
+test('carries the exact approved optional alias through Media creation and independent readback', async()=>{
+  const {options,steps}=fixture()
+  const sourcePath=`travels/${plan.slug}/photos/fixture.jpeg`
+  options.registry=structuredClone(registry)
+  options.registry.assets[0].sourcePath=sourcePath
+  await assert.rejects(runFamilyPhotoIntake(options),/alias drift/)
+  assert.deepEqual(steps,[])
+  options.plan={...plan,entries:[{...entry,sourcePath}]}
+  const result=await runFamilyPhotoIntake(options)
+  assert.equal(result.assets[0].locators[0].sourcePath,sourcePath)
+})
+
 test('missing authority, duplicate row, conditional conflict and bad readback stop before Media creation', async()=>{
   const unapproved=fixture()
   await assert.rejects(runFamilyPhotoIntake({...unapproved.options,environment:'production'}),/Human decision/)

@@ -27,12 +27,13 @@ const plan = { slug, originPlanSlug, requiredRole:{session:role,effective:role},
   newOwnerBranch:{limits:{sqlDispatches:9,jsonPayloadBytes:143360}} }
 
 async function fixture({owner=false, versions=[], originRows=[{id:originPlanId,slug:originPlanSlug}],
-  session=identity, rollbackState='I'} = {}) {
+  session=identity, rollbackState='I', missingWireCap=false} = {}) {
   const sent = []
+  let connected = false
   const rows = [[session], owner ? [header] : [], versions, [header], [], [], [], [], []]
   class Client extends EventEmitter {
     connection = new EventEmitter()
-    async connect() {}
+    async connect() { connected = true }
     async end() {}
     async query({text,values}) {
       sent.push({text,values})
@@ -44,10 +45,21 @@ async function fixture({owner=false, versions=[], originRows=[{id:originPlanId,s
       return { command, rows: data ? [{ payload:JSON.stringify(data),row_count:data.length }] : [] }
     }
   }
-  const receipt = await readTravelMemoryCurrent({ Client, client:new Client(), plan, authorize() {},
+  const raw = missingWireCap ? undefined : {cap:plan.limits.responseWireBytes,destroy() {}}
+  const client = new Client()
+  client.connection.stream = raw
+  const receipt = await readTravelMemoryCurrent({ Client, client, raw, plan, authorize() {},
     verifyPeer:() => ({fixture:true}) })
-  return {receipt,sent}
+  return {receipt,sent,connected}
 }
+
+test('a missing hard wire limit blocks before the reader connects', async () => {
+  const {receipt,sent,connected} = await fixture({missingWireCap:true})
+  assert.equal(receipt.status,'BLOCK')
+  assert.equal(receipt.code,'CURRENT_WIRE_CAP_MISSING')
+  assert.equal(connected,false)
+  assert.deepEqual(sent,[])
+})
 
 test('empty Current proves the exact Plan only and cleans up after nine commands', async () => {
   const {receipt,sent} = await fixture()
