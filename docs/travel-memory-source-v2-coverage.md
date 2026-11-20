@@ -2,7 +2,7 @@
 
 由 src/scripts/travel-memory-v2-coverage.ts 依 Collection 產生。包含 container、array row ID、upload 與 version envelope；version document 的巢狀內容引用本表，不重複計數。
 
-總數 192；source-authorable 95；derived/importer-managed 4；cms/system-managed 93。未分類 0。
+總數 193；source-authorable 95；derived/importer-managed 4；cms/system-managed 94。未分類 0。
 
 ## 所有作者欄位共用規則
 
@@ -142,6 +142,7 @@
 | TravelMemoryDays.sourceMetadata.parserVersion | cms/system-managed | 可選 | 禁止手填；CMS／匯入基準管理 | 技術識別／匯入基準；不直接顯示 |
 | TravelMemoryDays.sourceMetadata.lastImportedAt | cms/system-managed | 可選 | 禁止手填；CMS／匯入基準管理 | 技術識別／匯入基準；不直接顯示 |
 | TravelMemoryDays.sourceMetadata.baseProjection | cms/system-managed | 可選 | 禁止手填；CMS／匯入基準管理 | 技術識別／匯入基準；不直接顯示 |
+| Media.familyAssetKey | cms/system-managed | 可選 | 私有 R2 入庫執行器；Source v2 禁止手填 | 原圖 SHA-256；對應私有物件與匿名讀取限制 |
 | Media.type | source-authorable | 必填（父項存在時） | memory-media.type | 照片／影片類型 |
 | Media.youtubeUrl | source-authorable | 可選 | memory-media.youtubeUrl | YouTube 網址 |
 | Media.altText | source-authorable | 必填（父項存在時） | memory-media.altText | 資產無障礙描述，不作為敘事圖說 |
