@@ -21,6 +21,7 @@ import * as migration_20260908_034257_add_travel_memory_day_hero_image from './2
 import * as migration_20260925_042448_issue140_dependency_upgrade from './20260925_042448_issue140_dependency_upgrade';
 import * as migration_20260926_020144_issue140_media_object_key from './20260926_020144_issue140_media_object_key';
 import * as migration_20261031_052622_issue180_optional_geo from './20261031_052622_issue180_optional_geo';
+import * as migration_20261120_112809_family_media_key from './20261120_112809_family_media_key';
 
 export const migrations = [
   {
@@ -136,6 +137,11 @@ export const migrations = [
   {
     up: migration_20261031_052622_issue180_optional_geo.up,
     down: migration_20261031_052622_issue180_optional_geo.down,
-    name: '20261031_052622_issue180_optional_geo'
+    name: '20261031_052622_issue180_optional_geo',
+  },
+  {
+    up: migration_20261120_112809_family_media_key.up,
+    down: migration_20261120_112809_family_media_key.down,
+    name: '20261120_112809_family_media_key'
   },
 ];

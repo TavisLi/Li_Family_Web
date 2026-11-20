@@ -281,6 +281,7 @@ export interface User {
  */
 export interface Media {
   id: number;
+  familyAssetKey?: string | null;
   type: 'photo' | 'video';
   youtubeUrl?: string | null;
   altText: string;
@@ -1500,6 +1501,7 @@ export interface CommentsSelect<T extends boolean = true> {
  * via the `definition` "media_select".
  */
 export interface MediaSelect<T extends boolean = true> {
+  familyAssetKey?: T;
   type?: T;
   youtubeUrl?: T;
   altText?: T;

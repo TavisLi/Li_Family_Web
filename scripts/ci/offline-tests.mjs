@@ -23,6 +23,7 @@ const files = [
   'src/features/travel/travel-memory-pages.test.tsx',
   'src/features/travel/youtube.test.ts',
   'src/lib/data/auth-session.test.ts',
+  'src/lib/data/family-media-response.test.ts',
   'src/lib/data/phase-7-domain.test.ts',
   'src/lib/data/travel-memory-child-access.test.ts',
   'src/lib/site-metadata.test.ts',
@@ -88,7 +89,10 @@ const files = [
   'src/scripts/travel-geo-write-transaction.test.ts',
   'src/scripts/travel-geo-migration.test.ts',
   'src/scripts/travel-legacy-cleanup-package.test.ts',
+  'src/scripts/travel-memory-current-session.test.mjs',
   'src/scripts/travel-memory-day-projections.test.ts',
+  'src/scripts/travel-memory-exact-media-inventory.test.ts',
+  'src/scripts/travel-memory-family-photo-intake.test.mjs',
   'src/scripts/travel-memory-source-contract.test.ts',
   'src/scripts/travel-memory-source-v2.test.ts',
   'src/scripts/travel-section-media.test.ts',
@@ -127,7 +131,7 @@ const selected = files.filter(file => {
     file === 'src/lib/data/auth-session.test.ts' || file === 'src/payload/access/is-admin.test.ts' ||
     file === 'src/payload/collections/users.test.ts'
   return file.startsWith('src/scripts/issue180/') || file.includes('travel') || file.includes('seed-') || file.includes('daily-hero') ||
-    file === 'src/payload/r2.test.ts' || file === 'src/payload/r2-preview.test.ts'
+    file === 'src/payload/r2.test.ts' || file === 'src/payload/r2-preview.test.ts' || file === 'src/lib/data/family-media-response.test.ts'
 })
 if (!selected.length) throw new Error(`No tests selected for ${group}`)
 if (process.argv.includes('--list')) {
@@ -135,9 +139,10 @@ if (process.argv.includes('--list')) {
 } else {
   for (const file of selected) {
     const historicalCase = historicalCases.get(file)
+    const needsTsx = !file.endsWith('.mjs') || file === 'src/scripts/travel-memory-family-photo-intake.test.mjs'
     const result = spawnSync(process.execPath, [...(historicalCase ? ['--test', `--test-skip-pattern=${historicalCase}`] : []),
       ...(file === 'src/features/travel/travel-atlas-map.test.tsx' ? ['--experimental-test-module-mocks'] : []),
-      ...(file.endsWith('.mjs') ? [] : ['--import', 'tsx']), file],
+      ...(needsTsx ? ['--import', 'tsx'] : []), file],
       { encoding: 'utf8', env: process.env, maxBuffer: 8 * 1024 * 1024 })
     if (result.status !== 0) {
       console.error(`FAIL ${file}\n${(result.stderr + result.stdout).slice(-8192)}`)
