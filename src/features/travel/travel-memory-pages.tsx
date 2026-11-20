@@ -989,7 +989,7 @@ function GalleryPhoto({ media, ...imageProps }: GalleryPhotoProps) {
 
   const medium = media.sizes?.medium
   // Supply only the medium URL to the image. The native link has no route prefetch.
-  const preview = { ...media, url: medium?.url ?? null, sizes: null,
+  const preview: Media = { ...media, url: medium?.url ?? null, sizes: undefined,
     width: medium?.width ?? media.width, height: medium?.height ?? media.height }
 
   return (
