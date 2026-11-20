@@ -896,7 +896,7 @@ function EditorialGallery({ gallery }: { gallery: TravelMemoryGallery }) {
           <div className="mt-16 grid gap-x-10 gap-y-16 md:grid-cols-2">
             {gallery.items.map((item, index) => (
               <figure className={cn(index % 3 === 1 && 'md:mt-20')} key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
-                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <PayloadImage className="rounded-none border border-[#cfc2ae]" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />}
+                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <GalleryPhoto className="rounded-none border border-[#cfc2ae]" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />}
                 <figcaption className="mt-4 grid gap-2 border-t border-[#cfc2ae] pt-4 sm:grid-cols-[7rem_1fr]">
                   <p className="font-mono text-xs tabular-nums text-[#a34031]">{item.unclassified ? (item.type === 'youtube' ? '全旅程影片' : 'ARCHIVE') : `DAY ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
                   <div>
@@ -932,7 +932,7 @@ function CinematicGallery({ gallery }: { gallery: TravelMemoryGallery }) {
           <div className="mt-12 grid gap-px bg-white/10 md:grid-cols-2">
             {gallery.items.map((item) => (
               <figure className="bg-[#0d1211] p-3" key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
-                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <PayloadImage className="aspect-video rounded-none border-0" fallbackLabel={item.caption || item.media.altText} fit="cover" media={item.media} preferOriginal sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />}
+                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <GalleryPhoto className="aspect-video rounded-none border-0" fallbackLabel={item.caption || item.media.altText} fit="cover" media={item.media} sizes="(min-width: 768px) 50vw, 100vw" tone="travel" />}
                 <figcaption className="grid grid-cols-[5rem_1fr] gap-4 px-1 py-4">
                   <p className="font-mono text-xs tabular-nums text-[#ddae73]">{item.unclassified ? (item.type === 'youtube' ? '全旅程影片' : 'ARCHIVE') : `${String(item.day).padStart(2, '0')}:${item.time || '—'}`}</p>
                   <div>
@@ -966,7 +966,7 @@ function ScrapbookGallery({ gallery }: { gallery: TravelMemoryGallery }) {
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {gallery.items.map((item, index) => (
               <figure className={cn('bg-[#fffaf0] p-3 pb-8 shadow-[5px_8px_0_rgba(98,75,43,0.14)]', scrapbookTilt('family-scrapbook', index))} key={`${item.dayKey}:${item.momentKey}:${item.placementKey}`}>
-                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <PayloadImage className="rounded-none border-0" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} preferOriginal sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" tone="travel" />}
+                {item.type === 'youtube' ? <GalleryVideo item={item} visual={visual} /> : <GalleryPhoto className="rounded-none border-0" fallbackLabel={item.caption || item.media.altText} layout="intrinsic" media={item.media} sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" tone="travel" />}
                 <figcaption className="px-3 pt-5">
                   <p className="font-serif text-lg italic leading-7 text-[#695b47]">{item.caption || (item.type === 'youtube' ? '影片沒有附上文字。' : '照片背面沒有留下文字。')}</p>
                   <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.12em] text-[#9e3e2e]">{item.unclassified ? (item.type === 'youtube' ? '全旅程影片' : '未分類照片') : `Day ${item.day}${item.time ? ` · ${item.time}` : ''}`}</p>
@@ -979,6 +979,28 @@ function ScrapbookGallery({ gallery }: { gallery: TravelMemoryGallery }) {
         <GalleryPagination gallery={gallery} visual={visual} />
       </div>
     </main>
+  )
+}
+
+type GalleryPhotoProps = Omit<React.ComponentProps<typeof PayloadImage>, 'media' | 'preferOriginal' | 'priority'> & { media: Media }
+
+function GalleryPhoto({ media, ...imageProps }: GalleryPhotoProps) {
+  if (!media.familyAssetKey) return <PayloadImage {...imageProps} media={media} preferOriginal />
+
+  const medium = media.sizes?.medium
+  // Supply only the medium URL to the image. The native link has no route prefetch.
+  const preview = { ...media, url: medium?.url ?? null, sizes: null,
+    width: medium?.width ?? media.width, height: medium?.height ?? media.height }
+
+  return (
+    <>
+      <PayloadImage {...imageProps} media={preview} />
+      {media.url ? (
+        <a className="mt-2 inline-flex text-xs font-semibold underline underline-offset-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4" href={media.url} target="_blank" rel="noopener noreferrer">
+          開啟原圖
+        </a>
+      ) : null}
+    </>
   )
 }
 

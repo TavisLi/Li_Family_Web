@@ -409,6 +409,30 @@ assert.match(
 assert.match(galleryHtml, /南山文化旅遊區的海上觀音。/)
 assert.match(galleryHtml, /location=/)
 
+const privatePhoto: Media = {
+  ...photo,
+  id: 813,
+  familyAssetKey: 'a'.repeat(64),
+  url: '/api/family-media/813/original',
+  sizes: {
+    medium: { url: '/api/family-media/813/medium' },
+    large: { url: '/api/family-media/813/large' },
+  },
+}
+for (const style of styles) {
+  const item = { ...gallery.items[0], type: 'photo' as const, media: privatePhoto }
+  const privateGallery = { ...gallery, items: [item], memory: { ...overview(style), isPrivate: true } }
+  const html = renderToStaticMarkup(<TravelMemoryGalleryPage gallery={privateGallery} />)
+  const preview = html.match(/<img[^>]*src="\/api\/family-media\/813\/medium"[^>]*>/)?.[0] ?? ''
+  assert.match(preview, /loading="lazy"/)
+  assert.match(html, /<a[^>]*href="\/api\/family-media\/813\/original"[^>]*>開啟原圖<\/a>/)
+  assert.doesNotMatch(html, /(?:src|srcSet)="\/api\/family-media\/813\/(?:original|large)"|<link[^>]*href="\/api\/family-media\/813\//)
+
+  const missingMedium = { ...item, media: { ...privatePhoto, sizes: { large: privatePhoto.sizes?.large } } }
+  const fallback = renderToStaticMarkup(<TravelMemoryGalleryPage gallery={{ ...privateGallery, items: [missingMedium] }} />)
+  assert.doesNotMatch(fallback, /(?:src|srcSet)="\/api\/family-media\/813\//)
+}
+
 for (const [slug, style] of [
   ['201307-hainan', 'family-scrapbook'],
   ['202308-east-australia', 'cinematic-timeline'],
