@@ -51,6 +51,8 @@ Current 專用會話可用 `travel-memory-current-session.mjs` 接入已審且 e
 
 用 `node --import tsx src/scripts/travel-memory-family-photo-reconcile.mjs <input.json> <input-sha256> <new-output.json>` 核對固定清單與已授權取得的觀測。輸入含前一步的 `prepared`、已審 `registry`、`scope`（`slug, locale, environment, accountId, bucket, target: {projectRef, database, schema}`）及同 scope 的 `observations: {scope, entries}`。觀測依 `assetId`，Media 提供 `state`；若為 `FOUND`，附 `id, familyAssetKey, type, mimeType, bytes, altTextSha256, sourcePath, ownerId, publicStorage`。物件依 `key`，`FOUND` 必須有完整 GET 的 `bytes, sha256, mimeType`。只有確實排除權限與讀取失敗時才記 `ABSENT_CONFIRMED`。未觀測需保留 UNKNOWN。輸出分別給完整重用、新建審查與部分恢復審查；逐項結果保存在私有封包。使用前核對觀測來源與當期收據。工具本身沒有外部存取或執行權。
 
+Media 觀測可由已審的唯讀交易呼叫 `observeFamilyMedia`，綁定匯入清單的 assetId 與已審 Registry alias。固定 SQL 每組最多 100 個 key，比對私有 key、alias 和以 digest 命名的舊檔名，altText 只回傳 SHA。呼叫端須證明同一快照對 Media、關聯與指定語系的有效可見性，並提供 #105 預算與獨立 rollback 證據。既有零 owner Current 投影的 Media coverage 為 NONE，須另用可證明的入口執行此查核。
+
 已批准的 Media runner 提供私有 bucket、固定清單、停機預算及獨立讀回 client。每個物件先留持久化 intent，再以 `If-None-Match: *` 新建並讀回完整 SHA。四個物件都通過後才建立未掛接的 Media row、獨立讀回並更新 Registry。任何已存在物件或結果不明先按 #105 對帳。聚焦排演可用 `sh src/scripts/family-media-rehearsal.sh`，它只使用本機 PostgreSQL 與合成 R2。
 
 R2 觀測可由已批准的讀取入口呼叫 `observeFamilyPhotoObjects`。呼叫端須核對 R2 帳號、直接 S3 endpoint、bucket、唯讀憑證範圍、固定清單與總期限，逐項保存觀測。全量上限等於清單物件數，每個 key 只送一次 GET。只有同一直接入口回傳 `NoSuchKey` 與 HTTP 404 才記 `ABSENT_CONFIRMED`。缺桶、權限拒絕、逾時或中斷停止受影響觀測；未取得的項目維持 UNKNOWN。上次寫入結果不明時，依獨立對帳規則處理。[R2 錯誤代碼](https://developers.cloudflare.com/r2/api/error-codes/) · [R2 一致性](https://developers.cloudflare.com/r2/reference/consistency/)

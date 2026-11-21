@@ -1,0 +1,103 @@
+import assert from 'node:assert/strict'
+import { isFamilyAssetKey } from '../payload/family-media.ts'
+
+const batchSize = 100
+
+export const exactFamilyMediaSelect = `
+WITH expected AS (
+  SELECT *
+  FROM ROWS FROM (pg_catalog.unnest($1::text[]), pg_catalog.unnest($2::text[]))
+    AS lookup(family_key, source_alias)
+)
+SELECT e.family_key AS requested_key,
+       m.id,
+       m.family_asset_key = e.family_key AS family_key_matches,
+       m.source_path IS NOT DISTINCT FROM e.source_alias AS alias_matches,
+       m.type,
+       m.mime_type,
+       m.filesize AS bytes,
+       pg_catalog.encode(pg_catalog.sha256(pg_catalog.convert_to(l.alt_text, 'UTF8')), 'hex') AS alt_text_sha,
+       pg_catalog.num_nonnulls(
+         m.filename, m._objectkey, m.url, m.thumbnail_u_r_l,
+         m.sizes_thumbnail_filename, m.sizes_thumbnail_url,
+         m.sizes_medium_filename, m.sizes_medium_url,
+         m.sizes_large_filename, m.sizes_large_url
+       ) > 0 AS public_storage,
+       EXISTS (
+         SELECT 1 FROM public.media_rels AS r
+         WHERE r.parent_id = m.id AND r.path = 'relatedTravelRecord'
+       ) AS has_owner
+FROM expected AS e
+LEFT JOIN LATERAL (
+  SELECT id, family_asset_key, source_path, type, mime_type, filesize,
+         filename, _objectkey, url, thumbnail_u_r_l,
+         sizes_thumbnail_filename, sizes_thumbnail_url,
+         sizes_medium_filename, sizes_medium_url,
+         sizes_large_filename, sizes_large_url
+  FROM public.media
+  WHERE family_asset_key = e.family_key
+     OR source_path = e.source_alias
+     OR filename IN (e.family_key || '.jpg', e.family_key || '.jpeg')
+  LIMIT 2
+) AS m ON true
+LEFT JOIN public.media_locales AS l ON l._parent_id = m.id AND l._locale = $3
+`
+
+function projectObservation(rows, key, sourcePath) {
+  if (rows.length === 1 && rows[0].id === null) return { state: 'ABSENT_CONFIRMED' }
+  if (rows.length !== 1) return { state: 'CONFLICT' }
+  const row = rows[0]
+  if (!Number.isSafeInteger(row.id) || row.id <= 0 || row.family_key_matches !== true ||
+      row.alias_matches !== true || row.has_owner !== false || row.public_storage !== false ||
+      !isFamilyAssetKey(row.alt_text_sha)) return { state: 'CONFLICT' }
+  return { state: 'FOUND', id: row.id, familyAssetKey: key, sourcePath, ownerId: null,
+    publicStorage: false, type: row.type, mimeType: row.mime_type, bytes: row.bytes, altTextSha256: row.alt_text_sha }
+}
+
+// query must use the approved, bounded read-only transaction. verifyVisibility
+// attests that all three relations are visible for these keys in that snapshot.
+export async function observeFamilyMedia({ entries, slug, locale, query, verifyVisibility, guard }) {
+  assert(Array.isArray(entries) && entries.length > 0, 'BLOCK: no Media observation roster')
+  assert(typeof slug === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))
+  assert(['zh-TW', 'en'].includes(locale))
+  assert(typeof verifyVisibility === 'function', 'BLOCK: Media visibility verifier required')
+  const keys = new Set()
+  const aliases = new Set()
+  const roster = entries.map(({ assetId, sourcePath }) => {
+    assert(typeof assetId === 'string' && assetId.startsWith('sha256:'))
+    const key = assetId.slice(7)
+    assert(isFamilyAssetKey(key) && !keys.has(key), 'BLOCK: invalid or duplicate Media key')
+    if (sourcePath != null) {
+      assert(typeof sourcePath === 'string' && sourcePath.startsWith(`travels/${slug}/`) &&
+        !sourcePath.includes('\\') && sourcePath.split('/').every(part => part && !['.', '..'].includes(part)),
+      'BLOCK: Media alias outside approved slug')
+      assert(!aliases.has(sourcePath), 'BLOCK: duplicate Media alias')
+      aliases.add(sourcePath)
+    }
+    keys.add(key)
+    return { assetId, key, sourcePath: sourcePath ?? null }
+  })
+
+  guard()
+  assert.equal(await verifyVisibility(), true, 'BLOCK: Media visibility unproven')
+  const observations = []
+  for (let start = 0; start < roster.length; start += batchSize) {
+    const batch = roster.slice(start, start + batchSize)
+    const group = new Map(batch.map(({ key }) => [key, []]))
+    guard()
+    const { rows } = await query(exactFamilyMediaSelect, [batch.map(row => row.key), batch.map(row => row.sourcePath), locale])
+    assert(Array.isArray(rows) && rows.length <= batch.length * 2, 'BLOCK: Media result exceeds exact scope')
+    for (const row of rows) {
+      const candidates = group.get(row.requested_key)
+      assert(candidates && candidates.length < 2, 'BLOCK: unexpected or duplicate Media result')
+      candidates.push(row)
+    }
+    for (const { assetId, key, sourcePath } of batch) {
+      const candidates = group.get(key)
+      assert(candidates.length > 0 && (candidates.length === 1 || candidates.every(row => row.id !== null)),
+        'BLOCK: ambiguous or missing Media coverage')
+      observations.push({ assetId, media: projectObservation(candidates, key, sourcePath) })
+    }
+  }
+  return observations
+}

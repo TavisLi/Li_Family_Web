@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { familyPhotoObjectKey, familyPhotoVariants } from '../payload/family-media.ts'
+import { exactFamilyMediaSelect, observeFamilyMedia } from './travel-memory-family-media-read.mjs'
 import { reconcileFamilyPhotos } from './travel-memory-family-photo-reconcile.mjs'
 
 function fixture(size = 1) {
@@ -73,4 +74,34 @@ test('partial assets go to recovery review and out-of-scope identities never mat
   assert.throws(() => reconcileFamilyPhotos(input), /unexpected or duplicate identity/)
   input.observations.scope.bucket = 'wrong-bucket'
   assert.throws(() => reconcileFamilyPhotos(input), /scope drift/)
+})
+
+test('the exact Media reader observes 842 IDs in nine bounded queries', async () => {
+  const { scope, prepared } = fixture(842)
+  const batchSizes = []
+  const result = await observeFamilyMedia({
+    entries: prepared.entries, slug: scope.slug, locale: scope.locale, guard() {},
+    verifyVisibility: async () => true,
+    async query(text, [keys, aliases, locale]) {
+      assert.equal(text, exactFamilyMediaSelect)
+      assert.equal(locale, scope.locale)
+      batchSizes.push(keys.length)
+      assert.deepEqual(aliases, Array(keys.length).fill(null))
+      return { rows: keys.map(key => ({ requested_key: key, id: null })) }
+    },
+  })
+  assert.deepEqual(batchSizes, [100, 100, 100, 100, 100, 100, 100, 100, 42])
+  assert.equal(result.length, 842)
+  assert(result.every(item => item.media.state === 'ABSENT_CONFIRMED'))
+})
+
+test('Media visibility denial and incomplete result coverage never produce absence', async () => {
+  const { scope, prepared } = fixture()
+  let calls = 0
+  const options = { entries: prepared.entries, slug: scope.slug, locale: scope.locale,
+    guard() {}, async query() { calls++; return { rows: [] } } }
+  await assert.rejects(observeFamilyMedia({ ...options, verifyVisibility: async () => false }), /visibility unproven/)
+  assert.equal(calls, 0)
+  await assert.rejects(observeFamilyMedia({ ...options, verifyVisibility: async () => true }), /missing Media coverage/)
+  assert.equal(calls, 1)
 })
