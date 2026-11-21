@@ -53,6 +53,8 @@ Current 專用會話可用 `travel-memory-current-session.mjs` 接入已審且 e
 
 Media 觀測可由已審的唯讀交易呼叫 `observeFamilyMedia`，綁定匯入清單的 assetId 與已審 Registry alias。固定 SQL 每組最多 100 個 key，比對私有 key、alias 和以 digest 命名的舊檔名，altText 只回傳 SHA。呼叫端須證明同一快照對 Media、關聯與指定語系的有效可見性，並提供 #105 預算與獨立 rollback 證據。既有零 owner Current 投影的 Media coverage 為 NONE，須另用可證明的入口執行此查核。
 
+合併正式觀測時，先驗證兩邊收據來源及時效，再把 `mediaSnapshot` 與 `objectSnapshot` 交給同一對帳命令。兩份輸入都帶 `familyPhotoObservationBinding` 的 target 與清單 SHA，Media 須為 PASS 且 rollback CONFIRMED，R2 須為 PASS。保留對帳輸出的兩份快照 SHA；缺項維持 UNKNOWN。
+
 已批准的 Media runner 提供私有 bucket、固定清單、停機預算及獨立讀回 client。每個物件先留持久化 intent，再以 `If-None-Match: *` 新建並讀回完整 SHA。四個物件都通過後才建立未掛接的 Media row、獨立讀回並更新 Registry。任何已存在物件或結果不明先按 #105 對帳。聚焦排演可用 `sh src/scripts/family-media-rehearsal.sh`，它只使用本機 PostgreSQL 與合成 R2。
 
 R2 觀測可由已批准的讀取入口呼叫 `observeFamilyPhotoObjects`。呼叫端須核對 R2 帳號、直接 S3 endpoint、bucket、唯讀憑證範圍、固定清單與總期限，逐項保存觀測。全量上限等於清單物件數，每個 key 只送一次 GET。只有同一直接入口回傳 `NoSuchKey` 與 HTTP 404 才記 `ABSENT_CONFIRMED`。缺桶、權限拒絕、逾時或中斷停止受影響觀測；未取得的項目維持 UNKNOWN。上次寫入結果不明時，依獨立對帳規則處理。[R2 錯誤代碼](https://developers.cloudflare.com/r2/api/error-codes/) · [R2 一致性](https://developers.cloudflare.com/r2/reference/consistency/)

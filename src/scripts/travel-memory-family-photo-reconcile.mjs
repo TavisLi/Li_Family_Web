@@ -109,12 +109,42 @@ export function reconcileFamilyPhotos({ prepared, registry, scope, observations 
     scope, assets: rows.length, objectCount, totalBytes, counts, rows }
 }
 
+export function familyPhotoObservationBinding({ prepared, registry, scope }) {
+  return { scope, preparedSha256: sha256(prepared), registrySha256: sha256(registry) }
+}
+
+// Approval and evidence authenticity are checked by the calling runner. Both
+// independently verified snapshots must bind the same roster and target.
+export function reconcileFamilyPhotoSnapshots({ prepared, registry, scope, mediaSnapshot, objectSnapshot }) {
+  const binding = familyPhotoObservationBinding({ prepared, registry, scope })
+  assert.deepEqual(mediaSnapshot?.binding, binding, 'BLOCK: Media snapshot binding drift')
+  assert.deepEqual(objectSnapshot?.binding, binding, 'BLOCK: R2 snapshot binding drift')
+  assert(mediaSnapshot.status === 'PASS' && mediaSnapshot.rollback === 'CONFIRMED',
+    'BLOCK: Media snapshot lacks confirmed rollback')
+  assert.equal(objectSnapshot.status, 'PASS', 'BLOCK: R2 snapshot incomplete')
+
+  const entries = new Set(prepared.entries.map(entry => entry.assetId))
+  const media = indexExact(mediaSnapshot.entries, entries, 'assetId')
+  const objects = indexExact(objectSnapshot.entries, entries, 'assetId')
+  const observations = { scope, entries: [...entries].map(assetId => ({
+    assetId, media: media.get(assetId)?.media, objects: objects.get(assetId)?.objects,
+  })) }
+  const result = reconcileFamilyPhotos({ prepared, registry, scope, observations })
+  return { ...result, evidence: {
+    binding, mediaSnapshotSha256: sha256(mediaSnapshot), objectSnapshotSha256: sha256(objectSnapshot),
+  } }
+}
+
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   const [inputFile, inputSha, outputFile] = process.argv.slice(2)
   assert(process.argv.length === 5, 'Usage: node --import tsx travel-memory-family-photo-reconcile.mjs <input.json> <input-sha256> <new-output.json>')
   const inputBytes = await readFile(inputFile)
   assert.equal(sha256(inputBytes), inputSha, 'BLOCK: reconciliation input SHA mismatch')
-  const output = { ...reconcileFamilyPhotos(JSON.parse(inputBytes)), inputSha256: inputSha }
+  const input = JSON.parse(inputBytes)
+  const hasSnapshots = Object.hasOwn(input, 'mediaSnapshot') || Object.hasOwn(input, 'objectSnapshot')
+  assert(!hasSnapshots || !Object.hasOwn(input, 'observations'), 'BLOCK: mixed observation inputs')
+  const result = hasSnapshots ? reconcileFamilyPhotoSnapshots(input) : reconcileFamilyPhotos(input)
+  const output = { ...result, inputSha256: inputSha }
   const bytes = JSON.stringify(output, null, 2) + '\n'
   await writeFile(outputFile, bytes, { flag: 'wx', mode: 0o600 })
   const { status, assets, objectCount, totalBytes, counts } = output

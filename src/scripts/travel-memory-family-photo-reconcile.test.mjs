@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { familyPhotoObjectKey, familyPhotoVariants } from '../payload/family-media.ts'
 import { exactFamilyMediaSelect, observeFamilyMedia } from './travel-memory-family-media-read.mjs'
-import { reconcileFamilyPhotos } from './travel-memory-family-photo-reconcile.mjs'
+import { observeFamilyPhotoObjects } from './travel-memory-family-photo-object-read.mjs'
+import { familyPhotoObservationBinding, reconcileFamilyPhotos, reconcileFamilyPhotoSnapshots } from './travel-memory-family-photo-reconcile.mjs'
 
 function fixture(size = 1) {
   const scope = { slug: 'fixture-family', locale: 'zh-TW', environment: 'production',
@@ -104,4 +105,44 @@ test('Media visibility denial and incomplete result coverage never produce absen
   assert.equal(calls, 0)
   await assert.rejects(observeFamilyMedia({ ...options, verifyVisibility: async () => true }), /missing Media coverage/)
   assert.equal(calls, 1)
+})
+
+test('SQL and R2 observations join only after both receipts bind the same approved roster', async () => {
+  const { scope, prepared, registry } = fixture(2)
+  const input = { scope, prepared, registry }
+  const binding = familyPhotoObservationBinding(input)
+  const mediaRows = await observeFamilyMedia({ entries: prepared.entries, slug: scope.slug, locale: scope.locale,
+    guard() {}, verifyVisibility: async () => true,
+    async query(text, [keys]) {
+      assert.equal(text, exactFamilyMediaSelect)
+      return { rows: keys.map(key => ({ requested_key: key, id: null })) }
+    },
+  })
+  const objectRows = new Map(prepared.entries.map(({ assetId }) => [assetId, { assetId, objects: [] }]))
+  await observeFamilyPhotoObjects({ entries: prepared.entries, bucket: scope.bucket, guard() {},
+    signal: AbortSignal.timeout(1000),
+    storage: { config: { maxAttempts: async () => 1 }, async send() {
+      throw Object.assign(new Error('fixture'), { name: 'NoSuchKey', $metadata: { httpStatusCode: 404 } })
+    } },
+    saveObservation: async (assetId, row) => { objectRows.get(assetId).objects.push(row) },
+  })
+
+  const mediaSnapshot = { binding, status: 'PASS', rollback: 'CONFIRMED', entries: mediaRows }
+  const objectSnapshot = { binding, status: 'PASS', entries: [...objectRows.values()] }
+  const result = reconcileFamilyPhotoSnapshots({ ...input, mediaSnapshot, objectSnapshot })
+  assert.equal(result.status, 'READY_FOR_REVIEW')
+  assert.equal(result.counts.REVIEW_CREATE, 2)
+  assert.match(result.evidence.mediaSnapshotSha256, /^[a-f0-9]{64}$/)
+  assert.match(result.evidence.objectSnapshotSha256, /^[a-f0-9]{64}$/)
+
+  const failedMedia = { ...mediaSnapshot, rollback: 'UNKNOWN' }
+  assert.throws(() => reconcileFamilyPhotoSnapshots({ ...input, mediaSnapshot: failedMedia, objectSnapshot }), /confirmed rollback/)
+  const driftedScope = { ...binding, scope: { ...scope, bucket: 'other-bucket' } }
+  assert.throws(() => reconcileFamilyPhotoSnapshots({ ...input, mediaSnapshot, objectSnapshot: {
+    ...objectSnapshot, binding: driftedScope,
+  } }), /R2 snapshot binding drift/)
+  const incomplete = { ...objectSnapshot, entries: objectSnapshot.entries.slice(1) }
+  const blocked = reconcileFamilyPhotoSnapshots({ ...input, mediaSnapshot, objectSnapshot: incomplete })
+  assert.equal(blocked.status, 'BLOCK')
+  assert.equal(blocked.counts.UNKNOWN, 1)
 })
