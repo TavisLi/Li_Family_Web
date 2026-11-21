@@ -1,6 +1,7 @@
 import type { CollectionConfig, TextFieldSingleValidation } from 'payload'
 
 import { canManageContent } from '../access/is-admin'
+import { isFamilyAssetKey, photoSizes, projectFamilyMediaUrls, protectFamilyMediaStorage } from '../family-media'
 
 const youtubeUrlPattern =
   /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtube\.com\/embed\/|youtu\.be\/)[A-Za-z0-9_-]{6,}/
@@ -13,6 +14,9 @@ const validateYoutubeUrl: TextFieldSingleValidation = (value) => {
   return youtubeUrlPattern.test(value) || 'Please enter a valid YouTube URL.'
 }
 
+const validateFamilyAssetKey: TextFieldSingleValidation = (value) =>
+  value == null || isFamilyAssetKey(value) || 'Invalid family photo identity'
+
 export const Media: CollectionConfig = {
   slug: 'media',
   admin: {
@@ -21,11 +25,22 @@ export const Media: CollectionConfig = {
   },
   access: {
     create: ({ req }) => canManageContent({ user: req.user }),
-    read: () => true,
+    read: ({ req }) => req.user ? true : { familyAssetKey: { exists: false } },
     update: ({ req }) => canManageContent({ user: req.user }),
     delete: ({ req }) => canManageContent({ user: req.user }),
   },
+  hooks: {
+    beforeValidate: [protectFamilyMediaStorage],
+    afterRead: [projectFamilyMediaUrls],
+  },
   fields: [
+    {
+      name: 'familyAssetKey',
+      type: 'text',
+      unique: true,
+      admin: { hidden: true },
+      validate: validateFamilyAssetKey,
+    },
     {
       name: 'type',
       type: 'select',
@@ -93,26 +108,7 @@ export const Media: CollectionConfig = {
     staticDir: 'media',
     filesRequiredOnCreate: false,
     mimeTypes: ['image/*'],
-    imageSizes: [
-      {
-        name: 'thumbnail',
-        width: 400,
-        height: 400,
-        position: 'centre',
-      },
-      {
-        name: 'medium',
-        width: 800,
-        height: 800,
-        position: 'centre',
-      },
-      {
-        name: 'large',
-        width: 1600,
-        height: 1200,
-        position: 'centre',
-      },
-    ],
+    imageSizes: photoSizes.map(size => ({ ...size })),
     adminThumbnail: 'thumbnail',
   },
 }

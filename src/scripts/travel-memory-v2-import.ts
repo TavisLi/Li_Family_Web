@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import { sql } from '@payloadcms/db-postgres'
 import { isDeepStrictEqual } from 'node:util'
 import { createLocalReq, initTransaction, commitTransaction, type Payload, type PayloadRequest } from 'payload'
+import type { Media } from '../payload/payload-types'
 import { lockTravelGeoRequest } from '../payload/collections/travel-geo-lock'
 import { projectMemoryV2, type MemorySourceV2 } from './travel-memory-source-v2'
 import { reconcileMemoryV2, type V2Record } from './travel-memory-v2-reconciliation'
@@ -196,6 +197,22 @@ function protectedDays(days: V2Record[]): boolean {
   })
 }
 
+export function sourceMediaReferences(source: MemorySourceV2) {
+  return new Set([
+    ...(source.assets ?? []).map(item => item.assetId ?? item.sourcePath!), ...(source.coverImage ? [source.coverImage] : []),
+    ...(source.galleryImages ?? []), ...(source.storySections ?? []).flatMap(item => item.mediaItems ?? []),
+    ...(source.days ?? []).flatMap(item => [...(item.dailyHeroImage ? [item.dailyHeroImage] : []),
+      ...(item.moments ?? []).flatMap(moment => (moment.placements ?? []).flatMap(item => item.media ? [item.media] : []))]),
+  ])
+}
+
+export async function memorySlugVersionCount(payload: Payload, slug: string, req?: PayloadRequest) {
+  const result = await payload.countVersions({
+    collection: 'travel-memories', where: { 'version.slug': { equals: slug } }, req,
+  })
+  return result.totalDocs
+}
+
 // The same bounded, scoped inventory feeds both dry-run and apply. No unrelated
 // collections are scanned; each reference must resolve exactly once.
 export async function readMemoryV2Inventory(payload: Payload, source: MemorySourceV2, registry?: MediaRegistry, environment?: string, req?: PayloadRequest): Promise<V2Inventory> {
@@ -215,27 +232,54 @@ export async function readMemoryV2Inventory(payload: Payload, source: MemorySour
     const result = await payload.find({ ...options, collection: 'travel-plans', where: { slug: { equals: source.originPlan } } })
     for (const item of result.docs) plans.push({ id: item.id, slug: item.slug })
   }
-  const refs = new Set([
-    ...(source.assets ?? []).map(item => item.assetId ?? item.sourcePath!), ...(source.coverImage ? [source.coverImage] : []),
-    ...(source.galleryImages ?? []), ...(source.storySections ?? []).flatMap(item => item.mediaItems ?? []),
-    ...(source.days ?? []).flatMap(item => [...(item.dailyHeroImage ? [item.dailyHeroImage] : []),
-      ...(item.moments ?? []).flatMap(moment => (moment.placements ?? []).flatMap(item => item.media ? [item.media] : []))]),
-  ])
-  const media: V2Inventory['media'] = []
-  for (const reference of refs) {
+  const lookups = [...sourceMediaReferences(source)].map(reference => {
     const hashReference = assetIdSchema.safeParse(reference).success
     const entry = hashReference && registry ? resolveRegistryEntry(registry, reference) : undefined
-    const ids = entry && environment ? entry.locators.filter(item => item.environment === environment && item.verified).map(item => item.payloadId) : []
+    const ids = entry && environment
+      ? entry.locators.filter(item => item.environment === environment && item.verified).map(item => item.payloadId)
+      : []
     const sourcePath = hashReference ? entry?.sourcePath : reference
     if (sourcePath && !sourcePath.startsWith(`travels/${source.slug}/`)) throw new Error(`Cross-owner media reference: ${sourcePath}`)
-    if (!ids.length && !sourcePath) continue
-    for (const id of ids.length ? ids : [undefined]) {
-      const result = await payload.find({ ...options, collection: 'media', where: id ? { id: { equals: id } } : { sourcePath: { equals: sourcePath } } })
-      for (const item of result.docs) {
-        if (item.relatedTravelRecord && (item.relatedTravelRecord.relationTo !== 'travel-memories' || item.relatedTravelRecord.value !== memory?.id)) {
-          throw new Error(`Media ownership mismatch: ${reference}`)
-        }
-        if (!media.some(row => row.id === item.id)) media.push({ ...item, sourcePath: item.sourcePath ?? undefined })
+    return { reference, ids, sourcePath }
+  })
+  const media: V2Inventory['media'] = []
+  function takeMedia(item: Media, reference: string) {
+    const relation = item.relatedTravelRecord
+    if (relation && (relation.relationTo !== 'travel-memories' || relation.value !== memory?.id)) {
+      throw new Error(`Media ownership mismatch: ${reference}`)
+    }
+    if (!media.some(row => row.id === item.id)) media.push({ ...item, sourcePath: item.sourcePath ?? undefined })
+  }
+  async function readExactMedia(ids: number[], locale: typeof source.locale | 'all') {
+    const docs = new Map<number, Media>()
+    // Keep each query scoped to the reviewed IDs, in bounded groups.
+    for (let start = 0; start < ids.length; start += 100) {
+      const batch = ids.slice(start, start + 100)
+      const requested = new Set(batch)
+      const result = await payload.find({ ...options, collection: 'media', locale, limit: batch.length,
+        where: { id: { in: batch } } })
+      if (result.hasNextPage) throw new Error('BLOCK: exact Media batch exceeded its requested identities')
+      for (const row of result.docs) {
+        if (!requested.has(row.id) || docs.has(row.id)) throw new Error('BLOCK: unexpected or duplicate Media ID in batch')
+        docs.set(row.id, row)
+      }
+    }
+    return docs
+  }
+  const singleLocator = lookups.every(item => item.ids.length === 1 && Number.isSafeInteger(item.ids[0]) && item.ids[0]! > 0)
+  if (singleLocator) {
+    const docs = await readExactMedia([...new Set(lookups.map(item => item.ids[0]!))], source.locale)
+    for (const item of lookups) {
+      const doc = docs.get(item.ids[0]!)
+      if (doc) takeMedia(doc, item.reference)
+    }
+  } else {
+    for (const { reference, ids, sourcePath } of lookups) {
+      if (!ids.length && !sourcePath) continue
+      for (const id of ids.length ? ids : [undefined]) {
+        const result = await payload.find({ ...options, collection: 'media',
+          where: id ? { id: { equals: id } } : { sourcePath: { equals: sourcePath } } })
+        for (const item of result.docs) takeMedia(item, reference)
       }
     }
   }
@@ -244,16 +288,26 @@ export async function readMemoryV2Inventory(payload: Payload, source: MemorySour
   const allDays = memory ? await payload.find({ ...options, locale: 'all', collection: 'travel-memory-days', limit: 100, where: { memory: { equals: memory.id } } }) : undefined
   if (allDays?.hasNextPage || !isDeepStrictEqual((allDays?.docs ?? []).map(d => d.id).sort(), (days?.docs ?? []).map(d => d.id).sort())) throw new Error('BLOCK: V2 locale day inventory mismatch')
   const allMedia: V2Record[] = []
-  for (const item of media) {
-    const result = await payload.find({ ...options, locale: 'all', collection: 'media', where: { id: { equals: item.id } } })
-    if (result.docs.length !== 1 || result.docs[0].id !== item.id) throw new Error('BLOCK: V2 Media inventory mismatch')
-    allMedia.push(result.docs[0] as unknown as V2Record)
+  if (singleLocator) {
+    const docs = await readExactMedia(media.map(item => item.id), 'all')
+    for (const item of media) {
+      const doc = docs.get(item.id)
+      if (!doc) throw new Error('BLOCK: V2 Media inventory mismatch')
+      allMedia.push(doc as unknown as V2Record)
+    }
+  } else {
+    for (const item of media) {
+      const result = await payload.find({ ...options, locale: 'all', collection: 'media', where: { id: { equals: item.id } } })
+      if (result.docs.length !== 1 || result.docs[0].id !== item.id) throw new Error('BLOCK: V2 Media inventory mismatch')
+      allMedia.push(result.docs[0] as unknown as V2Record)
+    }
   }
   return { allLocales: { memory: allMemory.docs[0] as unknown as V2Record, days: (allDays?.docs ?? []) as unknown as V2Record[], media: allMedia }, memory: memory ? { ...memory } : undefined, days: (days?.docs ?? []).map(item => ({ ...item })), media, members, plans }
 }
 
 export async function importMemoryV2(payload: Payload, source: MemorySourceV2, options: {
   apply: boolean; assetRoot: string; sourceFile: string; registry?: MediaRegistry; environment?: string; req?: PayloadRequest
+  reviewedNew?: { inventory: V2Inventory; plan: ReturnType<typeof planMemoryV2> }
 }) {
   const read = (req?: PayloadRequest) => readMemoryV2Inventory(payload, source, options.registry, options.environment, req)
   if (!options.apply) return planMemoryV2(source, await read(), options.registry, options.environment)
@@ -279,6 +333,17 @@ export async function importMemoryV2(payload: Payload, source: MemorySourceV2, o
     }
     const current = await read(req)
     if (!isDeepStrictEqual(inventory, current)) throw new Error('BLOCK: V2 inventory changed before write')
+    if (options.reviewedNew) {
+      // Artifacts are JSON. Payload may also return absent properties as undefined.
+      const asJson = (value: unknown): unknown => JSON.parse(JSON.stringify(value))
+      if (current.memory || current.days.length || plan.parent.action !== 'create' ||
+        plan.days.some(day => day.action !== 'create') || plan.assets.some(asset => asset.action !== 'preserve-current') ||
+        !isDeepStrictEqual(asJson(current), asJson(options.reviewedNew.inventory)) ||
+        !isDeepStrictEqual(asJson(plan), asJson(options.reviewedNew.plan)) ||
+        await memorySlugVersionCount(payload, source.slug, req) !== 0) {
+        throw new Error('BLOCK: reviewed new Memory inventory, plan or history changed')
+      }
+    }
     const common = { req, locale: source.locale, fallbackLocale: false as const }
     for (const asset of plan.assets.filter(item => item.action === 'update')) {
       await payload.update({ ...common, collection: 'media', id: asset.id!, data: changedData(asset.data, inventory.media.find(item => item.id === asset.id)) as never })

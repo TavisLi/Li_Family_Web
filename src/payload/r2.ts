@@ -5,7 +5,7 @@ import type { Media } from './payload-types'
 // Read-only Preview can serve public R2 images without storage write credentials.
 export const readPublicR2Media = (publicUrl: string): CollectionAfterReadHook<Media> =>
   ({ doc }) => {
-    if (!doc.filename) return doc
+    if (doc.familyAssetKey != null || !doc.filename) return doc
 
     const result = {
       ...doc,
