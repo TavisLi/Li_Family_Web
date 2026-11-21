@@ -58,7 +58,10 @@ async function approvedPlan(environment, plan, authority) {
   assert(binding,'BLOCK: private Media plan not bound')
   const bytes = await readFile(path.resolve(root,binding.path))
   assert.equal(digest(bytes),binding.sha256)
-  return JSON.parse(bytes)
+  const review = JSON.parse(bytes)
+  assert.equal(review.status,'READY_FOR_REVIEW','BLOCK: private Media review incomplete')
+  assert.equal(review.plan?.target,manifest.target,'BLOCK: private Media target drift')
+  return review.plan
 }
 
 // Revocations and uncertain-write reconciliation belong to the #105 caller.
@@ -73,6 +76,9 @@ export async function runFamilyPhotoIntake({
   assert.equal(plan.ownerBasis,'ZERO_OWNER_AND_VERSION')
   assert(allowedLocale.has(plan.locale))
   assert(plan.entries.length > 0 && new Set(plan.entries.map(item=>item.assetId)).size===plan.entries.length)
+  if (environment === 'production') {
+    assert.equal(digest(JSON.stringify(registry)),plan.evidence?.registrySha256,'BLOCK: approved Registry SHA drift')
+  }
   let merged = validateMediaRegistry(registry,plan.slug)
   for (const entry of plan.entries) {
     guard()
@@ -82,6 +88,9 @@ export async function runFamilyPhotoIntake({
     const {sourcePath} = entry
     assert.equal(sourcePath,asset.sourcePath,'BLOCK: approved family Media alias drift')
     assert(typeof entry.altText === 'string' && entry.altText.trim() && entry.altText === entry.altText.trim())
+    if (environment === 'production') {
+      assert.equal(digest(entry.altText),entry.altTextSha256,'BLOCK: approved altText SHA drift')
+    }
     const prepared = await prepareFamilyPhoto(await loadOriginal(entry.assetId),entry.assetId)
     assert.equal(prepared.buffers.original.length,asset.byteSize)
     assert.deepEqual(prepared.objects,entry.objects,'BLOCK: approved object bundle drift')

@@ -1,10 +1,14 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 import test from 'node:test'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { familyPhotoPutInput, prepareFamilyPhoto, runFamilyPhotoIntake } from './travel-memory-family-photo-intake.mjs'
 import { observeFamilyPhotoObjects } from './travel-memory-family-photo-object-read.mjs'
+import { manifestHash } from './run-contract.mjs'
 
 const sha = bytes => createHash('sha256').update(bytes).digest('hex')
 const original = await sharp({create:{width:48,height:32,channels:3,background:'#477562'}})
@@ -108,6 +112,46 @@ test('missing authority, duplicate row, conditional conflict and bad readback st
     assert(!run.steps.includes('MEDIA_INTENT'))
     assert.equal(run.receipts.length,0)
   }
+})
+
+test('the production operation consumes only the manifest-bound review and registry in a synthetic run', async t => {
+  const root = await mkdtemp(path.join(tmpdir(), 'family-photo-manifest-fixture-'))
+  t.after(() => rm(root, { recursive: true, force: true }))
+  const artifact = async (relative, bytes) => {
+    await writeFile(path.join(root, relative), bytes, { mode: 0o600 })
+    return { path: relative, sha256: sha(bytes) }
+  }
+  const target = 'fixture-project/postgres/public'
+  const compiled = { ...plan, environment: 'production', target,
+    evidence: { registrySha256: sha(JSON.stringify(registry)) },
+    entries: [{ ...entry, altTextSha256: sha(entry.altText) }] }
+  const review = await artifact('review.json', JSON.stringify({ status: 'READY_FOR_REVIEW', plan: compiled }))
+  const manifest = {
+    version: 1, runId: 'family-photo-manifest-fixture', environment: 'production', target,
+    runtime: { node: process.versions.node, pnpm: 'fixture', bootstrap: { entrypoint: 'fixture.mjs', envNames: [] }, schemaPush: 'disabled' },
+    scope: { include: ['fixture photo'], exclude: ['deploy'], expectedEffects: ['travel-memory-family-photo-create'],
+      stopConditions: ['drift'], baseline: 'fixture' },
+    artifacts: { executor: await artifact('fixture.mjs', ''), sql: [await artifact('fixture.sql', 'SELECT 1')],
+      backup: await artifact('backup.json', '{}'),
+      dependencies: [await artifact('package.json', '{"packageManager":"pnpm@fixture"}'),
+        await artifact('pnpm-lock.yaml', ''), review] },
+    approval: { action: 'production-media', allowed: ['production-media'], excluded: ['release'],
+      validFrom: '2000-01-01T00:00:00Z', validUntil: '2100-01-01T00:00:00Z' },
+  }
+  const approval = { source: 'synthetic test approval', manifestSha256: manifestHash(manifest), action: manifest.approval.action,
+    environment: manifest.environment, target, scope: manifest.scope.include, baseline: manifest.scope.baseline,
+    stopConditions: manifest.scope.stopConditions, validFrom: manifest.approval.validFrom,
+    validUntil: manifest.approval.validUntil, revoked: false }
+  const run = fixture()
+  const options = { ...run.options, environment: 'production', authority: { root, manifest, approval,
+    humanSourceVerified: true, planPath: review.path } }
+  const drift = structuredClone(registry)
+  drift.assets[0].files.push('unreviewed.jpeg')
+  await assert.rejects(runFamilyPhotoIntake({ ...options, registry: drift }), /approved Registry SHA drift/)
+  assert.equal(run.steps.length, 0)
+  const result = await runFamilyPhotoIntake(options)
+  assert.deepEqual(result.assets[0].locators.map(({ environment, payloadId }) => [environment, payloadId]), [['production', 99]])
+  assert.equal(run.receipts.length, 1)
 })
 
 function readFixture(send) {

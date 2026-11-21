@@ -3,8 +3,9 @@ import { readFile, writeFile } from 'node:fs/promises'
 import { pathToFileURL } from 'node:url'
 import { isDeepStrictEqual } from 'node:util'
 import { familyPhotoObjectKey, familyPhotoVariants, isFamilyAssetKey } from '../payload/family-media.ts'
-import { validateMediaRegistry } from './travel-memory-media-registry.ts'
+import { resolveRegistryEntry, validateMediaRegistry } from './travel-memory-media-registry.ts'
 import { sha256 } from './travel-memory-review.mjs'
+import { parseMemorySourceV2 } from './travel-memory-source-v2.ts'
 
 function indexExact(rows, keys, field) {
   assert(Array.isArray(rows), 'BLOCK: missing observation list')
@@ -135,6 +136,54 @@ export function reconcileFamilyPhotoSnapshots({ prepared, registry, scope, media
   } }
 }
 
+export function reviewFamilyPhotoSource({ sourceMarkdown, sourceSha256, prepared, registry, scope }) {
+  assert(typeof sourceMarkdown === 'string' && sha256(sourceMarkdown) === sourceSha256, 'BLOCK: reviewed Source SHA drift')
+  const source = parseMemorySourceV2(sourceMarkdown)
+  assert(source.slug === scope.slug && source.locale === scope.locale && source.isPrivate === true, 'BLOCK: private Source scope drift')
+  const assets = validateMediaRegistry(registry, scope.slug)
+  const roster = new Map(prepared.entries.map(entry => [entry.assetId, entry]))
+  const photos = new Map()
+  for (const photo of source.assets ?? []) {
+    if (photo.type !== 'photo') continue
+    const asset = resolveRegistryEntry(assets, photo.assetId ?? photo.sourcePath)
+    assert(asset && roster.has(asset.assetId) && !photos.has(asset.assetId), 'BLOCK: Source photo roster drift')
+    assert(photo.sourcePath === asset.sourcePath, 'BLOCK: Source photo alias drift')
+    const expected = roster.get(asset.assetId)
+    assert.equal(sha256(photo.altText), expected.altTextSha256, 'BLOCK: approved altText SHA drift')
+    photos.set(asset.assetId, { assetId: asset.assetId, altText: photo.altText, altTextSha256: expected.altTextSha256,
+      ...(asset.sourcePath ? { sourcePath: asset.sourcePath } : {}), objects: expected.objects })
+  }
+  assert(photos.size > 0 && photos.size === roster.size && roster.size === prepared.entries.length,
+    'BLOCK: Source photo coverage incomplete')
+  return { originPlanSlug: source.originPlan, photos }
+}
+
+export function buildFamilyPhotoCreateReview(input) {
+  const { current, scope, sourceSha256 } = input
+  const target = [scope.target.projectRef, scope.target.database, scope.target.schema].join('/')
+  const { originPlanSlug, photos } = reviewFamilyPhotoSource(input)
+  assert(current?.status === 'PASS' && current.rollback === 'CONFIRMED' && current.target === target &&
+    current.slug === scope.slug && current.locale === scope.locale && current.ownerCount === 0 && current.versionCount === 0 &&
+    originPlanSlug && current.originPlanSlug === originPlanSlug && Number.isSafeInteger(current.originPlanId) &&
+    current.originPlanId > 0 && isFamilyAssetKey(current.receiptSha256), 'BLOCK: Current new-owner evidence incomplete')
+  const reconciliation = reconcileFamilyPhotoSnapshots(input)
+  const { counts, evidence } = reconciliation
+  const ready = reconciliation.status === 'READY_FOR_REVIEW' && counts.REVIEW_RECOVERY === 0
+  const entries = ready ? reconciliation.rows.filter(row => row.decision === 'REVIEW_CREATE').map(row => photos.get(row.assetId)) : []
+  const reuses = ready ? reconciliation.rows.filter(row => row.decision === 'REUSE_MEDIA')
+    .map(({ assetId, mediaId }) => ({ assetId, mediaId })) : []
+  const limits = { mediaCreates: entries.length,
+    storagePuts: entries.reduce((total, entry) => total + entry.objects.length, 0),
+    uploadBytes: entries.reduce((total, entry) => total + entry.objects.reduce((sum, object) => sum + object.bytes, 0), 0) }
+  return { status: ready ? 'READY_FOR_REVIEW' : 'BLOCK', assets: reconciliation.assets, counts, limits, reuses,
+    plan: entries.length ? { environment: scope.environment, target, slug: scope.slug, locale: scope.locale,
+      accountId: scope.accountId, bucket: scope.bucket, mode: 'family-photo-create', ownerBasis: 'ZERO_OWNER_AND_VERSION',
+      evidence: { sourceSha256, currentReceiptSha256: current.receiptSha256,
+        registrySha256: evidence.binding.registrySha256,
+        mediaSnapshotSha256: evidence.mediaSnapshotSha256, objectSnapshotSha256: evidence.objectSnapshotSha256 },
+      entries } : null }
+}
+
 if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
   const [inputFile, inputSha, outputFile] = process.argv.slice(2)
   assert(process.argv.length === 5, 'Usage: node --import tsx travel-memory-family-photo-reconcile.mjs <input.json> <input-sha256> <new-output.json>')
@@ -143,11 +192,12 @@ if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) 
   const input = JSON.parse(inputBytes)
   const hasSnapshots = Object.hasOwn(input, 'mediaSnapshot') || Object.hasOwn(input, 'objectSnapshot')
   assert(!hasSnapshots || !Object.hasOwn(input, 'observations'), 'BLOCK: mixed observation inputs')
-  const result = hasSnapshots ? reconcileFamilyPhotoSnapshots(input) : reconcileFamilyPhotos(input)
+  const result = Object.hasOwn(input, 'sourceMarkdown') ? buildFamilyPhotoCreateReview(input) :
+    hasSnapshots ? reconcileFamilyPhotoSnapshots(input) : reconcileFamilyPhotos(input)
   const output = { ...result, inputSha256: inputSha }
   const bytes = JSON.stringify(output, null, 2) + '\n'
   await writeFile(outputFile, bytes, { flag: 'wx', mode: 0o600 })
-  const { status, assets, objectCount, totalBytes, counts } = output
-  console.log(JSON.stringify({ status, assets, objectCount, totalBytes, counts, outputSha256: sha256(bytes) }))
+  const { status, assets, objectCount, totalBytes, counts, limits } = output
+  console.log(JSON.stringify({ status, assets, objectCount, totalBytes, counts, limits, outputSha256: sha256(bytes) }))
   if (status === 'BLOCK') process.exitCode = 1
 }

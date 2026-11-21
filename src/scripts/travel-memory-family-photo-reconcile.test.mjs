@@ -3,7 +3,8 @@ import test from 'node:test'
 import { familyPhotoObjectKey, familyPhotoVariants } from '../payload/family-media.ts'
 import { exactFamilyMediaSelect, observeFamilyMedia } from './travel-memory-family-media-read.mjs'
 import { observeFamilyPhotoObjects } from './travel-memory-family-photo-object-read.mjs'
-import { familyPhotoObservationBinding, reconcileFamilyPhotos, reconcileFamilyPhotoSnapshots } from './travel-memory-family-photo-reconcile.mjs'
+import { buildFamilyPhotoCreateReview, familyPhotoObservationBinding, reconcileFamilyPhotos, reconcileFamilyPhotoSnapshots } from './travel-memory-family-photo-reconcile.mjs'
+import { sha256 } from './travel-memory-review.mjs'
 
 function fixture(size = 1) {
   const scope = { slug: 'fixture-family', locale: 'zh-TW', environment: 'production',
@@ -145,4 +146,44 @@ test('SQL and R2 observations join only after both receipts bind the same approv
   const blocked = reconcileFamilyPhotoSnapshots({ ...input, mediaSnapshot, objectSnapshot: incomplete })
   assert.equal(blocked.status, 'BLOCK')
   assert.equal(blocked.counts.UNKNOWN, 1)
+})
+
+test('media approval preview uses reviewed text, retains verified reuses, and excludes any unresolved recovery', () => {
+  const { scope, prepared, registry, observations } = fixture(2)
+  const altText = 'Synthetic reviewed text'
+  for (const entry of prepared.entries) entry.altTextSha256 = sha256(altText)
+  const sourceMarkdown = ['---', 'sourceVersion: 2', 'locale: zh-TW', 'title: Review fixture', `slug: ${scope.slug}`,
+    'startDate: "2026-11-20"', 'endDate: "2026-11-20"', 'isPrivate: true', 'originPlan: fixture-plan',
+    '---', '', ...prepared.entries.flatMap(({ assetId }) =>
+      ['```memory-media', `assetId: ${assetId}`, 'type: photo', `altText: ${altText}`, '```', '']),
+  ].join('\n')
+  const binding = familyPhotoObservationBinding({ scope, prepared, registry })
+  const existing = prepared.entries[1]
+  observations.entries[1].media = { state: 'FOUND', id: 37, familyAssetKey: existing.assetId.slice(7), ownerId: null,
+    sourcePath: null, publicStorage: false, type: 'photo', mimeType: 'image/jpeg',
+    bytes: 100, altTextSha256: sha256(altText) }
+  observations.entries[1].objects = existing.objects.map(object => ({ ...object, state: 'FOUND' }))
+  const target = [scope.target.projectRef, scope.target.database, scope.target.schema].join('/')
+  const input = { scope, prepared, registry, sourceMarkdown, sourceSha256: sha256(sourceMarkdown),
+    current: { status: 'PASS', rollback: 'CONFIRMED', slug: scope.slug, locale: scope.locale, target,
+      ownerCount: 0, versionCount: 0, originPlanSlug: 'fixture-plan', originPlanId: 42, receiptSha256: 'a'.repeat(64) },
+    mediaSnapshot: { binding, status: 'PASS', rollback: 'CONFIRMED', entries: observations.entries },
+    objectSnapshot: { binding, status: 'PASS', entries: observations.entries } }
+  const output = buildFamilyPhotoCreateReview(input)
+  assert.equal(output.status, 'READY_FOR_REVIEW')
+  assert.deepEqual(output.limits, { mediaCreates: 1, storagePuts: 4, uploadBytes: 250 })
+  assert.deepEqual(output.reuses, [{ assetId: existing.assetId, mediaId: 37 }])
+  assert.equal(output.plan.target, target)
+  assert.equal(output.plan.entries.length, 1)
+  assert.equal(output.plan.entries[0].altText, altText)
+  assert.equal(output.plan.evidence.sourceSha256, input.sourceSha256)
+  assert.throws(() => buildFamilyPhotoCreateReview({ ...input, current: { ...input.current, versionCount: 1 } }), /Current new-owner/)
+  assert.throws(() => buildFamilyPhotoCreateReview({ ...input, sourceMarkdown: sourceMarkdown.replace(altText, 'Drift') }), /Source SHA/)
+  const edited = sourceMarkdown.replace(altText, 'Drift')
+  assert.throws(() => buildFamilyPhotoCreateReview({ ...input, sourceMarkdown: edited, sourceSha256: sha256(edited) }), /altText SHA/)
+  observations.entries[0].objects[0] = { ...prepared.entries[0].objects[0], state: 'FOUND' }
+  const blocked = buildFamilyPhotoCreateReview(input)
+  assert.equal(blocked.status, 'BLOCK')
+  assert.equal(blocked.plan, null)
+  assert.equal(blocked.counts.REVIEW_RECOVERY, 1)
 })
