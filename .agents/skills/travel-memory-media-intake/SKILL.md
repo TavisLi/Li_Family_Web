@@ -49,4 +49,6 @@ Current 專用會話可用 `travel-memory-current-session.mjs` 接入已審且 e
 
 新草稿的 JPEG 先用 `node --import tsx src/scripts/prepare-travel-memory-family-objects.mjs <candidate.json> <candidate-sha256> <originals-dir> <new-output.json>` 在本機生成原圖與三個衍生檔的 key、長度及 SHA。候選從已審 Registry 與 Source 取 `slug`、`assets` 數量、`totalBytes`，逐列提供 `assetId`、`byteSize`、`mimeType`、`relativeOriginals`、`altTextSha256`。輸出記錄 encoder 版本與 Production presence UNKNOWN。建立實際寫入計畫時，將已審 altText 與其 SHA、目標存在性及可重用的 locator 對帳。
 
+用 `node --import tsx src/scripts/travel-memory-family-photo-reconcile.mjs <input.json> <input-sha256> <new-output.json>` 核對固定清單與已授權取得的觀測。輸入含前一步的 `prepared`、已審 `registry`、`scope`（`slug, locale, environment, accountId, bucket, target: {projectRef, database, schema}`）及同 scope 的 `observations: {scope, entries}`。觀測依 `assetId`，Media 提供 `state`；若為 `FOUND`，附 `id, familyAssetKey, type, mimeType, bytes, altTextSha256, sourcePath, ownerId, publicStorage`。物件依 `key`，`FOUND` 必須有完整 GET 的 `bytes, sha256, mimeType`。只有確實排除權限與讀取失敗時才記 `ABSENT_CONFIRMED`。未觀測需保留 UNKNOWN。輸出分別給完整重用、新建審查與部分恢復審查；逐項結果保存在私有封包。使用前核對觀測來源與當期收據。工具本身沒有外部存取或執行權。
+
 已批准的 Media runner 提供私有 bucket、固定清單、停機預算及獨立讀回 client。每個物件先留持久化 intent，再以 `If-None-Match: *` 新建並讀回完整 SHA。四個物件都通過後才建立未掛接的 Media row、獨立讀回並更新 Registry。任何已存在物件或結果不明先按 #105 對帳。聚焦排演可用 `sh src/scripts/family-media-rehearsal.sh`，它只使用本機 PostgreSQL 與合成 R2。
