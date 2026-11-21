@@ -18,12 +18,20 @@ export async function verifyBaseline(root) {
   assert.equal((await readFile(path.join(rootPath, '.nvmrc'), 'utf8')).trim(), baseline.runtime.node)
   assert.equal((await readFile(path.join(rootPath, '.node-version'), 'utf8')).trim(), baseline.runtime.node)
   assert.equal(pkg.packageManager, `pnpm@${baseline.runtime.pnpm}`)
-  let runtimeBinding = null
-  if (pkg.dependencies.payload === '3.90.2') {
-    runtimeBinding = JSON.parse(await readFile(path.join(rootPath,
-      'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json'), 'utf8'))
-    assert.equal(runtimeBinding.version, 1)
-    assert.equal(runtimeBinding.id, 'issue158-v12-payload-3.90.2')
+  {
+    const runtimeBinding = JSON.parse(await readFile(path.join(rootPath,
+      'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2-pr177.json'), 'utf8'))
+    assert.equal(runtimeBinding.version, 2)
+    assert.equal(runtimeBinding.id, 'issue158-v12-payload-3.90.2-pr177')
+    assert.deepEqual(runtimeBinding.parent, { path: 'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json',
+      sha256: '15ceeadb5220290dee16c9c4f30d135ef7d99a5a21109e6f59ec6bc85d46e524' })
+    const parentBytes = await readFile(path.join(rootPath, runtimeBinding.parent.path))
+    assert.equal(sha256(parentBytes), runtimeBinding.parent.sha256, 'BLOCK: historical runtime binding drift')
+    const parent = JSON.parse(parentBytes)
+    assert.equal(runtimeBinding.baselineManifestSha256, parent.baselineManifestSha256)
+    assert.deepEqual(runtimeBinding.packages, parent.packages)
+    assert.deepEqual({ ...runtimeBinding.files, 'pnpm-lock.yaml': parent.files['pnpm-lock.yaml'] }, parent.files)
+    assert.deepEqual(runtimeBinding.source, { pullRequest: 177, mergeCommit: '422efb4798392c7a080cae1c9b64af3bdb1a1fea' })
     assert.equal(runtimeBinding.historicalPayload, baseline.runtime.payload)
     assert.equal(sha256(await readFile(manifestPath)), runtimeBinding.baselineManifestSha256,
       'BLOCK: historical baseline drift')
@@ -40,9 +48,6 @@ export async function verifyBaseline(root) {
     for (const [name, hash] of Object.entries(runtimeBinding.files)) {
       assert.equal(sha256(await readFile(path.join(rootPath, name))), hash, 'BLOCK: runtime binding drift: ' + name)
     }
-  } else {
-    assert.equal(pkg.dependencies.payload, baseline.runtime.payload)
-    assert.equal(pkg.dependencies['@payloadcms/db-postgres'], baseline.runtime.payload)
   }
   assert.equal(baseline.runtime.postgresMajor, baseline.restore.postgresMajor)
   assert.match(baseline.runtime.ciImage, /^postgres:17\.11@sha256:[a-f0-9]{64}$/)
@@ -58,17 +63,7 @@ export async function verifyBaseline(root) {
   assert.equal(bytes.length, artifact.bytes, 'BLOCK: baseline size drift')
   assert.equal(sha256(bytes), artifact.sha256, 'BLOCK: baseline hash drift')
 
-  const sql = bytes.toString('utf8')
-  const content = sql.split('\n').filter((line) => line.trim() && !line.startsWith('--') &&
-    !line.startsWith('\\restrict ') && !line.startsWith('\\unrestrict '))
-  assert.deepEqual(sql.split('\n').filter((line) => line.startsWith('\\'))
-    .map((line) => line.trim()), ['\\restrict Issue158SchemaOnly20261010', '\\unrestrict Issue158SchemaOnly20261010'])
-  const statements = content.join('\n').split(';').map((item) => item.replace(/--[^\n]*/g, '').replace(/\s+/g, ' ').trim()).filter(Boolean)
-  assert.deepEqual(statements.filter((statement) => /^SELECT\b/i.test(statement)),
-    ["SELECT pg_catalog.set_config('search_path', '', false)"])
-  assert(!forbidden.test(statements.join('\n')), 'BLOCK: baseline contains data or executable objects')
-  assert(statements.every((statement) => allowed.test(statement)),
-    'BLOCK: baseline contains an unreviewed statement class')
+  const statements = verifyBaselineSql(bytes.toString('utf8'))
 
   for (const [key, expectedPath] of [['catalogQueries', 'scripts/rehearsal/baselines/issue158-v12/catalog-queries.json'],
     ['semanticCatalog', 'scripts/rehearsal/baselines/issue158-v12/semantic-catalog.json']]) {
@@ -81,9 +76,24 @@ export async function verifyBaseline(root) {
   assert.equal(semantic.sourceAcceptanceSha256, 'b8e60df76a0d2a39994c32b6fcae9e6e639427ce95caa3a28bfffd3962906e7d')
   assert.equal(semantic.categories && Object.keys(semantic.categories).length, 12)
 
-  return { runtimeBinding: runtimeBinding?.id ?? null, id: baseline.id, canonicalSha256: baseline.source.canonicalSha256,
+  return { runtimeBinding: 'issue158-v12-payload-3.90.2-pr177', id: baseline.id, canonicalSha256: baseline.source.canonicalSha256,
     schemaSha256: sha256(bytes), bytes: bytes.length, statementCount: statements.length,
     postgresMajor: baseline.restore.postgresMajor, catalogCategories: Object.keys(semantic.categories).length,
     semanticCatalogSha256: sha256(await readFile(path.join(rootPath, baseline.artifacts.semanticCatalog.path))),
     migrationRows: baseline.restore.migrationRows, limitations: baseline.limitations }
+}
+
+export function verifyBaselineSql(sql) {
+  const content = sql.split('\n').filter((line) => line.trim() && !line.startsWith('--') &&
+    !line.startsWith('\\restrict ') && !line.startsWith('\\unrestrict '))
+  assert.deepEqual(sql.split('\n').filter((line) => line.startsWith('\\'))
+    .map((line) => line.trim()), ['\\restrict Issue158SchemaOnly20261010', '\\unrestrict Issue158SchemaOnly20261010'])
+  const statements = content.join('\n').split(';').map((item) => item.replace(/--[^\n]*/g, '').replace(/\s+/g, ' ').trim()).filter(Boolean)
+  assert.deepEqual(statements.filter((statement) => /^SELECT\b/i.test(statement)),
+    ["SELECT pg_catalog.set_config('search_path', '', false)"])
+  assert(!forbidden.test(statements.join('\n')), 'BLOCK: baseline contains data or executable objects')
+  assert(statements.every((statement) => allowed.test(statement)),
+    'BLOCK: baseline contains an unreviewed statement class')
+
+  return statements
 }

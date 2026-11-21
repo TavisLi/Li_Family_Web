@@ -240,6 +240,7 @@ async function makeManifest(runId, database, options, backupPath, sourceRecordPa
       dependencies: await Promise.all(['package.json', 'pnpm-lock.yaml',
         'scripts/rehearsal/baselines/issue158-v12/baseline.json',
         'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json',
+        'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2-pr177.json',
         'pnpm-workspace.yaml', 'patches/@payloadcms__db-postgres@3.90.2.patch', 'src/scripts/issue158/baseline.mjs',
         'src/scripts/issue158/catalog.mjs', 'src/scripts/issue158/restore.mjs', 'src/scripts/issue158/ownership.mjs',
         'src/scripts/run-contract.mjs', 'src/scripts/run-executor-evidence.mjs',
