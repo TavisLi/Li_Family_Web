@@ -134,6 +134,22 @@ assert.equal(memoryRecord.sourceSections?.[0]?.enableComments, false)
 
 const merged = mergeTravelRuntimeRecords([plan], [memory], 1)
 
+// Drafts and historical records can lack required fields at runtime.
+const incompletePlans = [null, undefined, ''].map((startDate, index) => ({
+  ...plan,
+  id: 20 + index,
+  startDate,
+} as unknown as TravelPlan))
+const incompleteMemory = { ...memory, id: 30, startDate: null } as unknown as TravelMemory
+assert.deepEqual(
+  mergeTravelRuntimeRecords(incompletePlans, [memory, incompleteMemory], 10).map((item) => item.id),
+  ['travel-memories:11', 'travel-plans:20', 'travel-plans:21', 'travel-plans:22', 'travel-memories:30'],
+)
+assert.deepEqual(
+  mergeTravelRuntimeRecords(incompletePlans, [memory, incompleteMemory], 1).map((item) => item.id),
+  ['travel-memories:11'],
+)
+
 assert.deepEqual(
   merged.map(({ id, slug }) => ({ id, slug })),
   [{ id: 'travel-plans:11', slug: '202607-chongqing-yangtze-river' }],
