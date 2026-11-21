@@ -7,9 +7,9 @@ import { familyPhotoObjectKey, familyPhotoVariants, photoSizes } from '../payloa
 import { evaluateAuthorization, verifyManifestFiles } from './run-contract.mjs'
 import { validateMediaRegistry } from './travel-memory-media-registry.ts'
 import { mergeVerifiedMediaReceipt } from './travel-memory-media-transfer.mjs'
+import { maxFamilyPhotoBytes as maxPhotoBytes, readFamilyPhotoObject } from './travel-memory-family-photo-object-read.mjs'
 
 const digest = bytes => createHash('sha256').update(bytes).digest('hex')
-const maxPhotoBytes = 32 * 1024 * 1024
 const allowedLocale = new Set(['zh-TW', 'en'])
 
 function objectFacts(key, variant, bytes) {
@@ -131,7 +131,7 @@ export async function runFamilyPhotoIntake({
 // The approved caller supplies the bound bucket, scoped S3 clients, and a
 // separately opened Payload reader. No credential sources are resolved here.
 export async function familyPhotoIntakeAdapter({ bucket, writeStorage, readStorage, payload, readPayload, guard, signal }) {
-  const { GetObjectCommand, PutObjectCommand } = await import('@aws-sdk/client-s3')
+  const { PutObjectCommand } = await import('@aws-sdk/client-s3')
   assert(writeStorage !== readStorage && payload !== readPayload, 'BLOCK: independent readback clients required')
   for (const storage of [writeStorage, readStorage]) {
     assert.equal(await storage.config.maxAttempts(),1,'BLOCK: storage must not retry')
@@ -154,28 +154,11 @@ export async function familyPhotoIntakeAdapter({ bucket, writeStorage, readStora
       assert.equal(input.IfNoneMatch,'*')
       await writeStorage.send(new PutObjectCommand(input),bounded())
     },
-    async readVerifiedObject({bucket:requested,key,bytes,mimeType}) {
+    async readVerifiedObject({bucket:requested,...object}) {
       assert.equal(requested,bucket)
-      const response = await readStorage.send(new GetObjectCommand({ Bucket:bucket,Key:key }),bounded())
-      assert(response.Body,'BLOCK: private object body missing')
-      const reader = response.Body.transformToWebStream().getReader()
-      const hash = createHash('sha256')
-      let observed = 0
-      try {
-        assert(response.ContentLength === bytes && response.ContentType === mimeType,'BLOCK: private object metadata drift')
-        for (;;) {
-          guard()
-          const chunk = await reader.read()
-          if (chunk.done) break
-          observed += chunk.value.byteLength
-          assert(observed <= bytes,'BLOCK: private object exceeds approved size')
-          hash.update(chunk.value)
-        }
-      } finally {
-        await reader.cancel().catch(()=>{})
-        reader.releaseLock()
-      }
-      return {bytes:observed,sha256:hash.digest('hex'),mimeType:response.ContentType}
+      const { state, bytes, sha256, mimeType } = await readFamilyPhotoObject({ storage:readStorage, bucket, object, guard, signal })
+      assert.equal(state,'FOUND','BLOCK: private object readback incomplete')
+      return {bytes,sha256,mimeType}
     },
     async createMedia({locale,...data}) {
       guard()

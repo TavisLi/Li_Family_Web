@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import test from 'node:test'
+import { GetObjectCommand } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { familyPhotoPutInput, prepareFamilyPhoto, runFamilyPhotoIntake } from './travel-memory-family-photo-intake.mjs'
+import { observeFamilyPhotoObjects } from './travel-memory-family-photo-object-read.mjs'
 
 const sha = bytes => createHash('sha256').update(bytes).digest('hex')
 const original = await sharp({create:{width:48,height:32,channels:3,background:'#477562'}})
@@ -106,4 +108,88 @@ test('missing authority, duplicate row, conditional conflict and bad readback st
     assert(!run.steps.includes('MEDIA_INTENT'))
     assert.equal(run.receipts.length,0)
   }
+})
+
+function readFixture(send) {
+  const observations = []
+  const controller = new AbortController()
+  const storage = { config: { maxAttempts: async () => 1 }, send }
+  const options = { bucket: plan.bucket, entries: [entry], storage, signal: controller.signal,
+    guard() {}, saveObservation: async (id, value) => { observations.push({ assetId: id, ...value }) } }
+  return { observations, controller, options }
+}
+
+function providerError(name, httpStatusCode) {
+  return Object.assign(new Error(name), { name, $metadata: { httpStatusCode } })
+}
+
+test('exact private GETs return byte evidence and accept only explicit NoSuchKey 404 as absent', async () => {
+  const requests = []
+  const { options, observations } = readFixture(async (command, { abortSignal }) => {
+    assert(command instanceof GetObjectCommand)
+    assert(abortSignal instanceof AbortSignal)
+    const object = entry.objects[requests.length]
+    requests.push(command.input)
+    assert.deepEqual(command.input, { Bucket: plan.bucket, Key: object.key })
+    if (object.variant !== 'original') throw providerError('NoSuchKey', 404)
+    return { ContentLength: original.length, ContentType: object.mimeType,
+      Body: { transformToWebStream: () => new Blob([original]).stream() } }
+  })
+  await observeFamilyPhotoObjects(options)
+  assert.equal(requests.length, 4)
+  assert.deepEqual(observations[0], { assetId, key: entry.objects[0].key,
+    state: 'FOUND', bytes: original.length, sha256: sha(original), mimeType: 'image/jpeg' })
+  assert.deepEqual(observations.slice(1).map(item => item.state), Array(3).fill('ABSENT_CONFIRMED'))
+})
+
+test('invalid roster, missing bucket and denied access do not become absent observations', async () => {
+  let calls = 0
+  const unscoped = readFixture(async () => { calls++ })
+  unscoped.options.entries = [{ ...entry, objects: [{ ...entry.objects[0], key: 'other.jpeg' }, ...entry.objects.slice(1)] }]
+  await assert.rejects(observeFamilyPhotoObjects(unscoped.options), /family-media/)
+  assert.equal(calls, 0)
+  for (const error of [providerError('NoSuchBucket', 404), providerError('AccessDenied', 403), providerError('NotFound', 404)]) {
+    const { options, observations } = readFixture(async () => { throw error })
+    await assert.rejects(observeFamilyPhotoObjects(options), error)
+    assert.deepEqual(observations, [])
+  }
+})
+
+test('incomplete bodies stop before the next key, and abort cancels a stalled read', async () => {
+  let calls = 0
+  const partial = readFixture(async () => {
+    calls++
+    return { ContentLength: original.length, ContentType: 'image/jpeg',
+      Body: { transformToWebStream: () => new Blob([original.subarray(0, 1)]).stream() } }
+  })
+  await assert.rejects(observeFamilyPhotoObjects(partial.options), /incomplete private object body/)
+  assert.equal(calls, 1)
+  assert.deepEqual(partial.observations, [{ assetId, key: entry.objects[0].key, state: 'UNKNOWN' }])
+
+  let cancelled = false
+  const stall = readFixture(async () => ({
+    ContentLength: original.length, ContentType: 'image/jpeg',
+    Body: { transformToWebStream: () => new ReadableStream({
+      start() { setImmediate(() => stall.controller.abort()) },
+      cancel() { cancelled = true },
+    }) },
+  }))
+  await assert.rejects(observeFamilyPhotoObjects(stall.options), { name: 'AbortError' })
+  assert(cancelled)
+  assert.deepEqual(stall.observations, [])
+})
+
+test('oversize content is discarded and a conflicting object cannot yield hash evidence', async () => {
+  let cancelled = false
+  const { options, observations } = readFixture(async command => {
+    if (command.input.Key !== entry.objects[0].key) throw providerError('NoSuchKey', 404)
+    return { ContentLength: original.length, ContentType: 'image/jpeg',
+      Body: { transformToWebStream: () => new ReadableStream({
+        start(reader) { reader.enqueue(Buffer.alloc(original.length + 1)) },
+        cancel() { cancelled = true },
+      }) } }
+  })
+  await observeFamilyPhotoObjects(options)
+  assert(cancelled)
+  assert.deepEqual(observations[0], { assetId, key: entry.objects[0].key, state: 'CONFLICT' })
 })
