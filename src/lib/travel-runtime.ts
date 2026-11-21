@@ -101,7 +101,7 @@ export function mergeTravelRuntimeRecords(
     ...plans.map((plan) => toTravelRuntimeRecord('travel-plans', plan)),
     ...memories.map((memory) => toTravelRuntimeRecord('travel-memories', memory)),
   ]
-    .sort((left, right) => right.startDate.localeCompare(left.startDate))
+    .sort((left, right) => (right.startDate || '').localeCompare(left.startDate || ''))
     .slice(0, limit)
 }
 

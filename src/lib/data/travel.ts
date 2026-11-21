@@ -1,5 +1,6 @@
 import 'server-only'
 
+import type { Where } from 'payload'
 import type { HomeConfig, User } from '@/payload/payload-types'
 import {
   toTravelMemoryDayView,
@@ -28,6 +29,10 @@ import { readTravelMemoryChildAfterOwner } from './travel-memory-child-access'
 
 const DEFAULT_LIMIT = 6
 const TRAVEL_LIMIT = 24
+// Payload drafts can omit dates that the travel cards require.
+const datedTravelFilter: Where = {
+  and: [{ startDate: { exists: true } }, { endDate: { exists: true } }],
+}
 
 export type {
   TravelCommentSummary,
@@ -57,6 +62,7 @@ export async function getFeaturedTravelProjects(
     limit,
     overrideAccess: false,
     sort: '-startDate',
+    where: datedTravelFilter,
     ...userReq(user),
   })
   const memories = await payload.find({
@@ -66,6 +72,7 @@ export async function getFeaturedTravelProjects(
     overrideAccess: false,
     select: travelRuntimeMemorySelect,
     sort: '-startDate',
+    where: datedTravelFilter,
     ...userReq(user),
   })
 

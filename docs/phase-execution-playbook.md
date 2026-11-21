@@ -338,7 +338,7 @@ Substantive Phase 使用 `docs/templates/phase-preparation-template.md`，至少
 9. Production apply
 10. Migration record read-back
 11. Record／relationship read-back
-12. Runtime smoke
+12. Runtime smoke：除 HTTP status 外，檢查 HTML／RSC 回應及頁面是否出現 Server Components render 錯誤；串流 HTTP 200 仍可能含錯誤。依獨立批准，以已登入 Family 的瀏覽器驗收首頁與受影響路由，確認內容完成渲染與匿名權限邊界。
 13. Observation window
 14. Separate destructive cleanup decision
 
