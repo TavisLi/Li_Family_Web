@@ -173,6 +173,12 @@ test('media approval preview uses reviewed text, retains verified reuses, and ex
   assert.equal(output.status, 'READY_FOR_REVIEW')
   assert.deepEqual(output.limits, { mediaCreates: 1, storagePuts: 4, uploadBytes: 250 })
   assert.deepEqual(output.reuses, [{ assetId: existing.assetId, mediaId: 37 }])
+  assert.deepEqual(output.writerScope, {
+    accountId: scope.accountId,
+    bucket: scope.bucket,
+    actions: ['PutObject'],
+    objectPaths: prepared.entries[0].objects.map(object => object.key),
+  })
   assert.equal(output.plan.target, target)
   assert.equal(output.plan.entries.length, 1)
   assert.equal(output.plan.entries[0].altText, altText)
@@ -185,5 +191,6 @@ test('media approval preview uses reviewed text, retains verified reuses, and ex
   const blocked = buildFamilyPhotoCreateReview(input)
   assert.equal(blocked.status, 'BLOCK')
   assert.equal(blocked.plan, null)
+  assert.equal(blocked.writerScope, null)
   assert.equal(blocked.counts.REVIEW_RECOVERY, 1)
 })

@@ -175,8 +175,16 @@ export function buildFamilyPhotoCreateReview(input) {
   const limits = { mediaCreates: entries.length,
     storagePuts: entries.reduce((total, entry) => total + entry.objects.length, 0),
     uploadBytes: entries.reduce((total, entry) => total + entry.objects.reduce((sum, object) => sum + object.bytes, 0), 0) }
+  // Credentials are issued separately. This is only the
+  // exact scope proposed for the upload, separate from the readback identity.
+  const writerScope = entries.length ? {
+    accountId: scope.accountId,
+    bucket: scope.bucket,
+    actions: ['PutObject'],
+    objectPaths: entries.flatMap(entry => entry.objects.map(object => object.key)),
+  } : null
   return { status: ready ? 'READY_FOR_REVIEW' : 'BLOCK', assets: reconciliation.assets, counts, limits, reuses,
-    plan: entries.length ? { environment: scope.environment, target, slug: scope.slug, locale: scope.locale,
+    writerScope, plan: entries.length ? { environment: scope.environment, target, slug: scope.slug, locale: scope.locale,
       accountId: scope.accountId, bucket: scope.bucket, mode: 'family-photo-create', ownerBasis: 'ZERO_OWNER_AND_VERSION',
       evidence: { sourceSha256, currentReceiptSha256: current.receiptSha256,
         registrySha256: evidence.binding.registrySha256,
