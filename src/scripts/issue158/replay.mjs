@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { execFileSync, spawnSync } from 'node:child_process'
 import { chmod, mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -16,6 +17,7 @@ import { fileEvidenceSink } from '../run-executor-evidence.mjs'
 const root = path.resolve(fileURLToPath(new URL('../../..', import.meta.url)))
 const schemaPath = 'scripts/rehearsal/baselines/issue158-v12/schema.sql'
 const queryPath = 'scripts/rehearsal/baselines/issue158-v12/catalog-queries.json'
+const geoFixturePath = 'src/migrations/20261031_052622_issue180_optional_geo.ts'
 const semanticPath = 'scripts/rehearsal/baselines/issue158-v12/semantic-catalog.json'
 // Docker Official Image multi-platform OCI index digest; platform manifests differ.
 const image = 'postgres:17.11@sha256:d74eeac9a635390a49bc21bd49fccd973de707e2a53a76ac49b552b8712ec46f'
@@ -28,9 +30,26 @@ const digestFile = async (file) => sha256(await readFile(file))
 const failureCode = (error) => error?.issue158Code ??
   (/^[0-9A-Z_]+$/.test(error?.code ?? '') ? error.code : 'LOCAL_REHEARSAL_FAILURE')
 
+async function applyFixtureSchema(client, database) {
+  const target = await client.query('SELECT current_database() AS database')
+  assert.match(database, /^issue158_[0-9a-f]{16}$/)
+  assert.equal(target.rows[0].database, database, 'BLOCK: fixture target drift')
+  const adapter = await realpath(path.join(root, 'node_modules/@payloadcms/db-postgres/package.json'))
+  const { PgDialect } = createRequire(adapter)('drizzle-orm/pg-core')
+  const { up } = await import('../../migrations/20261031_052622_issue180_optional_geo.ts')
+  let ddl
+  await up({ db: { execute(statement) {
+    assert.equal(ddl, undefined, 'BLOCK: unexpected extra fixture statement')
+    ddl = new PgDialect().sqlToQuery(statement)
+    assert.equal(ddl.params.length, 0, 'BLOCK: fixture SQL must be static')
+  } } })
+  assert(ddl?.sql, 'BLOCK: fixture SQL missing')
+  await client.query('SET search_path TO public, pg_catalog;\n' + ddl.sql)
+  return { path: geoFixturePath, sha256: await digestFile(path.join(root, geoFixturePath)) }
+}
+
 async function pgRequire() {
   const adapter = await realpath(path.join(root, 'node_modules/@payloadcms/db-postgres/package.json'))
-  const { createRequire } = await import('node:module')
   return createRequire(adapter)('pg')
 }
 
@@ -214,7 +233,7 @@ function restoreBeforeImage(options, database, dump) {
     '-d', database, '-X', '-v', 'ON_ERROR_STOP=1'], options.cluster.env, sql)
 }
 
-async function makeManifest(runId, database, options, backupPath, sourceRecordPath) {
+async function makeManifest(runId, database, options, backupPath, sourceRecordPath, fixtureSchema) {
   const file = async (name) => ({ path: name, sha256: await digestFile(path.join(root, name)) })
   const backup = path.relative(root, backupPath), sourceRecord = path.relative(root, sourceRecordPath)
   const target = options.transport === 'ci-loopback'
@@ -224,6 +243,7 @@ async function makeManifest(runId, database, options, backupPath, sourceRecordPa
     runtime: { node: '24.21.0', pnpm: '10.28.0', bootstrap: { entrypoint: 'src/scripts/issue158/replay.mjs',
       envNames: ['PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD', 'PGDATABASE'] }, schemaPush: 'disabled' },
     scope: { include: ['restore and verify the v12 semantic PostgreSQL 17 baseline',
+      'apply the repository Geo DDL to the verified disposable fixture without running the migration ledger',
       'run reconcileMemoryV2 through the real Payload Local API', 'verify commit, rollback, full row and sequence restore',
       'drop and read back only the uniquely generated disposable database'],
       exclude: ['Production', 'Production credentials', 'migration execution', 'legacy parity', 'physical parity',
@@ -235,11 +255,12 @@ async function makeManifest(runId, database, options, backupPath, sourceRecordPa
         'warning', 'timeout', 'signal', 'unexpected effect', 'restore failure', 'cleanup UNKNOWN'],
       baseline: 'v12:e231fa48bf6592823d31e20af019eda97d28c3e630666dd745b89a2528f9ea59;semantic-only' },
     artifacts: { executor: await file('src/scripts/issue158/replay.mjs'),
-      sql: [await file(schemaPath), await file(queryPath), await file(semanticPath)],
+      sql: [await file(schemaPath), await file(queryPath), await file(semanticPath), fixtureSchema],
       backup: { path: backup, sha256: await digestFile(backupPath) },
       dependencies: await Promise.all(['package.json', 'pnpm-lock.yaml',
         'scripts/rehearsal/baselines/issue158-v12/baseline.json',
         'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2.json',
+        'scripts/rehearsal/baselines/issue158-v12/runtime-payload-3.90.2-pr197.json',
         'pnpm-workspace.yaml', 'patches/@payloadcms__db-postgres@3.90.2.patch', 'src/scripts/issue158/baseline.mjs',
         'src/scripts/issue158/catalog.mjs', 'src/scripts/issue158/restore.mjs', 'src/scripts/issue158/ownership.mjs',
         'src/scripts/run-contract.mjs', 'src/scripts/run-executor-evidence.mjs',
@@ -305,6 +326,10 @@ async function prepareConsumer(options, database, runId, runDirectory) {
     baselineProof.migrationProvenance = 'schema-only empty baseline; migrations not executed'
     assert.equal(baselineProof.migrationRows, 0)
     await save(path.join(runDirectory, 'baseline-proof.json'), baselineProof)
+    stage = 'disposable-fixture-schema'
+    const fixtureSchema = await applyFixtureSchema(admin, database)
+    const ledger = await admin.query('SELECT count(*)::int AS count FROM public.payload_migrations')
+    assert.equal(ledger.rows[0].count, 0, 'BLOCK: fixture DDL changed the migration ledger')
     stage = 'consumer-role-provisioning'
     const role = 'issue158_consumer_' + randomUUID().replaceAll('-', '').slice(0, 12)
     const rolePassword = randomBytes(24).toString('hex')
@@ -367,7 +392,7 @@ async function prepareConsumer(options, database, runId, runDirectory) {
     await save(sourceRecordPath, { source: 'current user instruction dated 2026-10-17 for PR #159 compatibility',
       authority: 'local Issue 158 implementation and two fresh disposable consumer replays',
       exclusions: ['Production credentials', 'Production connection', 'migration execution', 'merge', 'release', 'Issue close'] })
-    manifest = await makeManifest(runId, database, options, backupPath, sourceRecordPath)
+    manifest = await makeManifest(runId, database, options, backupPath, sourceRecordPath, fixtureSchema)
     const manifestDigest = manifestHash(manifest)
     await save(path.join(runDirectory, 'manifest.json'), manifest)
     await save(path.join(runDirectory, 'ledger.json'), { version: 1, runId, manifestSha256: manifestDigest, events: [] })
@@ -440,6 +465,7 @@ async function prepareConsumer(options, database, runId, runDirectory) {
     result = 'PASS'
     acceptance = { result, runId, manifestSha256: manifestDigest,
       baselineProof: JSON.parse(await readFile(path.join(runDirectory, 'baseline-proof.json'), 'utf8')),
+      fixtureSchema,
       role: { superuser: false, bypassRls: false, mappedTables, sourceRoleParity: false },
       consumer: { reconcileAction: plan.action, changedTables, addedVersionRows: 1,
         localizedValue: 'Synthetic revised title', englishValueUnchanged: true, sentinelUnchanged: true,
@@ -449,9 +475,10 @@ async function prepareConsumer(options, database, runId, runDirectory) {
       productionConnections: 0, retry: false }
   } catch (error) {
     result = 'BLOCK'
+    const sqlState = error?.cause?.code ?? error?.code
     acceptance = { result, runId, stage,
       code: failureCode(error),
-      sqlState: /^[0-9A-Z]{5}$/.test(error?.code ?? '') ? error.code : null,
+      sqlState: /^[0-9A-Z]{5}$/.test(sqlState ?? '') ? sqlState : null,
       sqlErrorPosition: /^\d+$/.test(error?.position ?? '') ? Number(error.position) : null,
       sqlErrorRoutine: ['scanner_yyerror', 'raw_parser', 'parserOpenTable'].includes(error?.routine)
         ? error.routine : null,
