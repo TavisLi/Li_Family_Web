@@ -42,3 +42,22 @@ test('parent bootstrap writes a contract ledger event when a bound input is miss
   assert.equal(state.lastEvidencePath, 'supervisor-receipt.json')
   assert.equal((await read(directory, 'ledger.json')).events.at(-1).stage, 'supervisor')
 })
+
+test('supervisor blocks Production manifest before starting a child', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'issue105-local-admission-'))
+  const make = spawnSync(process.execPath, ['src/scripts/run-local-manifest.mjs', directory,
+    'issue-105-local-production-denial', 'normal'], { cwd: process.cwd(), encoding: 'utf8' })
+  assert.equal(make.status, 0, make.stderr)
+  const manifest = await read(directory, 'manifest.json')
+  manifest.environment = 'production'
+  manifest.approval.action = 'production-media'
+  manifest.approval.allowed = ['production-media']
+  manifest.approval.excluded = ['destructive-cleanup', 'release']
+  await writeFile(path.join(directory, 'manifest.json'), JSON.stringify(manifest))
+  const result = run(directory)
+  assert.equal(result.status, 1)
+  const receipt = await read(directory, 'terminal-exit.json')
+  assert.equal(receipt.status, 'BLOCK')
+  assert.equal(receipt.commitState, 'NOT_STARTED')
+  assert.equal(receipt.automaticRetry, false)
+})

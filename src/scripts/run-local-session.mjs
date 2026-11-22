@@ -3,7 +3,7 @@ import { spawn } from 'node:child_process'
 import { access, readFile, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
-import { verifyManifestFiles } from './run-contract.mjs'
+import { manifestHash, verifyManifestFiles } from './run-contract.mjs'
 import { terminalDecision, terminalLedgerState } from './run-executor-terminal.mjs'
 
 const [runDirectory] = process.argv.slice(2)
@@ -21,14 +21,25 @@ try {
     assert(!(await exists(name)), 'BLOCK: run already attempted; no automatic retry')
   }
   manifest = await readJson('manifest.json')
+  assert.equal(manifest.environment, 'disposable', 'BLOCK: Production session not admitted')
+  assert.equal(manifest.approval.action, 'local', 'BLOCK: only local action admitted')
+  assert.equal(manifest.runtime.bootstrap.entrypoint, 'src/scripts/run-local-session.mjs', 'BLOCK: supervisor binding')
   const limitFiles = manifest.artifacts.dependencies.filter((item) =>
     item.path.startsWith('docs/phase-artifacts/issue-105/local-closeout/') && item.path.endsWith('/limits.json'))
   assert.equal(limitFiles.length, 1, 'BLOCK: one limit file required')
   await verifyManifestFiles(manifest, root)
   const limits = JSON.parse(await readFile(path.join(root, limitFiles[0].path), 'utf8'))
+  assert(Number.isSafeInteger(limits.deadlineMs) && limits.deadlineMs > 0 && limits.deadlineMs <= 120000,
+    'BLOCK: deadline outside local bounds')
+  assert.equal(process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH, 'false', 'BLOCK: schema push')
+  const uri = new URL(process.env.DATABASE_URI ?? '')
+  assert(['postgres:', 'postgresql:'].includes(uri.protocol) && uri.hostname === '127.0.0.1' &&
+    uri.port === '55444' && uri.pathname === '/issue105' && uri.username && uri.password,
+  'BLOCK: disposable database target')
   const chunks = { stdout: [], stderr: [] }
   child = spawn(process.execPath, ['src/scripts/run-local-rehearsal.mjs', runDirectory],
-    { cwd: root, env: process.env, stdio: ['ignore', 'pipe', 'pipe'] })
+    { cwd: root, env: { DATABASE_URI: process.env.DATABASE_URI,
+      PAYLOAD_ENABLE_DEV_SCHEMA_PUSH: process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH }, stdio: ['ignore', 'pipe', 'pipe'] })
   for (const name of ['stdout', 'stderr']) child[name].on('data', (chunk) => {
     if (Buffer.concat(chunks[name]).length < 64 * 1024) chunks[name].push(chunk)
   })
@@ -40,13 +51,23 @@ try {
     killTimer = setTimeout(() => child.kill('SIGKILL'), 3000)
   }, limits.deadlineMs + 5000)
   for (const name of ['SIGINT', 'SIGTERM']) process.once(name, () => child.kill(name))
-  const { exitCode, signal } = await new Promise((resolve) => child.on('close', (code, reason) =>
-    resolve({ exitCode: code, signal: reason })))
-  clearTimeout(timer)
-  clearTimeout(killTimer)
+  let exitCode, signal
+  try {
+    ;({ exitCode, signal } = await new Promise((resolve, reject) => {
+      child.once('error', reject)
+      child.once('close', (code, reason) => resolve({ exitCode: code, signal: reason }))
+    }))
+  } finally {
+    clearTimeout(timer)
+    clearTimeout(killTimer)
+  }
   for (const name of ['stdout', 'stderr']) await writeFile(file(`${name}.log`), Buffer.concat(chunks[name]),
     { flag: 'wx', mode: 0o600 })
-  const receipt = await readJson('receipt.json').catch(() => readJson('bootstrap-receipt.json').catch(() => null))
+  const candidate = await readJson('receipt.json').catch(() => readJson('bootstrap-receipt.json').catch(() => null))
+  const receipt = candidate && candidate.runId === manifest.runId && candidate.sessionId === `${manifest.runId}:${child.pid}` &&
+    ['PASS', 'BLOCK', 'UNKNOWN'].includes(candidate.status) && Number.isInteger(candidate.terminalExit) &&
+    typeof candidate.commitState === 'string' && typeof candidate.restoreState === 'string' &&
+    candidate.automaticRetry === false ? candidate : null
   const checkpoints = await readFile(file('checkpoints.jsonl'), 'utf8').catch(() => '')
   let lastCheckpoint = null
   if (checkpoints.trim()) {
@@ -56,7 +77,7 @@ try {
   const decision = terminalDecision({ exitCode, signal, receipt, lastCheckpoint, forcedDeadline: forced })
   const receiptPath = receipt ? (await exists('receipt.json') ? 'receipt.json' : 'bootstrap-receipt.json') :
     'supervisor-receipt.json'
-  const terminal = { runId: manifest.runId, sessionId: `${manifest.runId}:${child.pid}`, actualExitCode: exitCode,
+  const terminal = { runId: manifest.runId, manifestSha256: manifestHash(manifest), sessionId: `${manifest.runId}:${child.pid}`, actualExitCode: exitCode,
     signal, forcedDeadline: forced, elapsedMs: Date.now() - started, status: decision.status, code: decision.code,
     receiptPath, stdoutBytes: Buffer.concat(chunks.stdout).length, stderrBytes: Buffer.concat(chunks.stderr).length,
     automaticRetry: false }
