@@ -65,3 +65,22 @@ export function signFamilyPhotoWriter({ accountId, bucket, batch, parent, issued
   assert(Buffer.byteLength(sessionToken) <= familyPhotoWriterLimits.maxSessionTokenBytes)
   return { accessKeyId: parent.accessKeyId, secretAccessKey: sha(jwt), sessionToken, expiration: new Date(exp * 1000) }
 }
+
+// The live caller must supply the independently authenticated and bounded reader.
+// A fresh complete review is compared before the intake can dispatch a write.
+export async function verifyFamilyPhotoWriterBaseline(approved, observeCurrent) {
+  familyPhotoWriterBatches(approved)
+  const originPlanId = approved.plan.evidence?.originPlanId
+  assert(Number.isSafeInteger(originPlanId) && originPlanId > 0, 'BLOCK: missing approved origin Plan')
+  const observed = await observeCurrent()
+  familyPhotoWriterBatches(observed)
+  const approvedPlan = approved.plan
+  const observedPlan = observed.plan
+  for (const key of ['target', 'slug', 'locale', 'ownerBasis', 'accountId', 'bucket']) {
+    assert.equal(observedPlan[key], approvedPlan[key], 'BLOCK: Production scope drift')
+  }
+  for (const key of ['originPlanId', 'sourceSha256', 'registrySha256']) {
+    assert.equal(observedPlan.evidence[key], approvedPlan.evidence[key], 'BLOCK: Production baseline drift')
+  }
+  assert.deepEqual(observedPlan.entries, approvedPlan.entries, 'BLOCK: Production roster drift')
+}

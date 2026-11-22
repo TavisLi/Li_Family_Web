@@ -8,7 +8,7 @@ import { evaluateAuthorization, verifyManifestFiles } from './run-contract.mjs'
 import { validateMediaRegistry } from './travel-memory-media-registry.ts'
 import { mergeVerifiedMediaReceipt } from './travel-memory-media-transfer.mjs'
 import { maxFamilyPhotoBytes as maxPhotoBytes, readFamilyPhotoObject } from './travel-memory-family-photo-object-read.mjs'
-import { familyPhotoWriterBatches } from './travel-memory-family-photo-writer.mjs'
+import { verifyFamilyPhotoWriterBaseline } from './travel-memory-family-photo-writer.mjs'
 
 const digest = bytes => createHash('sha256').update(bytes).digest('hex')
 const allowedLocale = new Set(['zh-TW', 'en'])
@@ -62,10 +62,13 @@ async function approvedPlan(environment, plan, authority) {
   const review = JSON.parse(bytes)
   assert.equal(review.status,'READY_FOR_REVIEW','BLOCK: private Media review incomplete')
   assert.equal(review.plan?.target,manifest.target,'BLOCK: private Media target drift')
-  if (manifest.scope.include.includes('TA-MEM-REAL-001')) {
+  if (review.plan.slug === '202607-chongqing-yangtze-river-memory') {
+    assert(manifest.scope.include.includes('TA-MEM-REAL-001'), 'BLOCK: case scope not approved')
     assert(manifest.artifacts.dependencies.some(({ path }) =>
       path === 'src/scripts/travel-memory-family-photo-writer.mjs'), 'BLOCK: Writer limits module not bound')
-    familyPhotoWriterBatches(review)
+    assert(typeof authority.observeCurrent === 'function', 'BLOCK: fresh Production observation required')
+    await verifyFamilyPhotoWriterBaseline(review, authority.observeCurrent)
+    assert(evaluateAuthorization(manifest,approval).recordMatches,'BLOCK: approval expired during preflight')
   }
   return review.plan
 }

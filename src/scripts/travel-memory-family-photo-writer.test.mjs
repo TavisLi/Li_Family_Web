@@ -3,7 +3,7 @@ import { createHash, createHmac } from 'node:crypto'
 import test from 'node:test'
 
 import { familyPhotoObjectKey, familyPhotoVariants } from '../payload/family-media.ts'
-import { familyPhotoWriterBatches, familyPhotoWriterLimits, signFamilyPhotoWriter } from './travel-memory-family-photo-writer.mjs'
+import { familyPhotoWriterBatches, familyPhotoWriterLimits, signFamilyPhotoWriter, verifyFamilyPhotoWriterBaseline } from './travel-memory-family-photo-writer.mjs'
 
 function review() {
   const accountId = 'a'.repeat(32)
@@ -17,7 +17,7 @@ function review() {
     })) }
   })
   return {
-    status: 'READY_FOR_REVIEW', plan: { environment: 'production', mode: 'family-photo-create', accountId, bucket, entries },
+    status: 'READY_FOR_REVIEW', plan: { environment: 'production', mode: 'family-photo-create', accountId, bucket, entries, evidence: { originPlanId: 1 } },
     counts: { BLOCK_CONFLICT: 0, UNKNOWN: 0, REUSE_MEDIA: 0, REVIEW_CREATE: assets, REVIEW_RECOVERY: 0 },
     limits: { mediaCreates: assets, storagePuts: keys, uploadBytes: bytes },
     writerScope: { accountId, bucket, actions: ['PutObject'], objectPaths: entries.flatMap(e => e.objects.map(x => x.key)) },
@@ -56,4 +56,16 @@ test('signing yields a bounded Cloudflare child token with only the exact four P
   assert(Buffer.byteLength(credentials.sessionToken) <= 2048)
   assert.throws(() => signFamilyPhotoWriter({ ...input, expiresBy: 10015 }))
   assert.throws(() => signFamilyPhotoWriter({ ...input, batch: { ...batch, keys: other.keys } }))
+})
+
+test('a fresh gap review must still match the approved owner and full Write scope', async () => {
+  const approved = review()
+  await verifyFamilyPhotoWriterBaseline(approved, async () => structuredClone(approved))
+  const changed = structuredClone(approved)
+  changed.plan.evidence.originPlanId++
+  await assert.rejects(verifyFamilyPhotoWriterBaseline(approved, async () => changed), /baseline drift/)
+  changed.plan.evidence.originPlanId--
+  changed.counts.REVIEW_CREATE--
+  changed.counts.REVIEW_RECOVERY++
+  await assert.rejects(verifyFamilyPhotoWriterBaseline(approved, async () => changed))
 })
