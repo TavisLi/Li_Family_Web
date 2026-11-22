@@ -8,6 +8,7 @@ import test from 'node:test'
 import { GetObjectCommand } from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 import { familyPhotoPutInput, prepareFamilyPhoto, runFamilyPhotoIntake } from './travel-memory-family-photo-intake.mjs'
+import { reconcileFamilyPhotos } from './travel-memory-family-photo-reconcile.mjs'
 import { observeFamilyPhotoObjects } from './travel-memory-family-photo-object-read.mjs'
 import { manifestHash } from './run-contract.mjs'
 
@@ -281,6 +282,23 @@ test('supervisor runs one bound family fixture with isolated in-memory writer an
   assert.equal(receipt.automaticRetry, false)
 })
 
+function reconcileStoppedFixture(objects, media) {
+  const originalBytes = original.length
+  const derivativeBytes = entry.objects.slice(1).reduce((total, object) => total + object.bytes, 0)
+  const scope = { environment: 'production', slug: registry.travelSlug, locale: plan.locale, bucket: plan.bucket,
+    accountId: 'a'.repeat(32), target: { projectRef: 'p'.repeat(20), database: 'postgres', schema: 'public' } }
+  return reconcileFamilyPhotos({ registry, scope, prepared: { slug: scope.slug, assets: 1, objectCount: 4,
+    originalBytes, derivativeBytes, entries: [{ ...entry, altTextSha256: sha(entry.altText) }] },
+    observations: { scope, entries: [{ assetId, media,
+      objects: entry.objects.map(({ key }) => {
+        const bytes = objects.get(key)
+        return bytes ? { key, state: 'FOUND', bytes: bytes.length, sha256: sha(bytes), mimeType: 'image/jpeg' }
+          : { key, state: 'ABSENT_CONFIRMED' }
+      }),
+    }] },
+  })
+}
+
 test('an ambiguous PUT preserves its attempt and stops without retry or Media creation', async () => {
   const { options, steps, receipts, objects } = fixture()
   const put = options.adapter.putIfAbsent
@@ -293,6 +311,10 @@ test('an ambiguous PUT preserves its attempt and stops without retry or Media cr
   assert.equal(attempts, 2)
   assert.equal(objects.size, 2)
   assert.deepEqual(steps, ['OBJECT_INTENT', 'OBJECT_VERIFIED', 'OBJECT_INTENT'])
+  const reconciled = reconcileStoppedFixture(objects, { state: 'ABSENT_CONFIRMED' })
+  assert.equal(reconciled.counts.REVIEW_RECOVERY, 1)
+  assert.equal(reconciled.counts.REVIEW_CREATE, 0)
+  assert.equal(attempts, 2)
   assert.deepEqual(receipts, [])
   assert.deepEqual(registry.assets[0].locators, [])
 })
@@ -310,6 +332,15 @@ test('an ambiguous Media acknowledgement preserves the objects without retry or 
   assert.equal(attempts, 1)
   assert.equal(objects.size, 4)
   assert.equal(steps.at(-1), 'MEDIA_INTENT')
+  const observed = await options.adapter.readMedia(99, plan.locale)
+  const reconciled = reconcileStoppedFixture(objects, {
+    id: observed.id, familyAssetKey: observed.familyAssetKey, type: observed.type, mimeType: observed.mimeType,
+    bytes: observed.filesize, altTextSha256: sha(observed.altText), sourcePath: null, ownerId: null,
+    publicStorage: false, state: 'FOUND',
+  })
+  assert.equal(reconciled.counts.REUSE_MEDIA, 1)
+  assert.equal(reconciled.counts.REVIEW_CREATE, 0)
+  assert.equal(attempts, 1)
   assert.deepEqual(receipts, [])
   assert.deepEqual(registry.assets[0].locators, [])
 })
