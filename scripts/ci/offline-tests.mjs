@@ -94,6 +94,7 @@ const files = [
   'src/scripts/travel-memory-exact-media-inventory.test.ts',
   'src/scripts/travel-memory-family-photo-intake.test.mjs',
   'src/scripts/travel-memory-family-photo-writer.test.mjs',
+  'src/scripts/travel-memory-family-photo-production.test.mjs',
   'src/scripts/travel-memory-family-photo-reconcile.test.mjs',
   'src/scripts/travel-memory-source-contract.test.ts',
   'src/scripts/travel-memory-source-v2.test.ts',
