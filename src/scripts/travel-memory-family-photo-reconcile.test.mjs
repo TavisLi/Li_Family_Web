@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
+import { EventEmitter } from 'node:events'
 import { familyPhotoObjectKey, familyPhotoVariants } from '../payload/family-media.ts'
-import { exactFamilyMediaSelect, exactFamilyMediaVisibilitySelect, observeFamilyMedia, verifyFamilyMediaVisibility } from './travel-memory-family-media-read.mjs'
+import { exactFamilyMediaSelect, exactFamilyMediaVisibilitySelect, observeFamilyMedia, readFamilyMediaSnapshot, verifyFamilyMediaVisibility } from './travel-memory-family-media-read.mjs'
 import { observeFamilyPhotoObjects } from './travel-memory-family-photo-object-read.mjs'
 import { buildFamilyPhotoCreateReview, familyPhotoObservationBinding, reconcileFamilyPhotos, reconcileFamilyPhotoSnapshots } from './travel-memory-family-photo-reconcile.mjs'
 import { sha256 } from './travel-memory-review.mjs'
@@ -111,6 +112,46 @@ test('the Media visibility gate rejects a filtered, writable or wrong-role sessi
     { isolation: 'read committed' }, { effective_role: 'unexpected' }]) {
     await assert.rejects(verify({ ...row, ...drift }), /visibility unproven/)
   }
+})
+
+test('the bounded Media session admits only the bound roster and requires wire-confirmed rollback', async () => {
+  const input = fixture(842)
+  const reader = { database: 'postgres', loginRole: 'reader', effectiveRole: 'reader' }
+  const binding = familyPhotoObservationBinding(input)
+  const raw = { cap: 256 * 1024, destroy() {} }
+  const sent = []
+  class Client extends EventEmitter {
+    connection = Object.assign(new EventEmitter(), { stream: raw })
+    async connect() { sent.push('CONNECT') }
+    async end() {}
+    async query({ text, values }) {
+      sent.push(text)
+      const command = text === exactFamilyMediaSelect ? 'SELECT' : text.trim().split(' ')[0]
+      const rows = text === exactFamilyMediaVisibilitySelect ?
+        [{ database_name: 'postgres', login_role: 'reader', effective_role: 'reader',
+          read_only: 'on', isolation: 'repeatable read', complete_visibility: true }] :
+        text === exactFamilyMediaSelect ? values[0].map(requested_key => ({ requested_key, id: null })) : []
+      for (const row of rows) this.connection.emit('message', { name: 'dataRow', length: 85, row })
+      this.connection.emit('message', { name: 'commandComplete', text: command, length: 10 })
+      this.connection.emit('message', { name: 'readyForQuery',
+        status: command === 'ROLLBACK' ? this.rollbackState : 'T', length: 5 })
+      return { command, rows }
+    }
+  }
+  const run = (rollbackState, extra = {}) => readFamilyMediaSnapshot({ ...input, binding, reader, raw, Client,
+    client: Object.assign(new Client(), { rollbackState }), authorize() {}, verifyPeer: () => true, ...extra })
+  const drift = await run('I', { binding: { ...binding, registrySha256: '0'.repeat(64) } })
+  assert.equal(drift.status, 'BLOCK')
+  assert.deepEqual(sent, [])
+  const accepted = await run('I')
+  assert.equal(accepted.status, 'PASS')
+  assert.equal(accepted.rollback, 'CONFIRMED')
+  assert.equal(accepted.counters.queries, 15)
+  assert.equal(accepted.entries.length, 842)
+  assert.equal(sent.filter(text => text === exactFamilyMediaSelect).length, 9)
+  const unknown = await run('T')
+  assert.equal(unknown.status, 'UNKNOWN')
+  assert.equal(unknown.entries, undefined)
 })
 
 test('Media visibility denial and incomplete result coverage never produce absence', async () => {
