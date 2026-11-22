@@ -116,7 +116,9 @@ export async function superviseFamilyPhotoProduction({ root, directory, expected
       await handle.close()
     }
   }).catch(() => null)
-  const valid = receipt?.sessionId === sessionId && receipt.manifestSha256 === expectedManifest &&
+  const workerStart = await readFile(path.join(attempt, 'worker-started.json'), 'utf8').then(JSON.parse).catch(() => null)
+  const valid = workerStart?.pid === child.pid && workerStart?.manifestSha256 === expectedManifest &&
+    receipt?.sessionId === sessionId && receipt.manifestSha256 === expectedManifest &&
     ['PASS', 'BLOCK', 'UNKNOWN'].includes(receipt.status) && receipt.automaticRetry === false
   // Once spawned, an unverified terminal outcome cannot rule out an external write.
   const decision = terminalDecision({ ...ended, signal: ended.signal || forced, receipt: valid ? receipt : null,

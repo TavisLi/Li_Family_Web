@@ -63,7 +63,7 @@ test('authenticated Payload roles stay distinct, reject override and cap raw res
   const admin = await familyPhotoPayloadClient({ ...config, role: 'admin', fetcher: async (url, options) => {
     assert.equal(options.redirect, 'error')
     requests.push(options.method)
-    if (url.endsWith('/api/users/me')) return Response.json({ user: { id: 7, collection: 'users', role: 'admin' } })
+    if (url.includes('/api/users/me?')) return Response.json({ user: { id: 7, collection: 'users', role: 'admin' } })
     return Response.json({ doc: { id: 4 } })
   } })
   const input = { collection: 'media', user: admin.actor, depth: 0, locale: 'zh-TW',
@@ -120,6 +120,7 @@ test('Supervisor admits only exact approval, records a terminal result and refus
   const input = await packet(t, `
 import {writeFile} from 'node:fs/promises'
 const [dir, manifestSha256] = process.argv.slice(2)
+await writeFile(dir + '/attempt-01/worker-started.json', JSON.stringify({pid:process.pid, manifestSha256}))
 await writeFile(dir + '/attempt-01/receipt.json', JSON.stringify({sessionId:'synthetic-supervisor:' + process.pid,
  manifestSha256, status:'PASS', code:'FIXTURE', terminalExit:0, automaticRetry:false }))
 `)

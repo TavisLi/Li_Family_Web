@@ -49,7 +49,7 @@ export async function familyPhotoPayloadClient({ session, role, expectedId, sign
     assert.match(response.headers.get('content-type') ?? '', /^application\/json(?:;|$)/i)
     return JSON.parse(Buffer.concat(chunks).toString('utf8'))
   }
-  const { user } = await json('/api/users/me')
+  const { user } = await json('/api/users/me?depth=0&select%5Bid%5D=true&select%5Brole%5D=true')
   assert(user?.id === expectedId && user.role === role && user.collection === 'users', 'BLOCK: Payload session identity drift')
   const actor = Object.freeze({ id: user.id, role: user.role, collection: user.collection })
   function requireAccess(options, expectedRole) {
