@@ -7,7 +7,7 @@ const maxPhotos = 842
 
 // The existing Payload REST endpoints authenticate each request and apply
 // collection access. Only one trusted session per role is accepted.
-export async function familyPhotoPayloadClient({ session, role, expectedId, signal, guard, fetcher = fetch }) {
+export async function familyPhotoPayloadClient({ session, role, expectedId, signal, guard, minimumExpiryMs, fetcher = fetch }) {
   assert(['admin', 'family'].includes(role))
   assert(Number.isSafeInteger(expectedId) && expectedId > 0)
   assert(typeof session === 'string' && /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/.test(session) &&
@@ -49,8 +49,11 @@ export async function familyPhotoPayloadClient({ session, role, expectedId, sign
     assert.match(response.headers.get('content-type') ?? '', /^application\/json(?:;|$)/i)
     return JSON.parse(Buffer.concat(chunks).toString('utf8'))
   }
-  const { user } = await json('/api/users/me?depth=0&select%5Bid%5D=true&select%5Brole%5D=true')
+  const { user, exp } = await json('/api/users/me?depth=0&select%5Bid%5D=true&select%5Brole%5D=true')
   assert(user?.id === expectedId && user.role === role && user.collection === 'users', 'BLOCK: Payload session identity drift')
+  if (minimumExpiryMs !== undefined) {
+    assert(Number.isSafeInteger(exp) && exp * 1000 >= minimumExpiryMs, 'BLOCK: Payload session expires before deadline')
+  }
   const actor = Object.freeze({ id: user.id, role: user.role, collection: user.collection })
   function requireAccess(options, expectedRole) {
     assert(role === expectedRole && options.overrideAccess === false && options.user === actor &&
@@ -58,6 +61,7 @@ export async function familyPhotoPayloadClient({ session, role, expectedId, sign
   }
   return {
     actor,
+    expiresAt: Number.isSafeInteger(exp) ? new Date(exp * 1000).toISOString() : null,
     counters: () => ({ ...counters }),
     async find(options) {
       requireAccess(options, 'admin')

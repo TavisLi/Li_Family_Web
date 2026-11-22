@@ -44,7 +44,8 @@ export async function runFamilyPhotoProductionWorker({ root, directory, expected
   let phase = 'bootstrap'
   let mutationIntent = false
   let verified = 0
-  let clients
+  let clients, context
+  const verifiedReceipts = []
   const summary = (status, code) => ({
     status, code, phase, sessionId: `${manifest.runId}:${process.pid}`,
     manifestSha256: expectedManifest, terminalExit: status === 'PASS' ? 0 : 1,
@@ -53,14 +54,14 @@ export async function runFamilyPhotoProductionWorker({ root, directory, expected
   let receipt
   try {
     guard()
-    const context = await bind({ manifest, signal: controller.signal, guard })
+    context = await bind({ manifest, signal: controller.signal, guard, endMs })
     const { planPath, registry, loadOriginal, observeCurrent, verifyPreservation } = context
     assert(manifest.artifacts.dependencies.some(({ path: file }) => file === planPath))
     const review = JSON.parse(await readFile(path.join(root, planPath), 'utf8'))
     assert.equal(review.plan.slug, caseSlug)
     phase = 'authenticated-adapter'
     clients = await familyPhotoProductionAdapter({ review, writer: context.writer, reader: context.reader,
-      readerCredentials: context.readerCredentials, issueWriter: context.issueWriter, guard, signal: controller.signal })
+      readerCredentials: context.readerCredentials, issueWriter: context.issueWriter, guard, signal: controller.signal, endMs })
     phase = 'intake'
     await runFamilyPhotoIntake({ environment: 'production', registry, loadOriginal, adapter: clients.adapter,
       authority: { manifest, approval, root, humanSourceVerified: true, planPath, observeCurrent },
@@ -71,6 +72,7 @@ export async function runFamilyPhotoProductionWorker({ root, directory, expected
       },
       saveReceipt: async result => {
         await record(attempt, 'assets.jsonl', result, 'a')
+        verifiedReceipts.push(result)
         verified++
       },
       guard,
@@ -78,7 +80,7 @@ export async function runFamilyPhotoProductionWorker({ root, directory, expected
     phase = 'preservation'
     guard()
     assert.equal(verified, familyPhotoWriterLimits.assets)
-    assert.equal(await verifyPreservation(), true, 'BLOCK: data preservation unverified')
+    assert.equal(await verifyPreservation(verifiedReceipts), true, 'BLOCK: data preservation unverified')
     guard()
     receipt = summary('PASS', 'FAMILY_PHOTO_PRODUCTION_VERIFIED')
   } catch {
@@ -86,6 +88,7 @@ export async function runFamilyPhotoProductionWorker({ root, directory, expected
       mutationIntent ? 'FAMILY_PHOTO_STOP_AFTER_INTENT' : 'FAMILY_PHOTO_STOP_BEFORE_INTENT')
   } finally {
     clients?.close()
+    context?.close?.()
     clearTimeout(timer)
     process.off('SIGTERM', stop)
     process.off('SIGINT', stop)

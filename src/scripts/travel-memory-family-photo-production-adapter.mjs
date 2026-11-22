@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
 import { S3Client } from '@aws-sdk/client-s3'
+import { observeFamilyPhotoObjects } from './travel-memory-family-photo-object-read.mjs'
 
 import { familyPhotoIntakeAdapter } from './travel-memory-family-photo-intake.mjs'
 import { familyPhotoPayloadClient } from './travel-memory-family-photo-payload-io.mjs'
@@ -9,6 +10,10 @@ import { familyPhotoWriterBatches, familyPhotoWriterLimits } from './travel-memo
 
 const accountId = '4c01c77e704e10d493bdc1912bb12076'
 const bucket = 'li-family-web-family-media-prod'
+
+const options = { region: 'auto', endpoint: 'https://' + accountId + '.r2.cloudflarestorage.com', forcePathStyle: true,
+    followRegionRedirects: false, maxAttempts: 1, requestChecksumCalculation: 'WHEN_REQUIRED',
+    responseChecksumValidation: 'WHEN_REQUIRED' }
 
 function verifyChild(credentials, batch) {
   const { sessionToken, accessKeyId, secretAccessKey } = credentials
@@ -35,7 +40,7 @@ function verifyChild(credentials, batch) {
 
 // The sealed worker supplies authenticated session material, independent R2
 // reader credentials and a trusted one-photo issuer. No parent is accepted.
-export async function familyPhotoProductionAdapter({ review, writer, reader, readerCredentials, issueWriter, guard, signal }) {
+export async function familyPhotoProductionAdapter({ review, writer, reader, readerCredentials, issueWriter, guard, signal, endMs }) {
   assert.equal(review.plan.accountId, accountId)
   assert.equal(review.plan.bucket, bucket)
   assert(writer.id !== reader.id && writer.session !== reader.session)
@@ -43,11 +48,9 @@ export async function familyPhotoProductionAdapter({ review, writer, reader, rea
   const entries = review.plan.entries
   const objects = entries.flatMap(entry => entry.objects)
   const byKey = new Map(batches.flatMap((batch, index) => batch.keys.map(key => [key, { batch, objects: entries[index].objects }])))
-  const options = { region: 'auto', endpoint: 'https://' + accountId + '.r2.cloudflarestorage.com', forcePathStyle: true,
-    followRegionRedirects: false, maxAttempts: 1, requestChecksumCalculation: 'WHEN_REQUIRED',
-    responseChecksumValidation: 'WHEN_REQUIRED' }
-  const payload = await familyPhotoPayloadClient({ session: writer.session, role: 'admin', expectedId: writer.id, guard, signal })
-  const readPayload = await familyPhotoPayloadClient({ session: reader.session, role: 'family', expectedId: reader.id, guard, signal })
+
+  const payload = await familyPhotoPayloadClient({ session: writer.session, role: 'admin', expectedId: writer.id, guard, signal, minimumExpiryMs: endMs })
+  const readPayload = await familyPhotoPayloadClient({ session: reader.session, role: 'family', expectedId: reader.id, guard, signal, minimumExpiryMs: endMs })
   const readClient = new S3Client({ ...options, credentials: readerCredentials })
   const readStorage = await boundFamilyPhotoR2({ storage: readClient, accountId, bucket, objects, phase: 'readback', guard })
   const attempted = new Set()
@@ -73,4 +76,25 @@ export async function familyPhotoProductionAdapter({ review, writer, reader, rea
   const adapter = await familyPhotoIntakeAdapter({ bucket, writeStorage, readStorage, payload, readPayload, guard, signal,
     actors: { writer: payload.actor, reader: readPayload.actor } })
   return { adapter, close() { active?.storage.destroy(); readClient.destroy() } }
+}
+
+export async function observeFamilyPhotoAbsence({ prepared, binding, credentials, guard, signal }) {
+  const entries = prepared.entries.map(({ assetId }) => ({ assetId, objects: [] }))
+  const byAsset = new Map(entries.map(entry => [entry.assetId, entry]))
+  const sdk = new S3Client({ ...options, credentials })
+  const timeout = AbortSignal.any([signal, AbortSignal.timeout(60 * 60 * 1000)])
+  try {
+    const storage = await boundFamilyPhotoR2({
+      storage: sdk, accountId, bucket, objects: prepared.entries.flatMap(entry => entry.objects), phase: 'absence', guard,
+    })
+    await observeFamilyPhotoObjects({ storage, bucket, entries: prepared.entries, guard, signal: timeout,
+      saveObservation(assetId, observation) {
+        assert.equal(observation.state, 'ABSENT_CONFIRMED', 'BLOCK: R2 baseline changed')
+        byAsset.get(assetId).objects.push(observation)
+      },
+    })
+    return { status: 'PASS', binding, entries, counters: storage.counters() }
+  } finally {
+    sdk.destroy()
+  }
 }

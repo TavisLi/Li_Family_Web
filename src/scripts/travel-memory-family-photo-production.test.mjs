@@ -91,7 +91,9 @@ async function packet(t, worker, deadlineMs = 3000) {
   const bootstrap = 'src/scripts/run-family-photo-production.mjs'
   const runtimeFiles = await Promise.all([bootstrap, 'run-family-photo-production-worker.mjs',
     'travel-memory-family-photo-production-adapter.mjs', 'travel-memory-family-photo-payload-io.mjs',
-    'travel-memory-family-photo-r2-io.mjs', 'travel-memory-family-photo-intake.mjs']
+    'travel-memory-family-photo-r2-io.mjs', 'travel-memory-family-photo-intake.mjs',
+    'travel-memory-family-photo-production-context.mjs', 'travel-memory-family-photo-preservation.mjs',
+    'travel-memory-family-media-read.mjs']
     .map(name => file(name.includes('/') ? name : 'src/scripts/' + name, 'fixture')))
   const manifest = {
     version: 1, runId: 'synthetic-supervisor', environment: 'production', target: 'iujasyrvypdcmkmorcud/postgres/public',

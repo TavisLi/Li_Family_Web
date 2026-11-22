@@ -29,7 +29,9 @@ export async function admitFamilyPhotoProduction({ root, directory, expectedMani
   assert.deepEqual(manifest.runtime.bootstrap, { entrypoint, envNames: [] })
   for (const required of [entrypoint, 'src/scripts/run-family-photo-production-worker.mjs',
     'src/scripts/travel-memory-family-photo-production-adapter.mjs', 'src/scripts/travel-memory-family-photo-payload-io.mjs',
-    'src/scripts/travel-memory-family-photo-r2-io.mjs', 'src/scripts/travel-memory-family-photo-intake.mjs']) {
+    'src/scripts/travel-memory-family-photo-r2-io.mjs', 'src/scripts/travel-memory-family-photo-intake.mjs',
+    'src/scripts/travel-memory-family-photo-production-context.mjs', 'src/scripts/travel-memory-family-photo-preservation.mjs',
+    'src/scripts/travel-memory-family-media-read.mjs']) {
     assert(manifest.artifacts.dependencies.some(({ path: file }) => file === required), 'BLOCK: runtime dependency unbound')
   }
   const relative = path.relative(await realpath(root), await realpath(directory))

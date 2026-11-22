@@ -137,14 +137,14 @@ export async function observeFamilyMedia({ entries, slug, locale, query, verifyV
 // Use the existing PostgreSQL wire observer and a caller-bound transport.
 // Credential, TLS peer and exact Human authorization belong to the launcher.
 export async function readFamilyMediaSnapshot({ Client, client, raw, binding, prepared, registry, reader,
-  authorize, verifyPeer, signal }) {
+  authorize, verifyPeer, signal, observeProtected }) {
   const { scope } = binding
   const responseByteCap = 256 * 1024
   const deadline = performance.now() + 45000
   const remaining = () => Math.floor(deadline - performance.now())
   const counters = { queries: 0, roundTrips: 0, responseBytes: 0 }
   let warning = false, disconnected = false, started = false, closed = false
-  let rollback = 'NOT_STARTED', failure, observations
+  let rollback = 'NOT_STARTED', failure, observations, protectedState
   const guard = () => {
     authorize()
     assert(!warning && !disconnected && !signal?.aborted, 'BLOCK: Media session interrupted')
@@ -154,8 +154,9 @@ export async function readFamilyMediaSnapshot({ Client, client, raw, binding, pr
   const disconnect = () => { disconnected = true }
   client.on('notice', notice)
   client.on('error', disconnect)
+  const queryBudget = observeProtected ? 16 : 15
   const observer = createIssue134PostgresIo({ Client, counters, getStage: () => 'family-media-read', guard,
-    limits: { queryBudget: 15, roundTripBudget: 15, rowCap: 200, responseByteCap },
+    limits: { queryBudget, roundTripBudget: queryBudget, rowCap: 200, responseByteCap },
     recoveryReserve: { queries: 1, roundTrips: 1 },
     recoveryGuard: () => assert(!disconnected && remaining() > 0, 'BLOCK: Media rollback unavailable'),
   })
@@ -195,6 +196,15 @@ export async function readFamilyMediaSnapshot({ Client, client, raw, binding, pr
     await run('SET LOCAL search_path = pg_catalog')
     observations = await observeFamilyMedia({ entries, slug: scope.slug, locale: scope.locale, query: run, guard,
       verifyVisibility: () => verifyFamilyMediaVisibility({ ...reader, query: run }) })
+    if (observeProtected) {
+      let used = false
+      protectedState = await observeProtected(async (text, values) => {
+        assert(!used, 'BLOCK: protected observation query budget')
+        used = true
+        return run(text, values)
+      })
+      assert(used, 'BLOCK: missing protected observation')
+    }
   } catch (error) {
     failure = error
   } finally {
@@ -218,5 +228,5 @@ export async function readFamilyMediaSnapshot({ Client, client, raw, binding, pr
   if (failure || warning || disconnected || signal?.aborted || !observations || rollback !== 'CONFIRMED') {
     return { status: 'BLOCK', rollback, counters }
   }
-  return { status: 'PASS', rollback, counters, binding, entries: observations }
+  return { status: 'PASS', rollback, counters, binding, entries: observations, ...(observeProtected ? { protectedState } : {}) }
 }
