@@ -42,6 +42,11 @@ try {
     assert.deepEqual((await client.query('SELECT type,filename FROM media WHERE id=$1',[publicPhoto.id])).rows[0], publicBefore)
     const user = await payload.create({collection:'users', data:{email:'family@example.invalid',password:'fixture-only-password',
       displayName:'Family fixture',slug:'family-fixture',role:'family',familyRole:'father'}})
+    const admin = await payload.create({collection:'users', data:{email:'admin@example.invalid',password:'fixture-only-password',
+      displayName:'Admin fixture',slug:'admin-fixture',role:'admin',familyRole:'father'}})
+    const actors = { writer: { ...admin, collection: 'users' }, reader: { ...user, collection: 'users' } }
+    await assert.rejects(payload.create({ collection: 'media', overrideAccess: false, user: actors.reader,
+      data: { type: 'photo', altText: 'Denied fixture' } }))
     readPayload=await getPayload({key:'family-media-readback',config:{...config,telemetry:false,
       typescript:{...config.typescript,autoGenerate:false},db:postgresAdapter({pool,push:false})}})
     assert.notEqual(readPayload.db.pool,payload.db.pool)
@@ -53,7 +58,7 @@ try {
     const bucket='disposable-family'
     const guard=()=>{}
     const storageConfig={maxAttempts:async()=>1}
-    const adapter=await familyPhotoIntakeAdapter({bucket,payload,readPayload,guard,
+    const adapter=await familyPhotoIntakeAdapter({bucket,payload,readPayload,guard,actors,
       writeStorage:{config:storageConfig,async send(command,{abortSignal}) {
         assert.equal(command.constructor.name,'PutObjectCommand')
         abortSignal.throwIfAborted()

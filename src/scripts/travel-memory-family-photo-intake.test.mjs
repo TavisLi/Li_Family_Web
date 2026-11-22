@@ -280,3 +280,36 @@ test('supervisor runs one bound family fixture with isolated in-memory writer an
   assert.equal(receipt.productionConnections, 0)
   assert.equal(receipt.automaticRetry, false)
 })
+
+test('an ambiguous PUT preserves its attempt and stops without retry or Media creation', async () => {
+  const { options, steps, receipts, objects } = fixture()
+  const put = options.adapter.putIfAbsent
+  let attempts = 0
+  options.adapter.putIfAbsent = async (input) => {
+    await put(input)
+    if (++attempts === 2) throw new Error('missing PUT acknowledgement')
+  }
+  await assert.rejects(runFamilyPhotoIntake(options), /missing PUT acknowledgement/)
+  assert.equal(attempts, 2)
+  assert.equal(objects.size, 2)
+  assert.deepEqual(steps, ['OBJECT_INTENT', 'OBJECT_VERIFIED', 'OBJECT_INTENT'])
+  assert.deepEqual(receipts, [])
+  assert.deepEqual(registry.assets[0].locators, [])
+})
+
+test('an ambiguous Media acknowledgement preserves the objects without retry or a verified locator', async () => {
+  const { options, steps, receipts, objects } = fixture()
+  const create = options.adapter.createMedia
+  let attempts = 0
+  options.adapter.createMedia = async (input) => {
+    attempts++
+    await create(input)
+    throw new Error('missing Media acknowledgement')
+  }
+  await assert.rejects(runFamilyPhotoIntake(options), /missing Media acknowledgement/)
+  assert.equal(attempts, 1)
+  assert.equal(objects.size, 4)
+  assert.equal(steps.at(-1), 'MEDIA_INTENT')
+  assert.deepEqual(receipts, [])
+  assert.deepEqual(registry.assets[0].locators, [])
+})
