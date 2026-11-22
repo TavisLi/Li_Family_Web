@@ -64,6 +64,6 @@ R2 觀測可由已批准的讀取入口呼叫 `observeFamilyPhotoObjects`。呼�
 
 ## 家人限定照片的 Writer 審查
 
-沿用 [Media／R2 對帳工具](../../../src/scripts/travel-memory-family-photo-reconcile.mjs)。從已批准的獨立唯讀證據取得同一批 Media 與 R2 快照，核對 exact key、雜湊、長度和目標。兩邊明確缺件才可列入新增。部分寫入、證據缺失或衝突先停。工具的摘要供 Human 決策，私有輸出才包含完整 key；只對新增項產出 `writerScope`（同一帳號、單一 bucket、`PutObject`、精確物件路徑）。
+沿用 [Media／R2 對帳工具](../../../src/scripts/travel-memory-family-photo-reconcile.mjs)。從已批准的獨立唯讀證據取得同一批 Media 與 R2 快照，核對 exact key、雜湊、長度和目標。 Media 查詢前在同一條 REPEATABLE READ READ ONLY 交易使用 `verifyFamilyMediaVisibility` 核對實際角色和三張表的可見性。任何 RLS 過濾或權限不足都不能據此判定缺件。兩邊明確缺件才可列入新增。部分寫入、證據缺失或衝突先停。工具的摘要供 Human 決策，私有輸出才包含完整 key；只對新增項產出 `writerScope`（同一帳號、單一 bucket、`PutObject`、精確物件路徑）。
 
 準備 Writer 前，先驗證 #105 入口能在取得憑證前核對批准、計畫與 scope，並具備獨立唯讀讀回、一次性限制、逐項收據以及未知寫入停止能力。優先評估 Cloudflare 短效憑證的 [動作與路徑限制](https://developers.cloudflare.com/r2/api/s3/temporary-credentials/#permitted-operations)。少量先用精確物件，正式批次按實測憑證與時限上限分批。憑證只交付到已驗證的安全本機入口，執行後依單獨批准撤權並保存非敏感證據。合併的合成演練僅證明本機接線。未證實 Production 入口、時限、實際權限或安全交接時，保留 BLOCK，勿請 Human 先建立 Writer。Writer、媒體上傳、草稿寫入和發布各看自己的批准。

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { familyPhotoObjectKey, familyPhotoVariants } from '../payload/family-media.ts'
-import { exactFamilyMediaSelect, observeFamilyMedia } from './travel-memory-family-media-read.mjs'
+import { exactFamilyMediaSelect, exactFamilyMediaVisibilitySelect, observeFamilyMedia, verifyFamilyMediaVisibility } from './travel-memory-family-media-read.mjs'
 import { observeFamilyPhotoObjects } from './travel-memory-family-photo-object-read.mjs'
 import { buildFamilyPhotoCreateReview, familyPhotoObservationBinding, reconcileFamilyPhotos, reconcileFamilyPhotoSnapshots } from './travel-memory-family-photo-reconcile.mjs'
 import { sha256 } from './travel-memory-review.mjs'
@@ -95,6 +95,22 @@ test('the exact Media reader observes 842 IDs in nine bounded queries', async ()
   assert.deepEqual(batchSizes, [100, 100, 100, 100, 100, 100, 100, 100, 42])
   assert.equal(result.length, 842)
   assert(result.every(item => item.media.state === 'ABSENT_CONFIRMED'))
+})
+
+test('the Media visibility gate rejects a filtered, writable or wrong-role session', async () => {
+  const bound = { database: 'fixture', loginRole: 'reader', effectiveRole: 'reader' }
+  const row = { database_name: 'fixture', login_role: 'reader', effective_role: 'reader',
+    read_only: 'on', isolation: 'repeatable read', complete_visibility: true }
+  const verify = actual => verifyFamilyMediaVisibility({ ...bound, async query(text, values) {
+    assert.equal(text, exactFamilyMediaVisibilitySelect)
+    assert.deepEqual(values, [])
+    return { rows: [actual] }
+  } })
+  assert.equal(await verify(row), true)
+  for (const drift of [{ complete_visibility: false }, { read_only: 'off' },
+    { isolation: 'read committed' }, { effective_role: 'unexpected' }]) {
+    await assert.rejects(verify({ ...row, ...drift }), /visibility unproven/)
+  }
 })
 
 test('Media visibility denial and incomplete result coverage never produce absence', async () => {

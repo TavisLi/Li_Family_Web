@@ -43,6 +43,35 @@ LEFT JOIN LATERAL (
 LEFT JOIN public.media_locales AS l ON l._parent_id = m.id AND l._locale = $3
 `
 
+// Run on the same bounded read-only transaction as the roster SELECT.
+export const exactFamilyMediaVisibilitySelect = `
+SELECT current_database() AS database_name, session_user AS login_role,
+       current_user AS effective_role,
+       current_setting('transaction_read_only') AS read_only,
+       current_setting('transaction_isolation') AS isolation,
+       (
+         SELECT count(*) = 3 AND bool_and(
+           c.relkind = 'r' AND has_table_privilege(c.oid, 'SELECT')
+           AND NOT row_security_active(c.oid)
+         )
+         FROM pg_catalog.pg_class AS c
+         JOIN pg_catalog.pg_namespace AS n ON n.oid = c.relnamespace
+         WHERE n.nspname = 'public' AND c.relname IN ('media', 'media_locales', 'media_rels')
+       ) AS complete_visibility
+`
+
+export async function verifyFamilyMediaVisibility({ query, database, loginRole, effectiveRole }) {
+  for (const identity of [database, loginRole, effectiveRole]) {
+    assert(typeof identity === 'string' && identity.length > 0, 'BLOCK: bound Media reader identity required')
+  }
+  const { rows } = await query(exactFamilyMediaVisibilitySelect, [])
+  assert.deepEqual(rows, [{
+    database_name: database, login_role: loginRole, effective_role: effectiveRole,
+    read_only: 'on', isolation: 'repeatable read', complete_visibility: true,
+  }], 'BLOCK: Media reader identity, transaction or visibility unproven')
+  return true
+}
+
 function projectObservation(rows, key, sourcePath) {
   if (rows.length === 1 && rows[0].id === null) return { state: 'ABSENT_CONFIRMED' }
   if (rows.length !== 1) return { state: 'CONFLICT' }
