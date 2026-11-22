@@ -24,6 +24,8 @@ try {
   assert.equal(manifest.environment, 'disposable', 'BLOCK: Production session not admitted')
   assert.equal(manifest.approval.action, 'local', 'BLOCK: only local action admitted')
   assert.equal(manifest.runtime.bootstrap.entrypoint, 'src/scripts/run-local-session.mjs', 'BLOCK: supervisor binding')
+  const familyFixture = manifest.scope.expectedEffects.length === 1 &&
+    manifest.scope.expectedEffects[0] === 'local-family-private-intake'
   const limitFiles = manifest.artifacts.dependencies.filter((item) =>
     item.path.startsWith('docs/phase-artifacts/issue-105/local-closeout/') && item.path.endsWith('/limits.json'))
   assert.equal(limitFiles.length, 1, 'BLOCK: one limit file required')
@@ -31,14 +33,26 @@ try {
   const limits = JSON.parse(await readFile(path.join(root, limitFiles[0].path), 'utf8'))
   assert(Number.isSafeInteger(limits.deadlineMs) && limits.deadlineMs > 0 && limits.deadlineMs <= 120000,
     'BLOCK: deadline outside local bounds')
-  assert.equal(process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH, 'false', 'BLOCK: schema push')
-  const uri = new URL(process.env.DATABASE_URI ?? '')
-  assert(['postgres:', 'postgresql:'].includes(uri.protocol) && uri.hostname === '127.0.0.1' &&
-    uri.port === '55444' && uri.pathname === '/issue105' && uri.username && uri.password,
-  'BLOCK: disposable database target')
+  if (familyFixture) {
+    assert.equal(manifest.target, 'local-family-fixture', 'BLOCK: fixture target')
+    assert.deepEqual(manifest.runtime.bootstrap.envNames, [], 'BLOCK: fixture must not inherit credentials')
+    for (const name of ['src/scripts/family-private-intake-rehearsal.mjs', 'src/scripts/travel-memory-family-photo-intake.mjs',
+      'src/scripts/travel-memory-family-photo-object-read.mjs', 'src/scripts/travel-memory-media-registry.ts',
+      'src/scripts/travel-memory-media-transfer.mjs', 'src/payload/family-media.ts']) {
+      assert(manifest.artifacts.dependencies.some(item => item.path === name), 'BLOCK: fixture dependency not bound')
+    }
+  } else {
+    assert.equal(process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH, 'false', 'BLOCK: schema push')
+    const uri = new URL(process.env.DATABASE_URI ?? '')
+    assert(['postgres:', 'postgresql:'].includes(uri.protocol) && uri.hostname === '127.0.0.1' &&
+      uri.port === '55444' && uri.pathname === '/issue105' && uri.username && uri.password,
+    'BLOCK: disposable database target')
+  }
   const chunks = { stdout: [], stderr: [] }
-  child = spawn(process.execPath, ['src/scripts/run-local-rehearsal.mjs', runDirectory],
-    { cwd: root, env: { DATABASE_URI: process.env.DATABASE_URI,
+  const childArgs = familyFixture ? ['--import', 'tsx', 'src/scripts/family-private-intake-rehearsal.mjs', runDirectory]
+    : ['src/scripts/run-local-rehearsal.mjs', runDirectory]
+  child = spawn(process.execPath, childArgs,
+    { cwd: root, env: familyFixture ? {} : { DATABASE_URI: process.env.DATABASE_URI,
       PAYLOAD_ENABLE_DEV_SCHEMA_PUSH: process.env.PAYLOAD_ENABLE_DEV_SCHEMA_PUSH }, stdio: ['ignore', 'pipe', 'pipe'] })
   for (const name of ['stdout', 'stderr']) child[name].on('data', (chunk) => {
     if (Buffer.concat(chunks[name]).length < 64 * 1024) chunks[name].push(chunk)

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { createHash } from 'node:crypto'
-import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { spawnSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import test from 'node:test'
@@ -236,4 +237,46 @@ test('oversize content is discarded and a conflicting object cannot yield hash e
   await observeFamilyPhotoObjects(options)
   assert(cancelled)
   assert.deepEqual(observations[0], { assetId, key: entry.objects[0].key, state: 'CONFLICT' })
+})
+
+test('supervisor runs one bound family fixture with isolated in-memory writer and readback', async t => {
+  const root = process.cwd()
+  const directory = await mkdtemp(path.join(root, '.family-fixture-'))
+  t.after(() => rm(directory, { recursive: true, force: true }))
+  const make = spawnSync(process.execPath, ['src/scripts/run-local-manifest.mjs', directory,
+    'issue-105-local-family-fixture', 'normal'], { cwd: root, encoding: 'utf8' })
+  assert.equal(make.status, 0, make.stderr)
+  const original = await sharp({ create: { width: 16, height: 16, channels: 3, background: '#456789' } }).jpeg().toBuffer()
+  const digest = bytes => createHash('sha256').update(bytes).digest('hex')
+  const assetId = `sha256:${digest(original)}`
+  const prepared = await prepareFamilyPhoto(original, assetId)
+  const registry = { version: 1, travelSlug: 'fixture-family', assets: [{ assetId, filename: 'fixture.jpeg',
+    files: ['fixture.jpeg'], mimeType: 'image/jpeg', width: 16, height: 16, byteSize: original.length,
+    provenance: 'local-file', locators: [] }] }
+  const plan = { environment: 'disposable', slug: registry.travelSlug, mode: 'family-photo-create',
+    ownerBasis: 'ZERO_OWNER_AND_VERSION', bucket: 'fixture', locale: 'zh-TW',
+    entries: [{ assetId, altText: 'Synthetic fixture', objects: prepared.objects }] }
+  const fixturePath = path.join(directory, 'family-private-fixture.json')
+  await writeFile(fixturePath, JSON.stringify({ originalBase64: original.toString('base64'), registry, plan }))
+  const read = async name => JSON.parse(await readFile(path.join(directory, name), 'utf8'))
+  const manifest = await read('manifest.json')
+  manifest.target = 'local-family-fixture'
+  manifest.runtime.bootstrap.envNames = []
+  manifest.scope.expectedEffects = ['local-family-private-intake']
+  const names = ['src/scripts/family-private-intake-rehearsal.mjs', 'src/scripts/travel-memory-family-photo-intake.mjs',
+    'src/scripts/travel-memory-family-photo-object-read.mjs', 'src/scripts/travel-memory-media-registry.ts',
+    'src/scripts/travel-memory-media-transfer.mjs', 'src/payload/family-media.ts', path.relative(root, fixturePath)]
+  for (const name of names) manifest.artifacts.dependencies.push({ path: name, sha256: digest(await readFile(path.join(root, name))) })
+  const ledger = await read('ledger.json')
+  ledger.manifestSha256 = manifestHash(manifest)
+  await writeFile(path.join(directory, 'manifest.json'), JSON.stringify(manifest))
+  await writeFile(path.join(directory, 'ledger.json'), JSON.stringify(ledger))
+  const result = spawnSync(process.execPath, ['src/scripts/run-local-session.mjs', directory], { cwd: root, encoding: 'utf8' })
+  assert.equal(result.status, 0, result.stdout + result.stderr)
+  const receipt = await read('receipt.json')
+  assert.equal(receipt.status, 'PASS')
+  assert.equal(receipt.fixtureObjects, 4)
+  assert.equal(receipt.fixtureMedia, 1)
+  assert.equal(receipt.productionConnections, 0)
+  assert.equal(receipt.automaticRetry, false)
 })
