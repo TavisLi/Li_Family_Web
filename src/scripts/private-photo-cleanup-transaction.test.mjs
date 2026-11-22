@@ -48,15 +48,13 @@ test('unknown commit or rollback never reports success', async () => {
   assert.equal((await run(makeClient({ linked: true, rollbackFails: true }))).commitState, 'ROLLBACK_UNKNOWN')
 })
 
-test('object failure stops after the last verified deletion without retry', async () => {
+test('a missing mock object stops cleanup after the last verified deletion', async () => {
   const objects = ['original', 'thumbnail', 'medium', 'large'].map(variant => `family-media/${fixture.familyAssetKey}/${variant}.jpeg`)
-  const attempts = []
+  const objectStore = new Set([objects[0], ...objects.slice(2)])
   const result = await rehearseCompleteFixtureCleanup({ environment: 'disposable', client: makeClient(),
-    independentReader: { connectionParameters, query: async () => ({ rows: [] }) },
-    objectWriter: { deleteObject: async (bucket, key) => { attempts.push(key); if (attempts.length === 2) throw Error('unknown') } },
-    objectReader: { objectState: async () => 'ABSENT' }, snapshot, sql: { foreignKeys: 'fk', references: 'refs' },
-    expectedReferences, fixture, objects, bucket: 'fixture', guard() {} })
+    independentReader: { connectionParameters, query: async () => ({ rows: [] }) }, objectStore, snapshot,
+    sql: { foreignKeys: 'fk', references: 'refs' }, expectedReferences, fixture, objects, guard() {} })
   assert.equal(result.status, 'UNKNOWN')
   assert.equal(result.deletedObjects, 1)
-  assert.deepEqual(attempts, objects.slice(0, 2))
+  assert.deepEqual([...objectStore], objects.slice(2))
 })

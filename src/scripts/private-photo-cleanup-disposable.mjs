@@ -39,13 +39,11 @@ try {
   await writer.query('INSERT INTO public.media_locales (_parent_id, _locale, alt_text) VALUES ($1, $2, $3)',
     [fixture.mediaId, fixture.locale, fixture.altText])
   const objects = ['original', 'thumbnail', 'medium', 'large'].map(variant => `family-media/${fixture.familyAssetKey}/${variant}.jpeg`)
-  const stored = new Set(objects)
-  const objectWriter = { async deleteObject(bucket, key) { assert.equal(bucket, 'fixture'); assert(stored.delete(key)) } }
-  const objectReader = { async objectState(bucket, key) { assert.equal(bucket, 'fixture'); return stored.has(key) ? 'FOUND' : 'ABSENT' } }
+  const objectStore = new Set(objects)
   const result = await rehearseCompleteFixtureCleanup({ environment: 'disposable', client: writer, independentReader: reader,
-    objectWriter, objectReader, snapshot, sql, expectedReferences, fixture, objects, bucket: 'fixture', guard() {} })
+    objectStore, snapshot, sql, expectedReferences, fixture, objects, guard() {} })
   assert.deepEqual(result, { status: 'PASS', database: { status: 'PASS', commitState: 'COMMITTED' }, deletedObjects: 4 })
-  assert.equal(stored.size, 0)
+  assert.equal(objectStore.size, 0)
   const preserved = await reader.query('SELECT avatar_id FROM public.users')
   assert.deepEqual(preserved.rows, [{ avatar_id: 8 }])
   console.log(JSON.stringify({ status: 'PASS_LOCAL_ONLY', foreignKeys: 25, deletedMedia: 1, verifiedObjectsAbsent: 4, nonTargetReferencePreserved: true }))

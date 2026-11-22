@@ -45,15 +45,15 @@ export async function rehearseFixtureCleanup({ environment, client, snapshot, sq
 
 // Isolated rehearsal only: a failed object operation leaves a partial result
 // for independent reconciliation; it never retries or continues to later keys.
-export async function rehearseCompleteFixtureCleanup({ environment, client, independentReader, objectWriter, objectReader,
-  snapshot, sql, expectedReferences, fixture, objects, bucket, guard }) {
+export async function rehearseCompleteFixtureCleanup({ environment, client, independentReader, objectStore,
+  snapshot, sql, expectedReferences, fixture, objects, guard }) {
   assert.equal(environment, 'disposable', 'BLOCK: disposable cleanup only')
   assert.notEqual(client, independentReader, 'BLOCK: independent database reader required')
   assert.deepEqual({ host: independentReader.connectionParameters?.host, port: independentReader.connectionParameters?.port,
     database: independentReader.connectionParameters?.database },
   { host: client.connectionParameters?.host, port: client.connectionParameters?.port, database: client.connectionParameters?.database },
   'BLOCK: independent reader target drift')
-  assert.notEqual(objectWriter, objectReader, 'BLOCK: independent object reader required')
+  assert(objectStore instanceof Set, 'BLOCK: in-memory fixture objects required')
   const expected = ['original', 'thumbnail', 'medium', 'large']
     .map(variant => `family-media/${fixture.familyAssetKey}/${variant}.jpeg`)
   assert.deepEqual(objects, expected, 'BLOCK: object roster drift')
@@ -70,9 +70,9 @@ export async function rehearseCompleteFixtureCleanup({ environment, client, inde
   for (const key of expected) {
     try {
       guard()
-      await objectWriter.deleteObject(bucket, key)
+      assert(Set.prototype.delete.call(objectStore, key), 'BLOCK: mock object missing')
       guard()
-      assert.equal(await objectReader.objectState(bucket, key), 'ABSENT', 'BLOCK: object readback unknown')
+      assert(!Set.prototype.has.call(objectStore, key), 'BLOCK: mock object still present')
       deletedObjects++
     } catch {
       return { status: 'UNKNOWN', database, deletedObjects, reason: 'OBJECT_CLEANUP_UNKNOWN' }
