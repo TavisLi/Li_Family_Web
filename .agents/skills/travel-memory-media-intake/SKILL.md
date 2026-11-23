@@ -27,7 +27,7 @@ description: Prepare, review and reconcile Travel Memory Source v2, original pho
 2. 先對帳原件與目標環境的 Media ID。已有 verified locator 的照片同時核對 bytes 與可見範圍後重用。家人限定草稿的照片須有對應原圖 SHA 的 `familyAssetKey`，單語與全語系快照均須相符。已確認缺件再提出精確 Media 上傳清單、altText、讀回及回復範圍。未核對的 locator 不足以判定缺件。內容、Media、發布等分別批准。
 3. 使用 `node --import tsx src/scripts/travel-memory-new-review.mjs preview <slug> <環境> <Source.md> <registry.json> <snapshot.json> <新預演.json>`。交 Human 審核目標、原件、照片順序、語言、隱私、逐項差異與可回復範圍。鎖定批准的檔案 bytes、runner、權限、次數與有效期。
 4. 由已獲准的內容 runner 在指定目標調用 `applyReviewedNewMemory`。入口重新核對批准預演，再由交易式 V2 importer 取得鎖並在寫入前核對 inventory、版本與計畫。單一交易包含草稿、Day 與 Base。提交前失敗執行 rollback；提交結果 UNKNOWN 即停止重送。提交後回復需獨立批准。單純呼叫函式不提供 Production 執行權。
-5. 由獨立連線取得新 snapshot，執行 `node --import tsx src/scripts/travel-memory-new-review.mjs verify <已批准預演.json> <獨立snapshot.json> <MemoryID>`。另按封包核對既有語系、版本、關聯與非目標的保全，以及有批准時才適用的發布／頁面讀回。回報實際結果與未驗證範圍。更動執行器後需要新建回歸時，可用 `sh src/scripts/travel-memory-new-rehearsal.sh` 在本機隔離 PostgreSQL 排演。
+5. 由獨立連線取得新 snapshot，執行 `node --import tsx src/scripts/travel-memory-new-review.mjs verify <已批准預演.json> <獨立snapshot.json> <MemoryID>`。先核對摘要所列預演及讀回 SHA、草稿狀態和可見範圍，再對照核准數量（Days、Moments、照片 placements 與保全的 Media）。收到 `DRAFT_READBACK_UNVERIFIED` 即停，用私有快照查受影響差異。另按封包核對既有語系、版本、關聯與非目標的保全，以及有批准時才適用的發布／頁面讀回。回報實際結果與未驗證範圍。更動執行器後需要新建回歸時，可用 `sh src/scripts/travel-memory-new-rehearsal.sh` 在本機隔離 PostgreSQL 排演。
 
 ## 更新既有旅行
 

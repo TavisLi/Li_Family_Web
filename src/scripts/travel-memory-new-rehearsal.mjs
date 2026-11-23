@@ -133,7 +133,12 @@ try {
   assert.equal(anonMedia,null)
   const readbackFile = path.join(socket, 'independent-readback.json')
   await writeFile(readbackFile, JSON.stringify(readback), { flag: 'wx', mode: 0o600 })
-  assert.deepEqual(runCli('verify', previewFile, readbackFile, String(result.memoryId)), accepted)
+  assert.deepEqual(runCli('verify', previewFile, readbackFile, String(result.memoryId)), {
+    ...accepted, previewSha256: hash(await readFile(previewFile)), readbackSha256: hash(await readFile(readbackFile)),
+  })
+  assert.deepEqual({ days: accepted.days, moments: accepted.moments, placements: accepted.placements,
+    photoPlacements: accepted.photoPlacements, visibility: accepted.visibility, draftStatus: accepted.draftStatus },
+  { days: 1, moments: 1, placements: 1, photoPlacements: 1, visibility: 'family', draftStatus: 'draft' })
   const after=await snapshot()
   for (const [table,rows] of before) {
     // Payload can clear latest on its own new revisions. Every pre-existing row
@@ -147,6 +152,14 @@ try {
   const tampered=structuredClone(readback)
   tampered.inventory.days[0].moments[0].placements[0].caption='wrong'
   assert.throws(()=>verifyNewMemory(preview,tampered,result.memoryId))
+  const tamperedFile = path.join(socket, 'tampered-readback.json')
+  await writeFile(tamperedFile, JSON.stringify(tampered), { flag: 'wx', mode: 0o600 })
+  assert.throws(() => runCli('verify', previewFile, tamperedFile, String(result.memoryId)), error => {
+    assert.equal(error.status, 1)
+    assert.deepEqual(JSON.parse(error.stdout), { status: 'BLOCK', code: 'DRAFT_READBACK_UNVERIFIED' })
+    assert.equal(error.stderr, '')
+    return true
+  })
   console.log(JSON.stringify({accepted,photos:preview.photos.length,protectedTables:tables.length,
     existingRows:[...before.values()].reduce((n,rows)=>n+rows.length,0),reviewDrift:'ROLLBACK_ZERO_CHANGE',
     unknownLocator:'BLOCK_ZERO_CHANGE',incorrectReadback:'BLOCK',privateMediaBoundary:'PASS',unsafeMediaLocator:'BLOCK'}))
