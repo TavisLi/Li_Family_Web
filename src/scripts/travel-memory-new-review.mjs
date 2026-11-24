@@ -104,23 +104,48 @@ export function verifyNewMemory(preview, snapshot, expectedMemoryId) {
   assert.equal(snapshot.ownerCount, 1)
   assert.ok(Number.isSafeInteger(snapshot.versionCount) && snapshot.versionCount > 0)
   const inventory = snapshot.inventory
-  assert.deepEqual(inventory.allLocales?.media, preview.preservedMedia)
+  const { memory, days, allLocales } = inventory
+  assert.deepEqual(allLocales?.media, preview.preservedMedia)
   assert.equal(preview.status, 'PREVIEW')
   assert.ok(Number.isSafeInteger(expectedMemoryId) && expectedMemoryId > 0)
-  assert.equal(inventory.memory?.id, expectedMemoryId)
-  assert.equal(inventory.memory.slug, preview.slug)
-  assert.equal(inventory.memory._status, 'draft')
-  matches(preview.plan.parent.data, inventory.memory)
-  matches(preview.plan.nextEnvelope, inventory.memory.sourceMetadata?.baseProjection)
-  assert.equal(inventory.days.length, preview.plan.days.length)
+  assert.equal(memory?.id, expectedMemoryId)
+  assert.equal(memory.slug, preview.slug)
+  assert.equal(memory._status, 'draft')
+  assert.equal(typeof memory.isPrivate, 'boolean')
+  matches(preview.plan.parent.data, memory)
+  matches(preview.plan.nextEnvelope, memory.sourceMetadata?.baseProjection)
+  matches({ id: expectedMemoryId, slug: preview.slug, _status: 'draft', isPrivate: memory.isPrivate }, allLocales?.memory)
+  assert.equal(days.length, preview.plan.days.length)
+  assert.equal(allLocales.days?.length, days.length)
+
+  let momentCount = 0
+  let placementCount = 0
+  let photoPlacementCount = 0
   for (const day of preview.plan.days) {
-    const saved = inventory.days.filter(item => item.dayKey === day.dayKey)
-    assert.equal(saved.length, 1)
-    assert.equal(saved[0].memory, expectedMemoryId)
-    assert.equal(saved[0]._status, 'draft')
-    matches(day.data, saved[0])
+    const [saved, duplicate] = days.filter(item => item.dayKey === day.dayKey)
+    assert.ok(saved && !duplicate)
+    assert.equal(saved.memory, expectedMemoryId)
+    assert.equal(saved._status, 'draft')
+    assert.ok(Number.isSafeInteger(saved.id) && saved.id > 0)
+    matches({ id: saved.id, dayKey: day.dayKey, memory: expectedMemoryId, _status: 'draft' },
+      allLocales.days.find(item => item.dayKey === day.dayKey))
+    matches(day.data, saved)
+    const moments = saved.moments ?? []
+    assert.ok(Array.isArray(moments))
+    assert.equal(moments.length, (day.data.moments ?? []).length)
+    momentCount += moments.length
+    for (const [index, moment] of moments.entries()) {
+      const placements = moment.placements ?? []
+      assert.ok(Array.isArray(placements))
+      assert.equal(placements.length, (day.data.moments[index].placements ?? []).length)
+      placementCount += placements.length
+      photoPlacementCount += placements.filter(item => item.type === 'photo').length
+    }
   }
-  return { status: 'PASS', scope: 'target-draft-readback', slug: preview.slug, memoryId: expectedMemoryId, days: inventory.days.length }
+  return { status: 'PASS', scope: 'target-draft-readback', slug: preview.slug, memoryId: expectedMemoryId,
+    visibility: memory.isPrivate ? 'family' : 'public', draftStatus: memory._status,
+    days: days.length, moments: momentCount, placements: placementCount, photoPlacements: photoPlacementCount,
+    preservedMedia: allLocales.media.length }
 }
 
 if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === import.meta.url) {
@@ -134,8 +159,14 @@ if (process.argv[1] && pathToFileURL(path.resolve(process.argv[1])).href === imp
     if (result.status === 'BLOCK') process.exitCode = 1
   } else if (mode === 'verify' && args.length === 3) {
     const [preview, snapshot, id] = args
-    const expected = JSON.parse(await readFile(preview))
-    const observed = JSON.parse(await readFile(snapshot))
-    console.log(JSON.stringify(verifyNewMemory(expected, observed, Number(id))))
+    try {
+      const [previewBytes, snapshotBytes] = await Promise.all([preview, snapshot].map(file => readFile(file)))
+      const accepted = verifyNewMemory(JSON.parse(previewBytes), JSON.parse(snapshotBytes), Number(id))
+      console.log(JSON.stringify({ ...accepted, previewSha256: digest(previewBytes), readbackSha256: digest(snapshotBytes) }))
+    } catch {
+      // Assertion messages can contain private source text and raw relationships.
+      console.log(JSON.stringify({ status: 'BLOCK', code: 'DRAFT_READBACK_UNVERIFIED' }))
+      process.exitCode = 1
+    }
   } else throw new Error('Usage: preview <slug> <env> <source.md> <registry.json> <snapshot.json> <new-output.json> | verify <accepted-preview.json> <independent-snapshot.json> <memory-id>')
 }
