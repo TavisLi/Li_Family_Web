@@ -186,7 +186,7 @@ export function buildFamilyPhotoCreateReview(input) {
   return { status: ready ? 'READY_FOR_REVIEW' : 'BLOCK', assets: reconciliation.assets, counts, limits, reuses,
     writerScope, plan: entries.length ? { environment: scope.environment, target, slug: scope.slug, locale: scope.locale,
       accountId: scope.accountId, bucket: scope.bucket, mode: 'family-photo-create', ownerBasis: 'ZERO_OWNER_AND_VERSION',
-      evidence: { sourceSha256, currentReceiptSha256: current.receiptSha256,
+      evidence: { sourceSha256, currentReceiptSha256: current.receiptSha256, originPlanId: current.originPlanId,
         registrySha256: evidence.binding.registrySha256,
         mediaSnapshotSha256: evidence.mediaSnapshotSha256, objectSnapshotSha256: evidence.objectSnapshotSha256 },
       entries } : null }

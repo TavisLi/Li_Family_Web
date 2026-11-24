@@ -8,9 +8,11 @@ import { evaluateAuthorization, verifyManifestFiles } from './run-contract.mjs'
 import { validateMediaRegistry } from './travel-memory-media-registry.ts'
 import { mergeVerifiedMediaReceipt } from './travel-memory-media-transfer.mjs'
 import { maxFamilyPhotoBytes as maxPhotoBytes, readFamilyPhotoObject } from './travel-memory-family-photo-object-read.mjs'
+import { verifyFamilyPhotoWriterBaseline } from './travel-memory-family-photo-writer.mjs'
 
 const digest = bytes => createHash('sha256').update(bytes).digest('hex')
 const allowedLocale = new Set(['zh-TW', 'en'])
+const accessControlledAdapters = new WeakSet()
 
 function objectFacts(key, variant, bytes) {
   assert(bytes.length > 0 && bytes.length <= maxPhotoBytes, 'BLOCK: family photo size')
@@ -61,6 +63,14 @@ async function approvedPlan(environment, plan, authority) {
   const review = JSON.parse(bytes)
   assert.equal(review.status,'READY_FOR_REVIEW','BLOCK: private Media review incomplete')
   assert.equal(review.plan?.target,manifest.target,'BLOCK: private Media target drift')
+  if (review.plan.slug === '202607-chongqing-yangtze-river-memory') {
+    assert(manifest.scope.include.includes('TA-MEM-REAL-001'), 'BLOCK: case scope not approved')
+    assert(manifest.artifacts.dependencies.some(({ path }) =>
+      path === 'src/scripts/travel-memory-family-photo-writer.mjs'), 'BLOCK: Writer limits module not bound')
+    assert(typeof authority.observeCurrent === 'function', 'BLOCK: fresh Production observation required')
+    await verifyFamilyPhotoWriterBaseline(review, authority.observeCurrent)
+    assert(evaluateAuthorization(manifest,approval).recordMatches,'BLOCK: approval expired during preflight')
+  }
   return review.plan
 }
 
@@ -78,6 +88,9 @@ export async function runFamilyPhotoIntake({
   assert(plan.entries.length > 0 && new Set(plan.entries.map(item=>item.assetId)).size===plan.entries.length)
   if (environment === 'production') {
     assert.equal(digest(JSON.stringify(registry)),plan.evidence?.registrySha256,'BLOCK: approved Registry SHA drift')
+    if (plan.slug === '202607-chongqing-yangtze-river-memory') {
+      assert(accessControlledAdapters.has(adapter), 'BLOCK: explicit Admin Writer and independent Family Reader required')
+    }
   }
   let merged = validateMediaRegistry(registry,plan.slug)
   for (const entry of plan.entries) {
@@ -139,9 +152,19 @@ export async function runFamilyPhotoIntake({
 
 // The approved caller supplies the bound bucket, scoped S3 clients, and a
 // separately opened Payload reader. No credential sources are resolved here.
-export async function familyPhotoIntakeAdapter({ bucket, writeStorage, readStorage, payload, readPayload, guard, signal }) {
+export async function familyPhotoIntakeAdapter({ bucket, writeStorage, readStorage, payload, readPayload, guard, signal, actors }) {
   const { PutObjectCommand } = await import('@aws-sdk/client-s3')
   assert(writeStorage !== readStorage && payload !== readPayload, 'BLOCK: independent readback clients required')
+  let writeAuth = {}, readAuth = {}
+  if (actors) {
+    const { writer, reader } = actors
+    assert(writer?.collection === 'users' && Number.isSafeInteger(writer.id) && writer.id > 0 && writer.role === 'admin',
+      'BLOCK: authenticated Payload admin required')
+    assert(reader?.collection === 'users' && Number.isSafeInteger(reader.id) && reader.id > 0 &&
+      reader.role === 'family' && reader.id !== writer.id, 'BLOCK: independent Family reader required')
+    writeAuth = { user: writer, overrideAccess: false }
+    readAuth = { user: reader, overrideAccess: false }
+  }
   for (const storage of [writeStorage, readStorage]) {
     assert.equal(await storage.config.maxAttempts(),1,'BLOCK: storage must not retry')
   }
@@ -150,10 +173,10 @@ export async function familyPhotoIntakeAdapter({ bucket, writeStorage, readStora
     const item = AbortSignal.timeout(15000)
     return { abortSignal:signal ? AbortSignal.any([item,signal]) : item }
   }
-  return {
+  const adapter = {
     async findMediaByFamilyKey(familyAssetKey) {
       guard()
-      const rows = await payload.find({collection:'media',depth:0,limit:2,
+      const rows = await payload.find({collection:'media',depth:0,limit:2,...writeAuth,
         where:{familyAssetKey:{equals:familyAssetKey}}})
       assert(!rows.hasNextPage, 'BLOCK: duplicate family Media')
       return rows.docs.map(doc=>doc.id)
@@ -171,12 +194,14 @@ export async function familyPhotoIntakeAdapter({ bucket, writeStorage, readStora
     },
     async createMedia({locale,...data}) {
       guard()
-      const doc = await payload.create({collection:'media',locale,depth:0,data})
+      const doc = await payload.create({collection:'media',locale,depth:0,data,...writeAuth})
       return doc.id
     },
     async readMedia(id, locale) {
       guard()
-      return readPayload.findByID({collection:'media',id,locale,fallbackLocale:false,depth:0})
+      return readPayload.findByID({collection:'media',id,locale,fallbackLocale:false,depth:0,...readAuth})
     },
   }
+  if (actors) accessControlledAdapters.add(adapter)
+  return adapter
 }
