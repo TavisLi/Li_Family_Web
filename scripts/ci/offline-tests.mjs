@@ -93,6 +93,7 @@ const files = [
   'src/scripts/travel-memory-day-projections.test.ts',
   'src/scripts/travel-memory-exact-media-inventory.test.ts',
   'src/scripts/travel-memory-new-review.test.ts',
+  'src/scripts/travel-memory-draft-media-handoff.test.mjs',
   'src/scripts/travel-memory-family-photo-intake.test.mjs',
   'src/scripts/travel-memory-family-photo-writer.test.mjs',
   'src/scripts/travel-memory-family-photo-production.test.mjs',
@@ -144,7 +145,8 @@ if (process.argv.includes('--list')) {
 } else {
   for (const file of selected) {
     const historicalCase = historicalCases.get(file)
-    const needsTsx = !file.endsWith('.mjs') || file.startsWith('src/scripts/travel-memory-family-photo-')
+    const needsTsx = !file.endsWith('.mjs') || file.startsWith('src/scripts/travel-memory-family-photo-') ||
+      file === 'src/scripts/travel-memory-draft-media-handoff.test.mjs'
     const result = spawnSync(process.execPath, [...(historicalCase ? ['--test', `--test-skip-pattern=${historicalCase}`] : []),
       ...(file === 'src/features/travel/travel-atlas-map.test.tsx' ? ['--experimental-test-module-mocks'] : []),
       ...(needsTsx ? ['--import', 'tsx'] : []), file],
