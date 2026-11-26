@@ -93,6 +93,7 @@ const files = [
   'src/scripts/travel-memory-day-projections.test.ts',
   'src/scripts/travel-memory-exact-media-inventory.test.ts',
   'src/scripts/travel-memory-new-review.test.ts',
+  'src/scripts/travel-memory-draft-media-handoff.test.mjs',
   'src/scripts/travel-memory-family-photo-intake.test.mjs',
   'src/scripts/travel-memory-family-photo-writer.test.mjs',
   'src/scripts/travel-memory-family-photo-production.test.mjs',

@@ -62,6 +62,8 @@ Media 觀測可由已審的唯讀交易呼叫 `observeFamilyMedia`，綁定匯�
 R2 觀測可由已批准的讀取入口呼叫 `observeFamilyPhotoObjects`。呼叫端須核對 R2 帳號、直接 S3 endpoint、bucket、唯讀憑證範圍、固定清單與總期限，逐項保存觀測。全量上限等於清單物件數，每個 key 只送一次 GET。只有同一直接入口回傳 `NoSuchKey` 與 HTTP 404 才記 `ABSENT_CONFIRMED`。缺桶、權限拒絕、逾時或中斷停止受影響觀測；未取得的項目維持 UNKNOWN。上次寫入結果不明時，依獨立對帳規則處理。[R2 錯誤代碼](https://developers.cloudflare.com/r2/api/error-codes/) · [R2 一致性](https://developers.cloudflare.com/r2/reference/consistency/)
 
 
+完成已批准的家人限定照片批次後，在執行工作樹用 `node --import tsx src/scripts/travel-memory-draft-media-handoff.mjs <封包目錄> <manifest-sha256>` 核對 supervisor、worker、逐張照片與獨立保全收據，產生新的 `verified-registry.json`。它只接受整批 PASS，會驗證 manifest 檔案綁定與獨立保全。缺資料、部分完成或結果不明即停止。輸出供新草稿預演，內容寫入仍需獨立批准。此工具支援 family-photo runner 收據，已通過本機合成驗證。其他 runner 必須先驗證相同收據契約。
+
 ## 家人限定照片的 Writer 審查
 
 沿用 [Media／R2 對帳工具](../../../src/scripts/travel-memory-family-photo-reconcile.mjs)。從已批准的獨立唯讀證據取得同一批 Media 與 R2 快照，核對 exact key、雜湊、長度和目標。 Media 查詢前在同一條 REPEATABLE READ READ ONLY 交易使用 `verifyFamilyMediaVisibility` 核對實際角色和三張表的可見性。任何 RLS 過濾或權限不足都不能據此判定缺件。 有界 Media 入口 `readFamilyMediaSnapshot` 綁定 roster／Registry SHA，最多 842 筆、15 次往返、45 秒及 256 KiB。呼叫端須先綁定批准、可信連線與實際 wire cap，再接入獨立、已批准的 R2 讀取。兩邊明確缺件才可列入新增。部分寫入、證據缺失或衝突先停。工具的摘要供 Human 決策，私有輸出才包含完整 key；只對新增項產出 `writerScope`（同一帳號、單一 bucket、`PutObject`、精確物件路徑）。

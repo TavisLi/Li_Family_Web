@@ -26,6 +26,10 @@
 
 > 請用 travel-memory-media-intake 處理一趟新旅行。回憶稿在〈路徑〉，原始照片在〈資料夾〉，可見對象是〈對象〉，地圖偏好是〈偏好〉。請先給我可審閱的照片順序、圖說、替代文字、地點疑問及預計新增的內容。我確認後，再分別提請讀取、上傳、內容寫入或發布所需的批准。完成後告訴我實際讀回哪些項目及仍待處理的差異。
 
+## 新草稿的照片交接
+
+照片匯入與獨立讀回完成後，agent 整理已驗證的照片 Registry，交付草稿差異預覽供 Human 審閱。照片收據不完整或資料保全結果不明時，先處理缺口，再準備草稿寫入。照片上傳、草稿寫入和發布各以本次批准為準。
+
 ## #134 可重用匯入工作台
 
 先執行 scanner，讀 summary／review queue，再只看需判斷的本地圖片。`prepare-travel-memory-review.mjs --config <config.json>` 讀取明列的 Source、已保存 Current／英文、舊 Registry、新掃描 Registry 與 photoRoot，以全新 output 建立本地 HTML；metadata 提出候選，不自行決定日期、人物、caption 或移除。Title／UserComment 與其他內嵌文字只作候選。既有 placements 沿用 Current 身分，不重新猜位置；不把 bytes 相同的不同 Media ID 自動合併。
